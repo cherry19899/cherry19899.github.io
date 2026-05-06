@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi SDK Test</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { width: 100%; padding: 20px; font-size: 20px; margin: 10px 0; }
+        #log { background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 14px; min-height: 200px; }
+        .err { color: #f00; }
+    </style>
+</head>
+<body>
+    <h1>Pi SDK Test</h1>
+    <button onclick="testAuth()">Test Pi.authenticate</button>
+    <button onclick="testPayment()">Test Pi.createPayment</button>
+    <div id="log"></div>
+    <script>
+        function log(msg, isErr) {
+            const d = document.getElementById('log');
+            const line = document.createElement('div');
+            line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+            if (isErr) line.className = 'err';
+            d.appendChild(line);
+            d.scrollTop = d.scrollHeight;
+        }
+
+        log('Loading...');
+        if (typeof Pi === 'undefined') {
+            log('ERROR: Pi SDK NOT found!', true);
+        } else {
+            log('Pi SDK found');
+            try {
+                Pi.init({ version: "2.0" });
+                log('Pi.init() OK');
+            } catch (e) {
+                log('Pi.init() ERROR: ' + e.message, true);
+            }
+        }
+
+        function testAuth() {
+            log('--- Testing authenticate ---');
+            if (!Pi || !Pi.authenticate) {
+                log('Pi.authenticate not available', true);
+                return;
+            }
+            Pi.authenticate(['username','payments'], function(p) {
+                log('Incomplete payment: ' + JSON.stringify(p));
+            }).then(function(auth) {
+                log('SUCCESS: ' + auth.user.username);
+            }).catch(function(e) {
+                log('ERROR: ' + e.message, true);
+            });
+        }
+
+        function testPayment() {
+            log('--- Testing createPayment ---');
+            if (!Pi || !Pi.createPayment) {
+                log('Pi.createPayment not available', true);
+                return;
+            }
+            Pi.createPayment({
+                amount: 1.0,
+                memo: "Test",
+                metadata: {}
+            }, {
+                onReadyForServerApproval: function(id) { log('Approve: ' + id); },
+                onReadyForServerCompletion: function(id, txid) { log('Complete: ' + id + ' tx=' + txid); },
+                onCancel: function(id) { log('Cancel: ' + id); },
+                onError: function(id, err) { log('Error: ' + id + ' ' + err.message, true); }
+            });
+        }
+    </script>
+</body>
+</html>

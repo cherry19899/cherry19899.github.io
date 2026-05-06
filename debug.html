@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Pro — Debug</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{background:#111827;color:#f9fafb;padding:16px}
+h1{color:#10b981;font-size:24px;margin-bottom:16px}
+.section{background:#1f2937;border-radius:12px;padding:16px;margin-bottom:12px}
+.section-title{font-size:16px;font-weight:700;color:#10b981;margin-bottom:8px}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #374151;font-size:14px}
+.row:last-child{border-bottom:none}
+.ok{color:#10b981}
+.err{color:#ef4444}
+.warn{color:#f59e0b}
+pre{font-size:12px;overflow-x:auto;background:#0f172a;padding:8px;border-radius:8px;margin-top:8px}
+button{background:#10b981;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;margin:4px}
+</style>
+</head>
+<body>
+<h1>Work Pro — Debug</h1>
+
+<div class="section">
+<div class="section-title">Browser Info</div>
+<div class="row"><span>User Agent</span><span id="ua" class="warn">...</span></div>
+<div class="row"><span>Pi Browser</span><span id="pi-detect">...</span></div>
+<div class="row"><span>Pi SDK</span><span id="pi-sdk">...</span></div>
+<div class="row"><span>Online</span><span id="online">...</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">API Tests</div>
+<div id="api-tests">Loading...</div>
+</div>
+
+<div class="section">
+<div class="section-title">Local Storage</div>
+<div id="storage">Loading...</div>
+</div>
+
+<div class="section">
+<div class="section-title">Actions</div>
+<button onclick="clearCache()">Clear Cache</button>
+<button onclick="testPiAuth()">Test Pi Auth</button>
+<button onclick="location.reload()">Reload</button>
+</div>
+
+<div id="log" class="section" style="display:none">
+<div class="section-title">Log</div>
+<pre id="log-content"></pre>
+</div>
+
+<script>
+const API = 'https://workpro-api.onrender.com';
+const log = [];
+function addLog(msg) { log.push(msg); document.getElementById('log').style.display='block'; document.getElementById('log-content').textContent = log.join('\n'); }
+
+// Browser info
+document.getElementById('ua').textContent = navigator.userAgent.substring(0, 50) + '...';
+document.getElementById('pi-detect').textContent = /PiBrowser/i.test(navigator.userAgent) ? 'YES ✅' : 'NO';
+document.getElementById('pi-detect').className = /PiBrowser/i.test(navigator.userAgent) ? 'ok' : 'err';
+document.getElementById('pi-sdk').textContent = typeof window.Pi !== 'undefined' ? 'YES ✅' : 'NO';
+document.getElementById('pi-sdk').className = typeof window.Pi !== 'undefined' ? 'ok' : 'err';
+document.getElementById('online').textContent = navigator.onLine ? 'YES ✅' : 'NO ❌';
+document.getElementById('online').className = navigator.onLine ? 'ok' : 'err';
+
+// API tests
+async function testAPIs() {
+  const endpoints = ['/','/api/jobs','/api/admin/stats','/api/admin/users','/api/admin/jobs/all','/api/admin/escrows','/api/admin/earnings'];
+  let html = '';
+  for (const ep of endpoints) {
+    try {
+      const r = await fetch(API + ep, {headers: {'Accept':'application/json'}});
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); } catch(e) { data = text.substring(0, 50); }
+      const isArray = Array.isArray(data);
+      const hasUsers = data && typeof data === 'object' && 'users' in data;
+      const hasJobs = data && typeof data === 'object' && 'jobs' in data;
+      const status = r.ok ? '<span class="ok">' + r.status + ' OK</span>' : '<span class="err">' + r.status + ' ERR</span>';
+      const note = isArray ? ' <span class="warn">[ARRAY!]</span>' : (hasUsers ? ' <span class="ok">{users}</span>' : (hasJobs ? ' <span class="ok">{jobs}</span>' : ''));
+      html += '<div class="row"><span>' + ep + '</span><span>' + status + note + '</span></div>';
+      if (ep === '/api/admin/users' || ep === '/api/admin/jobs/all' || ep === '/api/admin/escrows') {
+        addLog(ep + ': ' + JSON.stringify(data).substring(0, 200));
+      }
+    } catch(e) {
+      html += '<div class="row"><span>' + ep + '</span><span class="err">' + e.message + '</span></div>';
+    }
+  }
+  document.getElementById('api-tests').innerHTML = html;
+}
+testAPIs();
+
+// Local storage
+function showStorage() {
+  let html = '';
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    const val = localStorage.getItem(key).substring(0, 50);
+    html += '<div class="row"><span>' + key + '</span><span>' + val + '...</span></div>';
+  }
+  if (!html) html = '<div class="row"><span>Empty</span></div>';
+  document.getElementById('storage').innerHTML = html;
+}
+showStorage();
+
+function clearCache() {
+  if ('caches' in window) caches.keys().then(n => Promise.all(n.map(c => caches.delete(c))));
+  localStorage.clear();
+  addLog('Cache + localStorage cleared!');
+  showStorage();
+}
+
+function testPiAuth() {
+  if (typeof window.Pi === 'undefined') { addLog('Pi SDK not found!'); return; }
+  try {
+    window.Pi.init({version: "2.0", sandbox: true});
+    window.Pi.authenticate(['username'], function(p) { console.log(p); })
+      .then(auth => addLog('Pi auth SUCCESS: ' + auth.user.username))
+      .catch(e => addLog('Pi auth FAILED: ' + e.message));
+  } catch(e) { addLog('Pi init error: ' + e.message); }
+}
+
+// Global error catch
+window.onerror = function(msg, url, line) { addLog('ERROR: ' + msg + ' at ' + line); return false; };
+window.onunhandledrejection = function(e) { addLog('PROMISE ERROR: ' + e.reason); };
+</script>
+</body>
+</html>

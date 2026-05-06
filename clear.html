@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Work Pro — Clear Cache</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#10b981;color:#fff;padding:40px 20px;text-align:center}
+h1{font-size:28px;margin-bottom:20px}
+.btn{background:#fff;color:#10b981;border:none;padding:16px 32px;border-radius:12px;font-size:18px;font-weight:700;margin:10px;cursor:pointer}
+.done{color:#d1fae5;font-size:18px;margin-top:20px;display:none}
+</style>
+</head>
+<body>
+<h1>Work Pro — Cache Clear</h1>
+<p style="opacity:.8;margin-bottom:30px">Tap button below to clear all cache and reload app</p>
+<button class="btn" onclick="clearAll()">Clear Cache & Reload</button>
+<div id="done" class="done">✅ Cache cleared! Reloading...</div>
+<script>
+function clearAll() {
+  if('serviceWorker'in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(x=>x.unregister()))}
+  if('caches'in window){caches.keys().then(n=>Promise.all(n.map(c=>caches.delete(c))))}
+  localStorage.clear();
+  sessionStorage.clear();
+  document.getElementById('done').style.display='block';
+  setTimeout(function(){location.href='/?_v=' + Date.now();},1500);
+}
+</script>
+</body>
+</html>

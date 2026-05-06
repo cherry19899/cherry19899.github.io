@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#10b981" />
+    <meta name="description" content="Hire and work in Pi cryptocurrency. Find freelance jobs, pay and get paid in Pi." />
+    <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
+    <meta property="og:title" content="Work Pro - Freelance on Pi" />
+    <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/vite.svg" />
+    <title>Work Pro — Pi Network Freelance Marketplace</title>
+    <script>window.WORKPRO_VERSION='v24';</script>
+    <script>
+      // One-time cache clear for v24 upgrade
+      (function() {
+        try {
+          var cleared = localStorage.getItem('workpro_v24_cleared');
+          if (!cleared) {
+            localStorage.setItem('workpro_v24_cleared', '1');
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                names.forEach(function(n) { caches.delete(n); });
+              });
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var reg of regs) reg.unregister();
+              });
+            }
+            setTimeout(function() { window.location.reload(); }, 500);
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>Pi.init({ version: "2.0", sandbox: false });</script>
+    <script type="module" crossorigin src="/assets/index.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index.css">
+  <script>
+// ===== UNIFIED WORK PRO PATCH v40 =====
+(function() {
+  'use strict';
+
+  // ---- 1. PI SDK INIT ----
+  var isPiBrowser = /PiBrowser/i.test(navigator.userAgent || '');
+  var piInited = false;
+
+  function initPi() {
+    if (typeof window.Pi !== 'undefined') {
+      try {
+        window.Pi.init({ 
+          version: "2.0", 
+          sandbox: !isPiBrowser,
+          onIncompletePaymentFound: function(payment) { 
+            console.log('[Pi] Incomplete payment', payment); 
+          }
+        });
+        piInited = true;
+        console.log('[Pi] SDK initialized');
+      } catch(e) {
+        console.error('[Pi] init error:', e);
+      }
+    }
+  }
+
+  // Try immediately and retry
+  initPi();
+  if (!piInited && isPiBrowser) {
+    var attempts = 0;
+    var timer = setInterval(function() {
+      attempts++;
+      initPi();
+      if (piInited || attempts > 30) clearInterval(timer);
+    }, 200);
+  }
+
+  // ---- 2. SYNC USER DATA ----
+  (function() {
+    var userStr = localStorage.getItem('workpro_user');
+    if (userStr) {
+      try {
+        var user = JSON.parse(userStr);
+        var savedC = localStorage.getItem('workpro_connects');
+        var savedB = localStorage.getItem('workpro_balance');
+
+        if (savedC) {
+          var c = parseInt(savedC, 0);
+          user.balance_connects = c;
+          user.connects = c;
+        }
+        if (savedB) {
+          var b = parseInt(savedB, 0);
+          user.balance_pi = b;
+        }
+
+        localStorage.setItem('workpro_user', JSON.stringify(user));
+      } catch(e) {}
+    }
+  })();
+
+  // ---- 3. FETCH INTERCEPTOR ----
+  var origFetch = window.fetch;
+  window.fetch = function() {
+    var args = arguments;
+    var url = args[0];
+    if (typeof url !== 'string') return origFetch.apply(this, args);
+
+    // 3a. Admin API format fix
+    if (url.indexOf('/api/admin/') !== -1) {
+      return origFetch.apply(this, args).then(function(response) {
+        var clone = response.clone();
+        return clone.json().then(function(data) {
+          var fixed = data;
+          if (url.indexOf('/users') !== -1 && Array.isArray(data)) fixed = {users: data};
+          if (url.indexOf('/jobs/all') !== -1 && Array.isArray(data)) fixed = {jobs: data};
+          if (url.indexOf('/escrows') !== -1 && Array.isArray(data)) fixed = {escrows: data};
+          if (url.indexOf('/earnings') !== -1 && data && !data.summary) {
+            var payments = data.payments || [];
+            var total = data.total || payments.length || 0;
+            var earnings = payments.reduce(function(a, p) { return a + (p.amount || 0); }, 0);
+            fixed = {
+              summary: { total_earnings: earnings, total_transactions: total, average_transaction: total > 0 ? Math.round(earnings / total) : 0 },
+              payments: payments
+            };
+          }
+          return new Response(JSON.stringify(fixed), { status: response.status, statusText: response.statusText, headers: {'Content-Type': 'application/json'} });
+        }).catch(function() { return response; });
+      });
+    }
+
+    // 3b. Connects buy (return Response only, let React handle)
+    if (url.indexOf('/api/connects/buy') !== -1) {
+      return new Promise(function(resolve) {
+        setTimeout(function() {
+          var amount = 10;
+          if (args[1] && args[1].body) {
+            try { var body = JSON.parse(args[1].body); if (body.package_amount) amount = body.package_amount; }
+            catch(e) {}
+          }
+          resolve(new Response(JSON.stringify({success: true, added: amount}), {status: 200, headers: {'Content-Type': 'application/json'}}));
+        }, 300);
+      });
+    }
+
+    // 3d. JOB APPLY COST — calculated by job budget
+    if (typeof url === 'string' && url.indexOf('/apply') !== -1 && args[1] && args[1].body) {
+      try {
+        // Extract job ID from URL like /api/jobs/j1/apply
+        var jobId = null;
+        var match = url.match(/jobs\/([^\/]+)\/apply/);
+        if (match) jobId = match[1];
+
+        // Try to find job budget from cached jobs in localStorage
+        var budget = 0;
+        try {
+          var jobsStr = localStorage.getItem('workpro_jobs_cache');
+          if (jobsStr) {
+            var jobs = JSON.parse(jobsStr);
+            for (var i = 0; i < jobs.length; i++) {
+              if (jobs[i].id === jobId) {
+                budget = parseFloat(jobs[i].budget) || 0;
+                break;
+              }
+            }
+          }
+        } catch(e) {}
+
+        // Default to 1 if can't find budget
+        if (!budget) budget = 50;
+
+        // Calculate cost: Math.ceil(budget / 50)
+        // 1-50π → 1, 51-100π → 2, 101-150π → 3, etc.
+        var applyCost = Math.ceil(budget / 50);
+
+        // Check user has enough connects
+        var userStr = localStorage.getItem('workpro_user');
+        if (userStr) {
+          var user = JSON.parse(userStr);
+          var currentConnects = user.balance_connects || user.connects || 20;
+          if (currentConnects < applyCost) {
+            alert('Недостаточно коннектов! Нужно: ' + applyCost + ', есть: ' + currentConnects);
+            return Promise.resolve(new Response(JSON.stringify({
+              error: 'Not enough connects',
+              required: applyCost,
+              current: currentConnects
+            }), {status: 400}));
+          }
+
+          // Deduct connects
+          user.balance_connects = currentConnects - applyCost;
+          user.connects = currentConnects - applyCost;
+          localStorage.setItem('workpro_user', JSON.stringify(user));
+          localStorage.setItem('workpro_connects', String(currentConnects - applyCost));
+
+          // Update display
+          var el = document.getElementById('stat-connects');
+          if (el) el.textContent = currentConnects - applyCost;
+
+          console.log('[WorkPro] Apply cost:', applyCost, 'connects for job budget', budget + 'π');
+        }
+
+        // Add cost info to request body
+        var body = JSON.parse(args[1].body);
+        body.connects_cost = applyCost;
+        args[1].body = JSON.stringify(body);
+      } catch(e) {}
+    }
+
+    // 3c. JOB POSTING — deduct 1 connect BEFORE sending
+    if (typeof url === 'string' && url.indexOf('/api/jobs') !== -1 && args[1] && args[1].method === 'POST') {
+      try {
+        // Check user has enough connects
+        var userStr = localStorage.getItem('workpro_user');
+        if (userStr) {
+          var user = JSON.parse(userStr);
+          var currentConnects = user.balance_connects || user.connects || 20;
+          var cost = 1; // FIXED: always 1 connect to post a job
+
+          if (currentConnects < cost) {
+            alert('Недостаточно коннектов для создания работы! Нужно: ' + cost + ', есть: ' + currentConnects);
+            return Promise.resolve(new Response(JSON.stringify({
+              error: 'Not enough connects',
+              required: cost,
+              current: currentConnects
+            }), {status: 400}));
+          }
+
+          // DEDUCT connects immediately
+          var newConnects = currentConnects - cost;
+          user.balance_connects = newConnects;
+          user.connects = newConnects;
+          localStorage.setItem('workpro_user', JSON.stringify(user));
+          localStorage.setItem('workpro_connects', String(newConnects));
+
+          // Update display immediately
+          var el = document.getElementById('stat-connects');
+          if (el) el.textContent = newConnects;
+
+          console.log('[WorkPro] Job posted! Deducted', cost, 'connect. Remaining:', newConnects);
+        }
+
+        // Add cost to request body
+        var body = JSON.parse(args[1].body);
+        body.connects_cost = 1;
+        args[1].body = JSON.stringify(body);
+      } catch(e) {}
+    }
+
+    return origFetch.apply(this, args);
+  };
+
+  // ---- 4. CONNECTS PROTECTION ----
+  var STORAGE_KEY = 'workpro_user';
+  var CONNECTS_KEY = 'workpro_connects';
+  var BALANCE_KEY = 'workpro_balance';
+  var SIG_KEY = 'workpro_user_sig';
+  var SECRET = 'workpro_v40_' + location.hostname;
+
+  function hash(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+    return Math.abs(h).toString(36);
+  }
+  function sign(s) { return hash(s + SECRET); }
+
+  // Read saved values
+  var savedConnects = null, savedBalance = null;
+  try {
+    var sc = localStorage.getItem(CONNECTS_KEY);
+    var sb = localStorage.getItem(BALANCE_KEY);
+    if (sc) savedConnects = parseInt(sc, 0);
+    if (sb) savedBalance = parseInt(sb, 0);
+  } catch(e) {}
+
+  // Override setItem
+  var origSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, val) {
+    if (key === STORAGE_KEY && val) {
+      try {
+        var user = JSON.parse(val);
+        var currentC = user.balance_connects || user.connects || 20;
+        var currentB = user.balance_pi || 100;
+        var diffC = (savedConnects || currentC) - currentC;
+
+        // Only block big drops (React reset), allow small spending (1-5)
+        if (currentC === 10 && savedConnects && savedConnects > 10 && diffC > 5) {
+          console.log('[WorkPro] BLOCKED reset, restoring:', savedConnects);
+          user.balance_connects = savedConnects;
+          user.connects = savedConnects;
+          val = JSON.stringify(user);
+        } else if (diffC > 0 && diffC <= 5) {
+          // Small drop = spending, update saved
+          savedConnects = currentC;
+          origSetItem.call(localStorage, CONNECTS_KEY, String(currentC));
+        }
+
+        // Save final values
+        var finalC = user.balance_connects || user.connects || 20;
+        var finalB = user.balance_pi || 100;
+        origSetItem.call(localStorage, CONNECTS_KEY, String(finalC));
+        origSetItem.call(localStorage, BALANCE_KEY, String(finalB));
+        origSetItem.call(localStorage, SIG_KEY, sign(val));
+      } catch(e) {}
+    }
+    return origSetItem.call(localStorage, key, val);
+  };
+
+  // Override removeItem
+  var origRemoveItem = localStorage.removeItem;
+  localStorage.removeItem = function(key) {
+    if (key === CONNECTS_KEY || key === BALANCE_KEY || key === SIG_KEY) {
+      console.log('[WorkPro] BLOCKED remove:', key);
+      return;
+    }
+    if (key === STORAGE_KEY) {
+      var sc = origGetItem.call(localStorage, CONNECTS_KEY);
+      if (sc) savedConnects = parseInt(sc, 0);
+      console.log('[WorkPro] Logout, keeping connects:', savedConnects);
+      try {
+        var userStr = origGetItem.call(localStorage, key);
+        if (userStr) {
+          var user = JSON.parse(userStr);
+          user.pi_token = null;
+          origSetItem.call(localStorage, key, JSON.stringify(user));
+          return;
+        }
+      } catch(e) {}
+    }
+    return origRemoveItem.call(localStorage, key);
+  };
+
+  var origGetItem = localStorage.getItem;
+  localStorage.getItem = function(key) {
+    var val = origGetItem.call(localStorage, key);
+    if (key === STORAGE_KEY && val) {
+      try {
+        var user = JSON.parse(val);
+        var sc = origGetItem.call(localStorage, CONNECTS_KEY);
+        var storedC = parseInt(sc || '0', 0);
+        var currentC = user.balance_connects || user.connects || 20;
+        if (storedC > currentC && (storedC - currentC) > 5) {
+          user.balance_connects = storedC;
+          user.connects = storedC;
+          val = JSON.stringify(user);
+        }
+        return val;
+      } catch(e) {}
+    }
+    return val;
+  };
+
+  // Periodic restore
+  setInterval(function() {
+    var userStr = localStorage.getItem(STORAGE_KEY);
+    var sc = localStorage.getItem(CONNECTS_KEY);
+    if (userStr && sc) {
+      try {
+        var user = JSON.parse(userStr);
+        var stored = parseInt(sc, 0);
+        var current = user.balance_connects || user.connects || 20;
+        if (stored > current && (stored - current) > 5) {
+          user.balance_connects = stored;
+          user.connects = stored;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        }
+      } catch(e) {}
+    }
+  }, 1000);
+
+  // ---- 5. USER FORMAT FIX ----
+  (function() {
+    var origGet = localStorage.getItem;
+    localStorage.getItem = function(key) {
+      var val = origGet.call(localStorage, key);
+      if (key === STORAGE_KEY && val) {
+        try {
+          var user = JSON.parse(val);
+          if (user.uid && !user.id) user.id = user.uid;
+          if (user.name && !user.username) user.username = user.name;
+          if (!user.id) user.id = 'guest_' + Date.now();
+          if (!user.username) user.username = user.name || 'Guest';
+          return JSON.stringify(user);
+        } catch(e) {}
+      }
+      return val;
+    };
+    var origSet = localStorage.setItem;
+    localStorage.setItem = function(key, val) {
+      if (key === STORAGE_KEY && val) {
+        try {
+          var user = JSON.parse(val);
+          if (user.uid && !user.id) user.id = user.uid;
+          if (user.id && !user.uid) user.uid = user.id;
+          if (user.name && !user.username) user.username = user.name;
+          if (user.username && !user.name) user.name = user.username;
+          val = JSON.stringify(user);
+        } catch(e) {}
+      }
+      return origSet.call(localStorage, key, val);
+    };
+  })();
+
+  console.log('[WorkPro] Unified patch v40 loaded');
+})();
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

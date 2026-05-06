@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pi SDK Debug</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 16px; max-width: 480px; margin: 0 auto; background: #f5f5f5; }
+    button { width: 100%; padding: 14px; font-size: 16px; margin: 8px 0; border: none; border-radius: 8px; cursor: pointer; }
+    .green { background: #10b981; color: white; }
+    .blue { background: #3b82f6; color: white; }
+    .red { background: #ef4444; color: white; }
+    .gray { background: #6b7280; color: white; }
+    #log { background: white; padding: 10px; border-radius: 8px; margin-top: 12px; font-size: 12px; white-space: pre-wrap; word-break: break-all; min-height: 200px; }
+    .step { padding: 6px; margin: 3px 0; border-radius: 4px; }
+    .step.ok { background: #d1fae5; color: #065f46; }
+    .step.err { background: #fee2e2; color: #991b1b; }
+    .step.info { background: #dbeafe; color: #1e40af; }
+    .step.warn { background: #fef3c7; color: #92400e; }
+  </style>
+</head>
+<body>
+  <h2>Pi SDK Debug</h2>
+  
+  <button class="blue" onclick="fullDiagnostic()">Full Diagnostic</button>
+  <button class="green" onclick="testInitProd()">Pi.init() production</button>
+  <button class="gray" onclick="testInitSandbox()">Pi.init() sandbox</button>
+  <button class="green" onclick="testAuth()">Test authenticate</button>
+  <button class="red" onclick="clearLog()">Clear Log</button>
+  
+  <div id="log">Press "Full Diagnostic" first...</div>
+
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    var logEl = document.getElementById('log');
+    function log(msg, type) {
+      var div = document.createElement('div');
+      div.className = 'step ' + (type || 'info');
+      div.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    function clearLog() { logEl.innerHTML = ''; }
+
+    function fullDiagnostic() {
+      clearLog();
+      log('=== FULL DIAGNOSTIC ===', 'info');
+      
+      if (!window.Pi) {
+        log('ERROR: window.Pi NOT FOUND', 'err');
+        log('User-Agent: ' + navigator.userAgent, 'warn');
+        return;
+      }
+      
+      log('window.Pi exists: YES', 'ok');
+      
+      for (var key in window.Pi) {
+        var type = typeof window.Pi[key];
+        var val = type === 'function' ? 'function' : JSON.stringify(window.Pi[key]).slice(0, 60);
+        log(key + ': ' + type + ' = ' + val, 'info');
+      }
+      
+      log('--- Key methods ---', 'info');
+      log('Pi.init: ' + (typeof Pi.init), typeof Pi.init === 'function' ? 'ok' : 'err');
+      log('Pi.authenticate: ' + (typeof Pi.authenticate), typeof Pi.authenticate === 'function' ? 'ok' : 'err');
+      log('Pi.createPayment: ' + (typeof Pi.createPayment), typeof Pi.createPayment === 'function' ? 'ok' : 'err');
+      log('Pi.initialized: ' + Pi.initialized, Pi.initialized ? 'ok' : 'warn');
+      log('--- Environment ---', 'info');
+      log('URL: ' + window.location.href, 'info');
+      log('UA: ' + navigator.userAgent.slice(0, 80), 'info');
+    }
+
+    async function testInitProd() {
+      clearLog();
+      log('=== Pi.init() production ===', 'info');
+      if (!window.Pi) { log('No Pi SDK', 'err'); return; }
+      
+      try {
+        Pi.init({ version: "2.0" });
+        log('Pi.init({version:"2.0"}) called', 'ok');
+        
+        var attempts = 0;
+        while (!window.Pi.initialized && attempts < 30) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+        log('Pi.initialized = ' + window.Pi.initialized + ' after ' + attempts + ' polls', window.Pi.initialized ? 'ok' : 'err');
+      } catch(e) {
+        log('Pi.init() ERROR: ' + e.message, 'err');
+      }
+    }
+
+    async function testInitSandbox() {
+      clearLog();
+      log('=== Pi.init() sandbox ===', 'info');
+      if (!window.Pi) { log('No Pi SDK', 'err'); return; }
+      
+      try {
+        Pi.init({ version: "2.0", sandbox: true });
+        log('Pi.init({version:"2.0", sandbox:true}) called', 'ok');
+        
+        var attempts = 0;
+        while (!window.Pi.initialized && attempts < 30) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+        log('Pi.initialized = ' + window.Pi.initialized + ' after ' + attempts + ' polls', window.Pi.initialized ? 'ok' : 'err');
+      } catch(e) {
+        log('Pi.init() ERROR: ' + e.message, 'err');
+      }
+    }
+
+    async function testAuth() {
+      clearLog();
+      log('=== Test authenticate ===', 'info');
+      if (!window.Pi) { log('No Pi SDK', 'err'); return; }
+      
+      // Ensure init
+      if (!window.Pi.initialized) {
+        try { Pi.init({ version: "2.0" }); } catch(e) {}
+        var wait = 0;
+        while (!window.Pi.initialized && wait < 30) {
+          await new Promise(r => setTimeout(r, 100));
+          wait++;
+        }
+      }
+      
+      if (!window.Pi.initialized) { log('Pi not initialized', 'err'); return; }
+      
+      log('Calling Pi.authenticate...', 'info');
+      
+      var timeout = setTimeout(function() {
+        log('TIMEOUT after 15s', 'err');
+        log('DIAGNOSIS:', 'warn');
+        log('1. Domain validated in Pi Portal?', 'warn');
+        log('2. Using Pi Browser (not external)?', 'warn');
+        log('3. Try Pi.init() with sandbox:true first?', 'warn');
+      }, 15000);
+      
+      try {
+        // 3-arg callback style
+        Pi.authenticate(['username', 'payments'], function(payment) {
+          log('onIncompletePaymentFound', 'info');
+        }, function(result) {
+          clearTimeout(timeout);
+          if (result && result.user) {
+            log('SUCCESS: ' + result.user.username, 'ok');
+          } else {
+            log('Callback result: ' + JSON.stringify(result), 'warn');
+          }
+        });
+        log('authenticate called with 3 args', 'info');
+      } catch(e) {
+        log('authenticate threw: ' + e.message, 'err');
+        clearTimeout(timeout);
+      }
+    }
+  </script>
+</body>
+</html>
