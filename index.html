@@ -39,7 +39,6 @@
       })();
     </script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>Pi.init({ version: "2.0", sandbox: false });</script>
     <script type="module" crossorigin src="/assets/index.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css">
   <script>
@@ -48,7 +47,7 @@
   'use strict';
 
   // ---- 1. PI SDK INIT ----
-  var isPiBrowser = /PiBrowser/i.test(navigator.userAgent || '');
+  var isPiBrowser = !!window.Pi;
   var piInited = false;
 
   function initPi() {
@@ -56,7 +55,7 @@
       try {
         window.Pi.init({ 
           version: "2.0", 
-          sandbox: !isPiBrowser,
+          sandbox: false,
           onIncompletePaymentFound: function(payment) { 
             console.log('[Pi] Incomplete payment', payment); 
           }
