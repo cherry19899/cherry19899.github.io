@@ -15,12 +15,32 @@ h1{font-size:28px;margin-bottom:20px}
 <h1>Work Pro — Clear Cache</h1>
 <p style="opacity:.8;margin-bottom:30px">Tap to clear cache and reload.<br>Your connects balance is SAFE.</p>
 <button class="btn" onclick="clearAll()">Clear Cache & Reload</button>
+<button class="btn" onclick="forceReload()">Force Server Reload</button>
 <div id="done" class="done">Clearing cache... Reloading...</div>
 <script>
 var CONNECTS_KEY = 'workpro_connects';
 var BALANCE_KEY = 'workpro_balance';
 var USER_KEY = 'workpro_user';
 var SIG_KEY = 'workpro_user_sig';
+
+function deleteAllIndexedDBs() {
+  if (!window.indexedDB) return Promise.resolve();
+  return new Promise(function(resolve) {
+    try {
+      var req = indexedDB.databases ? indexedDB.databases() : Promise.resolve([]);
+      Promise.resolve(req).then(function(dbs) {
+        var deletions = (dbs || []).map(function(db) {
+          return new Promise(function(res) {
+            var d = indexedDB.deleteDatabase(db.name);
+            d.onsuccess = res;
+            d.onerror = res;
+          });
+        });
+        Promise.all(deletions).then(resolve, resolve);
+      }).catch(resolve);
+    } catch(e) { resolve(); }
+  });
+}
 
 function clearAll() {
   document.getElementById('done').style.display='block';
@@ -40,24 +60,55 @@ function clearAll() {
     });
   }
 
-  var keysToRemove = [];
-  for(var i=0; i<localStorage.length; i++) {
-    var k = localStorage.key(i);
-    if(k !== CONNECTS_KEY && k !== BALANCE_KEY && k !== USER_KEY && k !== SIG_KEY) {
-      keysToRemove.push(k);
+  deleteAllIndexedDBs().then(function() {
+    var keysToRemove = [];
+    for(var i=0; i<localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if(k !== CONNECTS_KEY && k !== BALANCE_KEY && k !== USER_KEY && k !== SIG_KEY) {
+        keysToRemove.push(k);
+      }
     }
-  }
-  for(var j=0; j<keysToRemove.length; j++) {
-    localStorage.removeItem(keysToRemove[j]);
-  }
-  sessionStorage.clear();
+    for(var j=0; j<keysToRemove.length; j++) {
+      localStorage.removeItem(keysToRemove[j]);
+    }
+    sessionStorage.clear();
 
-  if(sc) localStorage.setItem(CONNECTS_KEY, sc);
-  if(sb) localStorage.setItem(BALANCE_KEY, sb);
-  if(su) localStorage.setItem(USER_KEY, su);
-  if(ss) localStorage.setItem(SIG_KEY, ss);
+    if(sc) localStorage.setItem(CONNECTS_KEY, sc);
+    if(sb) localStorage.setItem(BALANCE_KEY, sb);
+    if(su) localStorage.setItem(USER_KEY, su);
+    if(ss) localStorage.setItem(SIG_KEY, ss);
 
-  setTimeout(function() { location.href='/?_v=' + Date.now(); }, 1500);
+    setTimeout(function() { location.href='/?forcereload=1&_v=' + Date.now(); }, 1500);
+  });
+}
+
+function forceReload() {
+  document.getElementById('done').style.display='block';
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(r) { r.unregister(); });
+    });
+  }
+  if ('caches' in window) {
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(n) { return caches.delete(n); }));
+    });
+  }
+  deleteAllIndexedDBs().then(function() {
+    setTimeout(function() {
+      // Force reload from server (bypass cache)
+      if (location.reload) {
+        location.reload(true);
+      } else {
+        location.href = '/?forcereload=1&_v=' + Date.now();
+      }
+    }, 500);
+  });
+}
+
+// Auto-force-reload if URL has ?forcereload=1
+if (location.search.indexOf('forcereload=1') !== -1) {
+  clearAll();
 }
 </script>
 </body>
