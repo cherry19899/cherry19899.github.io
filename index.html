@@ -77,21 +77,18 @@
     }
   }
 
-  // Wait for Pi SDK to fully load
-  if (document.readyState === 'complete') {
-    initPi();
-  } else {
-    window.addEventListener('load', initPi);
-  }
+  // Initialize Pi SDK IMMEDIATELY (synchronous - no delay)
+  // The Pi SDK script loads synchronously before this inline script
+  initPi();
 
-  // Retry backup
-  if (isPiBrowser) {
+  // Retry if not initialized yet (Pi SDK might still be loading)
+  if (!piInited) {
     var attempts = 0;
     var timer = setInterval(function() {
       attempts++;
-      if (!piInited) initPi();
-      if (piInited || attempts > 50) clearInterval(timer);
-    }, 100);
+      initPi();
+      if (piInited || attempts > 30) clearInterval(timer);
+    }, 50);
   }
 
   // ---- 2. USER FORMAT FIX ----
