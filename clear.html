@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Pro — Clear Cache</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#10b981;color:#fff;padding:40px 20px;text-align:center}
+h1{font-size:28px;margin-bottom:20px}
+.btn{background:#fff;color:#10b981;border:none;padding:16px 32px;border-radius:12px;font-size:18px;font-weight:700;margin:10px;cursor:pointer}
+.done{color:#d1fae5;font-size:18px;margin-top:20px;display:none}
+</style>
+</head>
+<body>
+<h1>Work Pro — Clear Cache</h1>
+<p style="opacity:.8;margin-bottom:30px">Tap to clear cache and reload.<br>Your connects balance is SAFE.</p>
+<button class="btn" onclick="clearAll()">Clear Cache & Reload</button>
+<div id="done" class="done">Clearing cache... Reloading...</div>
+<script>
+var CONNECTS_KEY = 'workpro_connects';
+var BALANCE_KEY = 'workpro_balance';
+var USER_KEY = 'workpro_user';
+var SIG_KEY = 'workpro_user_sig';
+
+function clearAll() {
+  document.getElementById('done').style.display='block';
+  var sc = localStorage.getItem(CONNECTS_KEY);
+  var sb = localStorage.getItem(BALANCE_KEY);
+  var su = localStorage.getItem(USER_KEY);
+  var ss = localStorage.getItem(SIG_KEY);
+
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(r) { r.unregister(); });
+    });
+  }
+  if('caches' in window) {
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(n) { return caches.delete(n); }));
+    });
+  }
+
+  var keysToRemove = [];
+  for(var i=0; i<localStorage.length; i++) {
+    var k = localStorage.key(i);
+    if(k !== CONNECTS_KEY && k !== BALANCE_KEY && k !== USER_KEY && k !== SIG_KEY) {
+      keysToRemove.push(k);
+    }
+  }
+  for(var j=0; j<keysToRemove.length; j++) {
+    localStorage.removeItem(keysToRemove[j]);
+  }
+  sessionStorage.clear();
+
+  if(sc) localStorage.setItem(CONNECTS_KEY, sc);
+  if(sb) localStorage.setItem(BALANCE_KEY, sb);
+  if(su) localStorage.setItem(USER_KEY, su);
+  if(ss) localStorage.setItem(SIG_KEY, ss);
+
+  setTimeout(function() { location.href='/?_v=' + Date.now(); }, 1500);
+}
+</script>
+</body>
+</html>
