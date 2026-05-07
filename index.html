@@ -15,22 +15,17 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/vite.svg" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v44';</script>
+    <script>window.WORKPRO_VERSION='v24';</script>
     <script>
-      // One-time cache clear for v44 upgrade (forces fresh bundle)
+      // One-time cache clear for v24 upgrade
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v44_cleared');
+          var cleared = localStorage.getItem('workpro_v24_cleared');
           if (!cleared) {
-            localStorage.setItem('workpro_v44_cleared', '1');
+            localStorage.setItem('workpro_v24_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
-              });
-            }
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                regs.forEach(function(r) { r.unregister(); });
               });
             }
             if ('serviceWorker' in navigator) {
@@ -44,10 +39,10 @@
       })();
     </script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script type="module" crossorigin src="/assets/index.js?v=44"></script>
+    <script type="module" crossorigin src="/assets/index.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css">
   <script>
-// ===== WORK PRO PATCH v42 =====
+// ===== WORK PRO PATCH v41 =====
 (function() {
   'use strict';
 
@@ -60,30 +55,9 @@
       try {
         window.Pi.init({ 
           version: "2.0", 
-          sandbox: true,
-          onIncompletePaymentFound: function(payment) {
-            console.log('[Pi] Incomplete payment found', payment);
-            var paymentId = payment && payment.identifier;
-            var txid = payment && payment.transaction && payment.transaction.txid;
-            if (!paymentId) return;
-            var userStr = localStorage.getItem('workpro_user');
-            var user = userStr ? JSON.parse(userStr) : {};
-            var uid = user.id || user.uid || 'unknown';
-            fetch('https://workpro-api.onrender.com/api/payments/incomplete', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json', 'x-user-id': uid},
-              body: JSON.stringify({
-                payment_id: paymentId,
-                txid: txid || '',
-                user_id: uid,
-                amount: payment.amount || 0,
-                memo: payment.memo || ''
-              })
-            }).then(function(r) {
-              console.log('[Pi] Incomplete payment reported, status:', r.status);
-            }).catch(function(e) {
-              console.error('[Pi] Failed to report incomplete payment:', e);
-            });
+          sandbox: false,
+          onIncompletePaymentFound: function(payment) { 
+            console.log('[Pi] Incomplete payment', payment); 
           }
         });
         piInited = true;
@@ -116,15 +90,6 @@
           if (user.name && !user.username) user.username = user.name;
           if (!user.id) user.id = 'guest_' + Date.now();
           if (!user.username) user.username = user.name || 'Guest';
-          // ─── PROTECT connects from backend reset ─────────────────
-          var sc = origGet.call(localStorage, 'workpro_connects');
-          var storedC = parseInt(sc || '0', 0);
-          var userC = user.balance_connects || user.connects || 0;
-          if (storedC >= 0 && storedC !== userC) {
-            console.log('[WorkPro] GET: restoring connects', storedC, 'over', userC);
-            user.balance_connects = storedC;
-            user.connects = storedC;
-          }
           return JSON.stringify(user);
         } catch(e) {}
       }
@@ -207,29 +172,6 @@
     }
 
     return origFetch.apply(this, args).then(function(response) {
-      // ─── For user data endpoint: return modified response ────────────
-      if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1) {
-        return response.json().then(function(data) {
-          if (data && (data.balance_connects !== undefined || data.connects !== undefined)) {
-            try {
-              var sc = localStorage.getItem('workpro_connects');
-              var storedC = parseInt(sc || '0', 0);
-              var serverC = data.balance_connects || data.connects || 0;
-              if (storedC > serverC && (storedC - serverC) > 2) {
-                console.log('[WorkPro] MERGE response:', storedC, 'over', serverC);
-                data.balance_connects = storedC;
-                data.connects = storedC;
-              }
-            } catch(e) {}
-          }
-          return new Response(JSON.stringify(data), {
-            status: response.status,
-            statusText: response.statusText,
-            headers: {'Content-Type': 'application/json'}
-          });
-        }).catch(function() { return response; });
-      }
-
       var clone = response.clone();
       clone.json().then(function(data) {
         if (data && data.remaining_connects !== undefined) {
@@ -246,21 +188,6 @@
           var el = document.getElementById('stat-connects');
           if (el) el.textContent = data.remaining_connects;
         }
-        // ─── Handle connects purchase new_balance ──────────────────
-        if (data && data.new_balance !== undefined) {
-          try {
-            var userStr = localStorage.getItem('workpro_user');
-            if (userStr) {
-              var user = JSON.parse(userStr);
-              user.balance_connects = data.new_balance;
-              user.connects = data.new_balance;
-              localStorage.setItem('workpro_user', JSON.stringify(user));
-              localStorage.setItem('workpro_connects', String(data.new_balance));
-            }
-          } catch(e) {}
-          var el = document.getElementById('stat-connects');
-          if (el) el.textContent = data.new_balance;
-        }
       }).catch(function() {});
       return response;
     });
@@ -271,7 +198,7 @@
   var CONNECTS_KEY = 'workpro_connects';
   var BALANCE_KEY = 'workpro_balance';
   var SIG_KEY = 'workpro_user_sig';
-  var SECRET = 'workpro_v42_' + location.hostname;
+  var SECRET = 'workpro_v41_' + location.hostname;
 
   function hash(str) {
     var h = 0;
@@ -293,20 +220,20 @@
     if (key === STORAGE_KEY && val) {
       try {
         var user = JSON.parse(val);
-        var sc = origGetItem.call(localStorage, CONNECTS_KEY);
-        var storedC = parseInt(sc || '0', 0);
-        var currentC = user.balance_connects || user.connects || 0;
-        var currentB = user.balance_pi || 0;
-        // If stored connects differ from what is being written, use stored value (truth)
-        if (storedC >= 0 && storedC !== currentC) {
-          console.log('[WorkPro] BLOCKED server reset, restoring:', storedC, 'vs', currentC);
-          user.balance_connects = storedC;
-          user.connects = storedC;
-          currentC = storedC;
+        var currentC = user.balance_connects || user.connects || 20;
+        var currentB = user.balance_pi || 100;
+        var diffC = (savedConnects || currentC) - currentC;
+        if (currentC === 10 && savedConnects && savedConnects > 10 && diffC > 5) {
+          console.log('[WorkPro] BLOCKED reset, restoring:', savedConnects);
+          user.balance_connects = savedConnects;
+          user.connects = savedConnects;
           val = JSON.stringify(user);
+        } else if (diffC > 0 && diffC <= 5) {
+          savedConnects = currentC;
+          origSetItem.call(localStorage, CONNECTS_KEY, String(currentC));
         }
-        var finalC = user.balance_connects || user.connects || 0;
-        var finalB = user.balance_pi || 0;
+        var finalC = user.balance_connects || user.connects || 20;
+        var finalB = user.balance_pi || 100;
         origSetItem.call(localStorage, CONNECTS_KEY, String(finalC));
         origSetItem.call(localStorage, BALANCE_KEY, String(finalB));
         origSetItem.call(localStorage, SIG_KEY, sign(val));
@@ -346,7 +273,7 @@
         var user = JSON.parse(val);
         var sc = origGetItem.call(localStorage, CONNECTS_KEY);
         var storedC = parseInt(sc || '0', 0);
-        var currentC = user.balance_connects || user.connects || 0;
+        var currentC = user.balance_connects || user.connects || 20;
         if (storedC > currentC && (storedC - currentC) > 5) {
           user.balance_connects = storedC;
           user.connects = storedC;
@@ -358,26 +285,6 @@
     return val;
   };
 
-  // ─── BLOCK localStorage.clear() from wiping connects ──────────
-  var origClear = localStorage.clear;
-  localStorage.clear = function() {
-    var sc = origGetItem.call(localStorage, CONNECTS_KEY);
-    var sb = origGetItem.call(localStorage, BALANCE_KEY);
-    console.log('[WorkPro] BLOCKED clear, preserving connects:', sc);
-    var keysToRemove = [];
-    for (var i = 0; i < localStorage.length; i++) {
-      var k = localStorage.key(i);
-      if (k !== CONNECTS_KEY && k !== BALANCE_KEY && k !== SIG_KEY) {
-        keysToRemove.push(k);
-      }
-    }
-    for (var j = 0; j < keysToRemove.length; j++) {
-      origRemoveItem.call(localStorage, keysToRemove[j]);
-    }
-    if (sc) origSetItem.call(localStorage, CONNECTS_KEY, sc);
-    if (sb) origSetItem.call(localStorage, BALANCE_KEY, sb);
-  };
-
   setInterval(function() {
     var userStr = localStorage.getItem(STORAGE_KEY);
     var sc = localStorage.getItem(CONNECTS_KEY);
@@ -385,7 +292,7 @@
       try {
         var user = JSON.parse(userStr);
         var stored = parseInt(sc, 0);
-        var current = user.balance_connects || user.connects || 0;
+        var current = user.balance_connects || user.connects || 20;
         if (stored > current && (stored - current) > 5) {
           user.balance_connects = stored;
           user.connects = stored;
@@ -395,65 +302,8 @@
     }
   }, 1000);
 
-  // ---- 5. PHOTO COMPRESSION ----
-  (function() {
-    function compressImage(file, maxWidth, quality) {
-      return new Promise(function(resolve, reject) {
-        if (!file || !file.type || !file.type.startsWith('image/')) return resolve(file);
-        var img = new Image();
-        var url = URL.createObjectURL(file);
-        img.onload = function() {
-          URL.revokeObjectURL(url);
-          var scale = Math.min(1, maxWidth / img.width);
-          var w = Math.round(img.width * scale);
-          var h = Math.round(img.height * scale);
-          var canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          canvas.toBlob(function(blob) {
-            if (!blob) return reject('compress fail');
-            var reader = new FileReader();
-            reader.onloadend = function() { resolve(reader.result); };
-            reader.readAsDataURL(blob);
-          }, 'image/jpeg', quality);
-        };
-        img.onerror = function() { URL.revokeObjectURL(url); reject('load fail'); };
-        img.src = url;
-      });
-    }
-
-    window.__workproCompressImage = compressImage;
-
-    // Intercept all file inputs: compress before React sees them
-    document.addEventListener('change', function(e) {
-      var input = e.target;
-      if (input.type !== 'file' || !input.accept || input.accept.indexOf('image') === -1) return;
-      if (!input.files || !input.files[0]) return;
-      var file = input.files[0];
-      if (file.size < 500 * 1024) return; // skip small files
-      e.preventDefault();
-      e.stopPropagation();
-      compressImage(file, 1200, 0.6).then(function(dataUrl) {
-        var byteString = atob(dataUrl.split(',')[1]);
-        var mime = dataUrl.split(',')[0].split(':')[1].split(';')[0];
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-        for (var i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-        var blob = new Blob([ab], {type: mime});
-        var newFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {type: 'image/jpeg'});
-        var dt = new DataTransfer();
-        dt.items.add(newFile);
-        input.files = dt.files;
-        // Re-dispatch change so React picks up compressed file
-        input.dispatchEvent(new Event('change', {bubbles: true}));
-      }).catch(function(err) {
-        console.error('[WorkPro] compress error:', err);
-      });
-    }, true);
-  })();
-
-  console.log('[WorkPro] Patch v43 loaded (with photo compression)');
+  console.log('[WorkPro] Patch v41 loaded');
+})();
 </script>
 </head>
   <body>
