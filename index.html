@@ -39,7 +39,25 @@
       })();
     </script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script type="module" crossorigin src="/assets/index.js?v=41"></script>
+    <script>
+// ─── OVERRIDE: Fix connects reset on reload ──────────────────
+// CDN may serve old bundle with hardcoded balance_connects:10
+// This override patches the value after bundle loads
+(function() {
+  var origDefineProperty = Object.defineProperty;
+  Object.defineProperty = function(obj, prop, desc) {
+    if (prop === 'balance_connects' && desc && desc.value === 10) {
+      var stored = localStorage.getItem('workpro_connects');
+      if (stored) {
+        console.log('[Fix] Replacing hardcoded 10 with', stored);
+        desc.value = parseInt(stored, 10);
+      }
+    }
+    return origDefineProperty.call(this, obj, prop, desc);
+  };
+})();
+</script>
+<script type="module" crossorigin src="/assets/index.js?v=41"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css">
   <script>
 // ===== WORK PRO PATCH v41 =====
