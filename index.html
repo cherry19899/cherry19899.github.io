@@ -220,8 +220,8 @@
     if (key === STORAGE_KEY && val) {
       try {
         var user = JSON.parse(val);
-        var currentC = user.balance_connects || user.connects || 20;
-        var currentB = user.balance_pi || 100;
+        var currentC = user.balance_connects || user.connects || 0;
+        var currentB = user.balance_pi || 0;
         var diffC = (savedConnects || currentC) - currentC;
         if (currentC === 10 && savedConnects && savedConnects > 10 && diffC > 5) {
           console.log('[WorkPro] BLOCKED reset, restoring:', savedConnects);
@@ -232,8 +232,8 @@
           savedConnects = currentC;
           origSetItem.call(localStorage, CONNECTS_KEY, String(currentC));
         }
-        var finalC = user.balance_connects || user.connects || 20;
-        var finalB = user.balance_pi || 100;
+        var finalC = user.balance_connects || user.connects || 0;
+        var finalB = user.balance_pi || 0;
         origSetItem.call(localStorage, CONNECTS_KEY, String(finalC));
         origSetItem.call(localStorage, BALANCE_KEY, String(finalB));
         origSetItem.call(localStorage, SIG_KEY, sign(val));
@@ -273,7 +273,7 @@
         var user = JSON.parse(val);
         var sc = origGetItem.call(localStorage, CONNECTS_KEY);
         var storedC = parseInt(sc || '0', 0);
-        var currentC = user.balance_connects || user.connects || 20;
+        var currentC = user.balance_connects || user.connects || 0;
         if (storedC > currentC && (storedC - currentC) > 5) {
           user.balance_connects = storedC;
           user.connects = storedC;
@@ -292,7 +292,7 @@
       try {
         var user = JSON.parse(userStr);
         var stored = parseInt(sc, 0);
-        var current = user.balance_connects || user.connects || 20;
+        var current = user.balance_connects || user.connects || 0;
         if (stored > current && (stored - current) > 5) {
           user.balance_connects = stored;
           user.connects = stored;
