@@ -15,14 +15,14 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/vite.svg" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v46';</script>
+    <script>window.WORKPRO_VERSION='v47';</script>
     <script>
-      // One-time cache clear for v46 upgrade (forces fresh bundle)
+      // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v46_cleared');
+          var cleared = localStorage.getItem('workpro_v47_cleared');
           if (!cleared) {
-            localStorage.setItem('workpro_v46_cleared', '1');
+            localStorage.setItem('workpro_v47_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -44,17 +44,38 @@
       })();
     </script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script type="module" crossorigin src="/assets/index.js?v=46"></script>
+    <script>
+    // ---- PI SDK INIT (must run BEFORE bundle) ----
+    (function() {
+      function tryInit() {
+        if (!window.Pi || typeof window.Pi.init !== 'function') {
+          setTimeout(tryInit, 50);
+          return;
+        }
+        if (window.Pi._workpro_inited) return;
+        try {
+          window.Pi.init({ 
+            version: "2.0", 
+            sandbox: true,
+            onIncompletePaymentFound: function(payment) {
+              console.log('[Pi] Incomplete payment found', payment);
+            }
+          });
+          window.Pi._workpro_inited = true;
+          console.log('[Pi] SDK initialized successfully');
+        } catch(e) {
+          console.error('[Pi] init error:', e);
+        }
+      }
+      tryInit();
+    })();
+    </script>
+    <script type="module" crossorigin src="/assets/index.js?v=47"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css">
   <script>
-// ===== WORK PRO PATCH v46 =====
+// ===== WORK PRO PATCH v47 =====
 (function() {
   'use strict';
-
-  // ---- 1. PI SDK INIT (delegate to bundle) ----
-  // NOTE: Pi.init() is handled by the React bundle. Do NOT call it here.
-  // Double init causes "SDK was not initialized" error.
-  console.log('[WorkPro] Pi.init delegated to bundle');
 
   // ---- 2. USER FORMAT FIX ----
   (function() {
@@ -405,7 +426,7 @@
     }, true);
   })();
 
-  console.log('[WorkPro] Patch v46 loaded (with photo compression)');
+  console.log('[WorkPro] Patch v47 loaded (with photo compression)');
 </script>
 </head>
   <body>
