@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=47" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -12,8 +12,8 @@
     <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
     <meta property="og:title" content="Work Pro - Freelance on Pi" />
     <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/vite.svg" />
+    <link rel="manifest" href="/manifest.json?v=47" />
+    <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>window.WORKPRO_VERSION='v47';</script>
     <script>
@@ -71,7 +71,7 @@
     })();
     </script>
     <script type="module" crossorigin src="/assets/index.js?v=47"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index.css">
+    <link rel="stylesheet" crossorigin href="/assets/index.css?v=47">
   <script>
 // ===== WORK PRO PATCH v47 =====
 (function() {
@@ -403,10 +403,13 @@
       var input = e.target;
       if (input.type !== 'file' || !input.accept || input.accept.indexOf('image') === -1) return;
       if (!input.files || !input.files[0]) return;
+      // Skip if already processed (prevents infinite loop on re-dispatch)
+      if (input.__workpro_compressed) { input.__workpro_compressed = false; return; }
       var file = input.files[0];
       if (file.size < 500 * 1024) return; // skip small files
       e.preventDefault();
       e.stopPropagation();
+      input.__workpro_processing = true;
       compressImage(file, 1200, 0.6).then(function(dataUrl) {
         var byteString = atob(dataUrl.split(',')[1]);
         var mime = dataUrl.split(',')[0].split(':')[1].split(';')[0];
@@ -418,9 +421,12 @@
         var dt = new DataTransfer();
         dt.items.add(newFile);
         input.files = dt.files;
+        input.__workpro_compressed = true;
+        input.__workpro_processing = false;
         // Re-dispatch change so React picks up compressed file
         input.dispatchEvent(new Event('change', {bubbles: true}));
       }).catch(function(err) {
+        input.__workpro_processing = false;
         console.error('[WorkPro] compress error:', err);
       });
     }, true);
