@@ -15,14 +15,14 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v49';</script>
+    <script>window.WORKPRO_VERSION='v50';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v49_cleared');
+          var cleared = localStorage.getItem('workpro_v50_cleared');
           if (!cleared) {
-            localStorage.setItem('workpro_v49_cleared', '1');
+            localStorage.setItem('workpro_v50_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -70,10 +70,10 @@
       tryInit();
     })();
     </script>
-    <script type="module" crossorigin src="/assets/index.js?v=49"></script>
+    <script type="module" crossorigin src="/assets/index.js?v=50"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css?v=47">
   <script>
-// ===== WORK PRO PATCH v49 =====
+// ===== WORK PRO PATCH v50 =====
 (function() {
   'use strict';
 
@@ -437,5 +437,16 @@
 </head>
   <body>
     <div id="root"></div>
-  </body>
+    <!-- Privacy Policy Link (required for Pi Network listing) -->
+  <script>
+  (function() {
+    var ppLink = document.createElement('a');
+    ppLink.href = '/privacy-policy.html';
+    ppLink.id = 'privacy-policy-link';
+    ppLink.style.cssText = 'position:fixed;bottom:10px;right:10px;color:#64748b;font-size:12px;z-index:9999;text-decoration:none;opacity:0.7;';
+    ppLink.textContent = 'Privacy Policy';
+    document.body.appendChild(ppLink);
+  })();
+  </script>
+</body>
 </html>
