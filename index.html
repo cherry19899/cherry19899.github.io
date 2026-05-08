@@ -15,14 +15,14 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v50';</script>
+    <script>window.WORKPRO_VERSION='v51';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v50_cleared');
+          var cleared = localStorage.getItem('workpro_v51_cleared');
           if (!cleared) {
-            localStorage.setItem('workpro_v50_cleared', '1');
+            localStorage.setItem('workpro_v51_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -70,10 +70,10 @@
       tryInit();
     })();
     </script>
-    <script type="module" crossorigin src="/assets/index.js?v=50"></script>
+    <script type="module" crossorigin src="/assets/index.js?v=51"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css?v=47">
   <script>
-// ===== WORK PRO PATCH v50 =====
+// ===== WORK PRO PATCH v51 =====
 (function() {
   'use strict';
 
@@ -238,6 +238,47 @@
       return response;
     });
   };
+
+  // ---- 3b. XMLHTTPREQUEST INTERCEPTOR (bundle uses XHR, not fetch) ----
+  (function() {
+    var OrigXHR = window.XMLHttpRequest;
+    function InterceptedXHR() {
+      var xhr = new OrigXHR();
+      var _open = xhr.open;
+      var _setHeader = xhr.setRequestHeader;
+      var _url = '';
+      var _headers = {};
+
+      xhr.open = function(method, url) {
+        _url = url;
+        return _open.apply(xhr, arguments);
+      };
+
+      xhr.setRequestHeader = function(name, value) {
+        _headers[name.toLowerCase()] = value;
+        return _setHeader.apply(xhr, arguments);
+      };
+
+      // Intercept send to inject x-user-id for API calls
+      var _send = xhr.send;
+      xhr.send = function(body) {
+        if (_url.indexOf('/api/') !== -1 && !_headers['x-user-id'] && !_headers['x-user-id']) {
+          try {
+            var userStr = localStorage.getItem('workpro_user');
+            if (userStr) {
+              var user = JSON.parse(userStr);
+              var uid = user.id || user.uid;
+              if (uid) _setHeader.call(xhr, 'x-user-id', uid);
+            }
+          } catch(e) {}
+        }
+        return _send.apply(xhr, arguments);
+      };
+
+      return xhr;
+    }
+    window.XMLHttpRequest = InterceptedXHR;
+  })();
 
   // ---- 4. CONNECTS PROTECTION ----
   var STORAGE_KEY = 'workpro_user';
