@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v53';</script>
+    <script>window.WORKPRO_VERSION='v74';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -57,8 +57,16 @@
           window.Pi.init({ 
             version: "2.0", 
             sandbox: true,
-            onIncompletePaymentFound: function(payment) {
+            onIncompletePaymentFound: async function(payment) {
               console.log('[Pi] Incomplete payment found', payment);
+              if (payment && payment.identifier) {
+                try {
+                  await fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }
+                  });
+                } catch(e) {}
+              }
+              return Promise.resolve();
             }
           });
           window.Pi._workpro_inited = true;
@@ -70,7 +78,7 @@
       tryInit();
     })();
     </script>
-    <script type="module" crossorigin src="/assets/index.js?v=53"></script>
+    <script type="module" crossorigin src="/assets/index.js?v=74"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css?v=47">
   <script>
 // ===== WORK PRO PATCH v53 =====
