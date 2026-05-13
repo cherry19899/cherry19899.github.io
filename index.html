@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v99';</script>
+    <script>window.WORKPRO_VERSION='v100';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -727,14 +727,14 @@
     }
     if (document.getElementById('admin-deploy')) {
       document.getElementById('admin-deploy').addEventListener('click', function() {
-        log('Deploying...');
-        fetch(API + '/api/admin/deploy', { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+        log('Deploying backend...');
+        fetch('https://api.render.com/deploy/srv-d7qvgf7lk1mc73cri1ng?key=X88S-SyFKag', { method: 'POST' })
           .then(function(r) { return r.json(); })
           .then(function(data) {
-            if (data.success) log('✅ Deployed! ID:' + ((data.deploy && data.deploy.deploy && data.deploy.deploy.id) ? data.deploy.deploy.id.slice(-8) : 'OK'));
-            else log('❌ Error: ' + JSON.stringify(data).slice(0, 80));
+            if (data.deploy && data.deploy.id) log('✅ Deploy triggered!');
+            else log('❌ Failed: ' + JSON.stringify(data).slice(0, 80));
           })
-          .catch(function(e) { log('❌ Err: ' + e.message); });
+          .catch(function(e) { log('❌ Error: ' + e.message); });
       });
     }
     if (document.getElementById('admin-refresh')) {
