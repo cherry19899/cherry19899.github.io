@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v75';</script>
+    <script>window.WORKPRO_VERSION='v95';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -54,21 +54,7 @@
         }
         if (window.Pi._workpro_inited) return;
         try {
-          window.Pi.init({ 
-            version: "2.0", 
-            sandbox: true,
-            onIncompletePaymentFound: async function(payment) {
-              console.log('[Pi] Incomplete payment found', payment);
-              if (payment && payment.identifier) {
-                try {
-                  await fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }
-                  });
-                } catch(e) {}
-              }
-              return Promise.resolve();
-            }
-          });
+          window.Pi.init({ version: "2.0" });
           window.Pi._workpro_inited = true;
           console.log('[Pi] SDK initialized successfully');
         } catch(e) {
@@ -78,7 +64,183 @@
       tryInit();
     })();
     </script>
-    <script type="module" crossorigin src="/assets/index.js?v=74"></script>
+    <script>
+    // ---- PI SDK AUTH PATCH (must run BEFORE bundle) ----
+    (function() {
+      function patchAuth() {
+        if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
+          setTimeout(patchAuth, 50);
+          return;
+        }
+        var origAuth = window.Pi.authenticate;
+        window.Pi.authenticate = function(scopes, onIncompletePaymentFound) {
+          // Force async onIncompletePaymentFound that returns Promise
+          var wrapped = function(payment) {
+            console.log('[Pi] onIncompletePaymentFound called', payment);
+            if (payment && payment.identifier) {
+              fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }
+              }).catch(function(){});
+            }
+            return Promise.resolve();
+          };
+          var result = origAuth.call(window.Pi, scopes, wrapped);
+          // Store userId globally for createPayment proxy
+          if (result && typeof result.then === 'function') {
+            result.then(function(authResult) {
+              if (authResult && authResult.user) {
+                var uid = authResult.user.uid || authResult.user.id;
+                if (uid) {
+                  window._workproUserId = uid;
+                  // Save to localStorage for fetch interceptor
+                  var userToStore = {
+                    id: uid,
+                    uid: uid,
+                    username: authResult.user.username || authResult.user.name || 'User',
+                    name: authResult.user.name || authResult.user.username || 'User',
+                    accessToken: authResult.accessToken || '',
+                    balance_connects: authResult.user.balance_connects || 0
+                  };
+                  localStorage.setItem('workpro_user', JSON.stringify(userToStore));
+                  localStorage.setItem('workpro_user_id', uid);
+                  console.log('[Pi] User stored:', uid, userToStore.username);
+                }
+              }
+            }).catch(function(err) { console.warn('[Pi] Auth storage error:', err); });
+          }
+          return result;
+        };
+        console.log('[Pi] authenticate patched with Promise wrapper + userId storage');
+      }
+      patchAuth();
+
+      // ---- 3b. XMLHttpRequest INTERCEPTOR (catches non-fetch requests) ----
+  (function() {
+    var origOpen = XMLHttpRequest.prototype.open;
+    var origSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+    var currentUrl = '';
+    var hasUserId = false;
+
+    XMLHttpRequest.prototype.open = function(method, url) {
+      currentUrl = url;
+      hasUserId = false;
+      return origOpen.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+      if (header.toLowerCase() === 'x-user-id') hasUserId = true;
+      return origSetHeader.apply(this, arguments);
+    };
+
+    // Monkey-patch send to inject x-user-id before sending
+    var origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(body) {
+      if (typeof currentUrl === 'string' && currentUrl.indexOf('/api/') !== -1 && !hasUserId) {
+        try {
+          var userStr = localStorage.getItem('workpro_user');
+          if (userStr) {
+            var user = JSON.parse(userStr);
+            var uid = user.id || user.uid;
+            if (uid) origSetHeader.call(this, 'x-user-id', uid);
+          }
+        } catch(e) {}
+      }
+      return origSend.apply(this, arguments);
+    };
+  })();
+
+  // ---- 4. GLOBAL USER ID STORAGE ----
+      window._workproUserId = null;
+
+      // ---- 5. CREATE PAYMENT PROXY (injects x-user-id into callbacks) ----
+      function setupCreatePaymentPatch() {
+        var uid = window._workproUserId;
+        if (!uid) {
+          try {
+            var userStr = localStorage.getItem('workpro_user');
+            if (userStr) { var u = JSON.parse(userStr); uid = u.id || u.uid; window._workproUserId = uid; }
+          } catch(e) {}
+        }
+        if (!uid) {
+          console.log('[Pi] createPayment patch: no userId yet, retrying...');
+          setTimeout(setupCreatePaymentPatch, 200);
+          return;
+        }
+
+        function wrapCallback(cb) {
+          if (typeof cb !== 'function') return cb;
+          return function(data) {
+            var origFetch2 = window.fetch;
+            window.fetch = function(url, opts) {
+              if (typeof url === 'string' && (url.indexOf('/api/') !== -1 || url.indexOf('workpro-api') !== -1)) {
+                if (!opts) opts = {};
+                if (!opts.headers) opts.headers = {};
+                if (typeof opts.headers === 'object' && !(opts.headers instanceof Headers) && !Array.isArray(opts.headers)) {
+                  opts.headers['x-user-id'] = uid;
+                }
+              }
+              return origFetch2.call(this, url, opts);
+            };
+            var result;
+            try { result = cb(data); } catch(e) { window.fetch = origFetch2; throw e; }
+            if (result && typeof result.then === 'function') {
+              result.then(function() { window.fetch = origFetch2; }).catch(function() { window.fetch = origFetch2; });
+            } else {
+              window.fetch = origFetch2;
+            }
+            return result;
+          };
+        }
+
+        if (!window.Pi || !window.Pi.createPayment) {
+          setTimeout(setupCreatePaymentPatch, 200);
+          return;
+        }
+        var origCreatePayment = window.Pi.createPayment;
+        window.Pi.createPayment = function(paymentData, callbacks) {
+          if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
+          // Re-read uid in case it was set after auth
+          var currentUid = window._workproUserId;
+          if (currentUid) uid = currentUid;
+          return origCreatePayment.call(window.Pi, paymentData, {
+            onReadyForServerApproval: wrapCallback(callbacks.onReadyForServerApproval),
+            onReadyForServerCompletion: wrapCallback(callbacks.onReadyForServerCompletion),
+            onCancel: wrapCallback(callbacks.onCancel),
+            onError: wrapCallback(callbacks.onError)
+          });
+        };
+        console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
+      }
+      setupCreatePaymentPatch();
+
+      // ---- 6. NOTIFICATION BADGE POLLER ----
+      (function pollNotifications() {
+        try {
+          var userStr = localStorage.getItem('workpro_user');
+          if (!userStr) { setTimeout(pollNotifications, 5000); return; }
+          var user = JSON.parse(userStr);
+          var uid = user.id || user.uid;
+          if (!uid) { setTimeout(pollNotifications, 5000); return; }
+
+          fetch('https://workpro-api.onrender.com/api/notifications/unread-count', {
+            headers: { 'x-user-id': uid }
+          }).then(function(r) { return r.json(); }).then(function(data) {
+            var count = data.unread_count || 0;
+            window._unreadNotificationCount = count;
+            // Try to update badge in DOM
+            var badges = document.querySelectorAll('.notification-badge, .nav-badge, [data-badge]');
+            badges.forEach(function(b) {
+              b.textContent = count > 0 ? (count > 9 ? '9+' : String(count)) : '';
+              b.style.display = count > 0 ? 'inline-block' : 'none';
+            });
+            console.log('[Notifications] Unread count:', count);
+          }).catch(function(){});
+        } catch(e) {}
+        setTimeout(pollNotifications, 30000); // Poll every 30s
+      })();
+    })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-v95.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index.css?v=47">
   <script>
 // ===== WORK PRO PATCH v53 =====
@@ -129,15 +291,13 @@
 
   // ---- 3. FETCH INTERCEPTOR ----
   var origFetch = window.fetch;
-  window.fetch = function() {
-    var args = arguments;
-    var url = args[0];
-    if (typeof url !== 'string') return origFetch.apply(this, args);
+  window.fetch = function(url, options) {
+    if (typeof url !== 'string') return origFetch.call(this, url, options);
 
     // AUTH INJECT: add x-user-id and admin token to all API calls
     if (url.indexOf('/api/') !== -1) {
-      if (!args[1]) args = [url, {}];
-      var options = args[1];
+      if (!options) options = {};
+      var args = [url, options];
       var headers = options.headers || {};
       if (typeof Headers !== 'undefined' && headers instanceof Headers) {
         var h = {};
@@ -167,7 +327,7 @@
 
     // Admin API format fix
     if (url.indexOf('/api/admin/') !== -1) {
-      return origFetch.apply(this, args).then(function(response) {
+      return origFetch.call(this, url, options).then(function(response) {
         var clone = response.clone();
         return clone.json().then(function(data) {
           var fixed = data;
@@ -188,7 +348,7 @@
       });
     }
 
-    return origFetch.apply(this, args).then(function(response) {
+    return origFetch.call(this, url, options).then(function(response) {
       // ─── For user data endpoint: return modified response ────────────
       if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1) {
         return response.json().then(function(data) {
