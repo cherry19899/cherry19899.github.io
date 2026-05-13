@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v100';</script>
+    <script>window.WORKPRO_VERSION='v101';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -74,15 +74,30 @@
         }
         var origAuth = window.Pi.authenticate;
         window.Pi.authenticate = function(scopes, onIncompletePaymentFound) {
-          // Force async onIncompletePaymentFound that returns Promise
+          // onIncompletePaymentFound: auto-cancels hanging payments to prevent
+          // "You already have a pending payment" error. MUST return Promise.
           var wrapped = function(payment) {
-            console.log('[Pi] onIncompletePaymentFound called', payment);
-            if (payment && payment.identifier) {
-              fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }
-              }).catch(function(){});
-            }
-            return Promise.resolve();
+            console.log('[Pi] onIncompletePaymentFound:', payment && payment.identifier);
+            if (!payment || !payment.identifier) return Promise.resolve();
+            // Get userId for x-user-id header
+            var userStr = localStorage.getItem('workpro_user');
+            var userId = '';
+            try { if (userStr) userId = JSON.parse(userStr).uid || JSON.parse(userStr).id || ''; } catch(e){}
+            // Cancel the pending payment on our server
+            return fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-user-id': userId || 'unknown'
+              },
+              body: JSON.stringify({ status: 'cancelled', payment_id: payment.identifier })
+            }).then(function(r) {
+              console.log('[Pi] Pending payment cancelled:', payment.identifier, r.status);
+              return Promise.resolve();
+            }).catch(function(err) {
+              console.warn('[Pi] Cancel failed, resolving anyway:', err.message);
+              return Promise.resolve();
+            });
           };
           var result = origAuth.call(window.Pi, scopes, wrapped);
           // Store userId globally for createPayment proxy
