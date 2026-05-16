@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=95" />
     <link rel="manifest" href="/manifest.json?v=95" />
     <title>Work Pro</title>
-    <script>window.WORKPRO_VERSION='v152';</script>
+    <script>window.WORKPRO_VERSION='v153';</script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
       (function(){
@@ -24,11 +24,73 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="/assets/index.css?v=95" />
+    <style>
+      /* Critical CSS - minimal loader to prevent white screen */
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#333}
+      #root{min-height:100vh}
+      #__loader{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .3s}
+      #__loader.fade-out{opacity:0;pointer-events:none}
+      #__loader h1{color:#0d9488;font-size:32px;margin-bottom:8px}
+      #__loader p{color:#666;font-size:14px;margin-bottom:24px}
+      #__spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#0d9488;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      #__progress{width:200px;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-bottom:16px}
+      #__progress-bar{height:100%;background:#0d9488;width:0%;transition:width .3s}
+      #__retry{display:none;flex-direction:column;align-items:center}
+      #__retry-btn{background:#0d9488;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:16px;cursor:pointer;margin-bottom:8px}
+      #__error-msg{color:#dc2626;font-size:13px;text-align:center;max-width:280px}
+      #__fallback-link{color:#0d9488;text-decoration:underline;font-size:13px;margin-top:8px}
+    </style>
+    <link rel="stylesheet" href="https://workpro-api.onrender.com/assets/index.css?v=95" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="__loader">
+      <h1>Work Pro</h1>
+      <p>Hire and work in Pi cryptocurrency</p>
+      <div id="__spinner"></div>
+      <div id="__progress"><div id="__progress-bar"></div></div>
+      <div id="__retry">
+        <button id="__retry-btn" onclick="location.reload()">Reload</button>
+        <p id="__error-msg">Loading is taking too long. Please check your connection.</p>
+        <a href="https://workpro-api.onrender.com/" id="__fallback-link">Try alternative link</a>
+      </div>
+    </div>
     <div id="root"></div>
-    <script src="/assets/index-v95.js?v=95"></script>
+    <script>
+      // Loader management
+      (function(){
+        var progress=0;
+        var bar=document.getElementById('__progress-bar');
+        var retry=document.getElementById('__retry');
+        var loader=document.getElementById('__loader');
+        // Animate progress
+        var interval=setInterval(function(){
+          progress=Math.min(progress+5,90);
+          if(bar)bar.style.width=progress+'%';
+        },300);
+        // If React doesn't mount in 15s, show retry
+        setTimeout(function(){
+          var root=document.getElementById('root');
+          if(!root||root.children.length===0){
+            clearInterval(interval);
+            if(bar)bar.style.width='100%';
+            setTimeout(function(){
+              if(loader)loader.style.display='none';
+              if(retry)retry.style.display='flex';
+            },500);
+          }
+        },15000);
+        // Hide loader when React mounts
+        window.__hideLoader=function(){
+          clearInterval(interval);
+          if(bar)bar.style.width='100%';
+          setTimeout(function(){if(loader)loader.classList.add('fade-out');},200);
+          setTimeout(function(){if(loader)loader.style.display='none';},600);
+        };
+      })();
+    </script>
+    <script src="https://workpro-api.onrender.com/assets/index-v95.js?v=95" onload="if(window.__hideLoader)window.__hideLoader()" onerror="document.getElementById('__spinner').style.display='none';document.getElementById('__progress').style.display='none';document.getElementById('__retry').style.display='flex';"></script>
   </body>
 </html>
