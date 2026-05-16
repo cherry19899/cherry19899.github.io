@@ -1,96 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=95" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Hire and work in Pi cryptocurrency" />
-    <link rel="apple-touch-icon" href="/vite.svg?v=95" />
-    <link rel="manifest" href="/manifest.json?v=95" />
-    <title>Work Pro</title>
-    <script>window.WORKPRO_VERSION='v153';</script>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>
-      (function(){
-        window.__piSandbox = /github\.io|localhost/.test(location.hostname);
-        if(typeof Pi!=='undefined'&&Pi.init){
-          try{Pi.init({version:"2.0",sandbox:window.__piSandbox});console.log('[Pi] ok');}
-          catch(e){console.error('[Pi]',e.message);}
-        }else{
-          console.warn('[Pi] not available');
-          window.Pi=window.Pi||{};
-          window.Pi.authenticate=function(){return Promise.reject('Pi SDK not loaded');};
-        }
-      })();
-    </script>
-    <style>
-      /* Critical CSS - minimal loader to prevent white screen */
-      *{margin:0;padding:0;box-sizing:border-box}
-      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f5;color:#333}
-      #root{min-height:100vh}
-      #__loader{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;transition:opacity .3s}
-      #__loader.fade-out{opacity:0;pointer-events:none}
-      #__loader h1{color:#0d9488;font-size:32px;margin-bottom:8px}
-      #__loader p{color:#666;font-size:14px;margin-bottom:24px}
-      #__spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#0d9488;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px}
-      @keyframes spin{to{transform:rotate(360deg)}}
-      #__progress{width:200px;height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-bottom:16px}
-      #__progress-bar{height:100%;background:#0d9488;width:0%;transition:width .3s}
-      #__retry{display:none;flex-direction:column;align-items:center}
-      #__retry-btn{background:#0d9488;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-size:16px;cursor:pointer;margin-bottom:8px}
-      #__error-msg{color:#dc2626;font-size:13px;text-align:center;max-width:280px}
-      #__fallback-link{color:#0d9488;text-decoration:underline;font-size:13px;margin-top:8px}
-    </style>
-    <link rel="stylesheet" href="https://workpro-api.onrender.com/assets/index.css?v=95" />
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="__loader">
-      <h1>Work Pro</h1>
-      <p>Hire and work in Pi cryptocurrency</p>
-      <div id="__spinner"></div>
-      <div id="__progress"><div id="__progress-bar"></div></div>
-      <div id="__retry">
-        <button id="__retry-btn" onclick="location.reload()">Reload</button>
-        <p id="__error-msg">Loading is taking too long. Please check your connection.</p>
-        <a href="https://workpro-api.onrender.com/" id="__fallback-link">Try alternative link</a>
-      </div>
-    </div>
-    <div id="root"></div>
-    <script>
-      // Loader management
-      (function(){
-        var progress=0;
-        var bar=document.getElementById('__progress-bar');
-        var retry=document.getElementById('__retry');
-        var loader=document.getElementById('__loader');
-        // Animate progress
-        var interval=setInterval(function(){
-          progress=Math.min(progress+5,90);
-          if(bar)bar.style.width=progress+'%';
-        },300);
-        // If React doesn't mount in 15s, show retry
-        setTimeout(function(){
-          var root=document.getElementById('root');
-          if(!root||root.children.length===0){
-            clearInterval(interval);
-            if(bar)bar.style.width='100%';
-            setTimeout(function(){
-              if(loader)loader.style.display='none';
-              if(retry)retry.style.display='flex';
-            },500);
-          }
-        },15000);
-        // Hide loader when React mounts
-        window.__hideLoader=function(){
-          clearInterval(interval);
-          if(bar)bar.style.width='100%';
-          setTimeout(function(){if(loader)loader.classList.add('fade-out');},200);
-          setTimeout(function(){if(loader)loader.style.display='none';},600);
-        };
-      })();
-    </script>
-    <script src="https://workpro-api.onrender.com/assets/index-v95.js?v=95" onload="if(window.__hideLoader)window.__hideLoader()" onerror="document.getElementById('__spinner').style.display='none';document.getElementById('__progress').style.display='none';document.getElementById('__retry').style.display='flex';"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d9488">
+<title>Work Pro</title>
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>window.WORKPRO_VERSION='v154';window.__wpStart=Date.now();</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
+#_l{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);transition:opacity .5s}
+#_l h1{color:#0d9488;font-size:36px;margin-bottom:8px;letter-spacing:-1px}
+#_l p{color:#6b7280;font-size:15px;margin-bottom:30px}
+#_s{width:44px;height:44px;border:3px solid #d1d5db;border-top-color:#0d9488;border-radius:50%;animation:_spin 1s linear infinite;margin-bottom:20px}
+#_b{width:180px;height:4px;background:#d1d5db;border-radius:2px;overflow:hidden;margin-bottom:12px}
+#_bf{height:100%;background:#0d9488;width:0%;transition:width .5s}
+#_e{display:none;color:#dc2626;font-size:14px;text-align:center;max-width:280px;padding:0 20px}
+#_r{display:none;background:#0d9488;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:16px;cursor:pointer;margin-top:12px}
+#_a{color:#0d9488;font-size:13px;margin-top:8px;text-decoration:underline}
+#root{min-height:100vh;width:100%}
+@keyframes _spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="_l">
+<h1>Work Pro</h1>
+<p>Freelance marketplace in Pi</p>
+<div id="_s"></div>
+<div id="_b"><div id="_bf"></div></div>
+<div id="_e">Loading is taking too long.<br>Please check your connection.</div>
+<button id="_r" onclick="location.reload()">Reload</button>
+<a href="https://workpro-api.onrender.com/" id="_a">Alternative link</a>
+</div>
+<div id="root"></div>
+<script>
+(function(){
+// Dynamic asset loader with retry and fallback
+var CSS='https://workpro-api.onrender.com/assets/index.css';
+var JS='https://workpro-api.onrender.com/assets/index-v95.js';
+var bf=document.getElementById('_bf');
+var _e=document.getElementById('_e');
+var _r=document.getElementById('_r');
+var _a=document.getElementById('_a');
+var root=document.getElementById('root');
+var progress=0;
+// Progress bar
+var iv=setInterval(function(){progress=Math.min(progress+8,85);if(bf)bf.style.width=progress+'%';},400);
+// Load CSS
+var cl=document.createElement('link');
+cl.rel='stylesheet';
+cl.href=CSS+'?t='+Date.now();
+document.head.appendChild(cl);
+// Load JS
+var sc=document.createElement('script');
+sc.src=JS+'?t='+Date.now();
+sc.onload=function(){
+clearInterval(iv);
+if(bf)bf.style.width='100%';
+setTimeout(function(){var l=document.getElementById('_l');if(l)l.style.opacity='0';setTimeout(function(){if(l)l.style.display='none';},500);},300);
+};
+sc.onerror=function(){
+clearInterval(iv);
+if(bf)bf.style.width='100%';
+if(_e)_e.style.display='block';
+if(_r)_r.style.display='inline-block';
+if(_a)_a.style.display='block';
+};
+document.body.appendChild(sc);
+// Timeout fallback: if root empty after 18s, show retry
+setTimeout(function(){
+if(!root||root.children.length===0){
+clearInterval(iv);
+if(bf)bf.style.width='100%';
+if(_e){_e.innerHTML='Connection timeout.<br>Your network may be slow or blocked.';_e.style.display='block';}
+if(_r)_r.style.display='inline-block';
+}
+},18000);
+})();
+</script>
+</body>
 </html>
