@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0d9488">
 <title>Work Pro</title>
-<script>window.WORKPRO_VERSION='v166';window.__wpStart=Date.now();</script>
+<script>window.WORKPRO_VERSION='v167';window.__wpStart=Date.now();</script>
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
 try{
@@ -57,7 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v166 start');
+lg('#0f0','[WP] v167 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -66,7 +66,39 @@ window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return
 window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
 })();
 </script>
-<script src="https://workpro-api.onrender.com/assets/index-v95.js?v=95" onload="(function(){var l=document.getElementById('_l');if(l)l.style.opacity='0';setTimeout(function(){if(l)l.style.display='none';},500);})();" onerror="(function(){var l=document.getElementById('_l'),e=document.getElementById('_e'),r=document.getElementById('_r'),a=document.getElementById('_a');if(l)l.style.display='none';if(e)e.innerHTML='Failed to load JS.<br>Check your connection.';if(e)e.style.display='block';if(r)r.style.display='inline-block';if(a)a.style.display='block';})();">
+<script>
+(function(){
+  var JS='https://workpro-api.onrender.com/assets/index-v95.js?v=95';
+  var sc=document.createElement('script');
+  sc.src=JS;
+  sc.onload=function(){
+    console.log('[Loader] JS loaded ok');
+    var l=document.getElementById('_l');
+    if(l){l.style.opacity='0';setTimeout(function(){l.style.display='none';},500);}
+  };
+  sc.onerror=function(){
+    console.error('[Loader] JS load failed');
+    var l=document.getElementById('_l'),e=document.getElementById('_e'),r=document.getElementById('_r'),a=document.getElementById('_a');
+    if(l)l.style.display='none';
+    if(e)e.innerHTML='Failed to load app.<br>Tap Reload to retry.';
+    if(e)e.style.display='block';
+    if(r)r.style.display='inline-block';
+    if(a)a.style.display='block';
+  };
+  document.body.appendChild(sc);
+  // Timeout: if JS doesn't load in 12s, show retry
+  setTimeout(function(){
+    if(!window.React&&!window.__appLoaded){
+      console.error('[Loader] JS timeout after 12s');
+      var l=document.getElementById('_l'),e=document.getElementById('_e'),r=document.getElementById('_r'),a=document.getElementById('_a');
+      if(l)l.style.display='none';
+      if(e)e.innerHTML='Loading timed out.<br>Tap Reload to retry.';
+      if(e)e.style.display='block';
+      if(r)r.style.display='inline-block';
+      if(a)a.style.display='block';
+    }
+  },12000);
+})();
 </script>
 </body>
 </html>
