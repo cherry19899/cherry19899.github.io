@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v182';</script>
+    <script>window.WORKPRO_VERSION='v183';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -52,11 +52,12 @@
           setTimeout(tryInit, 50);
           return;
         }
-        if (window.Pi._workpro_inited) return;
+        if (window.Pi._initialized) return;
         try {
-          window.Pi.init({ version: "2.0" });
-          window.Pi._workpro_inited = true;
-          console.log('[Pi] SDK initialized successfully');
+          var isSandbox = /github\.io|localhost/.test(location.hostname);
+          window.Pi.init({ version: "2.0", sandbox: isSandbox });
+          window.Pi._initialized = true;
+          console.log('[Pi] SDK initialized, sandbox:', isSandbox);
         } catch(e) {
           console.error('[Pi] init error:', e);
         }
@@ -269,7 +270,7 @@
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v182 start');
+lg('#0f0','[WP] v183 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -711,7 +712,7 @@ window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.m
     <!-- DEBUG CONSOLE -->
     <div id="__c" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;z-index:99998;display:none;border-top:2px solid #0f0;"></div>
     <script>
-    (function(){var c=document.getElementById('__c'),cnt=0;function lg(t,m){if(!c)return;cnt++;if(cnt>80)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v182 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};})();
+    (function(){var c=document.getElementById('__c'),cnt=0;function lg(t,m){if(!c)return;cnt++;if(cnt>80)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v183 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};})();
     </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
   <script>
