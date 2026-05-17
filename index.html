@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0d9488">
 <title>Work Pro</title>
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>window.WORKPRO_VERSION='v156';window.__wpStart=Date.now();console.log('[WP] v155 boot');</script>
+<script>window.WORKPRO_VERSION='v157';window.__wpStart=Date.now();</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -38,7 +38,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v155 start');
+lg('#0f0','[WP] v157 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -64,10 +64,12 @@ var iv=setInterval(function(){progress=Math.min(progress+8,85);if(bf)bf.style.wi
 var cl=document.createElement('link');
 cl.rel='stylesheet';
 cl.href=CSS+'?t='+Date.now();
+cl.crossOrigin='anonymous';
 document.head.appendChild(cl);
 // Load JS
 var sc=document.createElement('script');
 sc.src=JS+'?t='+Date.now();
+sc.crossOrigin='anonymous';
 sc.onload=function(){
 clearInterval(iv);
 if(bf)bf.style.width='100%';
