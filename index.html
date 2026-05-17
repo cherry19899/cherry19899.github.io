@@ -1,63 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0d9488">
-<title>Work Pro</title>
-<script>window.WORKPRO_VERSION='v168';window.__wpStart=Date.now();</script>
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-try{
-(function(){
-  console.log('[Pi] checking typeof Pi:',typeof Pi);
-  if(typeof Pi==='undefined'){console.error('[Pi] SDK not loaded');return;}
-  if(!Pi.init){console.error('[Pi] init method not found');return;}
-  if(Pi._initialized){console.log('[Pi] already init');return;}
-  var isSandbox=/github\.io|localhost/.test(location.hostname);
-  console.log('[Pi] sandbox:',isSandbox);
-  Pi.init({version:"2.0",sandbox:isSandbox});
-  Pi._initialized=true;
-  console.log('[Pi] init ok');
-})();
-}catch(e){
-  console.error('[Pi] CRITICAL:',e.name,e.message);
-  if(window.__c)window.__c.innerHTML+='<div style=\"color:#f00\">[Pi] CRITICAL: '+e.name+' '+e.message+'</div>';
-}
-</script>
-<link rel="stylesheet" href="/assets/workpro.css?v=172" />
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
-#_l{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);transition:opacity .5s}
-#_l h1{color:#0d9488;font-size:36px;margin-bottom:8px;letter-spacing:-1px}
-#_l p{color:#6b7280;font-size:15px;margin-bottom:30px}
-#_s{width:44px;height:44px;border:3px solid #d1d5db;border-top-color:#0d9488;border-radius:50%;animation:_spin 1s linear infinite;margin-bottom:20px}
-#_b{width:180px;height:4px;background:#d1d5db;border-radius:2px;overflow:hidden;margin-bottom:12px}
-#_bf{height:100%;background:#0d9488;width:0%;transition:width .5s}
-#_e{display:none;color:#dc2626;font-size:14px;text-align:center;max-width:280px;padding:0 20px}
-#_r{display:none;background:#0d9488;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:16px;cursor:pointer;margin-top:12px}
-#_a{color:#0d9488;font-size:13px;margin-top:8px;text-decoration:underline}
-#root{min-height:100vh;width:100%}
-@keyframes _spin{to{transform:rotate(360deg)}}
-</style>
-</head>
-<body>
-<div id="_l">
-<h1>Work Pro</h1>
-<p>Freelance marketplace in Pi</p>
-<div id="_s"></div>
-<div id="_b"><div id="_bf"></div></div>
-<div id="_e">Loading is taking too long.<br>Please check your connection.</div>
-<button id="_r" onclick="location.reload()">Reload</button>
-<a href="https://workpro-api.onrender.com/" id="_a">Alternative link</a>
-</div>
-<div id="root"></div>
-<div id="__c" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;z-index:99998;display:none;border-top:2px solid #0f0;"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=47" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#10b981" />
+    <meta name="description" content="Hire and work in Pi cryptocurrency. Find freelance jobs, pay and get paid in Pi." />
+    <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
+    <meta property="og:title" content="Work Pro - Freelance on Pi" />
+    <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
+    <link rel="manifest" href="/manifest.json?v=47" />
+    <link rel="apple-touch-icon" href="/vite.svg?v=47" />
+    <title>Work Pro — Pi Network Freelance Marketplace</title>
+    <script>window.WORKPRO_VERSION='v173';</script>
+    <script>
+      // One-time cache clear for v47 upgrade (forces fresh bundle)
+      (function() {
+        try {
+          var cleared = localStorage.getItem('workpro_v53_cleared');
+          if (!cleared) {
+            localStorage.setItem('workpro_v53_cleared', '1');
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                names.forEach(function(n) { caches.delete(n); });
+              });
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.unregister(); });
+              });
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var reg of regs) reg.unregister();
+              });
+            }
+            setTimeout(function() { window.location.reload(); }, 500);
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+    // ---- PI SDK INIT (must run BEFORE bundle) ----
+    (function() {
+      function tryInit() {
+        if (!window.Pi || typeof window.Pi.init !== 'function') {
+          setTimeout(tryInit, 50);
+          return;
+        }
+        if (window.Pi._workpro_inited) return;
+        try {
+          window.Pi.init({ version: "2.0" });
+          window.Pi._workpro_inited = true;
+          console.log('[Pi] SDK initialized successfully');
+        } catch(e) {
+          console.error('[Pi] init error:', e);
+        }
+      }
+      tryInit();
+    })();
+    </script>
+    <script>
+    // ---- PI SDK AUTH PATCH (must run BEFORE bundle) ----
+    (function() {
+      function patchAuth() {
+        if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
+          setTimeout(patchAuth, 50);
+          return;
+        }
+        var origAuth = window.Pi.authenticate;
+        window.Pi.authenticate = function(scopes, onIncompletePaymentFound) {
+          // Force async onIncompletePaymentFound that returns Promise
+          var wrapped = function(payment) {
+            console.log('[Pi] onIncompletePaymentFound called', payment);
+            if (payment && payment.identifier) {
+              fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }
+              }).catch(function(){});
+            }
+            return Promise.resolve();
+          };
+          var result = origAuth.call(window.Pi, scopes, wrapped);
+          // Store userId globally for createPayment proxy
+          if (result && typeof result.then === 'function') {
+            result.then(function(authResult) {
+              if (authResult && authResult.user) {
+                var uid = authResult.user.uid || authResult.user.id;
+                if (uid) {
+                  window._workproUserId = uid;
+                  // Save to localStorage for fetch interceptor
+                  var userToStore = {
+                    id: uid,
+                    uid: uid,
+                    username: authResult.user.username || authResult.user.name || 'User',
+                    name: authResult.user.name || authResult.user.username || 'User',
+                    accessToken: authResult.accessToken || '',
+                    balance_connects: authResult.user.balance_connects || 0
+                  };
+                  localStorage.setItem('workpro_user', JSON.stringify(userToStore));
+                  localStorage.setItem('workpro_user_id', uid);
+                  console.log('[Pi] User stored:', uid, userToStore.username);
+                }
+              }
+            }).catch(function(err) { console.warn('[Pi] Auth storage error:', err); });
+          }
+          return result;
+        };
+        console.log('[Pi] authenticate patched with Promise wrapper + userId storage');
+      }
+      patchAuth();
+
+      // ---- 3b. XMLHttpRequest INTERCEPTOR (catches non-fetch requests) ----
+  (function() {
+    var origOpen = XMLHttpRequest.prototype.open;
+    var origSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+    var currentUrl = '';
+    var hasUserId = false;
+
+    XMLHttpRequest.prototype.open = function(method, url) {
+      currentUrl = url;
+      hasUserId = false;
+      return origOpen.apply(this, arguments);
+    };
+
+    XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+      if (header.toLowerCase() === 'x-user-id') hasUserId = true;
+      return origSetHeader.apply(this, arguments);
+    };
+
+    // Monkey-patch send to inject x-user-id before sending
+    var origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(body) {
+      if (typeof currentUrl === 'string' && currentUrl.indexOf('/api/') !== -1 && !hasUserId) {
+        try {
+          var userStr = localStorage.getItem('workpro_user');
+          if (userStr) {
+            var user = JSON.parse(userStr);
+            var uid = user.id || user.uid;
+            if (uid) origSetHeader.call(this, 'x-user-id', uid);
+          }
+        } catch(e) {}
+      }
+      return origSend.apply(this, arguments);
+    };
+  })();
+
+  // ---- 4. GLOBAL USER ID STORAGE ----
+      window._workproUserId = null;
+
+      // ---- 5. CREATE PAYMENT PROXY (injects x-user-id into callbacks) ----
+      function setupCreatePaymentPatch() {
+        var uid = window._workproUserId;
+        if (!uid) {
+          try {
+            var userStr = localStorage.getItem('workpro_user');
+            if (userStr) { var u = JSON.parse(userStr); uid = u.id || u.uid; window._workproUserId = uid; }
+          } catch(e) {}
+        }
+        if (!uid) {
+          console.log('[Pi] createPayment patch: no userId yet, retrying...');
+          setTimeout(setupCreatePaymentPatch, 200);
+          return;
+        }
+
+        function wrapCallback(cb) {
+          if (typeof cb !== 'function') return cb;
+          return function(data) {
+            var origFetch2 = window.fetch;
+            window.fetch = function(url, opts) {
+              if (typeof url === 'string' && (url.indexOf('/api/') !== -1 || url.indexOf('workpro-api') !== -1)) {
+                if (!opts) opts = {};
+                if (!opts.headers) opts.headers = {};
+                if (typeof opts.headers === 'object' && !(opts.headers instanceof Headers) && !Array.isArray(opts.headers)) {
+                  opts.headers['x-user-id'] = uid;
+                }
+              }
+              return origFetch2.call(this, url, opts);
+            };
+            var result;
+            try { result = cb(data); } catch(e) { window.fetch = origFetch2; throw e; }
+            if (result && typeof result.then === 'function') {
+              result.then(function() { window.fetch = origFetch2; }).catch(function() { window.fetch = origFetch2; });
+            } else {
+              window.fetch = origFetch2;
+            }
+            return result;
+          };
+        }
+
+        if (!window.Pi || !window.Pi.createPayment) {
+          setTimeout(setupCreatePaymentPatch, 200);
+          return;
+        }
+        var origCreatePayment = window.Pi.createPayment;
+        window.Pi.createPayment = function(paymentData, callbacks) {
+          if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
+          // Re-read uid in case it was set after auth
+          var currentUid = window._workproUserId;
+          if (currentUid) uid = currentUid;
+          return origCreatePayment.call(window.Pi, paymentData, {
+            onReadyForServerApproval: wrapCallback(callbacks.onReadyForServerApproval),
+            onReadyForServerCompletion: wrapCallback(callbacks.onReadyForServerCompletion),
+            onCancel: wrapCallback(callbacks.onCancel),
+            onError: wrapCallback(callbacks.onError)
+          });
+        };
+        console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
+      }
+      setupCreatePaymentPatch();
+
+      // ---- 6. NOTIFICATION BADGE POLLER ----
+      (function pollNotifications() {
+        try {
+          var userStr = localStorage.getItem('workpro_user');
+          if (!userStr) { setTimeout(pollNotifications, 5000); return; }
+          var user = JSON.parse(userStr);
+          var uid = user.id || user.uid;
+          if (!uid) { setTimeout(pollNotifications, 5000); return; }
+
+          fetch('https://workpro-api.onrender.com/api/notifications/unread-count', {
+            headers: { 'x-user-id': uid }
+          }).then(function(r) { return r.json(); }).then(function(data) {
+            var count = data.unread_count || 0;
+            window._unreadNotificationCount = count;
+            // Try to update badge in DOM
+            var badges = document.querySelectorAll('.notification-badge, .nav-badge, [data-badge]');
+            badges.forEach(function(b) {
+              b.textContent = count > 0 ? (count > 9 ? '9+' : String(count)) : '';
+              b.style.display = count > 0 ? 'inline-block' : 'none';
+            });
+            console.log('[Notifications] Unread count:', count);
+          }).catch(function(){});
+        } catch(e) {}
+        setTimeout(pollNotifications, 30000); // Poll every 30s
+      })();
+    })();
+    </script>
+    <script type="module" crossorigin src="/assets/app-v173.js"></script>
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v172 start');
+lg('#0f0','[WP] v173 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -66,39 +253,424 @@ window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return
 window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
 })();
 </script>
-<script>
-(function(){
-  var JS='/assets/workpro.js?v=172';
-  var sc=document.createElement('script');
-  sc.src=JS;
-  sc.onload=function(){
-    console.log('[Loader] JS loaded ok');
-    var l=document.getElementById('_l');
-    if(l){l.style.opacity='0';setTimeout(function(){l.style.display='none';},500);}
-  };
-  sc.onerror=function(){
-    console.error('[Loader] JS load failed');
-    var l=document.getElementById('_l'),e=document.getElementById('_e'),r=document.getElementById('_r'),a=document.getElementById('_a');
-    if(l)l.style.display='none';
-    if(e)e.innerHTML='Failed to load app.<br>Tap Reload to retry.';
-    if(e)e.style.display='block';
-    if(r)r.style.display='inline-block';
-    if(a)a.style.display='block';
-  };
-  document.body.appendChild(sc);
-  // Timeout: if JS doesn't load in 12s, show retry
-  setTimeout(function(){
-    if(!window.React&&!window.__appLoaded){
-      console.error('[Loader] JS timeout after 12s');
-      var l=document.getElementById('_l'),e=document.getElementById('_e'),r=document.getElementById('_r'),a=document.getElementById('_a');
-      if(l)l.style.display='none';
-      if(e)e.innerHTML='Loading timed out.<br>Tap Reload to retry.';
-      if(e)e.style.display='block';
-      if(r)r.style.display='inline-block';
-      if(a)a.style.display='block';
+
+    <link rel="stylesheet" crossorigin href="/assets/app-v173.css">
+  <script>
+// ===== WORK PRO PATCH v53 =====
+(function() {
+  'use strict';
+
+  // ---- 2. USER FORMAT FIX ----
+  (function() {
+    var origGet = localStorage.getItem;
+    localStorage.getItem = function(key) {
+      var val = origGet.call(localStorage, key);
+      if (key === 'workpro_user' && val) {
+        try {
+          var user = JSON.parse(val);
+          if (user.uid && !user.id) user.id = user.uid;
+          if (user.name && !user.username) user.username = user.name;
+          if (!user.id) user.id = 'guest_' + Date.now();
+          if (!user.username) user.username = user.name || 'Guest';
+          // ─── PROTECT connects from backend reset ─────────────────
+          var sc = origGet.call(localStorage, 'workpro_connects');
+          var storedC = parseInt(sc || '0', 10);
+          var userC = user.balance_connects || user.connects || 0;
+          if (storedC >= 0 && storedC !== userC) {
+            console.log('[WorkPro] GET: restoring connects', storedC, 'over', userC);
+            user.balance_connects = storedC;
+            user.connects = storedC;
+          }
+          return JSON.stringify(user);
+        } catch(e) {}
+      }
+      return val;
+    };
+    var origSet = localStorage.setItem;
+    localStorage.setItem = function(key, val) {
+      if (key === 'workpro_user' && val) {
+        try {
+          var user = JSON.parse(val);
+          if (user.uid && !user.id) user.id = user.uid;
+          if (user.id && !user.uid) user.uid = user.id;
+          if (user.name && !user.username) user.username = user.name;
+          if (user.username && !user.name) user.name = user.username;
+          val = JSON.stringify(user);
+        } catch(e) {}
+      }
+      return origSet.call(localStorage, key, val);
+    };
+  })();
+
+  // ---- 3. FETCH INTERCEPTOR ----
+  var origFetch = window.fetch;
+  window.fetch = function(url, options) {
+    if (typeof url !== 'string') return origFetch.call(this, url, options);
+
+    // AUTH INJECT: add x-user-id and admin token to all API calls
+    if (url.indexOf('/api/') !== -1) {
+      if (!options) options = {};
+      var args = [url, options];
+      var headers = options.headers || {};
+      if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+        var h = {};
+        headers.forEach(function(v, k) { h[k] = v; });
+        headers = h;
+      } else if (Array.isArray(headers)) {
+        var h2 = {};
+        headers.forEach(function(item) { h2[item[0]] = item[1]; });
+        headers = h2;
+      }
+      if (!headers['x-user-id'] && !headers['X-User-Id']) {
+        try {
+          var userStr = localStorage.getItem('workpro_user');
+          if (userStr) {
+            var user = JSON.parse(userStr);
+            var uid = user.id || user.uid;
+            if (uid) headers['x-user-id'] = uid;
+          }
+        } catch(e) {}
+      }
+      if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
+        var adminToken = localStorage.getItem('workpro_admin_token');
+        if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+      }
+      options.headers = headers;
     }
-  },12000);
-})();
+
+    // Admin API format fix
+    if (url.indexOf('/api/admin/') !== -1) {
+      return origFetch.call(this, url, options).then(function(response) {
+        var clone = response.clone();
+        return clone.json().then(function(data) {
+          var fixed = data;
+          if (url.indexOf('/users') !== -1 && Array.isArray(data)) fixed = {users: data};
+          if (url.indexOf('/jobs/all') !== -1 && Array.isArray(data)) fixed = {jobs: data};
+          if (url.indexOf('/escrows') !== -1 && Array.isArray(data)) fixed = {escrows: data};
+          if (url.indexOf('/earnings') !== -1 && data && !data.summary) {
+            var payments = data.payments || [];
+            var total = data.total || payments.length || 0;
+            var earnings = payments.reduce(function(a, p) { return a + (p.amount || 0); }, 0);
+            fixed = {
+              summary: { total_earnings: earnings, total_transactions: total, average_transaction: total > 0 ? Math.round(earnings / total) : 0 },
+              payments: payments
+            };
+          }
+          return new Response(JSON.stringify(fixed), { status: response.status, statusText: response.statusText, headers: {'Content-Type': 'application/json'} });
+        }).catch(function() { return response; });
+      });
+    }
+
+    return origFetch.call(this, url, options).then(function(response) {
+      // ─── For user data endpoint: return modified response ────────────
+      if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1) {
+        return response.json().then(function(data) {
+          if (data && (data.balance_connects !== undefined || data.connects !== undefined)) {
+            try {
+              var sc = localStorage.getItem('workpro_connects');
+              var storedC = parseInt(sc || '0', 10);
+              var serverC = data.balance_connects || data.connects || 0;
+              if (storedC > serverC && (storedC - serverC) > 2) {
+                console.log('[WorkPro] MERGE response:', storedC, 'over', serverC);
+                data.balance_connects = storedC;
+                data.connects = storedC;
+              }
+            } catch(e) {}
+          }
+          return new Response(JSON.stringify(data), {
+            status: response.status,
+            statusText: response.statusText,
+            headers: {'Content-Type': 'application/json'}
+          });
+        }).catch(function() { return response; });
+      }
+
+      var clone = response.clone();
+      clone.json().then(function(data) {
+        if (data && data.remaining_connects !== undefined) {
+          try {
+            var userStr = localStorage.getItem('workpro_user');
+            if (userStr) {
+              var user = JSON.parse(userStr);
+              user.balance_connects = data.remaining_connects;
+              user.connects = data.remaining_connects;
+              localStorage.setItem('workpro_user', JSON.stringify(user));
+              localStorage.setItem('workpro_connects', String(data.remaining_connects));
+            }
+          } catch(e) {}
+          var el = document.getElementById('stat-connects');
+          if (el) el.textContent = data.remaining_connects;
+        }
+        // ─── Handle connects purchase new_balance ──────────────────
+        if (data && data.new_balance !== undefined) {
+          try {
+            var userStr = localStorage.getItem('workpro_user');
+            if (userStr) {
+              var user = JSON.parse(userStr);
+              user.balance_connects = data.new_balance;
+              user.connects = data.new_balance;
+              localStorage.setItem('workpro_user', JSON.stringify(user));
+              localStorage.setItem('workpro_connects', String(data.new_balance));
+            }
+          } catch(e) {}
+          var el = document.getElementById('stat-connects');
+          if (el) el.textContent = data.new_balance;
+        }
+      }).catch(function() {});
+      return response;
+    });
+  };
+
+  // ---- 3b. XMLHTTPREQUEST INTERCEPTOR (bundle uses XHR, not fetch) ----
+  (function() {
+    var OrigXHR = window.XMLHttpRequest;
+    function InterceptedXHR() {
+      var xhr = new OrigXHR();
+      var _open = xhr.open;
+      var _setHeader = xhr.setRequestHeader;
+      var _url = '';
+      var _headers = {};
+
+      xhr.open = function(method, url) {
+        _url = url;
+        return _open.apply(xhr, arguments);
+      };
+
+      xhr.setRequestHeader = function(name, value) {
+        _headers[name.toLowerCase()] = value;
+        return _setHeader.apply(xhr, arguments);
+      };
+
+      // Intercept send to inject x-user-id for API calls
+      var _send = xhr.send;
+      xhr.send = function(body) {
+        if (_url.indexOf('/api/') !== -1 && !_headers['x-user-id'] && !_headers['x-user-id']) {
+          try {
+            var userStr = localStorage.getItem('workpro_user');
+            if (userStr) {
+              var user = JSON.parse(userStr);
+              var uid = user.id || user.uid;
+              if (uid) _setHeader.call(xhr, 'x-user-id', uid);
+            }
+          } catch(e) {}
+        }
+        return _send.apply(xhr, arguments);
+      };
+
+      return xhr;
+    }
+    window.XMLHttpRequest = InterceptedXHR;
+  })();
+
+  // ---- 4. CONNECTS PROTECTION ----
+  var STORAGE_KEY = 'workpro_user';
+  var CONNECTS_KEY = 'workpro_connects';
+  var BALANCE_KEY = 'workpro_balance';
+  var SIG_KEY = 'workpro_user_sig';
+  var SECRET = 'workpro_v42_' + location.hostname;
+
+  function hash(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; }
+    return Math.abs(h).toString(36);
+  }
+  function sign(s) { return hash(s + SECRET); }
+
+  var savedConnects = null, savedBalance = null;
+  try {
+    var sc = localStorage.getItem(CONNECTS_KEY);
+    var sb = localStorage.getItem(BALANCE_KEY);
+    if (sc) savedConnects = parseInt(sc, 10);
+    if (sb) savedBalance = parseInt(sb, 0);
+  } catch(e) {}
+
+  var origSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, val) {
+    if (key === STORAGE_KEY && val) {
+      try {
+        var user = JSON.parse(val);
+        var sc = origGetItem.call(localStorage, CONNECTS_KEY);
+        var storedC = parseInt(sc || '0', 10);
+        var currentC = user.balance_connects || user.connects || 0;
+        var currentB = user.balance_pi || 0;
+        // If stored connects differ from what is being written, use stored value (truth)
+        if (storedC >= 0 && storedC !== currentC) {
+          console.log('[WorkPro] BLOCKED server reset, restoring:', storedC, 'vs', currentC);
+          user.balance_connects = storedC;
+          user.connects = storedC;
+          currentC = storedC;
+          val = JSON.stringify(user);
+        }
+        var finalC = user.balance_connects || user.connects || 0;
+        var finalB = user.balance_pi || 0;
+        origSetItem.call(localStorage, CONNECTS_KEY, String(finalC));
+        origSetItem.call(localStorage, BALANCE_KEY, String(finalB));
+        origSetItem.call(localStorage, SIG_KEY, sign(val));
+      } catch(e) {}
+    }
+    return origSetItem.call(localStorage, key, val);
+  };
+
+  var origRemoveItem = localStorage.removeItem;
+  localStorage.removeItem = function(key) {
+    if (key === CONNECTS_KEY || key === BALANCE_KEY || key === SIG_KEY) {
+      console.log('[WorkPro] BLOCKED remove:', key);
+      return;
+    }
+    if (key === STORAGE_KEY) {
+      var sc = origGetItem.call(localStorage, CONNECTS_KEY);
+      if (sc) savedConnects = parseInt(sc, 10);
+      console.log('[WorkPro] Logout, keeping connects:', savedConnects);
+      try {
+        var userStr = origGetItem.call(localStorage, key);
+        if (userStr) {
+          var user = JSON.parse(userStr);
+          user.pi_token = null;
+          origSetItem.call(localStorage, key, JSON.stringify(user));
+          return;
+        }
+      } catch(e) {}
+    }
+    return origRemoveItem.call(localStorage, key);
+  };
+
+  var origGetItem = localStorage.getItem;
+  localStorage.getItem = function(key) {
+    var val = origGetItem.call(localStorage, key);
+    if (key === STORAGE_KEY && val) {
+      try {
+        var user = JSON.parse(val);
+        var sc = origGetItem.call(localStorage, CONNECTS_KEY);
+        var storedC = parseInt(sc || '0', 10);
+        var currentC = user.balance_connects || user.connects || 0;
+        if (storedC > currentC && (storedC - currentC) > 5) {
+          user.balance_connects = storedC;
+          user.connects = storedC;
+          val = JSON.stringify(user);
+        }
+        return val;
+      } catch(e) {}
+    }
+    return val;
+  };
+
+  // ─── BLOCK localStorage.clear() from wiping connects ──────────
+  var origClear = localStorage.clear;
+  localStorage.clear = function() {
+    var sc = origGetItem.call(localStorage, CONNECTS_KEY);
+    var sb = origGetItem.call(localStorage, BALANCE_KEY);
+    console.log('[WorkPro] BLOCKED clear, preserving connects:', sc);
+    var keysToRemove = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k !== CONNECTS_KEY && k !== BALANCE_KEY && k !== SIG_KEY) {
+        keysToRemove.push(k);
+      }
+    }
+    for (var j = 0; j < keysToRemove.length; j++) {
+      origRemoveItem.call(localStorage, keysToRemove[j]);
+    }
+    if (sc) origSetItem.call(localStorage, CONNECTS_KEY, sc);
+    if (sb) origSetItem.call(localStorage, BALANCE_KEY, sb);
+  };
+
+  setInterval(function() {
+    var userStr = localStorage.getItem(STORAGE_KEY);
+    var sc = localStorage.getItem(CONNECTS_KEY);
+    if (userStr && sc) {
+      try {
+        var user = JSON.parse(userStr);
+        var stored = parseInt(sc, 10);
+        var current = user.balance_connects || user.connects || 0;
+        if (stored > current && (stored - current) > 5) {
+          user.balance_connects = stored;
+          user.connects = stored;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        }
+      } catch(e) {}
+    }
+  }, 1000);
+
+  // ---- 5. PHOTO COMPRESSION ----
+  (function() {
+    function compressImage(file, maxWidth, quality) {
+      return new Promise(function(resolve, reject) {
+        if (!file || !file.type || !file.type.startsWith('image/')) return resolve(file);
+        var img = new Image();
+        var url = URL.createObjectURL(file);
+        img.onload = function() {
+          URL.revokeObjectURL(url);
+          var scale = Math.min(1, maxWidth / img.width);
+          var w = Math.round(img.width * scale);
+          var h = Math.round(img.height * scale);
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function(blob) {
+            if (!blob) return reject('compress fail');
+            var reader = new FileReader();
+            reader.onloadend = function() { resolve(reader.result); };
+            reader.readAsDataURL(blob);
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = function() { URL.revokeObjectURL(url); reject('load fail'); };
+        img.src = url;
+      });
+    }
+
+    window.__workproCompressImage = compressImage;
+
+    // Intercept all file inputs: compress before React sees them
+    document.addEventListener('change', function(e) {
+      var input = e.target;
+      if (input.type !== 'file' || !input.accept || input.accept.indexOf('image') === -1) return;
+      if (!input.files || !input.files[0]) return;
+      // Skip if already processed (prevents infinite loop on re-dispatch)
+      if (input.__workpro_compressed) { input.__workpro_compressed = false; return; }
+      var file = input.files[0];
+      if (file.size < 500 * 1024) return; // skip small files
+      e.preventDefault();
+      e.stopPropagation();
+      input.__workpro_processing = true;
+      compressImage(file, 1200, 0.6).then(function(dataUrl) {
+        var byteString = atob(dataUrl.split(',')[1]);
+        var mime = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+        var blob = new Blob([ab], {type: mime});
+        var newFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {type: 'image/jpeg'});
+        var dt = new DataTransfer();
+        dt.items.add(newFile);
+        input.files = dt.files;
+        input.__workpro_compressed = true;
+        input.__workpro_processing = false;
+        // Re-dispatch change so React picks up compressed file
+        input.dispatchEvent(new Event('change', {bubbles: true}));
+      }).catch(function(err) {
+        input.__workpro_processing = false;
+        console.error('[WorkPro] compress error:', err);
+      });
+    }, true);
+  })();
+
+  console.log('[WorkPro] Patch v47 loaded (with photo compression)');
 </script>
+</head>
+  <body>
+    <div id="root"></div>
+    <!-- Privacy Policy Link (required for Pi Network listing) -->
+  <script>
+  (function() {
+    var ppLink = document.createElement('a');
+    ppLink.href = '/privacy-policy.html';
+    ppLink.id = 'privacy-policy-link';
+    ppLink.style.cssText = 'position:fixed;bottom:10px;right:10px;color:#64748b;font-size:12px;z-index:9999;text-decoration:none;opacity:0.7;';
+    ppLink.textContent = 'Privacy Policy';
+    document.body.appendChild(ppLink);
+  })();
+  </script>
+<div id="__c" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;z-index:99998;display:none;border-top:2px solid #0f0;"></div>
 </body>
 </html>
