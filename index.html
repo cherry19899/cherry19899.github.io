@@ -7,7 +7,7 @@
 <title>Work Pro</title>
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
-window.WORKPRO_VERSION='v160';window.__wpStart=Date.now();
+window.WORKPRO_VERSION='v161';window.__wpStart=Date.now();
 (function(){
   if(typeof Pi!=='undefined'&&Pi.init){
     try{Pi.init({version:"2.0",sandbox:/github\.io|localhost/.test(location.hostname)});console.log('[Pi] init ok v2.0');}
@@ -46,7 +46,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v160 start');
+lg('#0f0','[WP] v161 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -76,6 +76,7 @@ document.head.appendChild(cl);
 // Load JS
 var sc=document.createElement('script');
 sc.src=JS+'?t='+Date.now();
+sc.crossOrigin='anonymous';
 sc.onload=function(){
 clearInterval(iv);
 if(bf)bf.style.width='100%';
@@ -97,7 +98,7 @@ if(bf)bf.style.width='100%';
 if(_e){_e.innerHTML='Connection timeout.<br>Your network may be slow or blocked.';_e.style.display='block';}
 if(_r)_r.style.display='inline-block';
 }
-},18000);
+},30000);
 })();
 </script>
 </body>
