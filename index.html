@@ -7,7 +7,7 @@
 <title>Work Pro</title>
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
-window.WORKPRO_VERSION='v159';window.__wpStart=Date.now();
+window.WORKPRO_VERSION='v160';window.__wpStart=Date.now();
 (function(){
   if(typeof Pi!=='undefined'&&Pi.init){
     try{Pi.init({version:"2.0",sandbox:/github\.io|localhost/.test(location.hostname)});console.log('[Pi] init ok v2.0');}
@@ -46,7 +46,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v159 start');
+lg('#0f0','[WP] v160 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -72,12 +72,10 @@ var iv=setInterval(function(){progress=Math.min(progress+8,85);if(bf)bf.style.wi
 var cl=document.createElement('link');
 cl.rel='stylesheet';
 cl.href=CSS+'?t='+Date.now();
-cl.crossOrigin='anonymous';
 document.head.appendChild(cl);
 // Load JS
 var sc=document.createElement('script');
 sc.src=JS+'?t='+Date.now();
-sc.crossOrigin='anonymous';
 sc.onload=function(){
 clearInterval(iv);
 if(bf)bf.style.width='100%';
