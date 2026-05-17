@@ -5,16 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#0d9488">
 <title>Work Pro</title>
+<script>window.WORKPRO_VERSION='v162';window.__wpStart=Date.now();</script>
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
-window.WORKPRO_VERSION='v161';window.__wpStart=Date.now();
 (function(){
   if(typeof Pi!=='undefined'&&Pi.init){
-    try{Pi.init({version:"2.0",sandbox:/github\.io|localhost/.test(location.hostname)});console.log('[Pi] init ok v2.0');}
+    try{Pi.init({version:"2.0",sandbox:/github\.io|localhost/.test(location.hostname)});console.log('[Pi] init ok');}
     catch(e){console.error('[Pi] init error:',e.message);}
   }else{console.warn('[Pi] SDK not loaded');}
 })();
 </script>
+<link rel="stylesheet" href="https://workpro-api.onrender.com/assets/index.css?v=95" />
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -46,7 +47,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v161 start');
+lg('#0f0','[WP] v162 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -55,51 +56,7 @@ window.onerror=function(m,u,l){lg('#f00','[ERR] '+m+' @'+l);return true;};
 window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
 })();
 </script>
-<script>
-(function(){
-// Dynamic asset loader with retry and fallback
-var CSS='https://workpro-api.onrender.com/assets/index.css';
-var JS='https://workpro-api.onrender.com/assets/index-v95.js';
-var bf=document.getElementById('_bf');
-var _e=document.getElementById('_e');
-var _r=document.getElementById('_r');
-var _a=document.getElementById('_a');
-var root=document.getElementById('root');
-var progress=0;
-// Progress bar
-var iv=setInterval(function(){progress=Math.min(progress+8,85);if(bf)bf.style.width=progress+'%';},400);
-// Load CSS
-var cl=document.createElement('link');
-cl.rel='stylesheet';
-cl.href=CSS+'?t='+Date.now();
-document.head.appendChild(cl);
-// Load JS
-var sc=document.createElement('script');
-sc.src=JS+'?t='+Date.now();
-sc.crossOrigin='anonymous';
-sc.onload=function(){
-clearInterval(iv);
-if(bf)bf.style.width='100%';
-setTimeout(function(){var l=document.getElementById('_l');if(l)l.style.opacity='0';setTimeout(function(){if(l)l.style.display='none';},500);},300);
-};
-sc.onerror=function(){
-clearInterval(iv);
-if(bf)bf.style.width='100%';
-if(_e)_e.style.display='block';
-if(_r)_r.style.display='inline-block';
-if(_a)_a.style.display='block';
-};
-document.body.appendChild(sc);
-// Timeout fallback: if root empty after 18s, show retry
-setTimeout(function(){
-if(!root||root.children.length===0){
-clearInterval(iv);
-if(bf)bf.style.width='100%';
-if(_e){_e.innerHTML='Connection timeout.<br>Your network may be slow or blocked.';_e.style.display='block';}
-if(_r)_r.style.display='inline-block';
-}
-},30000);
-})();
+<script src="https://workpro-api.onrender.com/assets/index-v95.js?v=95" onload="(function(){var l=document.getElementById('_l');if(l)l.style.opacity='0';setTimeout(function(){if(l)l.style.display='none';},500);})();" onerror="(function(){var l=document.getElementById('_l'),e=document.getElementById('_e'),r=document.getElementById('_r');if(l)l.style.display='none';if(e)e.style.display='block';if(r)r.style.display='inline-block';})();">
 </script>
 </body>
 </html>
