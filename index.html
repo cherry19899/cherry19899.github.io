@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v192';</script>
+    <script>window.WORKPRO_VERSION='v193';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -273,7 +273,7 @@
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v192 start');
+lg('#0f0','[WP] v193 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -715,7 +715,7 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     <!-- DEBUG CONSOLE -->
     <div id="__cw" style="position:fixed;top:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
     <script>
-    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v192 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
+    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v193 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
     </script>
     <!-- MENU PATCH: Show both client and freelancer menus regardless of role -->
     <script>
@@ -759,6 +759,12 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
           console.log('[MenuPatch] Added "Мои отклики"');
         }
         
+        // Privacy Policy link in profile section
+        var ppItem = document.createElement('div');
+        ppItem.innerHTML = '<a href="/privacy-policy.html" target="_blank" style="display:block;padding:8px 12px;color:#6b7280;text-decoration:none;border-bottom:1px solid #eee;font-size:12px;">🔒 Privacy Policy</a>';
+        menuList.appendChild(ppItem);
+        console.log('[MenuPatch] Added Privacy Policy to menu');
+        
         menuItemsAdded = true;
         console.log('[MenuPatch] Menu patched successfully');
       }
@@ -779,16 +785,7 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     })();
     </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
-  <script>
-  (function() {
-    var ppLink = document.createElement('a');
-    ppLink.href = '/privacy-policy.html';
-    ppLink.id = 'privacy-policy-link';
-    ppLink.style.cssText = 'position:fixed;bottom:10px;right:10px;color:#64748b;font-size:12px;z-index:9999;text-decoration:none;opacity:0.7;';
-    ppLink.textContent = 'Privacy Policy';
-    document.body.appendChild(ppLink);
-  })();
-  </script>
+<!-- Privacy Policy now in profile menu via MenuPatch -->
 <div id="__cw" style="position:fixed;top:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
 </body>
 </html>
