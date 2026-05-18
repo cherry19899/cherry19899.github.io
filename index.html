@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v198';</script>
+    <script>window.WORKPRO_VERSION='v206';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -54,10 +54,9 @@
         }
         if (window.Pi._initialized) return;
         try {
-          var isSandbox = /github\.io|localhost/.test(location.hostname);
-          window.Pi.init({ version: "2.0", sandbox: isSandbox });
+          // Pi.init is already called inside JS bundle - don't double init
           window.Pi._initialized = true;
-          console.log('[Pi] SDK initialized, sandbox:', isSandbox);
+          console.log('[Pi] SDK will be initialized by app bundle');
         } catch(e) {
           console.error('[Pi] init error:', e);
         }
@@ -231,13 +230,13 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v196.js?v=198')
+      fetch('/assets/app-v196.js?v=199')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
           try{
             var s=document.createElement('script');
-            s.textContent=code+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
+            s.textContent=code+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}var cw=document.getElementById("__cw");if(cw){cw.style.top="0";cw.style.bottom="auto";console.log("[CSS] Console top")}}catch(e){}})();';
             document.body.appendChild(s);
           }catch(e){
             console.error('[Loader] exec error:',e.message);
@@ -257,7 +256,7 @@
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v198 start');
+lg('#0f0','[WP] v206 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -267,7 +266,11 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
 })();
 </script>
 
-    <link rel="stylesheet" href="/assets/app-v173.css">
+    <link rel="stylesheet" href="/assets/app-v196.css">
+    <style>
+    /* Force console to top */
+    #__cw, [id*="console"] { top: 0 !important; bottom: auto !important; }
+    </style>
   <script>
 // ===== WORK PRO PATCH v53 =====
 (function() {
@@ -699,7 +702,7 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     <!-- DEBUG CONSOLE -->
     <div id="__cw" style="position:fixed;top:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
     <script>
-    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v198 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
+    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v206 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
     </script>
     <!-- MENU PATCH: Show both client and freelancer menus regardless of role -->
     <script>
