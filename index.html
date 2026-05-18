@@ -15,8 +15,43 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v207';</script>
-<!-- v207: JS loader with render fallback -->
+    <script>window.WORKPRO_VERSION='v208';</script>
+<script>
+// Fallback: show Sign In button if auto-auth takes too long
+(function(){
+  var t = setTimeout(function(){
+    var btn = document.querySelector('button, [class*="sign"], [class*="auth"]');
+    if (!btn || btn.textContent.indexOf('Connecting') !== -1 || btn.disabled) {
+      // Force show sign in button
+      var root = document.getElementById('root');
+      if (root) {
+        var fallback = document.createElement('button');
+        fallback.textContent = 'π Sign in with Pi';
+        fallback.style.cssText = 'background:#0d9488;color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:16px;margin:20px auto;display:block;cursor:pointer;';
+        fallback.onclick = function() {
+          if (window.Pi && window.Pi.authenticate) {
+            window.Pi.authenticate(['username', 'payments'], function(p) {
+              console.log('[Pi] incomplete:', p);
+              return Promise.resolve();
+            }).then(function(auth) {
+              console.log('[Pi] auth success:', auth);
+              window.location.reload();
+            }).catch(function(err) {
+              console.error('[Pi] auth error:', err);
+              alert('Auth failed: ' + (err.message || err));
+            });
+          } else {
+            alert('Pi SDK not loaded. Open in Pi Browser.');
+          }
+        };
+        root.appendChild(fallback);
+        console.log('[Fallback] Sign in button added');
+      }
+    }
+  }, 3000);
+  window._cancelFallback = function(){ clearTimeout(t); };
+})();
+</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -268,12 +303,7 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
 </script>
 
     <link rel="stylesheet" href="/assets/app-v196.css">
-    <style>
-    /* Force console to top */
-    #__cw, [id*="console"] { top: 0 !important; bottom: auto !important; }
-    /* Push content down so console doesn't cover buttons */
-    body { padding-top: 60px !important; }
-    </style>
+<!-- Console stays at bottom (default) -->
   <script>
 // ===== WORK PRO PATCH v53 =====
 (function() {
