@@ -16,19 +16,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>window.WORKPRO_VERSION='v207';</script>
-<script>
-// Fallback: if translations don't load in 5s, hide loader
-(function(){
-  var t = setTimeout(function(){
-    var loaders = document.querySelectorAll('[class*="loading"], [class*="loader"], [id*="loading"], [id*="loader"]');
-    loaders.forEach(function(l){ l.style.display = 'none'; });
-    var roots = document.querySelectorAll('[id*="root"]');
-    roots.forEach(function(r){ r.style.display = 'block'; });
-    console.log('[Loader] Translation fallback: showing content');
-  }, 5000);
-  window._cancelTransFallback = function(){ clearTimeout(t); };
-})();
-</script>
+<!-- v207: JS loader with render fallback -->
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -243,7 +231,7 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v196.js?v=199')
+      fetch('https://workpro-api.onrender.com/assets/index-v95.js?v=207')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
@@ -284,7 +272,7 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     /* Force console to top */
     #__cw, [id*="console"] { top: 0 !important; bottom: auto !important; }
     /* Push content down so console doesn't cover buttons */
-    body { padding-top: 120px !important; }
+    body { padding-top: 60px !important; }
     </style>
   <script>
 // ===== WORK PRO PATCH v53 =====
