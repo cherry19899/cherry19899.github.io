@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v193';</script>
+    <script>window.WORKPRO_VERSION='v194';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -759,9 +759,10 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
           console.log('[MenuPatch] Added "Мои отклики"');
         }
         
-        // Privacy Policy link in profile section
+        // Privacy Policy link in profile section — small link at bottom
         var ppItem = document.createElement('div');
-        ppItem.innerHTML = '<a href="/privacy-policy.html" target="_blank" style="display:block;padding:8px 12px;color:#6b7280;text-decoration:none;border-bottom:1px solid #eee;font-size:12px;">🔒 Privacy Policy</a>';
+        ppItem.style.cssText = 'margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;';
+        ppItem.innerHTML = '<a href="/privacy-policy.html" target="_blank" style="display:block;padding:4px 12px;color:#9ca3af;text-decoration:none;font-size:11px;">🔒 Privacy Policy</a>';
         menuList.appendChild(ppItem);
         console.log('[MenuPatch] Added Privacy Policy to menu');
         
