@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v197';</script>
+    <script>window.WORKPRO_VERSION='v198';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -104,7 +104,9 @@
                   };
                   localStorage.setItem('workpro_user', JSON.stringify(userToStore));
                   localStorage.setItem('workpro_user_id', uid);
+                  window._workproUserId = uid;
                   console.log('[Pi] User stored:', uid, userToStore.username);
+                  setupCreatePaymentPatch();
                 }
               }
             }).catch(function(err) { console.warn('[Pi] Auth storage error:', err); });
@@ -154,8 +156,8 @@
       window._workproUserId = null;
 
       // ---- 5. CREATE PAYMENT PROXY (injects x-user-id into callbacks) ----
-      setupCreatePaymentPatch._retries = setupCreatePaymentPatch._retries || 0;
       function setupCreatePaymentPatch() {
+        if (window._createPaymentPatched) return;
         var uid = window._workproUserId;
         if (!uid) {
           try {
@@ -163,13 +165,8 @@
             if (userStr) { var u = JSON.parse(userStr); uid = u.id || u.uid; window._workproUserId = uid; }
           } catch(e) {}
         }
-        if (!uid) {
-          setupCreatePaymentPatch._retries++;
-          if (setupCreatePaymentPatch._retries > 20) { console.log('[Pi] createPayment patch: max retries reached, giving up'); return; }
-          console.log('[Pi] createPayment patch: no userId yet, retry '+setupCreatePaymentPatch._retries+'/20');
-          setTimeout(setupCreatePaymentPatch, 500);
-          return;
-        }
+        if (!uid) { console.log('[Pi] patch: waiting for auth'); return; }
+        if (!window.Pi || !window.Pi.createPayment) { console.log('[Pi] patch: Pi.createPayment not ready'); return; }
 
         function wrapCallback(cb) {
           if (typeof cb !== 'function') return cb;
@@ -189,35 +186,22 @@
             try { result = cb(data); } catch(e) { window.fetch = origFetch2; throw e; }
             if (result && typeof result.then === 'function') {
               result.then(function() { window.fetch = origFetch2; }).catch(function() { window.fetch = origFetch2; });
-            } else {
-              window.fetch = origFetch2;
-            }
+            } else { window.fetch = origFetch2; }
             return result;
           };
         }
 
-        if (!window.Pi || !window.Pi.createPayment) {
-          setTimeout(setupCreatePaymentPatch, 200);
-          return;
-        }
         var origCreatePayment = window.Pi.createPayment;
         window.Pi.createPayment = function(paymentData, callbacks) {
-          if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
-          // Re-read uid in case it was set after auth
-          var currentUid = window._workproUserId;
-          if (currentUid) uid = currentUid;
-          return origCreatePayment.call(window.Pi, paymentData, {
-            onReadyForServerApproval: wrapCallback(callbacks.onReadyForServerApproval),
-            onReadyForServerCompletion: wrapCallback(callbacks.onReadyForServerCompletion),
-            onCancel: wrapCallback(callbacks.onCancel),
-            onError: wrapCallback(callbacks.onError)
-          });
+          if (callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval = wrapCallback(callbacks.onReadyForServerApproval);
+          if (callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion = wrapCallback(callbacks.onReadyForServerCompletion);
+          if (callbacks.onCancel) callbacks.onCancel = wrapCallback(callbacks.onCancel);
+          if (callbacks.onError) callbacks.onError = wrapCallback(callbacks.onError);
+          return origCreatePayment.call(window.Pi, paymentData, callbacks);
         };
-        console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
-      }
-      setupCreatePaymentPatch();
-
-      // ---- 6. NOTIFICATION BADGE POLLER ----
+        window._createPaymentPatched = true;
+        console.log('[Pi] createPayment patched for uid:', uid);
+      }/ ---- 6. NOTIFICATION BADGE POLLER ----
       (function pollNotifications() {
         try {
           var userStr = localStorage.getItem('workpro_user');
@@ -247,7 +231,7 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v196.js?v=197')
+      fetch('/assets/app-v196.js?v=198')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
@@ -273,7 +257,7 @@
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v197 start');
+lg('#0f0','[WP] v198 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -715,7 +699,7 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     <!-- DEBUG CONSOLE -->
     <div id="__cw" style="position:fixed;top:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
     <script>
-    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v197 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
+    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v198 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
     </script>
     <!-- MENU PATCH: Show both client and freelancer menus regardless of role -->
     <script>
