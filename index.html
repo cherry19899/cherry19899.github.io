@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v194';</script>
+    <script>window.WORKPRO_VERSION='v195';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -752,19 +752,9 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
           console.log('[MenuPatch] Added "Мои работы"');
         }
         
-        if (!hasMyApplications) {
-          var myAppsItem = document.createElement('div');
-          myAppsItem.innerHTML = '<a href="#/my-applications" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">📤 Мои отклики (фрилансер)</a>';
-          menuList.appendChild(myAppsItem);
-          console.log('[MenuPatch] Added "Мои отклики"');
-        }
+        // "My Applications" moved to Profile section — not in main menu
         
-        // Privacy Policy link in profile section — small link at bottom
-        var ppItem = document.createElement('div');
-        ppItem.style.cssText = 'margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;';
-        ppItem.innerHTML = '<a href="/privacy-policy.html" target="_blank" style="display:block;padding:4px 12px;color:#9ca3af;text-decoration:none;font-size:11px;">🔒 Privacy Policy</a>';
-        menuList.appendChild(ppItem);
-        console.log('[MenuPatch] Added Privacy Policy to menu');
+
         
         menuItemsAdded = true;
         console.log('[MenuPatch] Menu patched successfully');
@@ -775,10 +765,31 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
       setTimeout(patchMenu, 5000);
       setTimeout(patchMenu, 10000);
       
-      // Also observe DOM changes
+      // Profile page patch — add freelancer links
+      function patchProfile() {
+        var profileSections = document.querySelectorAll('[class*="profile"]');
+        profileSections.forEach(function(section) {
+          var sectionText = section.textContent || '';
+          if (sectionText.includes('Portfolio') && !section.querySelector('[data-patched]')) {
+            var wrapper = document.createElement('div');
+            wrapper.setAttribute('data-patched', 'true');
+            wrapper.innerHTML = 
+              '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;">' +
+              '<a href="#/my-applications" style="display:flex;align-items:center;padding:8px 0;color:#0d9488;text-decoration:none;font-size:14px;">' +
+              '<span style="margin-right:8px;">📤</span> Мои отклики (фрилансер)</a>' +
+              '<a href="/privacy-policy.html" target="_blank" style="display:flex;align-items:center;padding:8px 0;color:#9ca3af;text-decoration:none;font-size:12px;">' +
+              '<span style="margin-right:8px;">🔒</span> Privacy Policy</a></div>';
+            section.appendChild(wrapper);
+            console.log('[MenuPatch] Added freelancer links to Profile');
+          }
+        });
+      }
+      
+      // Observe DOM changes
       if (window.MutationObserver) {
         var observer = new MutationObserver(function(mutations) {
           if (!menuItemsAdded) patchMenu();
+          patchProfile();
         });
         observer.observe(document.body, { childList: true, subtree: true });
         console.log('[MenuPatch] DOM observer started');
@@ -786,7 +797,16 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     })();
     </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
-<!-- Privacy Policy now in profile menu via MenuPatch -->
+<script>
+  (function() {
+    var ppLink = document.createElement('a');
+    ppLink.href = '/privacy-policy.html';
+    ppLink.id = 'privacy-policy-link';
+    ppLink.style.cssText = 'position:fixed;bottom:10px;right:10px;color:#64748b;font-size:12px;z-index:9999;text-decoration:none;opacity:0.7;';
+    ppLink.textContent = 'Privacy Policy';
+    document.body.appendChild(ppLink);
+  })();
+  </script>
 <div id="__cw" style="position:fixed;top:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
 </body>
 </html>
