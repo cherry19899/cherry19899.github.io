@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v189';</script>
+    <script>window.WORKPRO_VERSION='v192';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -273,7 +273,7 @@
 <script>
 (function(){var c=document.getElementById('__c'),cnt=0;
 function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v189 start');
+lg('#0f0','[WP] v192 start');
 var o=console.log,oe=console.error,ow=console.warn;
 console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
 console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -715,7 +715,68 @@ window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.mes
     <!-- DEBUG CONSOLE -->
     <div id="__cw" style="position:fixed;top:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
     <script>
-    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v189 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
+    (function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v192 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
+    </script>
+    <!-- MENU PATCH: Show both client and freelancer menus regardless of role -->
+    <script>
+    (function(){
+      console.log('[MenuPatch] Starting...');
+      var menuItemsAdded = false;
+      
+      function patchMenu() {
+        if (menuItemsAdded) return;
+        // Find navigation container by common patterns
+        var nav = document.querySelector('nav') || document.querySelector('[class*="nav"]') || document.querySelector('[class*="menu"]');
+        if (!nav) return;
+        
+        // Check if menu has role-based filtering by looking for specific items
+        var menuText = nav.textContent || '';
+        var hasMyJobs = menuText.toLowerCase().includes('my jobs') || menuText.toLowerCase().includes('мои работы');
+        var hasMyApplications = menuText.toLowerCase().includes('my applications') || menuText.toLowerCase().includes('мои отклики');
+        
+        if (hasMyJobs && hasMyApplications) {
+          console.log('[MenuPatch] Menu already has both sections');
+          menuItemsAdded = true;
+          return;
+        }
+        
+        // Find or create the menu list
+        var menuList = nav.querySelector('ul') || nav.querySelector('div') || nav;
+        if (!menuList) return;
+        
+        // Add missing menu items
+        if (!hasMyJobs) {
+          var myJobsItem = document.createElement('div');
+          myJobsItem.innerHTML = '<a href="#/my-jobs" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">📋 Мои работы (заказчик)</a>';
+          menuList.appendChild(myJobsItem);
+          console.log('[MenuPatch] Added "Мои работы"');
+        }
+        
+        if (!hasMyApplications) {
+          var myAppsItem = document.createElement('div');
+          myAppsItem.innerHTML = '<a href="#/my-applications" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">📤 Мои отклики (фрилансер)</a>';
+          menuList.appendChild(myAppsItem);
+          console.log('[MenuPatch] Added "Мои отклики"');
+        }
+        
+        menuItemsAdded = true;
+        console.log('[MenuPatch] Menu patched successfully');
+      }
+      
+      // Try to patch immediately and after React loads
+      setTimeout(patchMenu, 2000);
+      setTimeout(patchMenu, 5000);
+      setTimeout(patchMenu, 10000);
+      
+      // Also observe DOM changes
+      if (window.MutationObserver) {
+        var observer = new MutationObserver(function(mutations) {
+          if (!menuItemsAdded) patchMenu();
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        console.log('[MenuPatch] DOM observer started');
+      }
+    })();
     </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
   <script>
