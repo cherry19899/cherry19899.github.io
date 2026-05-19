@@ -82,22 +82,15 @@
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
     // ---- PI SDK INIT (must run BEFORE bundle) ----
-    (function() {
-      function tryInit() {
-        if (!window.Pi || typeof window.Pi.init !== 'function') {
-          setTimeout(tryInit, 50);
-          return;
-        }
-        if (window.Pi._initialized) return;
-        try {
-          // Pi.init is already called inside JS bundle - don't double init
-          window.Pi._initialized = true;
-          console.log('[Pi] SDK will be initialized by app bundle');
-        } catch(e) {
-          console.error('[Pi] init error:', e);
-        }
+    (function(){
+      window.__piSandbox = /github\.io|localhost|onrender/.test(location.hostname);
+      if(typeof Pi!=='undefined'&&Pi.init){
+        try{Pi.init({version:"2.0",sandbox:window.__piSandbox});console.log('[Pi] init ok');}
+        catch(e){console.error('[Pi] init err',e.message);}
+      }else{
+        window.Pi=window.Pi||{};
+        window.Pi.authenticate=function(){return Promise.reject('Pi SDK not loaded');};
       }
-      tryInit();
     })();
     </script>
     <script>
