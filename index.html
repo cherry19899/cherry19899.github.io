@@ -84,13 +84,63 @@
     // ---- PI SDK INIT (must run BEFORE bundle) ----
     (function(){
       window.__piSandbox = /github\.io|localhost|onrender/.test(location.hostname);
+      // onIncompletePaymentFound handler — must return Promise
+      var onIncompletePaymentFound = function(payment) {
+        console.log('[Pi] init onIncompletePaymentFound:', payment && payment.identifier);
+        if (payment && payment.identifier) {
+          var uid = localStorage.getItem('workpro_user_id') || '';
+          return fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+          }).then(function(r){return r.json();}).then(function(d){
+            console.log('[Pi] Cancelled:', JSON.stringify(d));
+            return d;
+          }).catch(function(e){
+            console.error('[Pi] Cancel failed:', e && e.message);
+            return {success: false, error: e && e.message};
+          });
+        }
+        return Promise.resolve({success: true});
+      };
+      window.__piOnIncomplete = onIncompletePaymentFound;
       if(typeof Pi!=='undefined'&&Pi.init){
-        try{Pi.init({version:"2.0",sandbox:window.__piSandbox});console.log('[Pi] init ok');}
-        catch(e){console.error('[Pi] init err',e.message);}
+        try{
+          Pi.init({version:"2.0",sandbox:window.__piSandbox,onIncompletePaymentFound:onIncompletePaymentFound});
+          console.log('[Pi] init ok with onIncompletePaymentFound');
+        }catch(e){
+          console.error('[Pi] init err',e.message);
+          try{Pi.init({version:"2.0",sandbox:window.__piSandbox});console.log('[Pi] init ok (fallback)');}
+          catch(e2){console.error('[Pi] init err2',e2.message);}
+        }
       }else{
         window.Pi=window.Pi||{};
         window.Pi.authenticate=function(){return Promise.reject('Pi SDK not loaded');};
       }
+      // Auto-auth on startup to handle pending payments
+      function autoAuth() {
+        if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
+          setTimeout(autoAuth, 200);
+          return;
+        }
+        window.Pi.authenticate(['username', 'payments'], window.__piOnIncomplete).then(function(auth){
+          console.log('[Pi] autoAuth success');
+          if (auth && auth.user) {
+            var uid = auth.user.uid || auth.user.id;
+            if (uid) {
+              window._workproUserId = uid;
+              localStorage.setItem('workpro_user_id', uid);
+              localStorage.setItem('workpro_user', JSON.stringify({
+                id: uid, uid: uid,
+                username: auth.user.username || auth.user.name || 'User',
+                name: auth.user.name || auth.user.username || 'User',
+                accessToken: auth.accessToken || ''
+              }));
+            }
+          }
+        }).catch(function(err){
+          console.log('[Pi] autoAuth silent fail:', err && err.message);
+        });
+      }
+      setTimeout(autoAuth, 500);
     })();
     </script>
     <script>
