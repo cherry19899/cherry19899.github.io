@@ -108,11 +108,17 @@
             console.log('[Pi] onIncompletePaymentFound:', payment && payment.identifier);
             if (payment && payment.identifier) {
               var uid = localStorage.getItem('workpro_user_id') || '';
-              fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
+              return fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-              }).then(function(r){return r.json();}).then(function(d){console.log('[Pi] Cancelled:', JSON.stringify(d));}).catch(function(e){console.error('[Pi] Cancel failed:', e && e.message);});
+              }).then(function(r){return r.json();}).then(function(d){
+                console.log('[Pi] Cancelled:', JSON.stringify(d));
+                return d;
+              }).catch(function(e){
+                console.error('[Pi] Cancel failed:', e && e.message);
+                return {success: false, error: e && e.message};
+              });
             }
-            return Promise.resolve();
+            return Promise.resolve({success: true});
           };
           var result = origAuth.call(window.Pi, scopes, wrapped);
           // Store userId globally for createPayment proxy
@@ -251,7 +257,8 @@
           // Auto-detect missing payments scope and force re-auth
           var origOnError = callbacks.onError || function(){};
           callbacks.onError = function(data) {
-            var msg = (data && data.message) || '';
+            var safeData = data || {};
+            var msg = safeData.message || '';
             if (msg.indexOf('payments') !== -1 && msg.indexOf('scope') !== -1) {
               console.log('[Pi] Missing payments scope — forcing re-auth...');
               if (window.Pi && window.Pi.logOut) {
@@ -268,7 +275,7 @@
               }
               return;
             }
-            origOnError(data);
+            origOnError(safeData);
           };
           if (!callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval = function(){};
           if (!callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion = function(){};
