@@ -248,11 +248,35 @@
         var origCreatePayment = window.Pi.createPayment;
         window.Pi.createPayment = function(paymentData, callbacks) {
           if (!callbacks) callbacks = {};
-          if (!callbacks.onError) callbacks.onError = function(data) { console.error('[Pi] onError fallback:', data && data.message || data); };
-          if (callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval = wrapCallback(callbacks.onReadyForServerApproval, '/approve');
-          if (callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion = wrapCallback(callbacks.onReadyForServerCompletion, '/complete');
-          if (callbacks.onCancel) callbacks.onCancel = wrapCallback(callbacks.onCancel, '/cancelled');
-          if (callbacks.onError) callbacks.onError = wrapCallback(callbacks.onError, '/error');
+          // Auto-detect missing payments scope and force re-auth
+          var origOnError = callbacks.onError || function(){};
+          callbacks.onError = function(data) {
+            var msg = (data && data.message) || '';
+            if (msg.indexOf('payments') !== -1 && msg.indexOf('scope') !== -1) {
+              console.log('[Pi] Missing payments scope — forcing re-auth...');
+              if (window.Pi && window.Pi.logOut) {
+                window.Pi.logOut(function(){
+                  console.log('[Pi] Logged out, reloading...');
+                  localStorage.removeItem('workpro_user');
+                  localStorage.removeItem('workpro_user_id');
+                  window.location.reload();
+                });
+              } else {
+                localStorage.removeItem('workpro_user');
+                localStorage.removeItem('workpro_user_id');
+                window.location.reload();
+              }
+              return;
+            }
+            origOnError(data);
+          };
+          if (!callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval = function(){};
+          if (!callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion = function(){};
+          if (!callbacks.onCancel) callbacks.onCancel = function(){};
+          callbacks.onReadyForServerApproval = wrapCallback(callbacks.onReadyForServerApproval, '/approve');
+          callbacks.onReadyForServerCompletion = wrapCallback(callbacks.onReadyForServerCompletion, '/complete');
+          callbacks.onCancel = wrapCallback(callbacks.onCancel, '/cancelled');
+          callbacks.onError = wrapCallback(callbacks.onError, '/error');
           return origCreatePayment.call(window.Pi, paymentData, callbacks);
         };
         window._createPaymentPatched = true;
