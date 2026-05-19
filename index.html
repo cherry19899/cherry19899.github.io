@@ -247,10 +247,12 @@
 
         var origCreatePayment = window.Pi.createPayment;
         window.Pi.createPayment = function(paymentData, callbacks) {
+          if (!callbacks) callbacks = {};
+          if (!callbacks.onError) callbacks.onError = function(data) { console.error('[Pi] onError fallback:', data && data.message || data); };
           if (callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval = wrapCallback(callbacks.onReadyForServerApproval, '/approve');
           if (callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion = wrapCallback(callbacks.onReadyForServerCompletion, '/complete');
           if (callbacks.onCancel) callbacks.onCancel = wrapCallback(callbacks.onCancel, '/cancelled');
-          if (callbacks.onError) callbacks.onError = wrapCallback(callbacks.onError, '');
+          if (callbacks.onError) callbacks.onError = wrapCallback(callbacks.onError, '/error');
           return origCreatePayment.call(window.Pi, paymentData, callbacks);
         };
         window._createPaymentPatched = true;
