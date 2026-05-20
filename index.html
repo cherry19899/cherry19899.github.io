@@ -140,6 +140,17 @@
               method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': cuid }
             }).then(function(r){return r.json();}).then(function(d){
               console.log('[Pi] Startup cancel-all:', d.message || JSON.stringify(d));
+              // If payments were cancelled, force re-auth to sync SDK state
+              if (d && d.success && d.message && d.message.indexOf('0') === -1) {
+                console.log('[Pi] Pending cancelled — forcing re-auth to sync SDK...');
+                setTimeout(function(){
+                  if (window.Pi && window.Pi.authenticate) {
+                    window.Pi.authenticate(['username','payments'], window.__piOnIncomplete).then(function(){
+                      console.log('[Pi] Re-auth after cancel success');
+                    }).catch(function(e){ console.log('[Pi] Re-auth after cancel fail:', e); });
+                  }
+                }, 500);
+              }
             }).catch(function(e){ console.log('[Pi] Startup cancel-all fail:', e && e.message); });
           }
         }).catch(function(err){
@@ -159,6 +170,16 @@
             method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': cuid }
           }).then(function(r){return r.json();}).then(function(d){
             console.log('[Pi] Load cancel-all:', d.message || JSON.stringify(d));
+            if (d && d.success && d.message && d.message.indexOf('0') === -1) {
+              console.log('[Pi] Pending cancelled on load — forcing re-auth to sync SDK...');
+              setTimeout(function(){
+                if (window.Pi && window.Pi.authenticate) {
+                  window.Pi.authenticate(['username','payments'], window.__piOnIncomplete).then(function(){
+                    console.log('[Pi] Re-auth after load cancel success');
+                  }).catch(function(e){ console.log('[Pi] Re-auth after load cancel fail:', e); });
+                }
+              }, 500);
+            }
           }).catch(function(e){ console.log('[Pi] Load cancel-all fail:', e && e.message); });
         }
       }, 1500);
