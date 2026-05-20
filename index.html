@@ -489,7 +489,8 @@
           var storedC = parseInt(sc || '0', 10);
           var userC = user.balance_connects || user.connects || 0;
           if (storedC >= 0 && storedC !== userC) {
-            console.log('[WorkPro] GET: restoring connects', storedC, 'over', userC);
+            // suppress spam: only log if actually restoring
+            if (!window._connectsLogged) { console.log('[WorkPro] GET: restoring connects', storedC, 'over', userC); window._connectsLogged = true; }
             user.balance_connects = storedC;
             user.connects = storedC;
           }
