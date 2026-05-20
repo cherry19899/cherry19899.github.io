@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v223';</script>
+    <script>window.WORKPRO_VERSION='v224';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -286,6 +286,7 @@
 
       // ---- 5. CREATE PAYMENT PROXY (injects x-user-id into callbacks) ----
       function setupCreatePaymentPatch() {
+        window.setupCreatePaymentPatch = setupCreatePaymentPatch; // expose globally for early caller
         if (window._createPaymentPatched) return;
         var uid = window._workproUserId;
         if (!uid) {
