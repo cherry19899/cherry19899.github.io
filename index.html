@@ -138,6 +138,10 @@
         });
       }
       setTimeout(autoAuth, 500);
+      // Also try to patch createPayment from storage immediately
+      setTimeout(function(){
+        if (!window._createPaymentPatched) setupCreatePaymentPatch();
+      }, 700);
     })();
     </script>
     <script>
@@ -196,6 +200,8 @@
           return result;
         };
         console.log('[Pi] authenticate patched with Promise wrapper + userId storage');
+        // Try patching createPayment immediately from stored user
+        setTimeout(function(){ if (!window._createPaymentPatched) setupCreatePaymentPatch(); }, 100);
       }
       patchAuth();
 
