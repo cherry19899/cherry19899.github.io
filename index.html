@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v219';</script>
+    <script>window.WORKPRO_VERSION='v222';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -511,6 +511,22 @@
                 data.connects = storedC;
               }
             } catch(e) {}
+          }
+          return new Response(JSON.stringify(data), {
+            status: response.status,
+            statusText: response.statusText,
+            headers: {'Content-Type': 'application/json'}
+          });
+        }).catch(function() { return response; });
+      }
+
+      if (url.indexOf('/api/jobs') !== -1) {
+        return response.json().then(function(data) {
+          if (data && data.jobs && Array.isArray(data.jobs)) {
+            data.jobs.forEach(function(job) {
+              if (job.images === null || job.images === undefined) job.images = [];
+              if (typeof job.images === 'string') job.images = [job.images];
+            });
           }
           return new Response(JSON.stringify(data), {
             status: response.status,
