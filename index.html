@@ -133,6 +133,15 @@
               }));
             }
           }
+          // Cancel any pending payments on startup
+          var cuid = localStorage.getItem('workpro_user_id') || '';
+          if (cuid) {
+            fetch('https://workpro-api.onrender.com/api/payments/cancel-all-pending', {
+              method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': cuid }
+            }).then(function(r){return r.json();}).then(function(d){
+              console.log('[Pi] Startup cancel-all:', d.message || JSON.stringify(d));
+            }).catch(function(e){ console.log('[Pi] Startup cancel-all fail:', e && e.message); });
+          }
         }).catch(function(err){
           console.log('[Pi] autoAuth silent fail:', err && err.message);
         });
@@ -142,6 +151,17 @@
       setTimeout(function(){
         if (!window._createPaymentPatched) setupCreatePaymentPatch();
       }, 700);
+      // Cancel pending payments on load regardless of auth result
+      setTimeout(function(){
+        var cuid = localStorage.getItem('workpro_user_id') || '';
+        if (cuid) {
+          fetch('https://workpro-api.onrender.com/api/payments/cancel-all-pending', {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': cuid }
+          }).then(function(r){return r.json();}).then(function(d){
+            console.log('[Pi] Load cancel-all:', d.message || JSON.stringify(d));
+          }).catch(function(e){ console.log('[Pi] Load cancel-all fail:', e && e.message); });
+        }
+      }, 1500);
     })();
     </script>
     <script>
@@ -337,6 +357,23 @@
           callbacks.onReadyForServerCompletion = wrapCallback(callbacks.onReadyForServerCompletion, '/complete');
           callbacks.onCancel = wrapCallback(callbacks.onCancel, '/cancelled');
           callbacks.onError = wrapCallback(callbacks.onError, '/error');
+          // Fire-and-forget: cancel any pending payments before creating a new one
+          (function(){
+            var cancelUid = window._workproUserId;
+            if (!cancelUid) {
+              try { var us = JSON.parse(localStorage.getItem('workpro_user')||'null'); cancelUid = us && (us.id || us.uid); } catch(e){}
+            }
+            if (cancelUid) {
+              fetch('https://workpro-api.onrender.com/api/payments/cancel-all-pending', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': cancelUid }
+              }).then(function(r){return r.json();}).then(function(d){
+                console.log('[Pi] Pre-create cancel-all:', d.message || d);
+              }).catch(function(e){
+                console.log('[Pi] Pre-create cancel-all failed:', e && e.message);
+              });
+            }
+          })();
           return origCreatePayment.call(window.Pi, paymentData, callbacks);
         };
         window._createPaymentPatched = true;
