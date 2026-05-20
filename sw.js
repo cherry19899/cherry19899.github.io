@@ -1,5 +1,5 @@
 // Work Pro Service Worker — PWA support for Pi Browser
-const CACHE_NAME = 'workpro-v225';
+const CACHE_NAME = 'workpro-v226';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
