@@ -57,8 +57,10 @@
       (function() {
         try {
           var cleared = localStorage.getItem('workpro_v53_cleared');
-          if (!cleared) {
-            localStorage.setItem('workpro_v53_cleared', '1');
+          var cleared219 = localStorage.getItem('workpro_v219_cleared');
+          if (!cleared || !cleared219) {
+            if (!cleared) localStorage.setItem('workpro_v53_cleared', '1');
+            if (!cleared219) localStorage.setItem('workpro_v219_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -67,11 +69,6 @@
             if ('serviceWorker' in navigator) {
               navigator.serviceWorker.getRegistrations().then(function(regs) {
                 regs.forEach(function(r) { r.unregister(); });
-              });
-            }
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                for (var reg of regs) reg.unregister();
               });
             }
             setTimeout(function() { window.location.reload(); }, 500);
