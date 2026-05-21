@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v237';</script>
+    <script>window.WORKPRO_VERSION='v238';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -81,6 +81,22 @@
           }
         } catch(e) {}
       })();
+    </script>
+    <script>
+    // GUEST VIEW: allow portfolio without auth
+    (function(){
+      var hash = window.location.hash;
+      if (hash.indexOf('#/portfolio/') === 0) {
+        var uid = hash.split('/')[2];
+        var userStr = localStorage.getItem('workpro_user');
+        if (!userStr && uid) {
+          var stub = { id: uid, username: uid, role: 'freelancer', balance_pi: 0, balance_connects: 0, kyc_verified: 0, _stub: true };
+          localStorage.setItem('workpro_user', JSON.stringify(stub));
+          window._WORKPRO_GUEST_VIEW = true;
+          console.log('[Guest] Stub user injected for portfolio:', uid);
+        }
+      }
+    })();
     </script>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
