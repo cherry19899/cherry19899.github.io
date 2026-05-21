@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v231';</script>
+    <script>window.WORKPRO_VERSION='v232';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -984,7 +984,7 @@
         // Add missing menu items
         if (!hasMyJobs) {
           var myJobsItem = document.createElement('div');
-          myJobsItem.innerHTML = '<a href="#/my-jobs" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">📋 Мои работы (заказчик)</a>';
+          myJobsItem.innerHTML = '<a href="#/my-jobs" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">&#128203; My Jobs</a>';
           menuList.appendChild(myJobsItem);
           console.log('[MenuPatch] Added "Мои работы"');
         }
@@ -1017,9 +1017,9 @@
             wrapper.innerHTML = 
               '<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;">' +
               '<a href="#/my-applications" style="display:flex;align-items:center;padding:8px 0;color:#0d9488;text-decoration:none;font-size:14px;">' +
-              '<span style="margin-right:8px;">📤</span> Мои отклики (фрилансер)</a>' +
+              '<span style="margin-right:8px;">&#128228;</span> My Applications</a>' +
               '<a href="/privacy-policy.html" target="_blank" style="display:flex;align-items:center;padding:8px 0;color:#9ca3af;text-decoration:none;font-size:12px;">' +
-              '<span style="margin-right:8px;">🔒</span> Privacy Policy</a></div>';
+              '<span style="margin-right:8px;">&#128274;</span> Privacy Policy</a></div>';
             section.appendChild(wrapper);
             console.log('[MenuPatch] Added freelancer links to Profile');
           }

@@ -299,17 +299,17 @@ function Portfolio({ user, onNavigate }) {
         <div className="portfolio-links">
           {portfolio.website && (
             <a href={portfolio.website} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-              🌐 Website
+              &#127760; Website
             </a>
           )}
           {portfolio.github && (
             <a href={portfolio.github} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-              💻 GitHub
+              &#128187; GitHub
             </a>
           )}
           {portfolio.linkedin && (
             <a href={portfolio.linkedin} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-              💼 LinkedIn
+              &#128188; LinkedIn
             </a>
           )}
         </div>
@@ -412,7 +412,7 @@ function Portfolio({ user, onNavigate }) {
                         onClick={() => handleDeleteItem(item.id)}
                         title="Remove"
                       >
-                        ✕
+                        &#10005;
                       </button>
                     )}
                   </div>
