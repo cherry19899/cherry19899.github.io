@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v229';</script>
+    <script>window.WORKPRO_VERSION='v231';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -437,6 +437,40 @@
         } catch(e) {}
         setTimeout(pollNotifications, 30000); // Poll every 30s
       })();
+    })();
+    </script>
+    <script>
+    (function(){
+      // Load Portfolio component before main bundle
+      var start=Date.now();
+      fetch('/assets/portfolio.js?v=230')
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+        .then(function(code){
+          console.log('[Loader] Portfolio JS fetched in '+(Date.now()-start)+'ms');
+          try{
+            var s=document.createElement('script');
+            s.textContent=code;
+            document.head.appendChild(s);
+          }catch(e){ console.error('[Loader] Portfolio exec error:', e.message); }
+        })
+        .catch(function(e){ console.error('[Loader] Portfolio fetch error:', e.message); });
+    })();
+    </script>
+    <script>
+    (function(){
+      // Load Portfolio route patch
+      var start=Date.now();
+      fetch('/assets/portfolio-patch.js?v=230')
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+        .then(function(code){
+          console.log('[Loader] Portfolio patch fetched in '+(Date.now()-start)+'ms');
+          try{
+            var s=document.createElement('script');
+            s.textContent=code;
+            document.head.appendChild(s);
+          }catch(e){ console.error('[Loader] Portfolio patch exec error:', e.message); }
+        })
+        .catch(function(e){ console.error('[Loader] Portfolio patch fetch error:', e.message); });
     })();
     </script>
     <script>
