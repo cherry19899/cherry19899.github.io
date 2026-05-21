@@ -194,7 +194,7 @@ function Portfolio({ user, onNavigate }) {
           </span>
         </div>
         <div className="portfolio-intro">
-          <h1>{owner?.username || owner?.name || user?.username || 'Pi User'}</h1>
+          <h1>{owner?.username || user?.username || 'Pi User'}</h1>
           {portfolio?.headline && <p className="portfolio-headline">{portfolio.headline}</p>}
           <div className="portfolio-stats-row">
             <span className="stat-badge">{stats.jobs_completed || 0} completed</span>
