@@ -168,7 +168,9 @@ function Portfolio({ user, onNavigate }) {
 
   const getRatingStars = (rating) => {
     const r = parseFloat(rating) || 0;
-    return '★'.repeat(Math.round(r)) + '☆'.repeat(5 - Math.round(r));
+    if (r <= 0 || isNaN(r)) return 'Not rated';
+    const stars = Math.round(r);
+    return '\u2605'.repeat(stars) + '\u2606'.repeat(5 - stars);
   };
 
   if (loading) {
