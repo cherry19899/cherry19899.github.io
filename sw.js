@@ -3,6 +3,7 @@ const CACHE_NAME = 'workpro-v231';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/portfolio.html',
   '/manifest.json',
   '/privacy-policy.html',
   '/clear.html',

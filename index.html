@@ -1003,9 +1003,10 @@
         var menuText = nav.textContent || '';
         var hasMyJobs = menuText.toLowerCase().includes('my jobs') || menuText.toLowerCase().includes('мои работы');
         var hasMyApplications = menuText.toLowerCase().includes('my applications') || menuText.toLowerCase().includes('мои отклики');
+        var hasPortfolio = menuText.toLowerCase().includes('portfolio') || menuText.toLowerCase().includes('портфолио');
         
-        if (hasMyJobs && hasMyApplications) {
-          console.log('[MenuPatch] Menu already has both sections');
+        if (hasMyJobs && hasMyApplications && hasPortfolio) {
+          console.log('[MenuPatch] Menu already has all sections');
           menuItemsAdded = true;
           return;
         }
@@ -1020,6 +1021,13 @@
           myJobsItem.innerHTML = '<a href="#/my-jobs" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">📋 Мои работы (заказчик)</a>';
           menuList.appendChild(myJobsItem);
           console.log('[MenuPatch] Added "Мои работы"');
+        }
+        
+        if (!hasPortfolio) {
+          var portfolioItem = document.createElement('div');
+          portfolioItem.innerHTML = '<a href="/portfolio.html" style="display:block;padding:8px 12px;color:#0d9488;text-decoration:none;border-bottom:1px solid #eee;">💼 Portfolio</a>';
+          menuList.appendChild(portfolioItem);
+          console.log('[MenuPatch] Added "Portfolio"');
         }
         
         // "My Applications" moved to Profile section — not in main menu
