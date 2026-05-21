@@ -6,6 +6,7 @@ function Portfolio({ user, onNavigate }) {
   const [targetUserId, setTargetUserId] = useState(user?.uid || '');
   const [portfolio, setPortfolio] = useState(null);
   const [items, setItems] = useState([]);
+  const [owner, setOwner] = useState(null);
   const [stats, setStats] = useState({ jobs_posted: 0, jobs_completed: 0, rating: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -64,6 +65,7 @@ function Portfolio({ user, onNavigate }) {
       const data = await res.json();
       setPortfolio(data.portfolio || {});
       setItems(data.items || []);
+      setOwner(data.owner || null);
       setStats(data.stats || { jobs_posted: 0, jobs_completed: 0, rating: 0 });
       if (data.portfolio) {
         setFormData({
@@ -188,11 +190,11 @@ function Portfolio({ user, onNavigate }) {
       <div className="portfolio-header">
         <div className="portfolio-avatar">
           <span className="avatar-letter">
-            {(user?.username || 'U').charAt(0).toUpperCase()}
+            {(owner?.username || user?.username || 'U').charAt(0).toUpperCase()}
           </span>
         </div>
         <div className="portfolio-intro">
-          <h1>{user?.username || 'Pi User'}</h1>
+          <h1>{owner?.username || owner?.name || user?.username || 'Pi User'}</h1>
           {portfolio?.headline && <p className="portfolio-headline">{portfolio.headline}</p>}
           <div className="portfolio-stats-row">
             <span className="stat-badge">{stats.jobs_completed || 0} completed</span>
