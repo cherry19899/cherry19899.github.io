@@ -1,9 +1,15 @@
 // Portfolio.js - Freelancer Portfolio Showcase
 const { useState, useEffect, useCallback } = React;
 
+function getUidFromHash() {
+  const hash = window.location.hash || '#/portfolio';
+  const parts = hash.replace('#/', '/').split('/').filter(Boolean);
+  return (parts.length > 1 && parts[0] === 'portfolio') ? parts[1] : '';
+}
+
 function Portfolio({ user, onNavigate }) {
   const [isOwn, setIsOwn] = useState(true);
-  const [targetUserId, setTargetUserId] = useState(user?.uid || '');
+  const [targetUserId, setTargetUserId] = useState(getUidFromHash() || user?.uid || '');
   const [portfolio, setPortfolio] = useState(null);
   const [items, setItems] = useState([]);
   const [owner, setOwner] = useState(null);
@@ -36,10 +42,8 @@ function Portfolio({ user, onNavigate }) {
 
   // Parse route params
   useEffect(() => {
-    const hash = window.location.hash || '#/portfolio';
-    const parts = hash.replace('#/', '/').split('/').filter(Boolean);
-    if (parts.length > 1 && parts[0] === 'portfolio') {
-      const uid = parts[1];
+    const uid = getUidFromHash();
+    if (uid) {
       setTargetUserId(uid);
       setIsOwn(uid === user?.uid);
     } else {
@@ -53,10 +57,8 @@ function Portfolio({ user, onNavigate }) {
     setLoading(true);
     setError('');
     try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-user-id': user?.uid || ''
-      };
+      const headers = { 'Content-Type': 'application/json' };
+      if (user?.uid) headers['x-user-id'] = user.uid;
       const res = await fetch(
         `https://workpro-api.onrender.com/api/users/${targetUserId}/portfolio`,
         { headers }
