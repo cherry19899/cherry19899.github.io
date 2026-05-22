@@ -167,10 +167,15 @@ function Home({ user, onNavigate }) {
                   <span className="job-connects">{job.connects_required || 1} connects</span>
                 </div>
                 <div className="job-skills">
-                  {(job.skills || []).slice(0, 4).map((skill) => (
+                  {(() => {
+                    let skills = job.skills || [];
+                    if (typeof skills === 'string') {
+                      try { skills = JSON.parse(skills); } catch (e) { skills = [skills]; }
+                    }
+                    if (!Array.isArray(skills)) skills = [];
+                    return skills.slice(0, 4).map((skill) => (
                     <span key={skill} className="skill-tag">{skill}</span>
-                  ))}
-                </div>
+                  ))}()}</div>
               </div>
             ))}
           </div>
