@@ -47,7 +47,9 @@ function Connects({ user, onUpdateUser }) {
 
     try {
       // Initialize Pi SDK for payment
-      Pi.init({ version: "2.0", sandbox: true });
+      // Detect sandbox mode
+      const isSandbox = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      Pi.init({ version: "2.0", sandbox: isSandbox });
 
       const paymentData = {
         amount: price,
@@ -215,7 +217,7 @@ function Connects({ user, onUpdateUser }) {
             </div>
             <button
               className="btn btn-primary btn-large"
-              onClick={() => fallbackBuy(pkg.quantity)}
+              onClick={() => handleBuy(pkg.quantity, pkg.price)}
               disabled={purchasing === pkg.quantity}
             >
               {purchasing === pkg.quantity ? (
