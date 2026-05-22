@@ -137,6 +137,9 @@ function App() {
       case "/reviews":
         return <Reviews user={user} onNavigate={navigateTo} />;
 
+      case "/admin":
+        return <Admin user={user} onNavigate={navigateTo} />;
+
       default:
         return (
           <div className="page-container">

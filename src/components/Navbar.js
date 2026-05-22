@@ -68,6 +68,11 @@ function Navbar({ user, onLogout, onNavigate, currentPath }) {
     { path: "/profile", label: "Profile" },
   ];
 
+  const isAdmin = user?.is_admin || user?.username === 'cherry19899' || user?.uid === 'cherry19899';
+  if (isAdmin) {
+    navLinks.push({ path: "/admin", label: "Admin" });
+  }
+
   return (
     <nav className="navbar">
       <div className="navbar-container">

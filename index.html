@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v243';</script>
+    <script>window.WORKPRO_VERSION='v244';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -460,7 +460,7 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/index.js?v=240')
+      fetch('/assets/index.js?v=244')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
@@ -1071,5 +1071,180 @@
     document.body.appendChild(ppLink);
   })();
   </script>
+<script>// Admin component is needed in bundle for /admin route to work
+// Since bundle is minified and hard to patch, create inline script version
+// This uses React.createElement instead of JSX so it works as plain script
+
+const { useState, useEffect } = React;
+
+function Admin({ user, onNavigate }) {
+  const [jobs, setJobs] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [tab, setTab] = useState("jobs");
+
+  const isAdmin = user?.is_admin || user?.username === 'cherry19899' || user?.uid === 'cherry19899';
+
+  useEffect(() => {
+    if (!isAdmin) {
+      onNavigate("/");
+      return;
+    }
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        "x-user-id": user?.uid || "",
+      };
+      
+      const [jobsRes, usersRes, statsRes] = await Promise.all([
+        fetch("https://workpro-api.onrender.com/api/admin/jobs/all", { headers }),
+        fetch("https://workpro-api.onrender.com/api/admin/users", { headers }),
+        fetch("https://workpro-api.onrender.com/api/admin/stats", { headers }),
+      ]);
+
+      if (jobsRes.ok) {
+        const data = await jobsRes.json();
+        setJobs(data.jobs || data || []);
+      }
+      if (usersRes.ok) {
+        const data = await usersRes.json();
+        setUsers(data.users || data || []);
+      }
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        setStats(data);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteJob = async (jobId) => {
+    if (!confirm("Delete job #" + jobId + "?")) return;
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        "x-user-id": user?.uid || "",
+      };
+      const res = await fetch("https://workpro-api.onrender.com/api/jobs/" + jobId, {
+        method: "DELETE",
+        headers,
+      });
+      if (res.ok) {
+        setJobs((prev) => prev.filter((j) => (j.id || j._id) !== jobId));
+        alert("Job deleted");
+      } else {
+        const err = await res.text();
+        throw new Error(err);
+      }
+    } catch (err) {
+      alert("Delete failed: " + err.message);
+    }
+  };
+
+  const el = React.createElement;
+
+  if (loading) {
+    return el('div', { className: 'loading-container' },
+      el('span', { className: 'spinner large' }),
+      el('p', null, 'Loading admin data...')
+    );
+  }
+
+  if (error) {
+    return el('div', { className: 'error-container' },
+      el('h2', null, 'Error'),
+      el('p', null, error),
+      el('button', { className: 'btn btn-primary', onClick: fetchData }, 'Retry')
+    );
+  }
+
+  return el('div', { className: 'page-container' },
+    el('div', { className: 'page-header' },
+      el('h1', null, 'Admin Dashboard')
+    ),
+    stats ? el('div', { className: 'stats-grid' },
+      el('div', { className: 'stat-card' },
+        el('div', { className: 'stat-number' }, stats.total_jobs || jobs.length || 0),
+        el('div', { className: 'stat-label' }, 'Total Jobs')
+      ),
+      el('div', { className: 'stat-card' },
+        el('div', { className: 'stat-number' }, stats.total_users || users.length || 0),
+        el('div', { className: 'stat-label' }, 'Total Users')
+      ),
+      el('div', { className: 'stat-card' },
+        el('div', { className: 'stat-number' }, stats.total_applications || 0),
+        el('div', { className: 'stat-label' }, 'Applications')
+      ),
+      el('div', { className: 'stat-card' },
+        el('div', { className: 'stat-number' }, stats.total_escrows || 0),
+        el('div', { className: 'stat-label' }, 'Escrows')
+      )
+    ) : null,
+    el('div', { className: 'tabs' },
+      el('button', {
+        className: 'tab-btn ' + (tab === 'jobs' ? 'active' : ''),
+        onClick: () => setTab('jobs')
+      }, 'Jobs (' + jobs.length + ')'),
+      el('button', {
+        className: 'tab-btn ' + (tab === 'users' ? 'active' : ''),
+        onClick: () => setTab('users')
+      }, 'Users (' + users.length + ')')
+    ),
+    tab === 'jobs' ? el('div', { className: 'admin-list' },
+      jobs.length === 0 ? el('p', null, 'No jobs found.') :
+      jobs.map((job) => el('div', { key: job.id || job._id, className: 'admin-list-item' },
+        el('div', { className: 'admin-list-info' },
+          el('h4', { className: 'job-list-title' }, job.title),
+          el('div', { className: 'job-list-meta' },
+            el('span', null, job.posted_by_name || job.posted_by),
+            el('span', null, 'π' + (job.budget || 0)),
+            el('span', null, job.status),
+            el('span', null, job.created_at)
+          )
+        ),
+        el('div', { className: 'admin-list-actions' },
+          el('button', {
+            className: 'btn btn-secondary',
+            onClick: () => onNavigate('/jobs/' + (job.id || job._id))
+          }, 'View'),
+          el('button', {
+            className: 'btn btn-danger',
+            onClick: () => handleDeleteJob(job.id || job._id)
+          }, 'Delete')
+        )
+      ))
+    ) : null,
+    tab === 'users' ? el('div', { className: 'admin-list' },
+      users.length === 0 ? el('p', null, 'No users found.') :
+      users.map((u) => el('div', { key: u.id || u._id, className: 'admin-list-item' },
+        el('div', { className: 'admin-list-info' },
+          el('h4', null, u.username || u.id),
+          el('div', { className: 'job-list-meta' },
+            el('span', null, u.role || 'user'),
+            el('span', null, u.kyc_verified ? 'KYC' : 'No KYC'),
+            el('span', null, 'Balance: ' + (u.balance_pi || 0) + ' Pi')
+          )
+        ),
+        el('div', { className: 'admin-list-actions' },
+          el('button', {
+            className: 'btn btn-secondary',
+            onClick: () => onNavigate('/portfolio/' + u.id)
+          }, 'Portfolio')
+        )
+      ))
+    ) : null
+  );
+}</script>
 </body>
 </html>
