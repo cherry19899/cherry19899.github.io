@@ -15,7 +15,7 @@
     <link rel="manifest" href="/manifest.json?v=47" />
     <link rel="apple-touch-icon" href="/vite.svg?v=47" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v238';</script>
+    <script>window.WORKPRO_VERSION='v239';</script>
 <script>
 // Fallback: show Sign In button if auto-auth takes too long
 (function(){
@@ -60,13 +60,15 @@
           var cleared219 = localStorage.getItem('workpro_v219_cleared');
           var cleared227 = localStorage.getItem('workpro_v227_cleared');
           var cleared228 = localStorage.getItem('workpro_v228_cleared');
-          if (!cleared || !cleared219 || !cleared225 || !cleared226 || !cleared227 || !cleared228) {
+          var cleared239 = localStorage.getItem('workpro_v239_cleared');
+          if (!cleared || !cleared219 || !cleared225 || !cleared226 || !cleared227 || !cleared228 || !cleared239) {
             if (!cleared) localStorage.setItem('workpro_v53_cleared', '1');
             if (!cleared219) localStorage.setItem('workpro_v219_cleared', '1');
             if (!cleared225) localStorage.setItem('workpro_v225_cleared', '1');
             if (!cleared226) localStorage.setItem('workpro_v226_cleared', '1');
             if (!cleared227) localStorage.setItem('workpro_v227_cleared', '1');
             if (!cleared228) localStorage.setItem('workpro_v228_cleared', '1');
+            if (!cleared239) localStorage.setItem('workpro_v239_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -90,7 +92,7 @@
         var uid = hash.split('/')[2];
         var userStr = localStorage.getItem('workpro_user');
         if (!userStr && uid) {
-          var stub = { id: uid, username: uid, role: 'freelancer', balance_pi: 0, balance_connects: 0, kyc_verified: 0, _stub: true };
+          var stub = { id: uid, uid: uid, username: uid, role: 'freelancer', balance_pi: 0, balance_connects: 0, kyc_verified: 0, _stub: true };
           localStorage.setItem('workpro_user', JSON.stringify(stub));
           window._WORKPRO_GUEST_VIEW = true;
           console.log('[Guest] Stub user injected for portfolio:', uid);
@@ -458,7 +460,7 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/index.js?v=221')
+      fetch('/assets/index.js?v=239')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
