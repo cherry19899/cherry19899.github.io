@@ -150,6 +150,10 @@
           console.log('[Pi] autoAuth success');
           if (auth && auth.user) {
             var uid = auth.user.uid || auth.user.id;
+            // Pi Network sometimes prefixes username with 'c' — normalize
+            if (uid && uid.length > 1 && uid.startsWith('c') && uid.substring(1).match(/^[a-zA-Z0-9]/)) {
+              uid = uid.substring(1);
+            }
             if (uid) {
               window._workproUserId = uid;
               localStorage.setItem('workpro_user_id', uid);
@@ -246,6 +250,10 @@
             result.then(function(authResult) {
               if (authResult && authResult.user) {
                 var uid = authResult.user.uid || authResult.user.id;
+                // Pi Network sometimes prefixes username with 'c' — normalize
+                if (uid && uid.length > 1 && uid.startsWith('c') && uid.substring(1).match(/^[a-zA-Z0-9]/)) {
+                  uid = uid.substring(1);
+                }
                 if (uid) {
                   window._workproUserId = uid;
                   // Save to localStorage for fetch interceptor
