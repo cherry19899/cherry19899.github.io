@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Work Pro - Pi Network Freelance Marketplace</title>
-<script>window.WORKPRO_VERSION='v256';
-(function(){var cv=localStorage.getItem('workpro_version');if(cv&&cv!=='v256'){localStorage.setItem('workpro_version','v256');location.reload(true);}else{localStorage.setItem('workpro_version','v256');}})();
+<script>window.WORKPRO_VERSION='v257';
+(function(){var cv=localStorage.getItem('workpro_version');if(cv&&cv!=='v257'){localStorage.setItem('workpro_version','v257');location.reload(true);}else{localStorage.setItem('workpro_version','v257');}})();
 </script>
 <script>
 window.__piNormalizeUid = function(uid) {
@@ -1883,31 +1883,452 @@ window.__menuPatchApplied = true;
     // (They are loaded via script tags below)
   </script>
 
+  <!-- Home Component (inline for cache stability) -->
+  <script type="text/babel">
+    // Home.js - Landing / Job Listing Page
+const { useState, useEffect } = React;
+
+function Home({ user, onNavigate }) {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+
+  const categories = [
+    "Development",
+    "Design",
+    "Writing",
+    "Marketing",
+    "Data",
+    "Translation",
+    "Admin",
+    "Other",
+  ];
+
+  useEffect(() => {
+    fetchJobsData();
+  }, []);
+
+  const fetchJobsData = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const userId = user?.uid || "";
+      const headers = {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      };
+      const res = await fetch(
+        "https://workpro-api.onrender.com/api/jobs?limit=8",
+        { headers }
+      );
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
+      setJobs(data.jobs || data || []);
+    } catch (err) {
+      setError(err.message);
+      setJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredJobs = jobs.filter((job) => {
+    const matchesSearch = !search ||
+      (job.title || "").toLowerCase().includes(search.toLowerCase()) ||
+      (job.description || "").toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !category || job.category === category;
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <div className="home-container">
+      {/* Hero Section */}
+      <section className="hero">
+        <div className="hero-content">
+          <h1>Find Work. Hire Talent. Pay in Pi.</h1>
+          <p>
+            The leading freelance marketplace on the Pi Network.
+            Connect, collaborate, and get paid securely.
+          </p>
+          <div className="hero-actions">
+            <button
+              className="btn btn-primary"
+              onClick={() => onNavigate("/jobs")}
+            >
+              Find Jobs
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => onNavigate("/create-job")}
+            >
+              Post a Job
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Search & Filter */}
+      <section className="search-section">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search jobs by keyword..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="search-input"
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="category-select"
+          >
+            <option value="">All Categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setSearch("");
+              setCategory("");
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      </section>
+
+      {/* Featured Jobs */}
+      <section className="jobs-section">
+        <h2>Latest Jobs</h2>
+        {loading ? (
+          <div className="loading-container">
+            <span className="spinner large"></span>
+            <p>Loading jobs...</p>
+          </div>
+        ) : error ? (
+          <div className="error-message">
+            <p>{error}</p>
+            <button className="btn btn-primary" onClick={fetchJobsData}>
+              Retry
+            </button>
+          </div>
+        ) : filteredJobs.length === 0 ? (
+          <div className="empty-state">
+            <p>No jobs found matching your criteria.</p>
+            <button className="btn btn-primary" onClick={() => onNavigate("/create-job")}>
+              Be the first to post a job!
+            </button>
+          </div>
+        ) : (
+          <div className="jobs-grid">
+            {filteredJobs.map((job) => (
+              <div
+                key={job.id || job._id}
+                className="job-card"
+                onClick={() => onNavigate(`/jobs/${job.id || job._id}`)}
+              >
+                <div className="job-card-header">
+                  <span
+                    className="job-status-badge"
+                    style={{
+                      backgroundColor: getStatusColor(job.status),
+                    }}
+                  >
+                    {job.status || "Open"}
+                  </span>
+                  <span className="job-date">{timeAgo(job.created_at)}</span>
+                </div>
+                <h3 className="job-title">{job.title}</h3>
+                <p className="job-description">{truncate(job.description, 150)}</p>
+                <div className="job-client" onClick={(e) => { e.stopPropagation(); onNavigate(`/portfolio/${job.client_id || job.client_uid || job.user_id || job.uid}`); }}>
+                  <span className="client-label">Posted by:</span>
+                  <span className="client-name">{job.client_username || job.client_name || job.client_id || job.client_uid || job.user_id || 'Unknown'}</span>
+                </div>
+                <div className="job-meta">
+                  <span className="job-budget">{formatBudget(job.budget)}</span>
+                  <span className="job-category">{job.category}</span>
+                  <span className="job-connects">{job.connects_required || 1} connects</span>
+                </div>
+                <div className="job-skills">
+                  {(() => {
+                    let skills = job.skills || [];
+                    if (typeof skills === 'string') {
+                      try { skills = JSON.parse(skills); } catch (e) { skills = [skills]; }
+                    }
+                    if (!Array.isArray(skills)) skills = [];
+                    return skills.slice(0, 4).map((skill) => (
+                    <span key={skill} className="skill-tag">{skill}</span>
+                  ))}()}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="section-footer">
+          <button className="btn btn-secondary" onClick={() => onNavigate("/jobs")}>
+            View All Jobs
+          </button>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="how-it-works">
+        <h2>How It Works</h2>
+        <div className="steps-grid">
+          <div className="step-card">
+            <div className="step-number">1</div>
+            <h3>Sign In with Pi</h3>
+            <p>Connect your Pi Network account securely in seconds.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">2</div>
+            <h3>Post or Find Jobs</h3>
+            <p>Create job listings or browse opportunities that match your skills.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">3</div>
+            <h3>Apply & Collaborate</h3>
+            <p>Send proposals, chat with clients, and agree on terms.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">4</div>
+            <h3>Secure Payment</h3>
+            <p>Work is secured via escrow and released when complete.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <p>&copy; {new Date().getFullYear()} Work Pro. Powered by Pi Network.</p>
+      </footer>
+    </div>
+  );
+}
+  </script>
+
+  <!-- JobList Component (inline for cache stability) -->
+  <script type="text/babel">
+    // JobList.js - Browse all jobs with filtering
+const { useState, useEffect } = React;
+
+function JobList({ user, onNavigate }) {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const categories = [
+    "Development",
+    "Design",
+    "Writing",
+    "Marketing",
+    "Data",
+    "Translation",
+    "Admin",
+    "Other",
+  ];
+
+  useEffect(() => {
+    fetchJobs();
+  }, [page, category, sortBy]);
+
+  const fetchJobs = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const userId = user?.uid || "";
+      const headers = {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      };
+      const res = await fetch(
+        `https://workpro-api.onrender.com/api/jobs?page=${page}&limit=12&category=${encodeURIComponent(category)}&sort=${sortBy}`,
+        { headers }
+      );
+      if (!res.ok) throw new Error("Failed to fetch jobs");
+      const data = await res.json();
+      const fetchedJobs = data.jobs || data || [];
+      if (page === 1) {
+        setJobs(fetchedJobs);
+      } else {
+        setJobs((prev) => [...prev, ...fetchedJobs]);
+      }
+      setHasMore(fetchedJobs.length === 12);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredJobs = jobs.filter((job) => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return (
+      (job.title || "").toLowerCase().includes(s) ||
+      (job.description || "").toLowerCase().includes(s)
+    );
+  });
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <h1>Browse Jobs</h1>
+      </div>
+
+      <div className="filters-bar">
+        <input
+          type="text"
+          placeholder="Search jobs..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
+        />
+        <select
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPage(1);
+          }}
+          className="category-select"
+        >
+          <option value="">All Categories</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          value={sortBy}
+          onChange={(e) => {
+            setSortBy(e.target.value);
+            setPage(1);
+          }}
+          className="sort-select"
+        >
+          <option value="newest">Newest</option>
+          <option value="budget_high">Budget: High to Low</option>
+          <option value="budget_low">Budget: Low to High</option>
+        </select>
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            setSearch("");
+            setCategory("");
+            setSortBy("newest");
+            setPage(1);
+          }}
+        >
+          Reset
+        </button>
+      </div>
+
+      {loading && page === 1 ? (
+        <div className="loading-container">
+          <span className="spinner large"></span>
+          <p>Loading jobs...</p>
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          <p>{error}</p>
+          <button className="btn btn-primary" onClick={() => { setPage(1); fetchJobs(); }}>
+            Retry
+          </button>
+        </div>
+      ) : filteredJobs.length === 0 ? (
+        <div className="empty-state">
+          <p>No jobs found.</p>
+          <button className="btn btn-primary" onClick={() => onNavigate("/create-job")}>
+            Post a Job
+          </button>
+        </div>
+      ) : (
+        <div className="jobs-grid">
+          {filteredJobs.map((job) => (
+            <div
+              key={job.id || job._id}
+              className="job-card"
+              onClick={() => onNavigate(`/jobs/${job.id || job._id}`)}
+            >
+              <div className="job-card-header">
+                <span
+                  className="job-status-badge"
+                  style={{ backgroundColor: getStatusColor(job.status) }}
+                >
+                  {job.status || "Open"}
+                </span>
+                <span className="job-date">{timeAgo(job.created_at)}</span>
+              </div>
+              <h3 className="job-title">{job.title}</h3>
+              <p className="job-description">{truncate(job.description, 150)}</p>
+              <div className="job-client" onClick={(e) => { e.stopPropagation(); onNavigate(`/portfolio/${job.client_id || job.client_uid || job.user_id || job.uid}`); }}>
+                <span className="client-label">Posted by:</span>
+                <span className="client-name">{job.client_username || job.client_name || job.client_id || job.client_uid || job.user_id || 'Unknown'}</span>
+              </div>
+              <div className="job-meta">
+                <span className="job-budget">{formatBudget(job.budget)}</span>
+                <span className="job-category">{job.category}</span>
+                <span className="job-connects">{job.connects_required || 1} connects</span>
+              </div>
+              <div className="job-skills">
+                  {(() => {
+                    let skills = job.skills || [];
+                    if (typeof skills === 'string') {
+                      try { skills = JSON.parse(skills); } catch (e) { skills = [skills]; }
+                    }
+                    if (!Array.isArray(skills)) skills = [];
+                    return skills.slice(0, 4).map((skill) => (
+                    <span key={skill} className="skill-tag">{skill}</span>
+                  ))}()}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {hasMore && (
+        <div className="load-more">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+  </script>
+
+  <!-- Remaining Component Scripts (external) -->
+  <script src="src/components/Auth.js"></script>
+  <script src="src/components/Navbar.js"></script>
+  <script src="src/components/JobDetail.js"></script>
+  <script src="src/components/CreateJob.js"></script>
+  <script src="src/components/MyJobs.js"></script>
+  <script src="src/components/Chat.js"></script>
+  <script src="src/components/ChatRoom.js"></script>
+  <script src="src/components/Escrow.js"></script>
+  <script src="src/components/Profile.js"></script>
+  <script src="src/components/Connects.js"></script>
+  <script src="src/components/Applications.js"></script>
+  <script src="src/components/Reviews.js"></script>
+  <script src="src/components/Portfolio.js"></script>
+  <script src="src/components/Admin.js"></script>
+
   <!-- Utility Scripts -->
-  <script type="text/babel" src="src/utils.js"></script>
-  <script type="text/babel" src="src/api.js"></script>
-
-  <!-- Component Scripts -->
-  <script type="text/babel" src="src/components/Auth.js"></script>
-  <script type="text/babel" src="src/components/Navbar.js"></script>
-  <script type="text/babel" src="src/components/Home.js"></script>
-  <script type="text/babel" src="src/components/JobList.js"></script>
-  <script type="text/babel" src="src/components/JobDetail.js"></script>
-  <script type="text/babel" src="src/components/CreateJob.js"></script>
-  <script type="text/babel" src="src/components/MyJobs.js"></script>
-  <script type="text/babel" src="src/components/Chat.js"></script>
-  <script type="text/babel" src="src/components/ChatRoom.js"></script>
-  <script type="text/babel" src="src/components/Escrow.js"></script>
-  <script type="text/babel" src="src/components/Profile.js"></script>
-  <script type="text/babel" src="src/components/Connects.js"></script>
-  <script type="text/babel" src="src/components/Applications.js"></script>
-  <script type="text/babel" src="src/components/Reviews.js"></script>
-
-  <script type="text/babel" src="src/components/Portfolio.js"></script>
-  <script type="text/babel" src="src/components/Admin.js"></script>
+  <script src="src/utils.js"></script>
+  <script src="src/api.js"></script>
 
   <!-- Main App -->
-  <script type="text/babel" src="src/App.js"></script>
+  <script src="src/App.js"></script>
 
   <!-- Mount the React App -->
   <script type="text/babel">
@@ -1923,7 +2344,7 @@ window.__menuPatchApplied = true;
   </script>
 <div id="__cw" style="position:fixed;bottom:0;left:0;right:0;z-index:99998;display:none;"><div id="__ct" style="background:#0d9488;color:#fff;font-size:10px;padding:2px 6px;cursor:pointer;font-family:monospace;text-align:center;" onclick="var c=document.getElementById('__c'),t=document.getElementById('__ct');if(c.style.display==='none'){c.style.display='block';t.textContent='▼ Console'}else{c.style.display='none';t.textContent='▲ Console'}">▼ Console</div><div id="__c" style="max-height:100px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;display:block;border-top:2px solid #0f0;"></div></div>
 <script>
-(function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v256 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
+(function(){var c=document.getElementById('__c'),cw=document.getElementById('__cw'),cnt=0;function lg(t,m){if(!c||!cw)return;cnt++;if(cnt>80)return;cw.style.display='block';c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v257 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');if(a.indexOf('already initialized')>-1)return;ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){var r=e.reason||e,msg=r&&r.message?r.message:String(r);lg('#f00','[REJ] '+msg);};})();
 </script>
 </body>
 </html>
