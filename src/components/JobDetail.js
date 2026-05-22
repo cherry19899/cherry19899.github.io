@@ -187,6 +187,16 @@ function JobDetail({ user, jobId, onNavigate }) {
 
         <div className="job-detail-meta">
           <span className="meta-item">
+            <strong>Posted by:</strong>{' '}
+            <span
+              className="client-link"
+              onClick={() => onNavigate(`/portfolio/${job.client_id || job.client_uid || job.user_id || job.uid}`)}
+              style={{ cursor: 'pointer', color: '#7c3aed', textDecoration: 'underline' }}
+            >
+              {job.client_username || job.client_name || job.client_id || job.client_uid || job.user_id || 'Unknown'}
+            </span>
+          </span>
+          <span className="meta-item">
             <strong>Budget:</strong> {formatBudget(job.budget)}
           </span>
           <span className="meta-item">

@@ -157,6 +157,10 @@ function Home({ user, onNavigate }) {
                 </div>
                 <h3 className="job-title">{job.title}</h3>
                 <p className="job-description">{truncate(job.description, 150)}</p>
+                <div className="job-client" onClick={(e) => { e.stopPropagation(); onNavigate(`/portfolio/${job.client_id || job.client_uid || job.user_id || job.uid}`); }}>
+                  <span className="client-label">Posted by:</span>
+                  <span className="client-name">{job.client_username || job.client_name || job.client_id || job.client_uid || job.user_id || 'Unknown'}</span>
+                </div>
                 <div className="job-meta">
                   <span className="job-budget">{formatBudget(job.budget)}</span>
                   <span className="job-category">{job.category}</span>
