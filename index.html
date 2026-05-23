@@ -4,8 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Work Pro - Pi Network Freelance Marketplace</title>
-<script>window.WORKPRO_VERSION='v262';
-(function(){var cv=localStorage.getItem('workpro_version');if(cv&&cv!=='v262'){localStorage.setItem('workpro_version','v262');location.reload(true);}else{localStorage.setItem('workpro_version','v262');}})();
+<script>window.WORKPRO_VERSION='v265';
+(function(){
+  var cv=localStorage.getItem('workpro_version');
+  if(cv&&cv!=='v265'){
+    localStorage.setItem('workpro_version','v265');
+    var url = location.protocol + '//' + location.host + location.pathname + '?nocache=1&v=265&t=' + Date.now();
+    location.replace(url);
+  } else {
+    localStorage.setItem('workpro_version','v265');
+  }
+})();
 </script>
 <script>
 window.__piNormalizeUid = function(uid) {
@@ -21,6 +30,21 @@ window.__menuPatchApplied = true;
 
   <!-- Pi Network SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+  // Global Pi SDK init — must run before any component uses Pi
+  (function() {
+    function tryInitPi() {
+      if (typeof Pi !== 'undefined' && Pi.init) {
+        var isSandbox = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        Pi.init({ version: "2.0", sandbox: isSandbox });
+        console.log('[Pi] SDK initialized, sandbox:', isSandbox);
+      } else {
+        setTimeout(tryInitPi, 100);
+      }
+    }
+    tryInitPi();
+  })();
+  </script>
 
   <!-- React 18 via CDN -->
   <script

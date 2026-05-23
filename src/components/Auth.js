@@ -25,11 +25,8 @@ function Auth({ onLogin }) {
     setError("");
 
     try {
-      // Initialize Pi SDK
-      // Detect sandbox mode: true for local development, false for Pi Browser production
+      // Pi SDK already initialized globally in index.html
       const isSandbox = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      Pi.init({ version: "2.0", sandbox: isSandbox });
-
       const scopes = ["username", "payments"];
       const authResult = await Pi.authenticate(
         scopes,

@@ -46,10 +46,8 @@ function Connects({ user, onUpdateUser }) {
     setError("");
 
     try {
-      // Initialize Pi SDK for payment
-      // Detect sandbox mode
+      // Pi SDK already initialized globally in index.html
       const isSandbox = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      Pi.init({ version: "2.0", sandbox: isSandbox });
 
       const paymentData = {
         amount: price,
