@@ -27,7 +27,7 @@ function Escrow({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        "https://workpro-api.onrender.com/api/escrows",
+        "https://workpro-api.onrender.com/api/escrows/me",
         { headers }
       );
       if (!res.ok) throw new Error("Failed to fetch escrows");
