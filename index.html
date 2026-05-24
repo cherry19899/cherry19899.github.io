@@ -98,6 +98,22 @@
     } catch(e) {}
   })();
   </script>
+  <script>
+  // Fix localStorage skills format for v182 bundle compatibility
+  (function() {
+    try {
+      var userStr = localStorage.getItem('workpro_user');
+      if (userStr) {
+        var user = JSON.parse(userStr);
+        if (user && Array.isArray(user.skills)) {
+          user.skills = user.skills.join(',');
+          localStorage.setItem('workpro_user', JSON.stringify(user));
+          console.log('[WP] Fixed localStorage skills from array to string');
+        }
+      }
+    } catch(e) {}
+  })();
+  </script>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
     // ---- PI SDK INIT (must run BEFORE bundle) ----
