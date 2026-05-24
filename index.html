@@ -865,7 +865,28 @@ window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.m
     }, true);
   })();
 
-  console.log('[WorkPro] Patch v47 loaded (with photo compression)');
+  // ---- PROTECT fetch and XHR from v182 bundle overwrite ----
+  try {
+    var _protectedFetch = window.fetch;
+    Object.defineProperty(window, 'fetch', {
+      get: function() { return _protectedFetch; },
+      set: function(v) { /* silently ignore — bundle cannot remove our interceptor */ },
+      configurable: false,
+      enumerable: true
+    });
+  } catch(e) { console.warn('[WP] Could not protect fetch:', e.message); }
+
+  try {
+    var _protectedXHR = window.XMLHttpRequest;
+    Object.defineProperty(window, 'XMLHttpRequest', {
+      get: function() { return _protectedXHR; },
+      set: function(v) { /* silently ignore */ },
+      configurable: false,
+      enumerable: true
+    });
+  } catch(e) { console.warn('[WP] Could not protect XHR:', e.message); }
+
+  console.log('[WorkPro] Patch v47 loaded (with photo compression, fetch protected)');
 </script>
 </head>
   <body>
