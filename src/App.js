@@ -561,9 +561,6 @@ function App() {
       case "/connects":
         return <Connects user={user} onUpdateUser={handleUpdateUser} />;
 
-      case "/portfolio":
-        return <Portfolio user={user} onNavigate={navigateTo} />;
-
       case "/applications":
         return <Applications user={user} onNavigate={navigateTo} />;
 
@@ -571,7 +568,20 @@ function App() {
         return <Reviews user={user} onNavigate={navigateTo} />;
 
       case "/admin":
-        return <Admin user={user} onNavigate={navigateTo} />;
+        if (typeof Admin !== 'undefined') {
+          return <Admin user={user} onNavigate={navigateTo} />;
+        }
+        return (
+          <div className="page-container">
+            <div className="error-container">
+              <h1>Coming Soon</h1>
+              <p>Admin panel is not yet implemented.</p>
+              <button className="btn btn-primary" onClick={() => navigateTo("/")}>
+                Go Home
+              </button>
+            </div>
+          </div>
+        );
 
       default:
         return (

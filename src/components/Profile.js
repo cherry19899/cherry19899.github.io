@@ -31,7 +31,7 @@ function Profile({ user, onUpdateUser }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/users/${user.uid}`,
+        `https://workpro-api.onrender.com/api/me`,
         { headers }
       );
       if (!res.ok) throw new Error("Failed to fetch profile");
@@ -63,7 +63,7 @@ function Profile({ user, onUpdateUser }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/users/${user.uid}`,
+        `https://workpro-api.onrender.com/api/me`,
         {
           method: "PUT",
           headers,
