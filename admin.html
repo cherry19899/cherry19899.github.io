@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Pro - Admin</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:20px;background:#f5f5f5;}
+.container{max-width:900px;margin:0 auto;background:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+h1{margin:0 0 20px;color:#333;}
+.tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #eee;padding-bottom:10px;}
+.tab-btn{padding:8px 16px;border:none;background:#f0f0f0;border-radius:4px;cursor:pointer;font-size:14px;}
+.tab-btn.active{background:#10b981;color:#fff;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px;}
+.stat-card{background:#f8f9fa;border-radius:8px;padding:15px;text-align:center;}
+.stat-number{font-size:28px;font-weight:700;color:#10b981;}
+.stat-label{font-size:12px;color:#666;margin-top:5px;}
+.admin-list{display:flex;flex-direction:column;gap:10px;}
+.admin-list-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid #eee;border-radius:6px;}
+.admin-list-info{flex:1;}
+.admin-list-info h4{margin:0 0 4px;font-size:16px;}
+.job-list-meta{display:flex;gap:12px;font-size:12px;color:#666;flex-wrap:wrap;}
+.admin-list-actions{display:flex;gap:8px;}
+.btn{padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-size:13px;}
+.btn-secondary{background:#e9ecef;color:#333;}
+.btn-danger{background:#dc3545;color:#fff;}
+.loading{text-align:center;padding:40px;color:#666;}
+.error{color:#dc3545;padding:20px;background:#f8d7da;border-radius:6px;margin-bottom:20px;}
+.empty{text-align:center;padding:40px;color:#999;}
+#login-form{display:flex;flex-direction:column;gap:10px;max-width:300px;margin:40px auto;}
+input{padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Work Pro Admin</h1>
+<div id="login-view">
+  <div id="login-form">
+    <h3>Admin Login</h3>
+    <input type="text" id="admin-user" placeholder="User ID" value="cherry19899">
+    <button class="btn btn-secondary" onclick="login()">Login</button>
+  </div>
+</div>
+<div id="admin-view" style="display:none;">
+  <div class="stats-grid" id="stats"></div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setTab('jobs')">Jobs</button>
+    <button class="tab-btn" onclick="setTab('users')">Users</button>
+  </div>
+  <div id="content"></div>
+</div>
+</div>
+<script>
+var currentTab='jobs',currentUser=null;
+function login(){currentUser=document.getElementById('admin-user').value;document.getElementById('login-view').style.display='none';document.getElementById('admin-view').style.display='block';loadData();}
+function setTab(tab){currentTab=tab;document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.textContent.toLowerCase().includes(tab));});render();}
+function loadData(){var headers={'Content-Type':'application/json','x-user-id':currentUser};Promise.all([fetch('https://workpro-api.onrender.com/api/admin/jobs/all',{headers:headers}),fetch('https://workpro-api.onrender.com/api/admin/users',{headers:headers}),fetch('https://workpro-api.onrender.com/api/admin/stats',{headers:headers})]).then(function(r){return Promise.all(r.map(function(x){return x.ok?x.json():null;}));}).then(function(d){window._jobs=d[0]&&d[0].jobs?d[0].jobs:d[0]||[];window._users=d[1]&&d[1].users?d[1].users:d[1]||[];window._stats=d[2]||null;render();}).catch(function(e){document.getElementById('content').innerHTML='<div class="error">Error: '+e.message+'</div>';});}
+function render(){var s=document.getElementById('stats');if(window._stats){s.innerHTML='<div class="stat-card"><div class="stat-number">'+(window._stats.total_jobs||window._jobs.length||0)+'</div><div class="stat-label">Total Jobs</div></div><div class="stat-card"><div class="stat-number">'+(window._stats.total_users||window._users.length||0)+'</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-number">'+(window._stats.total_applications||0)+'</div><div class="stat-label">Applications</div></div><div class="stat-card"><div class="stat-number">'+(window._stats.total_escrows||0)+'</div><div class="stat-label">Escrows</div></div>';}else{s.innerHTML='';}
+var c=document.getElementById('content');if(currentTab==='jobs'){if(!window._jobs||!window._jobs.length){c.innerHTML='<div class="empty">No jobs found.</div>';return;}c.innerHTML='<div class="admin-list">'+window._jobs.map(function(j){return'<div class="admin-list-item"><div class="admin-list-info"><h4>'+(j.title||'Untitled')+'</h4><div class="job-list-meta"><span>'+(j.posted_by_name||j.posted_by||'Unknown')+'</span><span>\u03c0'+(j.budget||0)+'</span><span>'+(j.status||'unknown')+'</span></div></div><div class="admin-list-actions"><button class="btn btn-danger" onclick="deleteJob('+(j.id||j._id)+')">Delete</button></div></div>';}).join('')+'</div>';}else{if(!window._users||!window._users.length){c.innerHTML='<div class="empty">No users found.</div>';return;}c.innerHTML='<div class="admin-list">'+window._users.map(function(u){return'<div class="admin-list-item"><div class="admin-list-info"><h4>'+(u.username||u.id||'Unknown')+'</h4><div class="job-list-meta"><span>'+(u.role||'user')+'</span><span>'+(u.kyc_verified?'KYC':'No KYC')+'</span><span>Balance: '+(u.balance_pi||0)+' Pi</span></div></div></div>';}).join('')+'</div>';}}
+function deleteJob(id){if(!confirm('Delete job #'+id+'?'))return;var headers={'Content-Type':'application/json','x-user-id':currentUser};fetch('https://workpro-api.onrender.com/api/admin/jobs/'+id,{method:'DELETE',headers:headers}).then(function(r){if(r.ok){alert('Job deleted');window._jobs=window._jobs.filter(function(j){return(j.id||j._id)!=id;});render();}else{r.text().then(function(t){alert('Delete failed: '+t);});}}).catch(function(e){alert('Error: '+e.message);});}
+</script>
+</body>
+</html>

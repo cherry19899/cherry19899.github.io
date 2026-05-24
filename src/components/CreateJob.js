@@ -62,6 +62,7 @@ function CreateJob({ user, onNavigate }) {
           .map((s) => s.trim())
           .filter(Boolean),
         client_uid: user.uid,
+        posted_by_name: user.name || user.username || user.uid || 'User',
       };
 
       const headers = {

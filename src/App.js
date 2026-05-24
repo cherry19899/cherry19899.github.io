@@ -69,6 +69,16 @@ function App() {
     const parts = getRouteParams();
     const route = parts.length === 0 ? "/" : "/" + parts[0];
 
+    // Allow public portfolio viewing without auth
+    if (route === '/portfolio') {
+      return (
+        <Portfolio
+          user={user}
+          onNavigate={navigateTo}
+        />
+      );
+    }
+
     if (!user) {
       return <Auth onLogin={handleLogin} />;
     }
@@ -121,11 +131,17 @@ function App() {
       case "/connects":
         return <Connects user={user} onUpdateUser={handleUpdateUser} />;
 
+      case "/portfolio":
+        return <Portfolio user={user} onNavigate={navigateTo} />;
+
       case "/applications":
         return <Applications user={user} onNavigate={navigateTo} />;
 
       case "/reviews":
         return <Reviews user={user} onNavigate={navigateTo} />;
+
+      case "/admin":
+        return <Admin user={user} onNavigate={navigateTo} />;
 
       default:
         return (

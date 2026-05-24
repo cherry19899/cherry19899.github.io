@@ -25,9 +25,8 @@ function Auth({ onLogin }) {
     setError("");
 
     try {
-      // Initialize Pi SDK
-      Pi.init({ version: "2.0", sandbox: true });
-
+      // Pi SDK already initialized globally in index.html
+      const isSandbox = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const scopes = ["username", "payments"];
       const authResult = await Pi.authenticate(
         scopes,
@@ -73,8 +72,22 @@ function Auth({ onLogin }) {
 
   function onIncompletePaymentFound(payment) {
     console.log("Incomplete payment found:", payment);
-    // Handle incomplete payment - can be completed later
-    return Promise.resolve();
+    // Handle incomplete payment - send to backend for completion/cancellation
+    return fetch("https://workpro-api.onrender.com/api/payments/incomplete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payment })
+    })
+      .then(res => res.json())
+      .then(result => {
+        console.log("Incomplete payment handled:", result);
+        return result;
+      })
+      .catch(err => {
+        console.error("Failed to handle incomplete payment:", err);
+        // Return resolved promise so auth can continue
+        return Promise.resolve();
+      });
   }
 
   return (
