@@ -803,6 +803,29 @@ window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.m
 
   // ---- 5. PHOTO COMPRESSION ----
   (function() {
+
+  // ---- FIX: Clear Cache link routed by React Router -> direct HTML ----
+  (function() {
+    // Intercept React Router navigation to /clear-cache
+    var origPush = window.history.pushState;
+    window.history.pushState = function(state, title, url) {
+      if (typeof url === 'string' && url.indexOf('/clear-cache') !== -1 && url.indexOf('.html') === -1) {
+        window.location.href = '/clear-cache.html' + (window.location.search || '');
+        return;
+      }
+      return origPush.apply(this, arguments);
+    };
+    // Also intercept link clicks at capture phase
+    document.addEventListener('click', function(e) {
+      var a = e.target.closest ? e.target.closest('a[href]') : null;
+      if (a && a.getAttribute('href') === '/clear-cache') {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = '/clear-cache.html' + (window.location.search || '');
+      }
+    }, true);
+  })();
+
     function compressImage(file, maxWidth, quality) {
       return new Promise(function(resolve, reject) {
         if (!file || !file.type || !file.type.startsWith('image/')) return resolve(file);
