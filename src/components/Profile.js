@@ -36,15 +36,16 @@ function Profile({ user, onUpdateUser }) {
       );
       if (!res.ok) throw new Error("Failed to fetch profile");
       const data = await res.json();
-      setProfile(data);
+      const userData = data.user || data;
+      setProfile(userData);
       setFormData({
-        display_name: data.display_name || data.username || "",
-        bio: data.bio || "",
-        skills: (data.skills || []).join(", "),
-        hourly_rate: data.hourly_rate || "",
-        title: data.title || "",
-        location: data.location || "",
-        website: data.website || "",
+        display_name: userData.display_name || userData.username || "",
+        bio: userData.bio || "",
+        skills: (userData.skills || []).join(", "),
+        hourly_rate: userData.hourly_rate || "",
+        title: userData.title || "",
+        location: userData.location || "",
+        website: userData.website || "",
       });
     } catch (err) {
       setError(err.message);
