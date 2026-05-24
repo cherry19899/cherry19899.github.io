@@ -109,20 +109,61 @@
   })();
   </script>
   <script>
-  // Monkey-patch Response.prototype.json() to convert array skills -> string for v182 bundle compatibility
+  // Monkey-patch Response.prototype.json() to fix v182 bundle compatibility
   (function() {
     var origJson = Response.prototype.json;
     Response.prototype.json = function() {
       return origJson.call(this).then(function(data) {
+        function fixJob(job) {
+          if (!job || typeof job !== 'object') return job;
+          // Fix null images -> [] (v182 expects array)
+          if (job.images === null || job.images === undefined) {
+            job.images = [];
+          }
+          // Fix null deadline -> '' (v182 expects string)
+          if (job.deadline === null || job.deadline === undefined) {
+            job.deadline = '';
+          }
+          // Add requirements if missing (v182 expects it)
+          if (job.requirements === undefined) {
+            job.requirements = job.description || job.message || '';
+          }
+          // Convert array skills -> string for v182
+          if (Array.isArray(job.skills)) {
+            job.skills = job.skills.join(',');
+          }
+          return job;
+        }
+        function fixUser(user) {
+          if (!user || typeof user !== 'object') return user;
+          if (Array.isArray(user.skills)) {
+            user.skills = user.skills.join(',');
+          }
+          return user;
+        }
         function fixSkills(obj) {
           if (obj && Array.isArray(obj.skills)) obj.skills = obj.skills.join(',');
         }
         if (data && typeof data === 'object') {
           fixSkills(data);
-          if (Array.isArray(data.jobs)) data.jobs.forEach(fixSkills);
+          if (Array.isArray(data.jobs)) data.jobs.forEach(fixJob);
           if (Array.isArray(data.applications)) data.applications.forEach(fixSkills);
           if (Array.isArray(data.freelancers)) data.freelancers.forEach(fixSkills);
-          if (Array.isArray(data)) data.forEach(fixSkills);
+          if (Array.isArray(data)) data.forEach(function(item) {
+            fixSkills(item);
+            if (item && item.id !== undefined && item.title !== undefined) fixJob(item);
+          });
+          // Single job object
+          if (data.id !== undefined && data.title !== undefined) {
+            fixJob(data);
+          }
+          // User object
+          if (data.user && typeof data.user === 'object') {
+            fixUser(data.user);
+          }
+          if (data.id !== undefined && data.username !== undefined) {
+            fixUser(data);
+          }
         }
         return data;
       });
