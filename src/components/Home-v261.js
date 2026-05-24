@@ -167,16 +167,9 @@ function Home({ user, onNavigate }) {
                   <span className="job-connects">{job.connects_required || 1} connects</span>
                 </div>
                 <div className="job-skills">
-                  {(() => {
-                    var s = job.skills;
-                    if (typeof s === 'string') {
-                      try { s = JSON.parse(s); } catch(e) { s = [s]; }
-                    }
-                    s = Array.isArray(s) ? s : [];
-                    return s.slice(0, 4).map(function(skill) {
-                      return React.createElement('span', { key: skill, className: 'skill-tag' }, skill);
-                    });
-                  })()}
+                  {(job.skills || []).slice(0, 4).map((skill) => (
+                    <span key={skill} className="skill-tag">{skill}</span>
+                  ))}
                 </div>
               </div>
             ))}
