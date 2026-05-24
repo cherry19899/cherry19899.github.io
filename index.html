@@ -47,36 +47,61 @@
 
 
   <script>
-  // Monkey-patch JSON.parse to convert v266 job fields -> v182 expected fields universally
+  // Monkey-patch JSON.parse to fix v182 bundle compatibility issues
   (function() {
     var origParse = JSON.parse;
     JSON.parse = function(text, reviver) {
       var data = origParse.call(this, text, reviver);
       function fixJob(job) {
         if (!job || typeof job !== 'object') return job;
-        if (job.message !== undefined && job.description === undefined) {
-          job.description = job.message;
+        // Fix null images -> [] (v182 expects array)
+        if (job.images === null || job.images === undefined) {
+          job.images = [];
         }
-        if (job.bid_amount !== undefined && job.budget === undefined) {
-          job.budget = job.bid_amount;
+        // Fix null deadline -> '' (v182 expects string)
+        if (job.deadline === null || job.deadline === undefined) {
+          job.deadline = '';
         }
+        // Add requirements if missing (v182 expects it)
         if (job.requirements === undefined) {
-          job.requirements = job.message || '';
+          job.requirements = job.description || job.message || '';
+        }
+        // Convert array skills -> string for v182
+        if (Array.isArray(job.skills)) {
+          job.skills = job.skills.join(',');
         }
         return job;
       }
+      function fixUser(user) {
+        if (!user || typeof user !== 'object') return user;
+        if (Array.isArray(user.skills)) {
+          user.skills = user.skills.join(',');
+        }
+        return user;
+      }
       if (data && typeof data === 'object') {
         // Single job object
-        if (data.id !== undefined && (data.message !== undefined || data.bid_amount !== undefined)) {
+        if (data.id !== undefined && data.title !== undefined) {
           fixJob(data);
         }
         // Array of jobs
         if (Array.isArray(data)) {
-          data.forEach(fixJob);
+          data.forEach(function(item) {
+            if (item && item.id !== undefined && item.title !== undefined) {
+              fixJob(item);
+            }
+          });
         }
         // Jobs wrapper
         if (data.jobs && Array.isArray(data.jobs)) {
           data.jobs.forEach(fixJob);
+        }
+        // User object
+        if (data.user && typeof data.user === 'object') {
+          fixUser(data.user);
+        }
+        if (data.id !== undefined && data.username !== undefined) {
+          fixUser(data);
         }
       }
       return data;
