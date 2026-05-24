@@ -426,7 +426,43 @@ window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.m
       });
     }
 
-        // Profile endpoint fix: redirect /api/users/:uid to /api/me
+        // Job detail endpoint fix: convert v266 fields -> v182 expected fields
+    if (url.indexOf('/api/jobs') !== -1) {
+      return origFetch.call(this, url, options).then(function(response) {
+        var clone = response.clone();
+        return clone.json().then(function(data) {
+          function fixJob(job) {
+            if (!job || typeof job !== 'object') return job;
+            if (job.message !== undefined && job.description === undefined) {
+              job.description = job.message;
+            }
+            if (job.bid_amount !== undefined && job.budget === undefined) {
+              job.budget = job.bid_amount;
+            }
+            if (job.requirements === undefined) {
+              job.requirements = job.message || '';
+            }
+            return job;
+          }
+          if (Array.isArray(data)) {
+            data = data.map(fixJob);
+          } else if (data && typeof data === 'object') {
+            if (data.jobs && Array.isArray(data.jobs)) {
+              data.jobs = data.jobs.map(fixJob);
+            } else {
+              data = fixJob(data);
+            }
+          }
+          return new Response(JSON.stringify(data), {
+            status: response.status,
+            statusText: response.statusText,
+            headers: {'Content-Type': 'application/json'}
+          });
+        }).catch(function() { return response; });
+      });
+    }
+
+    // Profile endpoint fix: redirect /api/users/:uid to /api/me
     if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1) {
       url = url.replace(/\/api\/users\/[^\/?]+/, '/api/me');
       console.log('[WP] fetch patch: redirected to', url);
