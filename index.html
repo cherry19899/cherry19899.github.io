@@ -43,7 +43,30 @@
         } catch(e) {}
       })();
     </script>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+  (function() {
+    var origJSONParse = JSON.parse;
+    JSON.parse = function(text) {
+      var data = origJSONParse.apply(this, arguments);
+      function fixSkills(obj) {
+        if (obj && Array.isArray(obj.skills)) obj.skills = obj.skills.join(',');
+      }
+      if (data && typeof data === 'object') {
+        fixSkills(data);
+        // jobs array
+        if (Array.isArray(data.jobs)) data.jobs.forEach(fixSkills);
+        // applications array
+        if (Array.isArray(data.applications)) data.applications.forEach(fixSkills);
+        // freelancers array
+        if (Array.isArray(data.freelancers)) data.freelancers.forEach(fixSkills);
+        // generic array
+        if (Array.isArray(data)) data.forEach(fixSkills);
+      }
+      return data;
+    };
+  })();
+  </script>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
     // ---- PI SDK INIT (must run BEFORE bundle) ----
     (function() {
