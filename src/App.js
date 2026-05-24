@@ -115,6 +115,9 @@ function App() {
       case "/profile":
         return <Profile user={user} onUpdateUser={handleUpdateUser} />;
 
+      case "/portfolio":
+        return <Portfolio user={user} onNavigate={navigateTo} />;
+
       case "/connects":
         return <Connects user={user} onUpdateUser={handleUpdateUser} />;
 

@@ -30,7 +30,7 @@ function ChatRoom({ user, conversationId, onNavigate }) {
 
       // Fetch conversation details
       const convRes = await fetch(
-        `https://workpro-api.onrender.com/api/chat/conversations`,
+        `https://workpro-api.onrender.com/api/chat/rooms`,
         { headers }
       );
       if (convRes.ok) {
@@ -59,7 +59,7 @@ function ChatRoom({ user, conversationId, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/chat/conversations/${conversationId}/messages`,
+        `https://workpro-api.onrender.com/api/chat/rooms/${conversationId}/messages`,
         { headers }
       );
       if (res.ok) {
@@ -93,7 +93,7 @@ function ChatRoom({ user, conversationId, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/chat/conversations/${conversationId}/messages`,
+        `https://workpro-api.onrender.com/api/chat/rooms/${conversationId}/messages`,
         {
           method: "POST",
           headers,

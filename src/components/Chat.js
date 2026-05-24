@@ -21,7 +21,7 @@ function Chat({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        "https://workpro-api.onrender.com/api/chat/conversations",
+        "https://workpro-api.onrender.com/api/chat/rooms",
         { headers }
       );
       if (!res.ok) throw new Error("Failed to fetch conversations");

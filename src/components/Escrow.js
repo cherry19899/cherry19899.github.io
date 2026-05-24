@@ -27,7 +27,7 @@ function Escrow({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        "https://workpro-api.onrender.com/api/escrow",
+        "https://workpro-api.onrender.com/api/escrows",
         { headers }
       );
       if (!res.ok) throw new Error("Failed to fetch escrows");
@@ -50,13 +50,13 @@ function Escrow({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        "https://workpro-api.onrender.com/api/escrow",
+        "https://workpro-api.onrender.com/api/escrows",
         {
           method: "POST",
           headers,
           body: JSON.stringify({
             job_id: formData.job_id,
-            freelancer_uid: formData.freelancer_uid,
+            freelancer_id: formData.freelancer_uid,
             amount: parseFloat(formData.amount),
           }),
         }
@@ -84,7 +84,7 @@ function Escrow({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/escrow/${escrowId}/release`,
+        `https://workpro-api.onrender.com/api/escrows/${escrowId}/release`,
         { method: "POST", headers }
       );
       if (!res.ok) throw new Error("Release failed");
@@ -103,7 +103,7 @@ function Escrow({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/escrow/${escrowId}/refund`,
+        `https://workpro-api.onrender.com/api/escrows/${escrowId}/cancel`,
         { method: "POST", headers }
       );
       if (!res.ok) throw new Error("Refund failed");

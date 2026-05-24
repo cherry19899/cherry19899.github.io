@@ -28,7 +28,7 @@ function Reviews({ user, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/reviews/user/${user.uid}`,
+        `https://workpro-api.onrender.com/api/reviews?user_id=${user.uid}`,
         { headers }
       );
       if (!res.ok) throw new Error("Failed to fetch reviews");
@@ -56,10 +56,11 @@ function Reviews({ user, onNavigate }) {
           method: "POST",
           headers,
           body: JSON.stringify({
-            reviewee_uid: formData.reviewee_uid,
+            target_id: formData.reviewee_uid,
             job_id: formData.job_id,
             rating: parseInt(formData.rating),
-            comment: formData.comment,
+            text: formData.comment,
+            reviewer_name: user.username,
           }),
         }
       );

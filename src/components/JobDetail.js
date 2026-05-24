@@ -49,7 +49,7 @@ function JobDetail({ user, jobId, onNavigate }) {
         "x-user-id": user?.uid || "",
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/applications/job/${jobId}`,
+        `https://workpro-api.onrender.com/api/jobs/${jobId}/applications`,
         { headers }
       );
       if (res.ok) {
@@ -79,9 +79,10 @@ function JobDetail({ user, jobId, onNavigate }) {
           method: "POST",
           headers,
           body: JSON.stringify({
-            job_id: jobId,
-            cover_letter: applyData.cover_letter,
-            proposed_budget: parseFloat(applyData.proposed_budget) || job.budget,
+            job_id: parseInt(jobId),
+            message: applyData.cover_letter,
+            bid_amount: parseFloat(applyData.proposed_budget) || job.budget,
+            username: user.username,
           }),
         }
       );
@@ -105,12 +106,12 @@ function JobDetail({ user, jobId, onNavigate }) {
         "Content-Type": "application/json",
         "x-user-id": user.uid,
       };
+      const endpoint = status === "accepted" ? "accept" : "reject";
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/applications/${appId}/status`,
+        `https://workpro-api.onrender.com/api/applications/${appId}/${endpoint}`,
         {
-          method: "PUT",
+          method: "POST",
           headers,
-          body: JSON.stringify({ status }),
         }
       );
       if (!res.ok) throw new Error("Update failed");
@@ -128,19 +129,19 @@ function JobDetail({ user, jobId, onNavigate }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        "https://workpro-api.onrender.com/api/chat/conversations",
+        "https://workpro-api.onrender.com/api/chat/start",
         {
           method: "POST",
           headers,
           body: JSON.stringify({
-            participant_uid: freelancerId,
-            job_id: jobId,
+            user_id: user.uid,
+            other_user_id: freelancerId,
           }),
         }
       );
       if (res.ok) {
         const data = await res.json();
-        onNavigate(`/chat/${data.id || data.conversation_id}`);
+        onNavigate(`/chat/${data.room_id || data.id}`);
       }
     } catch (e) {
       console.error("Failed to start chat:", e);

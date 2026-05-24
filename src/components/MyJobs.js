@@ -21,19 +21,20 @@ function MyJobs({ user, onNavigate }) {
         "x-user-id": user?.uid || "",
       };
 
-      // Fetch posted jobs
+      // Fetch posted jobs — filter client-side since backend has no client_uid filter
       const postedRes = await fetch(
-        `https://workpro-api.onrender.com/api/jobs?client_uid=${user?.uid || ""}`,
+        `https://workpro-api.onrender.com/api/jobs?limit=100`,
         { headers }
       );
       if (postedRes.ok) {
         const data = await postedRes.json();
-        setPostedJobs(data.jobs || data || []);
+        const allJobs = data.jobs || data || [];
+        setPostedJobs(allJobs.filter(j => j.posted_by === user?.uid));
       }
 
       // Fetch applied jobs
       const appliedRes = await fetch(
-        "https://workpro-api.onrender.com/api/applications/my",
+        "https://workpro-api.onrender.com/api/applications/me",
         { headers }
       );
       if (appliedRes.ok) {

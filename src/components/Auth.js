@@ -36,13 +36,14 @@ function Auth({ onLogin }) {
 
       // Send auth data to backend to register/login
       const response = await fetch(
-        "https://workpro-api.onrender.com/api/users/auth",
+        "https://workpro-api.onrender.com/api/me",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            uid: authResult.user.uid,
+            username: authResult.user.username || "Pi User",
             accessToken: authResult.accessToken,
-            user: authResult.user,
           }),
         }
       );
