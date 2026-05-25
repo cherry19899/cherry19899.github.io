@@ -233,12 +233,26 @@
               console.log('[Pi] Incomplete payment cancelled on backend, status:', r.status);
               return r.json();
             }).then(function(data) {
-              // Show friendly message to user
-              if (window._pendingPaymentData && window._pendingPaymentData.callbacks && window._pendingPaymentData.callbacks.onError) {
-                window._pendingPaymentData.callbacks.onError(
-                  { message: 'Previous payment was cancelled on server. Please dismiss the Pi dialog below and tap Buy again.' },
-                  payment
-                );
+              // Show toast notification to user (global, not in modal)
+              var msg = 'Previous payment cancelled on server. Please dismiss the Pi dialog and tap Buy again.';
+              console.log('[Pi]', msg);
+              // Try sonner toast
+              if (typeof we !== 'undefined' && we.error) {
+                we.error(msg);
+              } else if (typeof window.toast !== 'undefined' && window.toast.error) {
+                window.toast.error(msg);
+              } else {
+                // Fallback inline banner
+                var banner = document.getElementById('_payment_retry_banner');
+                if (!banner) {
+                  banner = document.createElement('div');
+                  banner.id = '_payment_retry_banner';
+                  banner.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;background:#dc2626;color:#fff;padding:12px 16px;border-radius:8px;font-size:14px;z-index:99999;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.3);';
+                  document.body.appendChild(banner);
+                }
+                banner.textContent = msg;
+                banner.style.display = 'block';
+                setTimeout(function() { if(banner) banner.style.display = 'none'; }, 8000);
               }
             }).catch(function(err) {
               console.error('[Pi] Failed to cancel incomplete payment:', err);
