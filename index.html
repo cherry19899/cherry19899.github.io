@@ -342,15 +342,23 @@
         var origCreatePayment = window.Pi.createPayment;
         window.Pi.createPayment = function(paymentData, callbacks) {
           if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
-          // Re-read uid in case it was set after auth
           var currentUid = window._workproUserId;
           if (currentUid) uid = currentUid;
-          return origCreatePayment.call(window.Pi, paymentData, {
+          // Debug logging for payment errors
+          var wrappedCallbacks = {
             onReadyForServerApproval: wrapCallback(callbacks.onReadyForServerApproval),
             onReadyForServerCompletion: wrapCallback(callbacks.onReadyForServerCompletion),
-            onCancel: wrapCallback(callbacks.onCancel),
-            onError: wrapCallback(callbacks.onError)
-          });
+            onCancel: wrapCallback(function(paymentId) {
+              console.log('[Pi] onCancel called, paymentId:', paymentId);
+              if (callbacks.onCancel) callbacks.onCancel(paymentId);
+            }),
+            onError: wrapCallback(function(error, payment) {
+              console.error('[Pi] onError called:', error, payment);
+              if (callbacks.onError) callbacks.onError(error, payment);
+            })
+          };
+          console.log('[Pi] createPayment called with amount:', paymentData.amount, 'memo:', paymentData.memo);
+          return origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
         };
         console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
       }
@@ -409,19 +417,6 @@
         });
     })();
     </script>
-<script>
-(function(){var c=document.getElementById('__c'),cnt=0;
-function lg(t,m){if(!c)return;cnt++;if(cnt>50)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-lg('#0f0','[WP] v182 start');
-var o=console.log,oe=console.error,ow=console.warn;
-console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
-console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
-console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
-window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
-window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
-})();
-</script>
-
     <link rel="stylesheet" href="/assets/app-v173.css">
   <script>
 // ===== WORK PRO PATCH v53 =====
