@@ -236,8 +236,8 @@
               if (window._pendingPaymentData) {
                 console.log('[Pi] Retrying createPayment after incomplete cancel...');
                 setTimeout(function() {
-                  if (window._pendingPaymentData && window.Pi && window.Pi.createPayment) {
-                    window.Pi.createPayment(window._pendingPaymentData.data, window._pendingPaymentData.callbacks);
+                  if (window._pendingPaymentData && window.Pi && window._origCreatePayment) {
+                    window._origCreatePayment.call(window.Pi, window._pendingPaymentData.data, window._pendingPaymentData.callbacks);
                   }
                 }, 2000);
               }
@@ -358,12 +358,15 @@
           return;
         }
         var origCreatePayment = window.Pi.createPayment;
+        window._origCreatePayment = origCreatePayment; // Save for retry in onIncompletePaymentFound
         window.Pi.createPayment = function(paymentData, callbacks) {
           if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
           var currentUid = window._workproUserId;
           if (currentUid) uid = currentUid;
           // Save payment data for retry after incomplete payment cancel
           window._pendingPaymentData = { data: paymentData, callbacks: callbacks };
+          // Auto-clear after 30s to prevent stale retry
+          setTimeout(function() { window._pendingPaymentData = null; }, 30000);
           // Debug logging for payment errors
           var wrappedCallbacks = {
             onReadyForServerApproval: wrapCallback(function(paymentId) {
@@ -381,7 +384,6 @@
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
-              window._pendingPaymentData = null;
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
