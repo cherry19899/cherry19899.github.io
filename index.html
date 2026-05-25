@@ -225,23 +225,20 @@
               console.warn('[Pi] No paymentId found in incomplete payment');
               return Promise.resolve();
             }
+            // Cancel on backend, then instruct user to dismiss and retry manually
             return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' }
             }).then(function(r) {
-              console.log('[Pi] Incomplete payment cancelled, status:', r.status);
+              console.log('[Pi] Incomplete payment cancelled on backend, status:', r.status);
               return r.json();
-            }).then(function() {
-              // After cancel, retry pending payment if user already clicked Buy
-              if (window._pendingPaymentData) {
-                console.log('[Pi] Retrying createPayment after incomplete cancel...');
-                var retryData = window._pendingPaymentData;
-                window._pendingPaymentData = null; // CLEAR before retry to prevent infinite loop
-                setTimeout(function() {
-                  if (window._origCreatePayment) {
-                    window._origCreatePayment.call(window.Pi, retryData.data, retryData.callbacks);
-                  }
-                }, 2000);
+            }).then(function(data) {
+              // Show friendly message to user
+              if (window._pendingPaymentData && window._pendingPaymentData.callbacks && window._pendingPaymentData.callbacks.onError) {
+                window._pendingPaymentData.callbacks.onError(
+                  { message: 'Previous payment was cancelled on server. Please dismiss the Pi dialog below and tap Buy again.' },
+                  payment
+                );
               }
             }).catch(function(err) {
               console.error('[Pi] Failed to cancel incomplete payment:', err);
@@ -360,15 +357,12 @@
           return;
         }
         var origCreatePayment = window.Pi.createPayment;
-        window._origCreatePayment = origCreatePayment; // Save for retry in onIncompletePaymentFound
         window.Pi.createPayment = function(paymentData, callbacks) {
           if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
           var currentUid = window._workproUserId;
           if (currentUid) uid = currentUid;
-          // Save payment data for retry after incomplete payment cancel
+          // Save for onIncompletePaymentFound to show user message
           window._pendingPaymentData = { data: paymentData, callbacks: callbacks };
-          // Auto-clear after 30s to prevent stale retry
-          setTimeout(function() { window._pendingPaymentData = null; }, 30000);
           // Debug logging for payment errors
           var wrappedCallbacks = {
             onReadyForServerApproval: wrapCallback(function(paymentId) {
