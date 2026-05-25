@@ -363,7 +363,8 @@
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
               var msg = (error && error.message) || String(error);
-              if (msg.indexOf('pending payment') !== -1 || msg.indexOf('needs to be handled') !== -1) {
+              if ((msg.indexOf('pending payment') !== -1 || msg.indexOf('needs to be handled') !== -1) && !paymentData._retryCount) {
+                paymentData._retryCount = 1;
                 console.log('[Pi] Auto-retry: pending payment detected, fetching incomplete list...');
                 fetch('https://workpro-api.onrender.com/api/payments/incomplete', {
                   headers: { 'x-user-id': uid }
@@ -371,11 +372,9 @@
                   var payments = data.incomplete_payments || [];
                   console.log('[Pi] Found incomplete payments:', payments.length);
                   if (payments.length === 0) {
-                    // Server says none — maybe sandbox cache. Wait and retry.
-                    setTimeout(function(){
-                      console.log('[Pi] Retrying createPayment after 1s...');
-                      origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
-                    }, 1000);
+                    console.log('[Pi] No incomplete payments on server. Waiting for SDK cache clear...');
+                    // Don't auto-retry — let user dismiss dialog and try manually
+                    if (callbacks.onError) callbacks.onError({message:'Payment was cancelled. Please dismiss dialog and try again.'}, payment);
                   } else {
                     var cancelPromises = payments.map(function(p){
                       var pid = p.identifier || p.paymentId || p.id;
@@ -388,7 +387,7 @@
                       setTimeout(function(){
                         console.log('[Pi] Retrying createPayment after cancel...');
                         origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
-                      }, 1000);
+                      }, 3000);
                     });
                   }
                 }).catch(function(err){
