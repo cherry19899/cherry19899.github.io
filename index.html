@@ -220,12 +220,20 @@
           // Force async onIncompletePaymentFound that returns Promise
           var wrapped = function(payment) {
             console.log('[Pi] onIncompletePaymentFound called', payment);
-            if (payment && payment.identifier) {
-              fetch('https://workpro-api.onrender.com/api/payments/' + payment.identifier + '/cancelled', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }
-              }).catch(function(){});
+            var paymentId = payment && (payment.identifier || payment.paymentId || payment.transactionId || payment.id);
+            if (!paymentId) {
+              console.warn('[Pi] No paymentId found in incomplete payment');
+              return Promise.resolve();
             }
-            return Promise.resolve();
+            return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            }).then(function(r) {
+              console.log('[Pi] Incomplete payment cancelled, status:', r.status);
+              return r.json();
+            }).catch(function(err) {
+              console.error('[Pi] Failed to cancel incomplete payment:', err);
+            });
           };
           var result = origAuth.call(window.Pi, scopes, wrapped);
           // Store userId globally for createPayment proxy
