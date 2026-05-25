@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=49" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=50" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -17,18 +17,10 @@
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- Force cache bust for Pi Browser -->
     <script>
-      (function() {
-        // Pi Browser aggressively caches index.html
-        // Force reload once with nocache if not present
-        if (window.location.search.indexOf('nocache=') === -1 && !sessionStorage.getItem('_wp_cachebust')) {
-          sessionStorage.setItem('_wp_cachebust', '1');
-          var url = new URL(window.location.href);
-          url.searchParams.set('nocache', Date.now());
-          window.location.replace(url.toString());
-        } else {
-          sessionStorage.removeItem('_wp_cachebust');
-        }
-      })();
+      // AGGRESSIVE cache bust: redirect immediately before Pi Browser caches anything
+      if (window.location.search.indexOf('nocache=') === -1) {
+        window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
+      }
     </script>
     <script>window.WORKPRO_VERSION='v184';</script>
     <script>
