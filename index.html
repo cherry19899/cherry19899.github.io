@@ -514,7 +514,6 @@
           var storedC = parseInt(sc || '0', 10);
           var userC = user.balance_connects || user.connects || 0;
           if (storedC >= 0 && storedC !== userC) {
-            console.log('[WorkPro] GET: restoring connects', storedC, 'over', userC);
             user.balance_connects = storedC;
             user.connects = storedC;
           }
