@@ -15,6 +15,21 @@
     <link rel="manifest" href="/manifest.json?v=49" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
+    <!-- Force cache bust for Pi Browser -->
+    <script>
+      (function() {
+        // Pi Browser aggressively caches index.html
+        // Force reload once with nocache if not present
+        if (window.location.search.indexOf('nocache=') === -1 && !sessionStorage.getItem('_wp_cachebust')) {
+          sessionStorage.setItem('_wp_cachebust', '1');
+          var url = new URL(window.location.href);
+          url.searchParams.set('nocache', Date.now());
+          window.location.replace(url.toString());
+        } else {
+          sessionStorage.removeItem('_wp_cachebust');
+        }
+      })();
+    </script>
     <script>window.WORKPRO_VERSION='v184';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
