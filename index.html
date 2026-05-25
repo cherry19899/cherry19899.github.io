@@ -235,9 +235,11 @@
               // After cancel, retry pending payment if user already clicked Buy
               if (window._pendingPaymentData) {
                 console.log('[Pi] Retrying createPayment after incomplete cancel...');
+                var retryData = window._pendingPaymentData;
+                window._pendingPaymentData = null; // CLEAR before retry to prevent infinite loop
                 setTimeout(function() {
-                  if (window._pendingPaymentData && window.Pi && window._origCreatePayment) {
-                    window._origCreatePayment.call(window.Pi, window._pendingPaymentData.data, window._pendingPaymentData.callbacks);
+                  if (window._origCreatePayment) {
+                    window._origCreatePayment.call(window.Pi, retryData.data, retryData.callbacks);
                   }
                 }, 2000);
               }
