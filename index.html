@@ -231,6 +231,16 @@
             }).then(function(r) {
               console.log('[Pi] Incomplete payment cancelled, status:', r.status);
               return r.json();
+            }).then(function() {
+              // After cancel, retry pending payment if user already clicked Buy
+              if (window._pendingPaymentData) {
+                console.log('[Pi] Retrying createPayment after incomplete cancel...');
+                setTimeout(function() {
+                  if (window._pendingPaymentData && window.Pi && window.Pi.createPayment) {
+                    window.Pi.createPayment(window._pendingPaymentData.data, window._pendingPaymentData.callbacks);
+                  }
+                }, 2000);
+              }
             }).catch(function(err) {
               console.error('[Pi] Failed to cancel incomplete payment:', err);
             });
@@ -352,50 +362,26 @@
           if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
           var currentUid = window._workproUserId;
           if (currentUid) uid = currentUid;
+          // Save payment data for retry after incomplete payment cancel
+          window._pendingPaymentData = { data: paymentData, callbacks: callbacks };
           // Debug logging for payment errors
           var wrappedCallbacks = {
-            onReadyForServerApproval: wrapCallback(callbacks.onReadyForServerApproval),
-            onReadyForServerCompletion: wrapCallback(callbacks.onReadyForServerCompletion),
+            onReadyForServerApproval: wrapCallback(function(paymentId) {
+              window._pendingPaymentData = null;
+              if (callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval(paymentId);
+            }),
+            onReadyForServerCompletion: wrapCallback(function(paymentId, txid) {
+              window._pendingPaymentData = null;
+              if (callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion(paymentId, txid);
+            }),
             onCancel: wrapCallback(function(paymentId) {
+              window._pendingPaymentData = null;
               console.log('[Pi] onCancel called, paymentId:', paymentId);
               if (callbacks.onCancel) callbacks.onCancel(paymentId);
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
-              var msg = (error && error.message) || String(error);
-              if ((msg.indexOf('pending payment') !== -1 || msg.indexOf('needs to be handled') !== -1) && !paymentData._retryCount) {
-                paymentData._retryCount = 1;
-                console.log('[Pi] Auto-retry: pending payment detected, fetching incomplete list...');
-                fetch('https://workpro-api.onrender.com/api/payments/incomplete', {
-                  headers: { 'x-user-id': uid }
-                }).then(function(r){return r.json();}).then(function(data){
-                  var payments = data.incomplete_payments || [];
-                  console.log('[Pi] Found incomplete payments:', payments.length);
-                  if (payments.length === 0) {
-                    console.log('[Pi] No incomplete payments on server. Waiting for SDK cache clear...');
-                    // Don't auto-retry — let user dismiss dialog and try manually
-                    if (callbacks.onError) callbacks.onError({message:'Payment was cancelled. Please dismiss dialog and try again.'}, payment);
-                  } else {
-                    var cancelPromises = payments.map(function(p){
-                      var pid = p.identifier || p.paymentId || p.id;
-                      return fetch('https://workpro-api.onrender.com/api/payments/' + pid + '/cancelled', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-                      });
-                    });
-                    Promise.all(cancelPromises).then(function(){
-                      setTimeout(function(){
-                        console.log('[Pi] Retrying createPayment after cancel...');
-                        origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
-                      }, 3000);
-                    });
-                  }
-                }).catch(function(err){
-                  console.error('[Pi] Auto-retry failed:', err);
-                  if (callbacks.onError) callbacks.onError(error, payment);
-                });
-                return; // Don't propagate original error
-              }
+              window._pendingPaymentData = null;
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
