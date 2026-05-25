@@ -938,9 +938,26 @@ window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.m
     </script>
     <div id="root"></div>
     <!-- DEBUG CONSOLE -->
-    <div id="__c" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;z-index:99998;display:none;border-top:2px solid #0f0;"></div>
+    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:99998;display:none;">
+      <button id="__c_toggle" style="position:absolute;top:-22px;right:6px;height:20px;padding:0 8px;background:rgba(0,0,0,.85);color:#0f0;border:1px solid #0f0;border-radius:4px 4px 0 0;font-family:monospace;font-size:10px;cursor:pointer;z-index:99999;line-height:18px;">▼</button>
+      <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
+    </div>
     <script>
-    (function(){var c=document.getElementById('__c'),cnt=0;function lg(t,m){if(!c)return;cnt++;if(cnt>80)return;c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}lg('#0f0','[WP] v182 start');var o=console.log,oe=console.error,ow=console.warn;console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};})();
+    (function(){
+      var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
+      function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
+      function restoreState(){try{var s=localStorage.getItem('__c_collapsed');if(s==='1'){collapsed=true;c.style.display='none';btn.textContent='▲';}}catch(e){}}
+      if(btn){btn.onclick=function(){collapsed=!collapsed;if(collapsed){c.style.display='none';btn.textContent='▲';}else{c.style.display='block';btn.textContent='▼';}saveState();};}
+      restoreState();
+      function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
+      lg('#0f0','[WP] v182 start');
+      var o=console.log,oe=console.error,ow=console.warn;
+      console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
+      console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
+      console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
+      window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
+      window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
+    })();
     </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
   <script>
@@ -953,6 +970,5 @@ window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.m
     document.body.appendChild(ppLink);
   })();
   </script>
-<div id="__c" style="position:fixed;bottom:0;left:0;right:0;max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;z-index:99998;display:none;border-top:2px solid #0f0;"></div>
 </body>
 </html>
