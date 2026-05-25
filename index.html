@@ -302,7 +302,7 @@
               console.error('[Pi] Failed to cancel incomplete payment:', err);
             });
           };
-          var result = origAuth.call(window.Pi, scopes, wrapped);
+          var result = origAuth.call(window.Pi, fixedScopes, wrapped);
           // Store userId globally for createPayment proxy
           if (result && typeof result.then === 'function') {
             result.then(function(authResult) {
