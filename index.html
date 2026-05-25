@@ -362,6 +362,41 @@
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
+              var msg = (error && error.message) || String(error);
+              if (msg.indexOf('pending payment') !== -1 || msg.indexOf('needs to be handled') !== -1) {
+                console.log('[Pi] Auto-retry: pending payment detected, fetching incomplete list...');
+                fetch('https://workpro-api.onrender.com/api/payments/incomplete', {
+                  headers: { 'x-user-id': uid }
+                }).then(function(r){return r.json();}).then(function(data){
+                  var payments = data.incomplete_payments || [];
+                  console.log('[Pi] Found incomplete payments:', payments.length);
+                  if (payments.length === 0) {
+                    // Server says none — maybe sandbox cache. Wait and retry.
+                    setTimeout(function(){
+                      console.log('[Pi] Retrying createPayment after 1s...');
+                      origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+                    }, 1000);
+                  } else {
+                    var cancelPromises = payments.map(function(p){
+                      var pid = p.identifier || p.paymentId || p.id;
+                      return fetch('https://workpro-api.onrender.com/api/payments/' + pid + '/cancelled', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+                      });
+                    });
+                    Promise.all(cancelPromises).then(function(){
+                      setTimeout(function(){
+                        console.log('[Pi] Retrying createPayment after cancel...');
+                        origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+                      }, 1000);
+                    });
+                  }
+                }).catch(function(err){
+                  console.error('[Pi] Auto-retry failed:', err);
+                  if (callbacks.onError) callbacks.onError(error, payment);
+                });
+                return; // Don't propagate original error
+              }
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
