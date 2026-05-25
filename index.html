@@ -22,7 +22,7 @@
         window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
       }
     </script>
-    <script>window.WORKPRO_VERSION='v184';</script>
+    <script>window.WORKPRO_VERSION='v185';</script>
     <script>
       // One-time cache clear for v47 upgrade (forces fresh bundle)
       (function() {
@@ -445,6 +445,39 @@
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
+              var errorStr = (error && error.message) || String(error);
+              // If missing payments scope, force re-auth
+              if (errorStr && errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
+                console.log('[Pi] Missing payments scope — forcing re-authenticate...');
+                setTimeout(function() {
+                  window.Pi.authenticate(['payments', 'username'], function(payment) {
+                    return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' }
+                    }).then(function(r) { return r.json(); });
+                  }).then(function(authResult) {
+                    console.log('[Pi] Re-auth success with payments scope');
+                    if (authResult && authResult.user) {
+                      var uid = authResult.user.uid || authResult.user.id;
+                      var userToStore = {
+                        id: uid, uid: uid,
+                        username: authResult.user.username || authResult.user.name || 'User',
+                        name: authResult.user.name || authResult.user.username || 'User',
+                        accessToken: authResult.accessToken || '',
+                        balance_connects: authResult.user.balance_connects || 0
+                      };
+                      localStorage.setItem('workpro_user', JSON.stringify(userToStore));
+                      localStorage.setItem('workpro_user_id', uid);
+                      window._workproUserId = uid;
+                    }
+                    // Show success message
+                    var msg = 'Payments permission granted. Tap Buy again to purchase connects.';
+                    if (typeof window.toast !== 'undefined' && window.toast.success) window.toast.success(msg);
+                    else alert(msg);
+                  }).catch(function(err) {
+                    console.error('[Pi] Re-auth failed:', err);
+                  });
+                }, 500);
+              }
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
