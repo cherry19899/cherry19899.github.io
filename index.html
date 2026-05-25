@@ -215,6 +215,7 @@
         var url = new URL(window.location.href);
         if (url.searchParams.get('retry') === '1') {
           url.searchParams.delete('retry');
+          url.searchParams.delete('nocache');
           window.history.replaceState({}, '', url.toString());
           // Show success banner after reload
           setTimeout(function() {
@@ -283,6 +284,8 @@
               setTimeout(function() {
                 var url = new URL(window.location.href);
                 url.searchParams.set('retry', '1');
+                // Add nocache to force fresh index.html after reload
+                url.searchParams.set('nocache', String(Date.now()));
                 window.location.href = url.toString();
               }, 1500);
             }).catch(function(err) {
