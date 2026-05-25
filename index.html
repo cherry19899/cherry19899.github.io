@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=48" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg?v=49" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -12,8 +12,8 @@
     <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
     <meta property="og:title" content="Work Pro - Freelance on Pi" />
     <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
-    <link rel="manifest" href="/manifest.json?v=48" />
-    <link rel="apple-touch-icon" href="/vite.svg?v=48" />
+    <link rel="manifest" href="/manifest.json?v=49" />
+    <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>window.WORKPRO_VERSION='v184';</script>
     <script>
@@ -241,6 +241,16 @@
         }
         var origAuth = window.Pi.authenticate;
         window.Pi.authenticate = function(scopes, onIncompletePaymentFound) {
+          // ---- ENSURE payments scope is always included ----
+          var fixedScopes = scopes ? scopes.slice() : [];
+          var hasPayments = false, hasUsername = false;
+          for (var s = 0; s < fixedScopes.length; s++) {
+            if (fixedScopes[s] === 'payments') hasPayments = true;
+            if (fixedScopes[s] === 'username') hasUsername = true;
+          }
+          if (!hasPayments) fixedScopes.push('payments');
+          if (!hasUsername) fixedScopes.push('username');
+          console.log('[Pi] authenticate scopes fixed:', fixedScopes);
           // Force async onIncompletePaymentFound that returns Promise
           var wrapped = function(payment) {
             console.log('[Pi] onIncompletePaymentFound called', payment);
