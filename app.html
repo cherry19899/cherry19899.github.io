@@ -15,7 +15,6 @@
     <link rel="manifest" href="/manifest.json?v=49" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <!-- Force cache bust for Pi Browser -->
     <script>
       // AGGRESSIVE cache bust: redirect immediately before Pi Browser caches anything
       if (window.location.search.indexOf('nocache=') === -1) {
@@ -518,7 +517,7 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v182.js?v=183')
+      fetch('/assets/app-v182.js?v=185')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
@@ -1069,7 +1068,7 @@
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v182 start');
+      lg('#0f0','[WP] v185 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
