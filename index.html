@@ -254,6 +254,30 @@
                 banner.style.display = 'block';
                 setTimeout(function() { if(banner) banner.style.display = 'none'; }, 8000);
               }
+              // ---- NEW: Try to clear SDK local pending state ----
+              try {
+                // Pi SDK v2 sandbox stores pending in localStorage under 'Pi' keys
+                var lsKeys = Object.keys(localStorage);
+                for (var i = 0; i < lsKeys.length; i++) {
+                  var k = lsKeys[i];
+                  if (k.indexOf('Pi') === 0 || k.indexOf('pi_') === 0 || k.indexOf('payment') !== -1) {
+                    console.log('[Pi] Clearing localStorage key:', k);
+                    localStorage.removeItem(k);
+                  }
+                }
+                // Also try sessionStorage
+                var ssKeys = Object.keys(sessionStorage);
+                for (var j = 0; j < ssKeys.length; j++) {
+                  var sk = ssKeys[j];
+                  if (sk.indexOf('Pi') === 0 || sk.indexOf('pi_') === 0 || sk.indexOf('payment') !== -1) {
+                    console.log('[Pi] Clearing sessionStorage key:', sk);
+                    sessionStorage.removeItem(sk);
+                  }
+                }
+                console.log('[Pi] SDK pending state cleared from storage');
+              } catch(e) {
+                console.warn('[Pi] Failed to clear SDK storage:', e);
+              }
             }).catch(function(err) {
               console.error('[Pi] Failed to cancel incomplete payment:', err);
             });
