@@ -445,17 +445,18 @@
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
-              var errorStr = (error && error.message) || String(error);
-              // If missing payments scope, force re-auth
+              var errorStr = (error && error.message) || (error && error.error) || String(error);
+              // If missing payments scope, suppress from React and auto-retry
               if (errorStr && errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
-                console.log('[Pi] Missing payments scope — forcing re-authenticate...');
+                console.log('[Pi] onError: payments scope — SUPPRESSING from React, will auto-retry...');
+                // Do NOT call callbacks.onError — suppress error from React UI
                 setTimeout(function() {
                   window.Pi.authenticate(['payments', 'username'], function(payment) {
                     return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
                       method: 'POST', headers: { 'Content-Type': 'application/json' }
                     }).then(function(r) { return r.json(); });
                   }).then(function(authResult) {
-                    console.log('[Pi] Re-auth success with payments scope');
+                    console.log('[Pi] Re-auth success, auto-retrying createPayment...');
                     if (authResult && authResult.user) {
                       var uid = authResult.user.uid || authResult.user.id;
                       var userToStore = {
@@ -469,21 +470,19 @@
                       localStorage.setItem('workpro_user_id', uid);
                       window._workproUserId = uid;
                     }
-                    // Show success message
-                    var msg = 'Payments permission granted. Tap Buy again to purchase connects.';
-                    if (typeof window.toast !== 'undefined' && window.toast.success) window.toast.success(msg);
-                    else alert(msg);
+                    origCreatePayment.call(window.Pi, paymentData, callbacks);
                   }).catch(function(err) {
-                    console.error('[Pi] Re-auth failed:', err);
+                    console.error('[Pi] Auto-retry failed:', err);
+                    // Only now tell React about the error
+                    if (callbacks.onError) callbacks.onError(error, payment);
                   });
                 }, 500);
+                return; // SUPPRESS — do not call callbacks.onError now
               }
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
           console.log('[Pi] createPayment called with amount:', paymentData.amount, 'memo:', paymentData.memo);
-          var result = origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
-          console.warn('>>> [Pi] createPayment RETURNED type:', typeof result, 'value:', result);
           
           // Helper: re-auth + retry
           function doReAuthAndRetry() {
@@ -516,6 +515,21 @@
                 });
               }, 500);
             });
+          }
+          
+          // Wrap original call in try/catch to catch SYNC THROWS
+          var result;
+          try {
+            result = origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+            console.warn('>>> [Pi] createPayment RETURNED type:', typeof result, 'value:', result);
+          } catch (syncError) {
+            console.warn('>>> [Pi] createPayment THREW sync error:', syncError);
+            var errorStr = (syncError && syncError.message) || (syncError && syncError.error) || String(syncError);
+            if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
+              console.log('[Pi] Sync throw with payments scope — auto-retrying...');
+              return doReAuthAndRetry();
+            }
+            throw syncError;
           }
           
           // Case 1: Sandbox returns error object directly: {success:false, error:"..."}

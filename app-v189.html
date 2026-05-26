@@ -407,10 +407,12 @@
               return origFetch2.call(this, url, opts);
             };
             var result;
-            try { result = cb.apply(this, args); } catch(e) { window.fetch = origFetch2; throw e; }
-            if (result && typeof result.then === 'function') {
-              result.then(function() { window.fetch = origFetch2; }).catch(function() { window.fetch = origFetch2; });
-            } else {
+            try {
+              result = cb.apply(this, args);
+            } catch(e) {
+              console.error('[Pi] Callback error:', e);
+              throw e;
+            } finally {
               window.fetch = origFetch2;
             }
             return result;
@@ -418,10 +420,79 @@
         }
 
         if (!window.Pi || !window.Pi.createPayment) {
+          console.log('[Pi] createPayment not available yet, retrying...');
           setTimeout(setupCreatePaymentPatch, 200);
           return;
         }
+
+        // If already patched by us, don't double-patch
+        if (window.Pi.createPayment._workproPatched) {
+          console.log('[Pi] createPayment already patched, skipping');
+          return;
+        }
+
         var origCreatePayment = window.Pi.createPayment;
+
+        // Helper: re-auth + retry
+        function doReAuthAndRetry(currentPaymentData, currentCallbacks) {
+          return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+              window.Pi.authenticate(['payments', 'username'], function(payment) {
+                window._incompletePaymentStarted = true;
+                console.log('[Pi] onIncompletePaymentFound called, cancelling...');
+                return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' }
+                }).then(function(r) {
+                  console.log('[Pi] Incomplete payment cancelled on backend');
+                  window._incompletePaymentDone = true;
+                  return r.json();
+                }).catch(function(err) {
+                  console.error('[Pi] Failed to cancel incomplete payment:', err);
+                  window._incompletePaymentDone = true;
+                  return { handled: true, error: err.message };
+                });
+              }).then(function(authResult) {
+                console.log('[Pi] Re-auth success, waiting for incomplete payment cleanup...');
+                if (authResult && authResult.user) {
+                  var uid = authResult.user.uid || authResult.user.id;
+                  var userToStore = {
+                    id: uid, uid: uid,
+                    username: authResult.user.username || authResult.user.name || 'User',
+                    name: authResult.user.name || authResult.user.username || 'User',
+                    accessToken: authResult.accessToken || '',
+                    balance_connects: authResult.user.balance_connects || 0
+                  };
+                  localStorage.setItem('workpro_user', JSON.stringify(userToStore));
+                  localStorage.setItem('workpro_user_id', uid);
+                  window._workproUserId = uid;
+                }
+                // Wait for SDK to fully process incomplete payment before retry
+                var waitStart = Date.now();
+                var checkInterval = setInterval(function() {
+                  var elapsed = Date.now() - waitStart;
+                  if (window._incompletePaymentDone || elapsed > 3000) {
+                    clearInterval(checkInterval);
+                    if (!window._incompletePaymentDone) {
+                      console.warn('[Pi] Timeout waiting for incomplete payment cleanup');
+                    }
+                    // Re-patch createPayment in case SDK replaced it
+                    if (window.Pi && window.Pi.createPayment && !window.Pi.createPayment._workproPatched) {
+                      console.log('[Pi] Re-patching createPayment after re-auth');
+                      setupCreatePaymentPatch();
+                    }
+                    console.log('[Pi] Auto-retrying createPayment after cleanup...');
+                    var retry = window.Pi.createPayment(currentPaymentData, currentCallbacks);
+                    resolve(retry);
+                  }
+                }, 100);
+              }).catch(function(err) {
+                console.error('[Pi] Re-auth failed:', err);
+                reject(err);
+              });
+            }, 500);
+          });
+        }
+
         window.Pi.createPayment = function(paymentData, callbacks) {
           if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
           var currentUid = window._workproUserId;
@@ -431,11 +502,12 @@
           // Debug logging for payment errors
           var wrappedCallbacks = {
             onReadyForServerApproval: wrapCallback(function(paymentId) {
-              window._pendingPaymentData = null;
+              console.log('[Pi] onReadyForServerApproval called, paymentId:', paymentId);
               if (callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval(paymentId);
             }),
             onReadyForServerCompletion: wrapCallback(function(paymentId, txid) {
               window._pendingPaymentData = null;
+              console.log('[Pi] onReadyForServerCompletion called, paymentId:', paymentId, 'txid:', txid);
               if (callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion(paymentId, txid);
             }),
             onCancel: wrapCallback(function(paymentId) {
@@ -451,71 +523,20 @@
                 console.log('[Pi] onError: payments scope — SUPPRESSING from React, will auto-retry...');
                 // Do NOT call callbacks.onError — suppress error from React UI
                 setTimeout(function() {
-                  window.Pi.authenticate(['payments', 'username'], function(payment) {
-                    return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json' }
-                    }).then(function(r) { return r.json(); });
-                  }).then(function(authResult) {
-                    console.log('[Pi] Re-auth success, auto-retrying createPayment...');
-                    if (authResult && authResult.user) {
-                      var uid = authResult.user.uid || authResult.user.id;
-                      var userToStore = {
-                        id: uid, uid: uid,
-                        username: authResult.user.username || authResult.user.name || 'User',
-                        name: authResult.user.name || authResult.user.username || 'User',
-                        accessToken: authResult.accessToken || '',
-                        balance_connects: authResult.user.balance_connects || 0
-                      };
-                      localStorage.setItem('workpro_user', JSON.stringify(userToStore));
-                      localStorage.setItem('workpro_user_id', uid);
-                      window._workproUserId = uid;
-                    }
-                    origCreatePayment.call(window.Pi, paymentData, callbacks);
+                  doReAuthAndRetry(paymentData, callbacks).then(function(retry) {
+                    console.log('[Pi] Auto-retry via onError succeeded');
                   }).catch(function(err) {
-                    console.error('[Pi] Auto-retry failed:', err);
+                    console.error('[Pi] Auto-retry via onError failed:', err);
                     // Only now tell React about the error
                     if (callbacks.onError) callbacks.onError(error, payment);
                   });
-                }, 500);
+                }, 100);
                 return; // SUPPRESS — do not call callbacks.onError now
               }
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
           console.log('[Pi] createPayment called with amount:', paymentData.amount, 'memo:', paymentData.memo);
-          
-          // Helper: re-auth + retry
-          function doReAuthAndRetry() {
-            return new Promise(function(resolve, reject) {
-              setTimeout(function() {
-                window.Pi.authenticate(['payments', 'username'], function(payment) {
-                  return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }
-                  }).then(function(r) { return r.json(); });
-                }).then(function(authResult) {
-                  console.log('[Pi] Re-auth success, auto-retrying createPayment...');
-                  if (authResult && authResult.user) {
-                    var uid = authResult.user.uid || authResult.user.id;
-                    var userToStore = {
-                      id: uid, uid: uid,
-                      username: authResult.user.username || authResult.user.name || 'User',
-                      name: authResult.user.name || authResult.user.username || 'User',
-                      accessToken: authResult.accessToken || '',
-                      balance_connects: authResult.user.balance_connects || 0
-                    };
-                    localStorage.setItem('workpro_user', JSON.stringify(userToStore));
-                    localStorage.setItem('workpro_user_id', uid);
-                    window._workproUserId = uid;
-                  }
-                  var retry = origCreatePayment.call(window.Pi, paymentData, callbacks);
-                  resolve(retry);
-                }).catch(function(err) {
-                  console.error('[Pi] Auto-retry failed:', err);
-                  reject(result);
-                });
-              }, 500);
-            });
-          }
           
           // Wrap original call in try/catch to catch SYNC THROWS
           var result;
@@ -527,7 +548,7 @@
             var errorStr = (syncError && syncError.message) || (syncError && syncError.error) || String(syncError);
             if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
               console.log('[Pi] Sync throw with payments scope — auto-retrying...');
-              return doReAuthAndRetry();
+              return doReAuthAndRetry(paymentData, callbacks);
             }
             throw syncError;
           }
@@ -537,7 +558,7 @@
             var errorStr = String(result.error);
             if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
               console.log('[Pi] Error object with payments scope — auto-retrying...');
-              return doReAuthAndRetry();
+              return doReAuthAndRetry(paymentData, callbacks);
             }
           }
           
@@ -549,7 +570,7 @@
                 var errorStr = String(value.error);
                 if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
                   console.log('[Pi] Resolved Promise has payments scope error — auto-retrying...');
-                  return doReAuthAndRetry();
+                  return doReAuthAndRetry(paymentData, callbacks);
                 }
               }
               return value;
@@ -557,7 +578,7 @@
               var errorStr = (error && error.message) || String(error);
               if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
                 console.log('[Pi] Promise rejected with payments scope — auto-retrying...');
-                return doReAuthAndRetry();
+                return doReAuthAndRetry(paymentData, callbacks);
               }
               throw error;
             });
@@ -565,6 +586,7 @@
           
           return result;
         };
+        window.Pi.createPayment._workproPatched = true;
         console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
       }
       setupCreatePaymentPatch();

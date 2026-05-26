@@ -518,9 +518,9 @@
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
               var errorStr = (error && error.message) || (error && error.error) || String(error);
-              // If missing payments scope, suppress from React and auto-retry
-              if (errorStr && errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
-                console.log('[Pi] onError: payments scope — SUPPRESSING from React, will auto-retry...');
+              // Catch ANY payment-related error and auto-retry
+              if (errorStr && (errorStr.indexOf('payments') !== -1 || errorStr.indexOf('pending') !== -1 || errorStr.indexOf('Cannot create') !== -1)) {
+                console.log('[Pi] onError: payment error — SUPPRESSING from React, will auto-retry...');
                 // Do NOT call callbacks.onError — suppress error from React UI
                 setTimeout(function() {
                   doReAuthAndRetry(paymentData, callbacks).then(function(retry) {
@@ -546,8 +546,9 @@
           } catch (syncError) {
             console.warn('>>> [Pi] createPayment THREW sync error:', syncError);
             var errorStr = (syncError && syncError.message) || (syncError && syncError.error) || String(syncError);
-            if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
-              console.log('[Pi] Sync throw with payments scope — auto-retrying...');
+            // Catch ANY payment-related error (scope, pending, etc.)
+            if (errorStr.indexOf('payments') !== -1 || errorStr.indexOf('pending') !== -1 || errorStr.indexOf('Cannot create') !== -1) {
+              console.log('[Pi] Sync throw with payment error — auto-retrying...');
               return doReAuthAndRetry(paymentData, callbacks);
             }
             throw syncError;

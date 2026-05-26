@@ -481,7 +481,45 @@
             })
           };
           console.log('[Pi] createPayment called with amount:', paymentData.amount, 'memo:', paymentData.memo);
-          return origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+          var result = origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+          // Catch Promise rejection for scope errors
+          if (result && typeof result.catch === 'function') {
+            result = result.catch(function(error) {
+              var errorStr = (error && error.message) || String(error);
+              if (errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
+                console.log('[Pi] Promise rejected with payments scope — forcing re-authenticate...');
+                setTimeout(function() {
+                  window.Pi.authenticate(['payments', 'username'], function(payment) {
+                    return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' }
+                    }).then(function(r) { return r.json(); });
+                  }).then(function(authResult) {
+                    console.log('[Pi] Re-auth success');
+                    if (authResult && authResult.user) {
+                      var uid = authResult.user.uid || authResult.user.id;
+                      var userToStore = {
+                        id: uid, uid: uid,
+                        username: authResult.user.username || authResult.user.name || 'User',
+                        name: authResult.user.name || authResult.user.username || 'User',
+                        accessToken: authResult.accessToken || '',
+                        balance_connects: authResult.user.balance_connects || 0
+                      };
+                      localStorage.setItem('workpro_user', JSON.stringify(userToStore));
+                      localStorage.setItem('workpro_user_id', uid);
+                      window._workproUserId = uid;
+                    }
+                    var msg = 'Payments permission granted. Tap Buy again.';
+                    if (typeof window.toast !== 'undefined' && window.toast.success) window.toast.success(msg);
+                    else alert(msg);
+                  }).catch(function(err) {
+                    console.error('[Pi] Re-auth failed:', err);
+                  });
+                }, 500);
+              }
+              throw error;
+            });
+          }
+          return result;
         };
         console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
       }
