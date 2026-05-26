@@ -393,7 +393,8 @@
 
         function wrapCallback(cb) {
           if (typeof cb !== 'function') return cb;
-          return function(data) {
+          return function() {
+            var args = Array.prototype.slice.call(arguments);
             var origFetch2 = window.fetch;
             window.fetch = function(url, opts) {
               if (typeof url === 'string' && (url.indexOf('/api/') !== -1 || url.indexOf('workpro-api') !== -1)) {
@@ -406,7 +407,7 @@
               return origFetch2.call(this, url, opts);
             };
             var result;
-            try { result = cb(data); } catch(e) { window.fetch = origFetch2; throw e; }
+            try { result = cb.apply(this, args); } catch(e) { window.fetch = origFetch2; throw e; }
             if (result && typeof result.then === 'function') {
               result.then(function() { window.fetch = origFetch2; }).catch(function() { window.fetch = origFetch2; });
             } else {
