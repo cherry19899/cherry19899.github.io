@@ -21,14 +21,14 @@
         window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
       }
     </script>
-    <script>window.WORKPRO_VERSION='v185';</script>
+    <script>window.WORKPRO_VERSION='v197';</script>
     <script>
-      // One-time cache clear for v47 upgrade (forces fresh bundle)
+      // One-time cache clear for v197 upgrade (forces fresh bundle)
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v184_cleared');
+          var cleared = localStorage.getItem('workpro_v197_cleared');
           if (!cleared) {
-            localStorage.setItem('workpro_v184_cleared', '1');
+            localStorage.setItem('workpro_v197_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -245,7 +245,9 @@
           setTimeout(patchAuth, 50);
           return;
         }
+        if (window.Pi._authPatched) return;
         var origAuth = window.Pi.authenticate;
+        window._origPiAuthenticate = origAuth; // store for doReAuthAndRetry
         window.Pi.authenticate = function(scopes, onIncompletePaymentFound) {
           // ---- ENSURE payments scope is always included ----
           var fixedScopes = scopes ? scopes.slice() : [];
@@ -273,40 +275,13 @@
               console.log('[Pi] Incomplete payment cancelled on backend, status:', r.status);
               return r.json();
             }).then(function(data) {
-              // Show toast notification to user (global, not in modal)
-              var msg = 'Previous payment cancelled on server. Reloading app to clear Pi state...';
-              console.log('[Pi]', msg);
-              // Try sonner toast
-              if (typeof we !== 'undefined' && we.error) {
-                we.error(msg);
-              } else if (typeof window.toast !== 'undefined' && window.toast.error) {
-                window.toast.error(msg);
-              } else {
-                // Fallback inline banner
-                var banner = document.getElementById('_payment_retry_banner');
-                if (!banner) {
-                  banner = document.createElement('div');
-                  banner.id = '_payment_retry_banner';
-                  banner.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;background:#dc2626;color:#fff;padding:12px 16px;border-radius:8px;font-size:14px;z-index:99999;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.3);';
-                  document.body.appendChild(banner);
-                }
-                banner.textContent = msg;
-                banner.style.display = 'block';
-              }
-              // ---- CRITICAL: Reload page to clear SDK internal pending state ----
-              // Pi SDK v2 sandbox stores pending in internal state (not localStorage).
-              // Only page reload clears it.
-              console.log('[Pi] Reloading page in 1.5s to clear SDK pending state...');
-              setTimeout(function() {
-                var url = new URL(window.location.href);
-                url.searchParams.set('retry', '1');
-                // Add nocache to force fresh index.html after reload
-                url.searchParams.set('nocache', String(Date.now()));
-                window.location.href = url.toString();
-              }, 1500);
-            }).catch(function(err) {
-              console.error('[Pi] Failed to cancel incomplete payment:', err);
-            });
+            // Silent cleanup — no reload, let doReAuthAndRetry handle retry
+            console.log('[Pi] Incomplete payment cancelled on backend');
+            return { handled: true, cancelled: true };
+          }).catch(function(err) {
+            console.error('[Pi] Failed to cancel incomplete payment:', err);
+            return { handled: true, error: err.message };
+          });
           };
           var result = origAuth.call(window.Pi, fixedScopes, wrapped);
           // Store userId globally for createPayment proxy
@@ -334,6 +309,8 @@
           }
           return result;
         };
+        window.Pi._authPatched = true;
+        window.Pi._authPatched = true;
         console.log('[Pi] authenticate patched with Promise wrapper + userId storage');
       }
       patchAuth();
@@ -393,7 +370,8 @@
 
         function wrapCallback(cb) {
           if (typeof cb !== 'function') return cb;
-          return function(data) {
+          return function() {
+            var args = Array.prototype.slice.call(arguments);
             var origFetch2 = window.fetch;
             window.fetch = function(url, opts) {
               if (typeof url === 'string' && (url.indexOf('/api/') !== -1 || url.indexOf('workpro-api') !== -1)) {
@@ -406,10 +384,12 @@
               return origFetch2.call(this, url, opts);
             };
             var result;
-            try { result = cb(data); } catch(e) { window.fetch = origFetch2; throw e; }
-            if (result && typeof result.then === 'function') {
-              result.then(function() { window.fetch = origFetch2; }).catch(function() { window.fetch = origFetch2; });
-            } else {
+            try {
+              result = cb.apply(this, args);
+            } catch(e) {
+              console.error('[Pi] Callback error:', e);
+              throw e;
+            } finally {
               window.fetch = origFetch2;
             }
             return result;
@@ -417,10 +397,99 @@
         }
 
         if (!window.Pi || !window.Pi.createPayment) {
+          console.log('[Pi] createPayment not available yet, retrying...');
           setTimeout(setupCreatePaymentPatch, 200);
           return;
         }
+
+        // If already patched by us, don't double-patch
+        if (window.Pi.createPayment._workproPatched) {
+          console.log('[Pi] createPayment already patched, skipping');
+          return;
+        }
+
         var origCreatePayment = window.Pi.createPayment;
+        window._origPiCreatePayment = origCreatePayment; // store for doReAuthAndRetry
+
+        // Helper: re-auth + retry (uses ORIGINAL Pi functions to avoid patch loops)
+        function doReAuthAndRetry(currentPaymentData, currentCallbacks) {
+          return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+              // Use ORIGINAL authenticate (bypass our patchAuth to avoid page reload)
+              if (!window._origPiAuthenticate) {
+                console.error('[Pi] doReAuthAndRetry: _origPiAuthenticate missing, cannot re-auth');
+                reject(new Error('_origPiAuthenticate missing'));
+                return;
+              }
+              // Retry counter
+              window._paymentRetryCount = (window._paymentRetryCount || 0) + 1;
+              var retryNum = window._paymentRetryCount;
+              console.log('[Pi] doReAuthAndRetry attempt #' + retryNum);
+              if (retryNum > 1) {
+                console.error('[Pi] Max retries exceeded. Stopping to prevent infinite loop.');
+                // Show error to user and suggest reload
+                var msg = 'Payment failed. Please reload the page and try again.';
+                if (typeof we !== 'undefined' && we.error) we.error(msg);
+                else if (typeof window.toast !== 'undefined' && window.toast.error) window.toast.error(msg);
+                // Show reload banner
+                var banner = document.getElementById('_payment_retry_banner');
+                if (!banner) {
+                  banner = document.createElement('div');
+                  banner.id = '_payment_retry_banner';
+                  banner.style.cssText = 'position:fixed;top:60px;left:10px;right:10px;background:#dc2626;color:#fff;padding:12px 16px;border-radius:8px;font-size:14px;z-index:99999;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.3);';
+                  document.body.appendChild(banner);
+                }
+                banner.textContent = msg;
+                banner.style.display = 'block';
+                reject(new Error('Max retries exceeded'));
+                return;
+              }
+              window._origPiAuthenticate(['payments', 'username'], function(payment) {
+                window._incompletePaymentStarted = true;
+                console.log('[Pi] doReAuthAndRetry: onIncompletePaymentFound called, cancelling...');
+                return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' }
+                }).then(function(r) {
+                  console.log('[Pi] doReAuthAndRetry: incomplete payment cancelled');
+                  window._incompletePaymentDone = true;
+                  return r.json();
+                }).catch(function(err) {
+                  console.error('[Pi] doReAuthAndRetry: failed to cancel:', err);
+                  window._incompletePaymentDone = true;
+                  return { handled: true, error: err.message };
+                });
+              }).then(function(authResult) {
+                console.log('[Pi] doReAuthAndRetry: re-auth success');
+                if (authResult && authResult.user) {
+                  var uid = authResult.user.uid || authResult.user.id;
+                  var userToStore = {
+                    id: uid, uid: uid,
+                    username: authResult.user.username || authResult.user.name || 'User',
+                    name: authResult.user.name || authResult.user.username || 'User',
+                    accessToken: authResult.accessToken || '',
+                    balance_connects: authResult.user.balance_connects || 0
+                  };
+                  localStorage.setItem('workpro_user', JSON.stringify(userToStore));
+                  localStorage.setItem('workpro_user_id', uid);
+                  window._workproUserId = uid;
+                }
+                // Use ORIGINAL createPayment to avoid our try/catch re-triggering
+                if (!window._origPiCreatePayment) {
+                  console.error('[Pi] doReAuthAndRetry: _origPiCreatePayment missing');
+                  reject(new Error('_origPiCreatePayment missing'));
+                  return;
+                }
+                console.log('[Pi] doReAuthAndRetry: calling ORIGINAL createPayment retry...');
+                var retry = window._origPiCreatePayment.call(window.Pi, currentPaymentData, currentCallbacks);
+                resolve(retry);
+              }).catch(function(err) {
+                console.error('[Pi] doReAuthAndRetry: re-auth failed:', err);
+                reject(err);
+              });
+            }, 500);
+          });
+        }
+
         window.Pi.createPayment = function(paymentData, callbacks) {
           if (!callbacks) return origCreatePayment.call(window.Pi, paymentData);
           var currentUid = window._workproUserId;
@@ -430,11 +499,12 @@
           // Debug logging for payment errors
           var wrappedCallbacks = {
             onReadyForServerApproval: wrapCallback(function(paymentId) {
-              window._pendingPaymentData = null;
+              console.log('[Pi] onReadyForServerApproval called, paymentId:', paymentId);
               if (callbacks.onReadyForServerApproval) callbacks.onReadyForServerApproval(paymentId);
             }),
             onReadyForServerCompletion: wrapCallback(function(paymentId, txid) {
               window._pendingPaymentData = null;
+              console.log('[Pi] onReadyForServerCompletion called, paymentId:', paymentId, 'txid:', txid);
               if (callbacks.onReadyForServerCompletion) callbacks.onReadyForServerCompletion(paymentId, txid);
             }),
             onCancel: wrapCallback(function(paymentId) {
@@ -444,45 +514,75 @@
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
-              var errorStr = (error && error.message) || String(error);
-              // If missing payments scope, force re-auth
-              if (errorStr && errorStr.indexOf('payments') !== -1 && errorStr.indexOf('scope') !== -1) {
-                console.log('[Pi] Missing payments scope — forcing re-authenticate...');
-                setTimeout(function() {
-                  window.Pi.authenticate(['payments', 'username'], function(payment) {
-                    return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
-                      method: 'POST', headers: { 'Content-Type': 'application/json' }
-                    }).then(function(r) { return r.json(); });
-                  }).then(function(authResult) {
-                    console.log('[Pi] Re-auth success with payments scope');
-                    if (authResult && authResult.user) {
-                      var uid = authResult.user.uid || authResult.user.id;
-                      var userToStore = {
-                        id: uid, uid: uid,
-                        username: authResult.user.username || authResult.user.name || 'User',
-                        name: authResult.user.name || authResult.user.username || 'User',
-                        accessToken: authResult.accessToken || '',
-                        balance_connects: authResult.user.balance_connects || 0
-                      };
-                      localStorage.setItem('workpro_user', JSON.stringify(userToStore));
-                      localStorage.setItem('workpro_user_id', uid);
-                      window._workproUserId = uid;
-                    }
-                    // Show success message
-                    var msg = 'Payments permission granted. Tap Buy again to purchase connects.';
-                    if (typeof window.toast !== 'undefined' && window.toast.success) window.toast.success(msg);
-                    else alert(msg);
-                  }).catch(function(err) {
-                    console.error('[Pi] Re-auth failed:', err);
-                  });
-                }, 500);
-              }
+              var errorStr = (error && error.message) || (error && error.error) || String(error);
+              // Show error to user — no auto-retry to prevent infinite loop
+              var userMsg = 'Payment error: ' + errorStr + '. Please reload the page and try again.';
+              console.error('[Pi]', userMsg);
+              if (typeof we !== 'undefined' && we.error) we.error(userMsg);
+              else if (typeof window.toast !== 'undefined' && window.toast.error) window.toast.error(userMsg);
               if (callbacks.onError) callbacks.onError(error, payment);
             })
           };
           console.log('[Pi] createPayment called with amount:', paymentData.amount, 'memo:', paymentData.memo);
-          return origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+          
+          // Wrap original call in try/catch to catch SYNC THROWS
+          var result;
+          try {
+            result = origCreatePayment.call(window.Pi, paymentData, wrappedCallbacks);
+            console.warn('>>> [Pi] createPayment RETURNED type:', typeof result, 'value:', result);
+          } catch (syncError) {
+            console.warn('>>> [Pi] createPayment THREW sync error:', syncError);
+            var errMsg = syncError && syncError.message ? syncError.message : String(syncError);
+            // Try ONE retry with original authenticate + createPayment
+            if (!window._piPaymentsRetry && errMsg.indexOf('payments') !== -1) {
+              window._piPaymentsRetry = true;
+              console.log('[Pi] Retrying with fresh auth using ORIGINAL Pi functions...');
+              if (window._origPiAuthenticate && window._origPiCreatePayment) {
+                return window._origPiAuthenticate.call(window.Pi, ['payments', 'username'], function() {
+                  return Promise.resolve({ handled: true });
+                }).then(function(auth) {
+                  console.log('[Pi] Retry auth result:', auth ? 'success' : 'cached');
+                  return window._origPiCreatePayment.call(window.Pi, paymentData, callbacks);
+                }).catch(function(err) {
+                  console.error('[Pi] Retry failed:', err);
+                  var userMsg = 'Payment error: ' + errMsg + '. Please reload the page and try again.';
+                  if (typeof we !== 'undefined' && we.error) we.error(userMsg);
+                  else if (typeof window.toast !== 'undefined' && window.toast.error) window.toast.error(userMsg);
+                  return null;
+                });
+              }
+            }
+            // Show error to user
+            var userMsg = 'Payment error: ' + errMsg + '. Please reload the page and try again.';
+            console.error('[Pi]', userMsg);
+            if (typeof we !== 'undefined' && we.error) we.error(userMsg);
+            else if (typeof window.toast !== 'undefined' && window.toast.error) window.toast.error(userMsg);
+            return null;
+          }
+          
+          // Case 1: Sandbox returns error object directly — show error, no retry
+          if (result && result.error) {
+            console.error('[Pi] createPayment returned error object:', result.error);
+          }
+          
+          // Case 2: Sandbox returns a Promise — pass through, no retry
+          if (result && typeof result.then === 'function') {
+            result = result.then(function(value) {
+              console.warn('>>> [Pi] Promise resolved with:', typeof value, value);
+              if (value && value.error) {
+                console.error('[Pi] Promise resolved with error:', value.error);
+              }
+              return value;
+            }).catch(function(error) {
+              var errorStr = (error && error.message) || String(error);
+              console.error('[Pi] Promise rejected:', errorStr);
+              throw error;
+            });
+          }
+          
+          return result;
         };
+        window.Pi.createPayment._workproPatched = true;
         console.log('[Pi] createPayment patched with x-user-id injection for uid:', uid);
       }
       setupCreatePaymentPatch();
@@ -1068,7 +1168,7 @@
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v185 start');
+      lg('#0f0','[WP] v194 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -1090,3 +1190,5 @@
   </script>
 </body>
 </html>
+<!-- build trigger 1779798423 -->
+<!-- rebuild 1779800816 -->
