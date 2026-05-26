@@ -23,12 +23,12 @@
     </script>
     <script>window.WORKPRO_VERSION='v197';</script>
     <script>
-      // One-time cache clear for v47 upgrade (forces fresh bundle)
+      // One-time cache clear for v197 upgrade (forces fresh bundle)
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v184_cleared');
+          var cleared = localStorage.getItem('workpro_v197_cleared');
           if (!cleared) {
-            localStorage.setItem('workpro_v184_cleared', '1');
+            localStorage.setItem('workpro_v197_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
