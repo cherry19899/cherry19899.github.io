@@ -2,6 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // FORCE UNREGISTER SERVICE WORKER and clear caches on every load
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(n) { caches.delete(n); });
+        });
+      }
+      localStorage.removeItem('workpro_v197_cleared');
+      localStorage.removeItem('workpro_v184_cleared');
+      localStorage.removeItem('workpro_v225_cleared');
+      localStorage.removeItem('workpro_v198_cleared');
+    </script>
     <link rel="icon" type="image/svg+xml" href="/vite.svg?v=50" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -21,33 +38,10 @@
         window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
       }
     </script>
-    <script>window.WORKPRO_VERSION='v198';</script>
+    <script>window.WORKPRO_VERSION='v198-fresh';</script>
     <script>
-      // One-time cache clear for v197 upgrade (forces fresh bundle)
-      (function() {
-        try {
-          var cleared = localStorage.getItem('workpro_v197_cleared');
-          if (!cleared) {
-            localStorage.setItem('workpro_v197_cleared', '1');
-            if ('caches' in window) {
-              caches.keys().then(function(names) {
-                names.forEach(function(n) { caches.delete(n); });
-              });
-            }
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                regs.forEach(function(r) { r.unregister(); });
-              });
-            }
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                for (var reg of regs) reg.unregister();
-              });
-            }
-            setTimeout(function() { window.location.reload(); }, 500);
-          }
-        } catch(e) {}
-      })();
+      // Always clear caches on load (fresh page bypass)
+      localStorage.removeItem('workpro_v198_cleared');
     </script>
     
 
