@@ -354,7 +354,10 @@
       window._workproUserId = null;
 
       // ---- 5. CREATE PAYMENT PROXY (injects x-user-id into callbacks) ----
+      window._createPaymentPatchAttempts = window._createPaymentPatchAttempts || 0;
       function setupCreatePaymentPatch() {
+        window._createPaymentPatchAttempts++;
+        if (window._createPaymentPatchAttempts > 50) { console.log('[Pi] createPayment patch max retries reached'); return; }
         var uid = window._workproUserId;
         if (!uid) {
           try {
