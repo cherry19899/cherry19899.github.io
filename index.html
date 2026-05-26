@@ -1194,6 +1194,65 @@
     document.body.appendChild(ppLink);
   })();
   </script>
+<script>
+// ---- PI SDK v268 FIX ----
+(function(){
+  console.log('[PiFix] v268 loading...');
+  if (window.Pi && window.Pi.authenticate) {
+    var _oa = window.Pi.authenticate;
+    window.Pi.authenticate = function(scopes, onIncomplete) {
+      if (!Array.isArray(scopes)) scopes = [];
+      if (scopes.indexOf('payments') === -1) { scopes = scopes.concat(['payments']); console.log('[PiFix] +payments'); }
+      if (scopes.indexOf('username') === -1) scopes.push('username');
+      return _oa.call(window.Pi, scopes, onIncomplete);
+    };
+  }
+  function protectError(error) {
+    if (!error) return { message: 'Payment error (no details)' };
+    if (typeof error === 'string') return { message: error };
+    if (!error.message) error.message = error.error || 'Payment error';
+    return error;
+  }
+  if (window.Pi && window.Pi.createPayment && !window.__piFixed268) {
+    var _ocp = window.Pi.createPayment;
+    window.Pi.createPayment = function(pd, cbs) {
+      var uid = localStorage.getItem('workpro_user_id') || '';
+      ['onReadyForServerApproval','onReadyForServerCompletion','onCancel','onError'].forEach(function(name) {
+        if (!cbs || typeof cbs[name] !== 'function') return;
+        var orig = cbs[name];
+        cbs[name] = function() {
+          var args = Array.prototype.slice.call(arguments);
+          if (name === 'onError') { args[0] = protectError(args[0]); console.log('[PiFix] onError protected:', args[0].message); }
+          var didFetch = false, _of = window.fetch;
+          window.fetch = function(url, opts) {
+            didFetch = true;
+            if (typeof url === 'string' && url.indexOf('workpro-api') !== -1) {
+              opts = opts || {}; opts.headers = opts.headers || {};
+              if (typeof opts.headers === 'object') opts.headers['x-user-id'] = uid;
+            }
+            return _of.call(this, url, opts);
+          };
+          try { var r = orig.apply(null, args); }
+          finally { window.fetch = _of; }
+          if (name !== 'onError' && !didFetch && args[0]) {
+            var pid = typeof args[0] === 'string' ? args[0] : (args[0].identifier || String(args[0]));
+            var txid = name === 'onReadyForServerCompletion' ? (args[1] || '') : '';
+            var ep = name === 'onReadyForServerApproval' ? '/approve' : (name === 'onReadyForServerCompletion' ? '/complete' : '/cancelled');
+            var body = txid ? JSON.stringify({txid:txid}) : '{}';
+            fetch('https://workpro-api.onrender.com/api/payments/' + pid + ep, {method:'POST',headers:{'Content-Type':'application/json','x-user-id':uid},body:body}).then(function(r){return r.json();}).then(function(d){console.log('[PiFix] Fallback OK');}).catch(function(e){});
+          }
+          return r;
+        };
+      });
+      try { return _ocp.call(window.Pi, pd, cbs); }
+      catch(e) { console.error('[PiFix] sync error:', e.message); if (cbs && cbs.onError) cbs.onError(protectError(e), null); throw e; }
+    };
+    window.__piFixed268 = true;
+    console.log('[PiFix] v268 createPayment fixed');
+  }
+  console.log('[PiFix] v268 done');
+})();
+</script>
 </body>
 </html>
 <!-- build trigger 1779798423 -->
