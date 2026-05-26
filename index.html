@@ -21,7 +21,7 @@
         window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
       }
     </script>
-    <script>window.WORKPRO_VERSION='v198';</script>
+    <script>window.WORKPRO_VERSION='v199';</script>
     <script>
       // One-time cache clear for v197 upgrade (forces fresh bundle)
       (function() {
@@ -447,8 +447,9 @@
               window._origPiAuthenticate(['payments', 'username'], function(payment) {
                 window._incompletePaymentStarted = true;
                 console.log('[Pi] doReAuthAndRetry: onIncompletePaymentFound called, cancelling...');
+                var uid2 = localStorage.getItem('workpro_user_id') || '';
                 return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier || payment.paymentId || payment.id) + '/cancelled', {
-                  method: 'POST', headers: { 'Content-Type': 'application/json' }
+                  method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid2 }
                 }).then(function(r) {
                   console.log('[Pi] doReAuthAndRetry: incomplete payment cancelled');
                   window._incompletePaymentDone = true;
@@ -514,6 +515,8 @@
             }),
             onError: wrapCallback(function(error, payment) {
               console.error('[Pi] onError called:', error, payment);
+              if (!error) error = { message: 'Payment failed — no error details', payment: payment };
+              if (typeof error === 'string') error = { message: error };
               var errorStr = (error && error.message) || (error && error.error) || String(error);
               // Show error to user — no auto-retry to prevent infinite loop
               var userMsg = 'Payment error: ' + errorStr + '. Please reload the page and try again.';
