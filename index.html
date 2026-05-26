@@ -1195,9 +1195,9 @@
   })();
   </script>
 <script>
-// ---- PI SDK v270 FIX ----
+// ---- PI SDK v271 FIX ----
 (function(){
-  console.log('[PiFix] v270 loading...');
+  console.log('[PiFix] v271 loading...');
   if (window.Pi && window.Pi.authenticate) {
     var _oa = window.Pi.authenticate;
     window.Pi.authenticate = function(scopes, onIncomplete) {
@@ -1256,7 +1256,7 @@
       catch(e) { console.error('[PiFix] sync error:', e.message); if (cbs && cbs.onError) cbs.onError(protectError(e), null); throw e; }
     };
     window.__piFixed268 = true;
-    console.log('[PiFix] v270 createPayment fixed');
+    console.log('[PiFix] v271 createPayment fixed');
   }
   // Silent re-authenticate if user logged in without payments scope
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -1272,7 +1272,7 @@
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped'); });
   }
-  console.log('[PiFix] v270 done');
+  console.log('[PiFix] v271 done');
 })();
 </script>
 </body>
