@@ -427,7 +427,7 @@
               b.textContent = count > 0 ? (count > 9 ? '9+' : String(count)) : '';
               b.style.display = count > 0 ? 'inline-block' : 'none';
             });
-            console.log('[Notifications] Unread count:', count);
+            // console.log('[Notifications] Unread count:', count);
           }).catch(function(){});
         } catch(e) {}
         setTimeout(pollNotifications, 30000); // Poll every 30s
