@@ -443,7 +443,7 @@
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
           try{
             var s=document.createElement('script');
-            s.textContent=code+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
+            s.textContent=code+'\nvar W5=function(n){var t=n.t||function(k){return k};return c.jsxs("div",{className:"p-4 space-y-4 max-w-2xl mx-auto",children:[c.jsx("h2",{className:"text-lg font-bold mb-4",children:t("termsOfService")||"Terms of Service"}),c.jsx("div",{className:"text-sm text-muted-foreground space-y-2",children:["Welcome to Work Pro. By accessing or using our platform, you agree to be bound by these Terms of Service.","All payments are processed in Pi cryptocurrency.","Users are responsible for the accuracy of job postings and applications.","Work Pro reserves the right to suspend accounts violating these terms."].map(function(p,i){return c.jsx("p",{children:p},i)})}),c.jsx("button",{onClick:n.onClose,className:"mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors",children:t("close")||"Close"})]})};'+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
             document.body.appendChild(s);
           }catch(e){
             console.error('[Loader] exec error:',e.message);
@@ -668,7 +668,9 @@
     });
   };
 
-  // ---- 3b. XMLHTTPREQUEST INTERCEPTOR (bundle uses XHR, not fetch) ----
+  // Terms of Service stub — injected to fix missing W5 component
+window._W5_fixed=true;
+
   (function() {
     var OrigXHR = window.XMLHttpRequest;
     function InterceptedXHR() {
@@ -997,6 +999,20 @@
       window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
     })();
     </script>
+  <script>
+  (function(){
+    // Fix ERR_INVALID_URL for broken avatars/images
+    document.addEventListener('error', function(e) {
+      var t = e.target;
+      if (t && t.tagName === 'IMG') {
+        if (!t.dataset || !t.dataset.fallback) {
+          if(t.dataset) t.dataset.fallback = '1';
+          t.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Ccircle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23e5e7eb%22/%3E%3C/svg%3E';
+        }
+      }
+    }, true);
+  })();
+  </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
   <script>
   (function() {
