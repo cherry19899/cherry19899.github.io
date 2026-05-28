@@ -16,16 +16,10 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>
-      // AGGRESSIVE cache bust: always use fresh nocache to bypass CDN
+      // Cache bust: add nocache only if NOT present (prevents infinite redirect loop)
       var url = window.location.href;
-      var ts = Date.now();
-      if (url.indexOf('nocache=') !== -1) {
-        // Replace existing nocache with new timestamp
-        url = url.replace(/nocache=\d+/, 'nocache=' + ts);
-      } else {
-        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + ts;
-      }
-      if (window.location.href !== url) {
+      if (url.indexOf('nocache=') === -1) {
+        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now();
         window.location.replace(url);
       }
     </script>
