@@ -311,22 +311,21 @@
               }
               return Promise.resolve();
             }
-            // Cancel on backend with x-user-id
+            // FIRST: clear-pending (cancels via Pi API), THEN /cancelled (DB update)
             var uid = localStorage.getItem('workpro_user_id') || '';
-            return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
+            return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-            }).then(function(r) {
-              console.log('[Pi] Incomplete payment cancelled, status:', r.status);
-              return r.json();
-            }).then(function(data) {
-              // Also call clear-pending to clean all pending payments
-              return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
+            }).catch(function(e){ console.log('[Pi] clear-pending err:', e.message); return {}; })
+            .then(function(){
+              // Also update our backend
+              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-              }).then(function(){return data;}).catch(function(){return data;});
-            }).then(function(data) {
-              console.log('[Pi] Incomplete payment cancelled on backend');
+              }).catch(function(){});
+            })
+            .then(function(){
+              console.log('[Pi] Payment cancelled via Pi API + backend');
               // CRITICAL: Always call original onIncompletePaymentFound so React knows
               if (typeof onIncompletePaymentFound === 'function') {
                 console.log('[Pi] Calling original onIncompletePaymentFound...');
@@ -340,28 +339,17 @@
                 return { handled: true, cancelled: true };
               }
               if (window._lastPaymentData) {
-                var delayMs = window._piRetryCount === 1 ? 5000 : (window._piRetryCount === 2 ? 15000 : 30000);
+                // Wait 15s for Pi Network to fully process cancellation
+                var delayMs = 15000;
                 console.log('[Pi] Auto-retry #' + window._piRetryCount + ' in ' + delayMs + 'ms...');
                 setTimeout(function(){
-                  var uid3 = localStorage.getItem('workpro_user_id') || '';
-                  fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid3 }
-                  }).catch(function(){}).then(function(){
-                    if (window._lastPaymentData && window.Pi && window.Pi.createPayment) {
-                      console.log('[Pi] Auto-calling createPayment...');
-                      window.Pi.createPayment(window._lastPaymentData, window._lastPaymentCallbacks);
-                    }
-                  });
+                  if (window._lastPaymentData && window.Pi && window.Pi.createPayment) {
+                    console.log('[Pi] Auto-calling createPayment...');
+                    window.Pi.createPayment(window._lastPaymentData, window._lastPaymentCallbacks);
+                  }
                 }, delayMs);
               }
               return { handled: true, cancelled: true };
-            }).catch(function(err) {
-              console.error('[Pi] Failed to cancel incomplete payment:', err);
-              // Still call original callback on error so React can handle it
-              if (typeof onIncompletePaymentFound === 'function') {
-                try { onIncompletePaymentFound(payment); } catch(e) {}
-              }
-              return { handled: true, error: err.message };
             });
           };
           var result = origAuth.call(window.Pi, fixedScopes, wrapped);
