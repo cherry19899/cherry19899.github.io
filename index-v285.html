@@ -21,15 +21,14 @@
         window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
       }
     </script>
-    <script>window.WORKPRO_VERSION='v286';</script>
+    <script>window.WORKPRO_VERSION='v285';</script>
     <script>
-      // Version-based cache clear — triggers on every HTML version change
+      // One-time cache clear for v197 upgrade (forces fresh bundle)
       (function() {
         try {
-          var currentVersion = window.WORKPRO_VERSION || 'unknown';
-          var lastVersion = localStorage.getItem('workpro_html_version');
-          if (lastVersion !== currentVersion) {
-            localStorage.setItem('workpro_html_version', currentVersion);
+          var cleared = localStorage.getItem('workpro_v197_cleared');
+          if (!cleared) {
+            localStorage.setItem('workpro_v197_cleared', '1');
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -40,10 +39,12 @@
                 regs.forEach(function(r) { r.unregister(); });
               });
             }
-            // If not already reloading with nocache, force reload
-            if (window.location.search.indexOf('nocache=') !== -1) {
-              setTimeout(function() { window.location.reload(); }, 500);
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var reg of regs) reg.unregister();
+              });
             }
+            setTimeout(function() { window.location.reload(); }, 500);
           }
         } catch(e) {}
       })();
@@ -210,37 +211,7 @@
         if (window.Pi._workpro_inited) return;
         try {
           var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
-          window.Pi.init({ 
-            version: "2.0", 
-            sandbox: isSandbox,
-            onIncompletePayment: function(payment) {
-              console.log('[Pi] onIncompletePayment called', payment);
-              var paymentId = payment && (payment.identifier || payment.paymentId || payment.transactionId || payment.id);
-              if (!paymentId) {
-                console.warn('[Pi] No paymentId found in incomplete payment');
-                return Promise.resolve();
-              }
-              var uid = localStorage.getItem('workpro_user_id') || '';
-              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-              }).then(function(r) {
-                console.log('[Pi] Incomplete payment cancelled, status:', r.status);
-                return r.json();
-              }).then(function(data) {
-                return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-                }).then(function(){return data;}).catch(function(){return data;});
-              }).then(function(data) {
-                console.log('[Pi] Incomplete payment handled in onIncompletePayment');
-                return { handled: true, cancelled: true };
-              }).catch(function(err) {
-                console.error('[Pi] Failed to handle incomplete payment in onIncompletePayment:', err);
-                return { handled: true, error: err.message };
-              });
-            }
-          });
+          window.Pi.init({ version: "2.0", sandbox: isSandbox });
           window.Pi._workpro_inited = true;
           console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
         } catch(e) {
@@ -442,7 +413,7 @@
             setTimeout(waitForPi, 200);
             return;
           }
-          // Store originals — PiFix v286 will use these
+          // Store originals — PiFix v285 will use these
           window._origPiCreatePayment = window.Pi.createPayment;
           console.log('[Pi] Original createPayment stored');
         }
@@ -469,7 +440,7 @@
               b.textContent = count > 0 ? (count > 9 ? '9+' : String(count)) : '';
               b.style.display = count > 0 ? 'inline-block' : 'none';
             });
-            // console.log('[Notifications] Unread count:', count);
+            console.log('[Notifications] Unread count:', count);
           }).catch(function(){});
         } catch(e) {}
         setTimeout(pollNotifications, 30000); // Poll every 30s
@@ -479,13 +450,13 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v182.js?v='+window.WORKPRO_VERSION+'&_='+Date.now())
+      fetch('/assets/app-v182.js?v=185')
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
           try{
             var s=document.createElement('script');
-            s.textContent=code+'\nvar W5=function(n){var t=n.t||function(k){return k};return c.jsxs("div",{className:"p-4 space-y-4 max-w-2xl mx-auto",children:[c.jsx("h2",{className:"text-lg font-bold mb-4",children:t("termsOfService")||"Terms of Service"}),c.jsx("div",{className:"text-sm text-muted-foreground space-y-2",children:["Welcome to Work Pro. By accessing or using our platform, you agree to be bound by these Terms of Service.","All payments are processed in Pi cryptocurrency.","Users are responsible for the accuracy of job postings and applications.","Work Pro reserves the right to suspend accounts violating these terms."].map(function(p,i){return c.jsx("p",{children:p},i)})}),c.jsx("button",{onClick:n.onClose,className:"mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors",children:t("close")||"Close"})]})};'+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
+            s.textContent=code+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
             document.body.appendChild(s);
           }catch(e){
             console.error('[Loader] exec error:',e.message);
@@ -710,9 +681,7 @@
     });
   };
 
-  // Terms of Service stub — injected to fix missing W5 component
-window._W5_fixed=true;
-
+  // ---- 3b. XMLHTTPREQUEST INTERCEPTOR (bundle uses XHR, not fetch) ----
   (function() {
     var OrigXHR = window.XMLHttpRequest;
     function InterceptedXHR() {
@@ -786,7 +755,7 @@ window._W5_fixed=true;
         var currentB = user.balance_pi || 0;
         // If stored connects differ from what is being written, use stored value (truth)
         if (storedC >= 0 && storedC !== currentC) {
-          // console.log('[WorkPro] BLOCKED server reset, restoring:', storedC, 'vs', currentC);
+          console.log('[WorkPro] BLOCKED server reset, restoring:', storedC, 'vs', currentC);
           user.balance_connects = storedC;
           user.connects = storedC;
           currentC = storedC;
@@ -1019,7 +988,7 @@ window._W5_fixed=true;
     </script>
     <div id="root"></div>
     <!-- DEBUG CONSOLE -->
-    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;">
+    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:99998;display:none;">
       <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
       <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
     </div>
@@ -1032,7 +1001,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v286 start');
+      lg('#0f0','[WP] v285 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -1041,20 +1010,6 @@ window._W5_fixed=true;
       window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
     })();
     </script>
-  <script>
-  (function(){
-    // Fix ERR_INVALID_URL for broken avatars/images
-    document.addEventListener('error', function(e) {
-      var t = e.target;
-      if (t && t.tagName === 'IMG') {
-        if (!t.dataset || !t.dataset.fallback) {
-          if(t.dataset) t.dataset.fallback = '1';
-          t.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Ccircle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23e5e7eb%22/%3E%3C/svg%3E';
-        }
-      }
-    }, true);
-  })();
-  </script>
     <!-- Privacy Policy Link (required for Pi Network listing) -->
   <script>
   (function() {
@@ -1067,9 +1022,9 @@ window._W5_fixed=true;
   })();
   </script>
 <script>
-// ---- PI SDK v286 FIX ----
+// ---- PI SDK v285 FIX ----
 (function(){
-  console.log('[PiFix] v286 loading...');
+  console.log('[PiFix] v285 loading...');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -1219,7 +1174,7 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v286 createPayment fixed');
+    console.log('[PiFix] v285 createPayment fixed');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -1235,8 +1190,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v286 done');
-})();
+  console.log('[PiFix] v285 done');
 })();
 </script>
 </body>
