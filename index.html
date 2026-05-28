@@ -21,7 +21,7 @@
         window.location.replace(window.location.href + (window.location.href.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now());
       }
     </script>
-    <script>window.WORKPRO_VERSION='v284';</script>
+    <script>window.WORKPRO_VERSION='v285';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -1222,7 +1222,67 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v284 done');
+  console.log('[PiFix] v285 done');
+})();
+
+// ---- COLLAPSIBLE DEBUG CONSOLE ----
+(function() {
+  var logs = [];
+  var maxLogs = 50;
+  var _origLog = console.log;
+  var _origWarn = console.warn;
+  var _origError = console.error;
+  
+  function updateConsole() {
+    var panel = document.getElementById('_debug_console');
+    if (!panel) return;
+    panel.innerHTML = logs.map(function(l) {
+      var color = l.type === 'error' ? '#ff6b6b' : (l.type === 'warn' ? '#ffd93d' : '#51cf66');
+      return '<div style="color:'+color+';font-size:11px;line-height:1.4;border-bottom:1px solid #333;padding:2px 0;">'+escapeHtml(l.text)+'</div>';
+    }).join('');
+    panel.scrollTop = panel.scrollHeight;
+  }
+  
+  function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  
+  function pushLog(text, type) {
+    logs.push({text: text, type: type});
+    if (logs.length > maxLogs) logs.shift();
+    updateConsole();
+  }
+  
+  console.log = function() { var t = Array.prototype.slice.call(arguments).join(' '); _origLog.apply(console, arguments); pushLog(t, 'log'); };
+  console.warn = function() { var t = Array.prototype.slice.call(arguments).join(' '); _origWarn.apply(console, arguments); pushLog(t, 'warn'); };
+  console.error = function() { var t = Array.prototype.slice.call(arguments).join(' '); _origError.apply(console, arguments); pushLog(t, 'error'); };
+  
+  // Create UI
+  var container = document.createElement('div');
+  container.id = '_debug_console_container';
+  container.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:99998;font-family:monospace;max-width:90vw;width:320px;';
+  
+  var btn = document.createElement('button');
+  btn.id = '_debug_console_btn';
+  btn.textContent = 'Console';
+  btn.style.cssText = 'background:#1a1a2e;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;opacity:0.8;float:right;';
+  
+  var panel = document.createElement('div');
+  panel.id = '_debug_console';
+  panel.style.cssText = 'background:#0a0a0a;color:#fff;padding:8px;border-radius:6px;font-size:11px;max-height:200px;overflow-y:auto;margin-top:4px;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.5);';
+  
+  btn.onclick = function() {
+    var isHidden = panel.style.display === 'none';
+    panel.style.display = isHidden ? 'block' : 'none';
+    btn.textContent = isHidden ? 'Hide' : 'Console';
+  };
+  
+  container.appendChild(btn);
+  container.appendChild(panel);
+  document.body.appendChild(container);
+  
+  // Pre-populate with existing logs
+  updateConsole();
 })();
 </script>
 </body>
