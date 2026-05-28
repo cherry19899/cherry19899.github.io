@@ -282,8 +282,7 @@
       } catch(e) {}
 
       function patchAuth() {
-        if (!window.Pi || typeof window.Pi.authenticate !== 'function' || !window._piSdkReady) {
-          if (!window._piSdkReady) console.log('[Pi] Waiting for SDK init before patching auth...');
+        if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
           setTimeout(patchAuth, 100);
           return;
         }
@@ -313,27 +312,17 @@
               }
               return Promise.resolve();
             }
-            // FIRST: clear-pending (cancels via Pi API), THEN /cancelled (DB update)
+            // Check payment status: development_completed = needs /complete, not /cancelled
+            var isCompleted = payment && payment.status && (payment.status.development_completed === true || payment.status.transaction_verified === true);
             var uid = localStorage.getItem('workpro_user_id') || '';
-            return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-            }).catch(function(e){ console.log('[Pi] clear-pending err:', e.message); return {}; })
-            .then(function(){
-              // Also update our backend
-              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-              }).catch(function(){});
-            })
-            .then(function(){
-              console.log('[Pi] Payment cancelled via Pi API + backend');
+            var handleDone = function() {
+              console.log('[Pi] Payment handled');
               // CRITICAL: Always call original onIncompletePaymentFound so React knows
               if (typeof onIncompletePaymentFound === 'function') {
                 console.log('[Pi] Calling original onIncompletePaymentFound...');
                 try { onIncompletePaymentFound(payment); } catch(e) { console.error('[Pi] Orig callback err:', e); }
               }
-              // Auto-retry createPayment after successful cancellation
+              // Auto-retry createPayment after handling
               window._piRetryCount = (window._piRetryCount || 0) + 1;
               if (window._piRetryCount > 3) {
                 console.log('[Pi] Max retries (3) reached. Stopping.');
@@ -341,7 +330,6 @@
                 return { handled: true, cancelled: true };
               }
               if (window._lastPaymentData) {
-                // Wait 15s for Pi Network to fully process cancellation
                 var delayMs = 15000;
                 console.log('[Pi] Auto-retry #' + window._piRetryCount + ' in ' + delayMs + 'ms...');
                 setTimeout(function(){
@@ -352,8 +340,29 @@
                 }, delayMs);
               }
               return { handled: true, cancelled: true };
-            });
-          };
+            };
+            
+            if (isCompleted) {
+              console.log('[Pi] Payment has development_completed=true — calling /resolve-complete');
+              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/resolve-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+              }).then(function(r){return r.json();}).then(function(d){
+                console.log('[Pi] Payment resolved:', d);
+              }).catch(function(e){
+                console.error('[Pi] resolve-complete error:', e.message);
+                // Fallback to cancel
+                return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+                }).catch(function(){});
+              }).then(handleDone);
+            } else {
+              // Normal pending payment — cancel
+              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/cancelled', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+              }).then(function(r){return r.json();}).catch(function(){return {};}).then(handleDone);
+            }
           var result = origAuth.call(window.Pi, fixedScopes, wrapped);
           // Store userId globally for createPayment proxy
           if (result && typeof result.then === 'function') {
