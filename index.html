@@ -23,12 +23,13 @@
     </script>
     <script>window.WORKPRO_VERSION='v284';</script>
     <script>
-      // One-time cache clear for v197 upgrade (forces fresh bundle)
+      // Version-based cache clear — triggers on every HTML version change
       (function() {
         try {
-          var cleared = localStorage.getItem('workpro_v197_cleared');
-          if (!cleared) {
-            localStorage.setItem('workpro_v197_cleared', '1');
+          var currentVersion = window.WORKPRO_VERSION || 'unknown';
+          var lastVersion = localStorage.getItem('workpro_html_version');
+          if (lastVersion !== currentVersion) {
+            localStorage.setItem('workpro_html_version', currentVersion);
             if ('caches' in window) {
               caches.keys().then(function(names) {
                 names.forEach(function(n) { caches.delete(n); });
@@ -39,12 +40,10 @@
                 regs.forEach(function(r) { r.unregister(); });
               });
             }
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.getRegistrations().then(function(regs) {
-                for (var reg of regs) reg.unregister();
-              });
+            // If not already reloading with nocache, force reload
+            if (window.location.search.indexOf('nocache=') !== -1) {
+              setTimeout(function() { window.location.reload(); }, 500);
             }
-            setTimeout(function() { window.location.reload(); }, 500);
           }
         } catch(e) {}
       })();
