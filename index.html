@@ -437,7 +437,7 @@
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v182.js?v=185')
+      fetch('/assets/app-v182.js?v='+window.WORKPRO_VERSION+'&_='+Date.now())
         .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
@@ -744,7 +744,7 @@ window._W5_fixed=true;
         var currentB = user.balance_pi || 0;
         // If stored connects differ from what is being written, use stored value (truth)
         if (storedC >= 0 && storedC !== currentC) {
-          console.log('[WorkPro] BLOCKED server reset, restoring:', storedC, 'vs', currentC);
+          // console.log('[WorkPro] BLOCKED server reset, restoring:', storedC, 'vs', currentC);
           user.balance_connects = storedC;
           user.connects = storedC;
           currentC = storedC;
