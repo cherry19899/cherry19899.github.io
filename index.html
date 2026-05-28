@@ -29,7 +29,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v289';</script>
+    <script>window.WORKPRO_VERSION='v290';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -449,7 +449,7 @@
             setTimeout(waitForPi, 200);
             return;
           }
-          // Store originals — PiFix v289 will use these
+          // Store originals — PiFix v290 will use these
           window._origPiCreatePayment = window.Pi.createPayment;
           console.log('[Pi] Original createPayment stored');
         }
@@ -1039,7 +1039,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v289 start');
+      lg('#0f0','[WP] v290 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -1074,9 +1074,9 @@ window._W5_fixed=true;
   })();
   </script>
 <script>
-// ---- PI SDK v289 FIX ----
+// ---- PI SDK v290 FIX ----
 (function(){
-  console.log('[PiFix] v289 loading...');
+  console.log('[PiFix] v290 loading...');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -1092,10 +1092,14 @@ window._W5_fixed=true;
       if (scopes.indexOf('username') === -1) scopes.push('username');
       // Default onIncomplete handler: auto-cancel via backend
       var wrappedOnIncomplete = function(payment) {
-        console.log('[PiFix] onIncomplete for:', payment.identifier);
+        console.log('[PiFix] onIncomplete for:', payment.identifier, 'status:', payment.status);
         if (typeof onIncomplete === 'function') return onIncomplete(payment);
         var uid = localStorage.getItem('workpro_user_id') || '';
-        return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier||payment.id) + '/cancelled', {
+        var pid = payment.identifier || payment.id;
+        // developer_completed payments need /resolve-complete (calls Pi /complete), NOT /cancelled
+        var endpoint = payment.status === 'developer_completed' ? '/resolve-complete' : '/cancelled';
+        console.log('[PiFix] Using endpoint:', endpoint, 'for status:', payment.status);
+        return fetch('https://workpro-api.onrender.com/api/payments/' + pid + endpoint, {
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
         }).then(function(r){return r.json();}).catch(function(){return{handled:true};});
       };
@@ -1170,9 +1174,11 @@ window._W5_fixed=true;
           }
           // Use WRAPPED authenticate — adds payments scope automatically
           window.Pi.authenticate(['payments','username'], function(payment) {
-            console.log('[PiFix] onIncomplete in retry:', payment.identifier);
+            console.log('[PiFix] onIncomplete in retry:', payment.identifier, 'status:', payment.status);
             var uid = localStorage.getItem('workpro_user_id') || '';
-            return fetch('https://workpro-api.onrender.com/api/payments/' + (payment.identifier||payment.id) + '/cancelled', {
+            var pid = payment.identifier || payment.id;
+            var endpoint = payment.status === 'developer_completed' ? '/resolve-complete' : '/cancelled';
+            return fetch('https://workpro-api.onrender.com/api/payments/' + pid + endpoint, {
               method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
             }).then(function(r){return r.json();}).catch(function(){return{handled:true};});
           }).then(function(auth){
@@ -1226,15 +1232,17 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v289 createPayment fixed');
+    console.log('[PiFix] v290 createPayment fixed');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
     console.log('[PiFix] Re-authenticating with payments scope...');
     window.Pi.authenticate(['payments','username'], function(p) {
-      console.log('[PiFix] Cancelling incomplete payment:', p.identifier);
+      console.log('[PiFix] Cancelling incomplete payment:', p.identifier, 'status:', p.status);
       var uid = localStorage.getItem('workpro_user_id') || '';
-      return fetch('https://workpro-api.onrender.com/api/payments/' + (p.identifier||p.id) + '/cancelled', {
+      var pid = p.identifier || p.id;
+      var endpoint = p.status === 'developer_completed' ? '/resolve-complete' : '/cancelled';
+      return fetch('https://workpro-api.onrender.com/api/payments/' + pid + endpoint, {
         method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
       }).then(function(r){return r.json();}).catch(function(){return{handled:true};});
     }).then(function(auth){
@@ -1242,7 +1250,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v289 done');
+  console.log('[PiFix] v290 done');
 })();
 })();
 </script>
