@@ -196,18 +196,20 @@
     // ---- PI SDK INIT (must run BEFORE bundle) ----
     (function() {
       var _initAttempts = 0;
-      var _initMaxAttempts = 30; // 30 * 300ms = 9 seconds max wait
+      var _initMaxAttempts = 100; // 100 * 100ms = 10 seconds max wait
+      window._piSdkReady = false;
       function tryInit() {
         _initAttempts++;
         if (!window.Pi || typeof window.Pi.init !== 'function') {
           if (_initAttempts < _initMaxAttempts) {
-            setTimeout(tryInit, 300);
+            setTimeout(tryInit, 100); // faster polling
           } else {
             console.error('[Pi] SDK not loaded after ' + _initMaxAttempts + ' attempts');
+            window._piSdkReady = false;
           }
           return;
         }
-        if (window.Pi._workpro_inited) return;
+        if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
           var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
           window.Pi.init({ 
@@ -242,6 +244,7 @@
             }
           });
           window.Pi._workpro_inited = true;
+          window._piSdkReady = true;
           console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
         } catch(e) {
           console.error('[Pi] init error (attempt ' + _initAttempts + '):', e.message || e);
@@ -281,8 +284,9 @@
       } catch(e) {}
 
       function patchAuth() {
-        if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
-          setTimeout(patchAuth, 50);
+        if (!window.Pi || typeof window.Pi.authenticate !== 'function' || !window._piSdkReady) {
+          if (!window._piSdkReady) console.log('[Pi] Waiting for SDK init before patching auth...');
+          setTimeout(patchAuth, 100);
           return;
         }
         if (window.Pi._authPatched) return;
