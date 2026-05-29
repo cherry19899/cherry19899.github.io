@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v293';</script>
+    <script>window.WORKPRO_VERSION='v294';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -482,7 +482,7 @@
     <script>
     (function(){
       if (!window.Pi) { console.error('[PiFix-Early] Pi SDK not found!'); return; }
-      console.log('[PiFix-Early] v293 loading before bundle...');
+      console.log('[PiFix-Early] v294 loading before bundle...');
       var _origCP = window.Pi.createPayment;
       var _origAuth = window.Pi.authenticate;
       // developer_completed check helper
@@ -532,9 +532,11 @@
           cbs[name] = function() {
             console.log('[PiFix-Early] callback:', name);
             var args = Array.prototype.slice.call(arguments);
-            if (name === 'onError' && args[0]) {
+            if (name === 'onError') {
+              if (!args[0]) { console.log('[PiFix-Early] onError: undefined - skipping'); return; }
               var msg = args[0].message || args[0].error || String(args[0]);
-              if (msg.indexOf('pending') !== -1) { console.log('[PiFix-Early] pending error skipped'); return; }
+              console.log('[PiFix-Early] onError:', msg);
+              if (msg.indexOf('pending') !== -1 || msg === 'undefined') { console.log('[PiFix-Early] pending/undef error skipped'); return; }
             }
             // Inject x-user-id
             var _of = window.fetch;
@@ -1328,7 +1330,30 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v292 done');
+  console.log('[PiFix] v294 done');
+})();
+</script>
+<!-- DEBUG CONSOLE -->
+<div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;">
+  <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
+  <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
+</div>
+<script>
+(function(){
+  var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
+  function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
+  function restoreState(){try{var s=localStorage.getItem('__c_collapsed');if(s==='1'){collapsed=true;c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}}catch(e){}}
+  function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
+  if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
+  restoreState();
+  function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
+  lg('#0f0','[WP] v294 start');
+  var o=console.log,oe=console.error,ow=console.warn;
+  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
+  console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
+  console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
+  window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
+  window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
 })();
 </script>
 </body>
