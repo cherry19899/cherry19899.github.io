@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v299';</script>
+    <script>window.WORKPRO_VERSION='v300';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -594,7 +594,7 @@
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
           try{
             var s=document.createElement('script');
-            s.textContent=code+'\nvar W5=function(n){var t=n.t||function(k){return k};return c.jsxs("div",{className:"p-4 space-y-4 max-w-2xl mx-auto",children:[c.jsx("h2",{className:"text-lg font-bold mb-4",children:t("termsOfService")||"Terms of Service"}),c.jsx("div",{className:"text-sm text-muted-foreground space-y-2",children:["Welcome to Work Pro. By accessing or using our platform, you agree to be bound by these Terms of Service.","All payments are processed in Pi cryptocurrency.","Users are responsible for the accuracy of job postings and applications.","Work Pro reserves the right to suspend accounts violating these terms."].map(function(p,i){return c.jsx("p",{children:p},i)})}),c.jsx("button",{onClick:n.onClose,className:"mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors",children:t("close")||"Close"})]})};'+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
+            s.textContent=code+'\nvar W5=function(n){var t=n.t||function(k){return k};var lang=(localStorage.getItem("workpro_lang")||"en");var texts={en:["Welcome to Work Pro. By accessing or using our platform, you agree to be bound by these Terms of Service.","All payments are processed in Pi cryptocurrency.","Users are responsible for the accuracy of job postings and applications.","Work Pro reserves the right to suspend accounts violating these terms."],ru:["Добро пожаловать в Work Pro. Используя нашу платформу, вы соглашаетесь с настоящими Условиями обслуживания.","Все платежи обрабатываются в криптовалюте Pi.","Пользователи несут ответственность за достоверность размещённых вакансий и откликов.","Work Pro оставляет за собой право приостанавливать аккаунты, нарушающие настоящие условия."],es:["Bienvenido a Work Pro. Al acceder o usar nuestra plataforma, acepta estar sujeto a estos Términos de Servicio.","Todos los pagos se procesan en criptomoneda Pi.","Los usuarios son responsables de la exactitud de las ofertas de trabajo y las solicitudes.","Work Pro se reserva el derecho de suspender cuentas que violen estos términos."],de:["Willkommen bei Work Pro. Durch den Zugriff auf oder die Nutzung unserer Plattform stimmen Sie diesen Nutzungsbedingungen zu.","Alle Zahlungen werden in Pi-Kryptowährung verarbeitet.","Benutzer sind für die Richtigkeit von Stellenangeboten und Bewerbungen verantwortlich.","Work Pro behält sich das Recht vor, Konten zu sperren, die gegen diese Bedingungen verstoßen."]};var paragraphs=texts[lang]||texts.en;return c.jsxs("div",{className:"p-4 space-y-4 max-w-2xl mx-auto",children:[c.jsx("h2",{className:"text-lg font-bold mb-4",children:t("termsOfService")||"Terms of Service"}),c.jsx("div",{className:"text-sm text-muted-foreground space-y-2",children:paragraphs.map(function(p,i){return c.jsx("p",{children:p},i)})}),c.jsx("button",{onClick:n.onClose,className:"mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors",children:t("close")||"Close"})]})};'+'\n;(function(){try{window.__jsLoaded=true;console.log("[Loader] JS executed");var l=document.getElementById("_loader");if(l){l.style.opacity="0";setTimeout(function(){l.style.display="none"},500)}}catch(e){}})();';
             document.body.appendChild(s);
           }catch(e){
             console.error('[Loader] exec error:',e.message);
@@ -994,13 +994,37 @@ window._W5_fixed=true;
   // ---- 5. PHOTO COMPRESSION ----
   (function() {
 
-  // ---- FIX: Clear Cache link routed by React Router -> direct HTML ----
+  // ---- FIX: Clear Cache — clear localStorage and reload ----
+  window._clearCacheAndReload = function() {
+    var lang = (localStorage.getItem('workpro_lang') || 'en');
+    var msgs = {
+      en: 'Cache cleared! The page will now reload.',
+      ru: 'Кэш очищен! Страница будет перезагружена.',
+      es: '¡Caché borrado! La página se recargará ahora.',
+      de: 'Cache gelöscht! Die Seite wird jetzt neu geladen.',
+      fr: 'Cache vidé ! La page va se recharger.',
+      it: 'Cache cancellata! La pagina verrà ricaricata.',
+      pt: 'Cache limpo! A página será recarregada.',
+      pl: 'Pamięć podręczna wyczyszczona! Strona zostanie przeładowana.',
+      uk: 'Кеш очищено! Сторінка буде перезавантажена.',
+      ja: 'キャッシュをクリアしました！ページを再読み込みします。',
+      ko: '캐시가 지워졌습니다! 페이지를 새로고침합니다.',
+      zh: '缓存已清除！页面将重新加载。'
+    };
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('[ClearCache] localStorage + sessionStorage cleared');
+    } catch(e) { console.error('[ClearCache] error:', e); }
+    alert(msgs[lang] || msgs.en);
+    window.location.reload(true);
+  };
   (function() {
     // Intercept React Router navigation to /clear-cache
     var origPush = window.history.pushState;
     window.history.pushState = function(state, title, url) {
       if (typeof url === 'string' && url.indexOf('/clear-cache') !== -1 && url.indexOf('.html') === -1) {
-        window.location.href = '/clear-cache.html' + (window.location.search || '');
+        window._clearCacheAndReload();
         return;
       }
       return origPush.apply(this, arguments);
@@ -1008,10 +1032,10 @@ window._W5_fixed=true;
     // Also intercept link clicks at capture phase
     document.addEventListener('click', function(e) {
       var a = e.target.closest ? e.target.closest('a[href]') : null;
-      if (a && a.getAttribute('href') === '/clear-cache') {
+      if (a && (a.getAttribute('href') === '/clear-cache' || a.getAttribute('href') === '/clear.html')) {
         e.preventDefault();
         e.stopPropagation();
-        window.location.href = '/clear-cache.html' + (window.location.search || '');
+        window._clearCacheAndReload();
       }
     }, true);
   })();
