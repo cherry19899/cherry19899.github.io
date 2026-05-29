@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v304';</script>
+    <script>window.WORKPRO_VERSION='v305';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -391,6 +391,109 @@
         setTimeout(window._startChatPolling, 3000);
       }
       console.log('[WP] v303 SW + Chat polling ready');
+    })();
+    </script>
+    <!-- v305: Privacy Policy modal + profile button -->
+    <script>
+    (function(){
+      // Privacy Policy translations (12 languages)
+      var ppTexts = {
+        en: { title: 'Privacy Policy', items: ['Work Pro collects only the minimum data needed: Pi username, user ID, job/escrow data, and chat messages.','We do NOT collect email, phone, address, or financial info.','Data is shared only with Pi Network for auth and payments.','All communications use HTTPS encryption.','You can request data deletion at any time.','Last updated: May 2026.'] },
+        ru: { title: 'Политика конфиденциальности', items: ['Work Pro собирает только минимум данных: имя пользователя Pi, ID, данные job/escrow и сообщения чата.','Мы НЕ собираем email, телефон, адрес или финансовую информацию.','Данные передаются только в Pi Network для авторизации и платежей.','Все соединения используют HTTPS шифрование.','Вы можете запросить удаление данных в любое время.','Обновлено: май 2026.'] },
+        es: { title: 'Política de Privacidad', items: ['Work Pro solo recopila los datos mínimos necesarios.','NO recopilamos email, teléfono, dirección ni información financiera.','Los datos solo se comparten con Pi Network.','Todas las comunicaciones usan HTTPS.','Puede solicitar la eliminación de datos en cualquier momento.'] },
+        de: { title: 'Datenschutzrichtlinie', items: ['Work Pro erhebt nur die minimal erforderlichen Daten.','Wir sammeln KEINE E-Mail, Telefon, Adresse oder Finanzdaten.','Daten werden nur mit Pi Network geteilt.','Alle Kommunikationen nutzen HTTPS.','Sie können die Löschung von Daten jederzeit beantragen.'] },
+        fr: { title: 'Politique de confidentialité', items: ['Work Pro ne collecte que les données minimales nécessaires.','Nous ne collectons PAS d\'email, téléphone, adresse ou infos financières.','Les données sont partagées uniquement avec Pi Network.','Toutes les communications utilisent HTTPS.','Vous pouvez demander la suppression des données à tout moment.'] },
+        it: { title: 'Informativa sulla privacy', items: ['Work Pro raccoglie solo i dati minimi necessari.','NON raccogliamo email, telefono, indirizzo o dati finanziari.','I dati sono condivisi solo con Pi Network.','Tutte le comunicazioni usano HTTPS.','Puoi richiedere la cancellazione dei dati in qualsiasi momento.'] },
+        pt: { title: 'Política de Privacidade', items: ['Work Pro coleta apenas os dados mínimos necessários.','NÃO coletamos email, telefone, endereço ou dados financeiros.','Os dados são compartilhados apenas com a Pi Network.','Todas as comunicações usam HTTPS.','Você pode solicitar a exclusão de dados a qualquer momento.'] },
+        pl: { title: 'Polityka prywatności', items: ['Work Pro zbiera tylko minimalne dane.','NIE zbieramy emaila, telefonu, adresu ani danych finansowych.','Dane są udostępniane wyłącznie Pi Network.','Wszystkie komunikacje używają HTTPS.','Możesz w każdej chwili zażądać usunięcia danych.'] },
+        uk: { title: 'Політика конфіденційності', items: ['Work Pro збирає лише мінімум даних.','Ми НЕ збираємо email, телефон, адресу чи фінансову інформацію.','Дані передаються лише в Pi Network.','Всі з\'єднання використовують HTTPS.','Ви можете запросити видалення даних у будь-який час.'] },
+        ja: { title: 'プライバシーポリシー', items: ['Work Proは必要最低限のデータのみを収集します。','メール、電話、住所、金融情報は収集しません。','データはPi Networkとのみ共有されます。','すべての通信はHTTPSを使用します。','いつでもデータ削除をリクエストできます。'] },
+        ko: { title: '개인정보 보호정책', items: ['Work Pro는 최소한의 데이터만 수집합니다.','이메일, 전화번호, 주소, 금융 정보를 수집하지 않습니다.','데이터는 Pi Network와만 공유됩니다.','모든 통신은 HTTPS를 사용합니다.','언제든지 데이터 삭제를 요청할 수 있습니다.'] },
+        zh: { title: '隐私政策', items: ['Work Pro仅收集最低限度的必要数据。','我们不收集电子邮件、电话、地址或财务信息。','数据仅与Pi Network共享。','所有通信均使用HTTPS。','您可以随时请求删除数据。'] }
+      };
+      var ppCloseTexts = { en:'Close', ru:'Закрыть', es:'Cerrar', de:'Schließen', fr:'Fermer', it:'Chiudi', pt:'Fechar', pl:'Zamknij', uk:'Закрити', ja:'閉じる', ko:'닫기', zh:'关闭' };
+
+      window._showPrivacyPolicy = function() {
+        var lang = localStorage.getItem('workpro_lang') || 'en';
+        var t = ppTexts[lang] || ppTexts.en;
+        var closeText = ppCloseTexts[lang] || 'Close';
+
+        // Remove existing
+        var existing = document.getElementById('_pp_modal');
+        if (existing) existing.remove();
+
+        var modal = document.createElement('div');
+        modal.id = '_pp_modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;';
+
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#1e293b;color:#e2e8f0;border-radius:12px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+
+        var h2 = document.createElement('h2');
+        h2.textContent = t.title;
+        h2.style.cssText = 'color:#10b981;font-size:18px;font-weight:700;margin-bottom:12px;border-bottom:1px solid #334155;padding-bottom:8px;';
+        box.appendChild(h2);
+
+        t.items.forEach(function(item) {
+          var p = document.createElement('p');
+          p.textContent = item;
+          p.style.cssText = 'font-size:13px;color:#cbd5e1;margin-bottom:10px;line-height:1.5;';
+          box.appendChild(p);
+        });
+
+        var btn = document.createElement('button');
+        btn.textContent = closeText;
+        btn.style.cssText = 'margin-top:12px;padding:10px 20px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;';
+        btn.onclick = function() { modal.remove(); };
+        box.appendChild(btn);
+
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        modal.appendChild(box);
+        document.body.appendChild(modal);
+        console.log('[PrivacyPolicy] Modal opened, lang=' + lang);
+      };
+
+      // Add Privacy Policy button to profile (next to Terms of Service)
+      function addPrivacyPolicyButton() {
+        // Look for Terms of Service button/link in profile
+        var allBtns = document.querySelectorAll('button, a');
+        var tosBtn = null;
+        for (var i = 0; i < allBtns.length; i++) {
+          var text = allBtns[i].textContent || '';
+          if (text.indexOf('Terms of Service') !== -1 || text.indexOf('Условия') !== -1 || text.indexOf('conditions') !== -1) {
+            tosBtn = allBtns[i];
+            break;
+          }
+        }
+        if (!tosBtn) return;
+
+        // Don't add twice
+        if (document.getElementById('_pp_profile_btn')) return;
+
+        var ppBtn = document.createElement('button');
+        ppBtn.id = '_pp_profile_btn';
+        var lang = localStorage.getItem('workpro_lang') || 'en';
+        var titles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
+        ppBtn.textContent = titles[lang] || 'Privacy Policy';
+        ppBtn.style.cssText = 'display:block;width:100%;padding:10px 12px;margin-top:6px;background:transparent;border:1px solid #334155;color:#94a3b8;border-radius:8px;font-size:13px;text-align:left;cursor:pointer;transition:all 0.2s;';
+        ppBtn.onmouseenter = function() { ppBtn.style.background = '#1e293b'; ppBtn.style.color = '#e2e8f0'; };
+        ppBtn.onmouseleave = function() { ppBtn.style.background = 'transparent'; ppBtn.style.color = '#94a3b8'; };
+        ppBtn.onclick = function() { window._showPrivacyPolicy(); };
+
+        tosBtn.parentNode.insertBefore(ppBtn, tosBtn.nextSibling);
+        console.log('[PrivacyPolicy] Button added to profile');
+      }
+
+      // Watch for profile page
+      var ppObserver = new MutationObserver(function() {
+        addPrivacyPolicyButton();
+      });
+      ppObserver.observe(document.body, { childList: true, subtree: true });
+      // Try immediately too
+      setTimeout(addPrivacyPolicyButton, 2000);
+      setTimeout(addPrivacyPolicyButton, 4000);
+
+      console.log('[WP] v305 Privacy Policy modal + profile button ready');
     })();
     </script>
     <script>
