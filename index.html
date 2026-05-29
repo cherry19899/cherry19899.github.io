@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v294';</script>
+    <script>window.WORKPRO_VERSION='v295';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -551,14 +551,27 @@
             return r;
           };
         });
-        // Clear pending then create
+        // Wrap onReadyForServerApproval to add fallback /approve call
+        var origOnReady = cbs && cbs.onReadyForServerApproval;
+        cbs.onReadyForServerApproval = function(paymentId) {
+          console.log('[PiFix-Early] onReadyForServerApproval:', paymentId);
+          // Call original first
+          if (origOnReady) origOnReady(paymentId);
+          // Fallback: also call /approve directly to ensure it happens
+          var uid2 = localStorage.getItem('workpro_user_id') || '';
+          console.log('[PiFix-Early] Fallback: calling /approve for', paymentId);
+          fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/approve', {
+            method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid2}
+          }).then(function(r){return r.json();}).then(function(d){console.log('[PiFix-Early] /approve OK:', d);}).catch(function(e){console.log('[PiFix-Early] /approve err:', e.message);});
+        };
+        // Call original createPayment IMMEDIATELY (don't wait for clear-pending!)
+        console.log('[PiFix-Early] calling original createPayment NOW...');
+        try { _origCP.call(window.Pi, pd, cbs); }
+        catch(e) { console.error('[PiFix-Early] error:', e.message); if(cbs && cbs.onError) cbs.onError(e); }
+        // Clear pending in background (don't block)
         fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
-        }).catch(function(){}).then(function() {
-          console.log('[PiFix-Early] calling original createPayment...');
-          try { _origCP.call(window.Pi, pd, cbs); }
-          catch(e) { console.error('[PiFix-Early] error:', e.message); if(cbs && cbs.onError) cbs.onError(e); }
-        });
+        }).catch(function(){});
       };
       console.log('[PiFix-Early] v293 ready — createPayment and authenticate intercepted');
     })();
