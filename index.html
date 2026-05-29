@@ -1650,8 +1650,8 @@ window._W5_fixed=true;
       // Create overlay button matching ToS style
       var ppBtn = document.createElement('div');
       ppBtn.id = '_pp_overlay';
-      ppBtn.innerHTML = '<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;cursor:pointer;background:transparent;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'transparent\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
-      ppBtn.style.cssText = 'position:relative;z-index:100;width:100%;background:#ffffff;border-bottom:1px solid #e5e7eb;';
+      ppBtn.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;cursor:pointer;background:#ffffff;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'#ffffff\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
+      ppBtn.style.cssText = 'position:relative;z-index:100;width:100%;background:#ffffff;margin:8px 0;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08);';
       ppBtn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); };
 
       parent.insertBefore(ppBtn, tosEl.nextSibling);
