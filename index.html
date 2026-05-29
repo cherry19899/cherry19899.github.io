@@ -1651,7 +1651,7 @@ window._W5_fixed=true;
       var ppBtn = document.createElement('div');
       ppBtn.id = '_pp_overlay';
       ppBtn.innerHTML = '<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;cursor:pointer;background:transparent;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'transparent\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
-      ppBtn.style.cssText = 'position:relative;z-index:100;width:100%;background:transparent;';
+      ppBtn.style.cssText = 'position:relative;z-index:100;width:100%;background:#ffffff;border-bottom:1px solid #e5e7eb;';
       ppBtn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); };
 
       parent.insertBefore(ppBtn, tosEl.nextSibling);
