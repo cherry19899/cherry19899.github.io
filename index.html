@@ -1647,47 +1647,42 @@ window._W5_fixed=true;
       var parent = tosEl.parentElement;
       if (!parent) return;
 
-      // AGGRESSIVE: Force-insert Privacy Policy row and re-insert if React removes it
-      (function() {
-        var ppId = '_pp_profile_row_' + Date.now();
-        function doInsert() {
-          var existing = document.getElementById('_pp_profile_row');
-          if (existing) return; // Already there
-
-          // Find Terms of Service
-          var all = document.querySelectorAll('div, button, a');
-          var tosEl = null;
-          for (var k = 0; k < all.length; k++) {
-            var txt = all[k].textContent || '';
-            if (txt.indexOf('Terms of Service') !== -1 || txt.indexOf('Условия') !== -1) {
-              tosEl = all[k];
-              break;
-            }
+      // RELIABLE: Insert Privacy Policy after React finishes rendering
+      function insertPrivacyPolicy() {
+        if (document.getElementById('_pp_profile_btn')) return true;
+        
+        // Find Terms of Service button/row
+        var all = document.querySelectorAll('button, div[role="button"]');
+        var tosBtn = null;
+        for (var i = 0; i < all.length; i++) {
+          var txt = all[i].textContent || '';
+          if (txt.indexOf('Terms') !== -1 && txt.indexOf('Service') !== -1) {
+            tosBtn = all[i];
+            break;
           }
-          if (!tosEl || !tosEl.parentElement) return;
-
-          var row = document.createElement('div');
-          row.id = '_pp_profile_row';
-          row.innerHTML = '<div style="display:flex !important;align-items:center;padding:12px 16px !important;border-bottom:1px solid #e5e7eb !important;font-size:14px;color:#374151;background:#ffffff !important;cursor:pointer;-webkit-tap-highlight-color:transparent;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'#ffffff\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
-          row.style.cssText = 'display:block !important;width:100%;background:#ffffff !important;position:relative;z-index:50;';
-          row.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); });
-
-          var parent = tosEl.parentElement;
-          if (parent.nextSibling) {
-            parent.parentNode.insertBefore(row, parent.nextSibling);
-          } else {
-            parent.parentNode.appendChild(row);
-          }
-          console.log('[PP] Aggressive insert');
         }
-
-        // Insert immediately and keep re-inserting
-        doInsert();
-        var _ppAggro = setInterval(doInsert, 500);
-        // Stop after 10 seconds
-        setTimeout(function() { clearInterval(_ppAggro); }, 10000);
-      })();
-      console.log('[PP] Aggressive mode started');
+        if (!tosBtn) return false;
+        
+        // Create PP button matching existing style
+        var ppBtn = document.createElement('button');
+        ppBtn.id = '_pp_profile_btn';
+        ppBtn.type = 'button';
+        ppBtn.className = tosBtn.className || '';
+        ppBtn.innerHTML = '<div class="flex items-center gap-3 w-full"><div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="text-sm font-medium flex-1 text-left">' + ppTitle + '</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>';
+        ppBtn.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #e5e7eb;background:transparent;cursor:pointer;color:inherit;font-family:inherit;';
+        ppBtn.onclick = function() { window._showPrivacyPolicy(); };
+        
+        // Insert after Terms of Service
+        tosBtn.parentNode.insertBefore(ppBtn, tosBtn.nextSibling);
+        console.log('[PP] Button inserted');
+        return true;
+      }
+      
+      // Try multiple times with increasing delays
+      setTimeout(insertPrivacyPolicy, 1000);
+      setTimeout(insertPrivacyPolicy, 2000);
+      setTimeout(insertPrivacyPolicy, 3000);
+      setTimeout(insertPrivacyPolicy, 5000);
     }
 
     // Try immediately and periodically
