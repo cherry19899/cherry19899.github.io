@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v318';</script>
+    <script>window.WORKPRO_VERSION='v320';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -813,6 +813,8 @@
             if (job.requirements === undefined) {
               job.requirements = job.message || '';
             }
+            if (!Array.isArray(job.images)) job.images = [];
+            if (!Array.isArray(job.skills)) job.skills = [];
             return job;
           }
           if (Array.isArray(data)) {
