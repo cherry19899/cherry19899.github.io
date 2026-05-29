@@ -1,32 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clear Cache — Work Pro</title>
-  <style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;background:#f0fdf4;color:#064e3b;}h1{font-size:24px;margin-bottom:12px;}p{color:#666;font-size:14px;margin-bottom:20px;}button{padding:12px 32px;background:#0d9488;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;}button:hover{background:#0f766e;}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clearing Cache...</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f5f5}
+.box{text-align:center;padding:32px;background:#fff;border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-width:300px}
+h2{margin:0 0 8px;color:#333;font-size:18px}
+p{margin:0;color:#666;font-size:14px}
+.spinner{width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;margin:16px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
-  <h1>Clear Cache</h1>
-  <p>This will clear all local data and reload the app.</p>
-  <button onclick="clearAll()">Clear &amp; Reload</button>
-  <script>
-    function clearAll() {
-      try {
-        localStorage.clear();
-        if ('caches' in window) {
-          caches.keys().then(function(names) {
-            names.forEach(function(n) { caches.delete(n); });
-          });
-        }
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            regs.forEach(function(r) { r.unregister(); });
-          });
-        }
-      } catch(e) {}
-      setTimeout(function() { window.location.href = '/app-v197.html?v=197&nocache=' + Date.now(); }, 800);
-    }
-  </script>
+<div class="box">
+  <div class="spinner"></div>
+  <h2 id="t">Clearing cache...</h2>
+  <p id="m">Please wait</p>
+</div>
+<script>
+var msgs = {
+  en: {t: 'Clearing cache...', m: 'Reloading app'},
+  ru: {t: 'Очистка кэша...', m: 'Перезагрузка приложения'},
+  es: {t: 'Borrando caché...', m: 'Recargando app'},
+  de: {t: 'Cache leeren...', m: 'App wird neu geladen'},
+  fr: {t: 'Vidage du cache...', m: 'Rechargement'},
+  it: {t: 'Cancellazione cache...', m: 'Ricaricamento'},
+  pt: {t: 'Limpando cache...', m: 'Recarregando app'},
+  pl: {t: 'Czyszczenie pamięci...', m: 'Ponowne ładowanie'},
+  uk: {t: 'Очищення кешу...', m: 'Перезавантаження'},
+  ja: {t: 'キャッシュをクリア中...', m: 'アプリを再読み込み'},
+  ko: {t: '캐시 지우는 중...', m: '앱 다시 로드'},
+  zh: {t: '清除缓存中...', m: '重新加载应用'}
+};
+try {
+  var lang = localStorage.getItem('workpro_lang') || 'en';
+  var msg = msgs[lang] || msgs.en;
+  document.getElementById('t').textContent = msg.t;
+  document.getElementById('m').textContent = msg.m;
+  localStorage.clear();
+  sessionStorage.clear();
+  console.log('[ClearCache] All storage cleared');
+} catch(e) {
+  console.error('[ClearCache] Error:', e);
+}
+setTimeout(function(){
+  window.location.href = '/';
+}, 1500);
+</script>
 </body>
 </html>
