@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v295';</script>
+    <script>window.WORKPRO_VERSION='v296';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -245,8 +245,14 @@
                   headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
                 }).then(function(){return data;}).catch(function(){return data;});
               }).then(function(data) {
-                console.log('[Pi] onIncompletePayment handled');
-                return { handled: true, resolved: isCompleted, cancelled: !isCompleted };
+                console.log('[Pi] onIncompletePayment handled, waiting 5s for Pi Network...');
+                // CRITICAL: wait for Pi Network to update payment status before resolving
+                return new Promise(function(resolve){
+                  setTimeout(function(){
+                    console.log('[Pi] onIncompletePayment resolved after delay');
+                    resolve({ handled: true, resolved: isCompleted, cancelled: !isCompleted });
+                  }, 5000);
+                });
               }).catch(function(err) {
                 console.error('[Pi] onIncompletePayment error:', err);
                 return { handled: true, error: err.message };
