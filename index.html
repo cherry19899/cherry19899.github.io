@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v292';</script>
+    <script>window.WORKPRO_VERSION='v293';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -476,6 +476,89 @@
         } catch(e) {}
         setTimeout(pollNotifications, 30000); // Poll every 30s
       })();
+    })();
+    </script>
+    <!-- EARLY PiFix v293 — runs BEFORE React bundle -->
+    <script>
+    (function(){
+      if (!window.Pi) { console.error('[PiFix-Early] Pi SDK not found!'); return; }
+      console.log('[PiFix-Early] v293 loading before bundle...');
+      var _origCP = window.Pi.createPayment;
+      var _origAuth = window.Pi.authenticate;
+      // developer_completed check helper
+      function getEndpoint(status) {
+        if (typeof status === 'string' && (status === 'developer_completed' || status === 'completed')) return '/resolve-complete';
+        if (status && typeof status === 'object' && (status.development_completed === true || status.transaction_verified === true)) return '/resolve-complete';
+        return '/cancelled';
+      }
+      // Intercept authenticate — add payments scope + handle developer_completed
+      window.Pi.authenticate = function(scopes, onIncomplete) {
+        if (!Array.isArray(scopes)) scopes = [];
+        if (scopes.indexOf('payments') === -1) scopes.push('payments');
+        if (scopes.indexOf('username') === -1) scopes.push('username');
+        var wrapped = function(payment) {
+          console.log('[PiFix-Early] onIncomplete:', payment.identifier, 'status:', payment.status);
+          var uid = localStorage.getItem('workpro_user_id') || '';
+          var pid = payment.identifier || payment.id;
+          var ep = getEndpoint(payment.status);
+          console.log('[PiFix-Early] ->', ep, 'for status:', payment.status);
+          return fetch('https://workpro-api.onrender.com/api/payments/' + pid + ep, {
+            method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
+          }).then(function(r){return r.json();}).catch(function(){}).then(function(){return{handled:true};});
+        };
+        if (typeof onIncomplete === 'function') {
+          var origInc = onIncomplete;
+          wrapped = function(payment) {
+            console.log('[PiFix-Early] calling original onIncomplete...');
+            var result = origInc(payment);
+            var uid = localStorage.getItem('workpro_user_id') || '';
+            var pid = payment.identifier || payment.id;
+            var ep = getEndpoint(payment.status);
+            return fetch('https://workpro-api.onrender.com/api/payments/' + pid + ep, {
+              method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
+            }).then(function(){return result;}).catch(function(){return result;});
+          };
+        }
+        return _origAuth.call(window.Pi, scopes, wrapped);
+      };
+      // Intercept createPayment — clear pending first, then call original
+      window.Pi.createPayment = function(pd, cbs) {
+        var uid = localStorage.getItem('workpro_user_id') || '';
+        console.log('[PiFix-Early] createPayment intercepted! amount=' + (pd ? pd.amount : '?'));
+        // Wrap callbacks to inject x-user-id into fetch calls
+        ['onReadyForServerApproval','onReadyForServerCompletion','onCancel','onError'].forEach(function(name) {
+          if (!cbs || typeof cbs[name] !== 'function') return;
+          var orig = cbs[name];
+          cbs[name] = function() {
+            console.log('[PiFix-Early] callback:', name);
+            var args = Array.prototype.slice.call(arguments);
+            if (name === 'onError' && args[0]) {
+              var msg = args[0].message || args[0].error || String(args[0]);
+              if (msg.indexOf('pending') !== -1) { console.log('[PiFix-Early] pending error skipped'); return; }
+            }
+            // Inject x-user-id
+            var _of = window.fetch;
+            window.fetch = function(url, opts) {
+              if (typeof url === 'string' && url.indexOf('workpro-api') !== -1) {
+                opts = opts || {}; opts.headers = opts.headers || {};
+                if (typeof opts.headers === 'object') opts.headers['x-user-id'] = uid;
+              }
+              return _of.call(this, url, opts);
+            };
+            try { var r = orig.apply(null, args); } finally { window.fetch = _of; }
+            return r;
+          };
+        });
+        // Clear pending then create
+        fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
+          method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
+        }).catch(function(){}).then(function() {
+          console.log('[PiFix-Early] calling original createPayment...');
+          try { _origCP.call(window.Pi, pd, cbs); }
+          catch(e) { console.error('[PiFix-Early] error:', e.message); if(cbs && cbs.onError) cbs.onError(e); }
+        });
+      };
+      console.log('[PiFix-Early] v293 ready — createPayment and authenticate intercepted');
     })();
     </script>
     <script>
