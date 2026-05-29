@@ -455,13 +455,13 @@
 
       // Add Privacy Policy button to profile (next to Terms of Service)
       function addPrivacyPolicyButton() {
-        // Look for Terms of Service button/link in profile
-        var allBtns = document.querySelectorAll('button, a');
+        // Look for Terms of Service button/link/div in profile
+        var allEls = document.querySelectorAll('button, a, div');
         var tosBtn = null;
-        for (var i = 0; i < allBtns.length; i++) {
-          var text = allBtns[i].textContent || '';
+        for (var i = 0; i < allEls.length; i++) {
+          var text = allEls[i].textContent || '';
           if (text.indexOf('Terms of Service') !== -1 || text.indexOf('Условия') !== -1 || text.indexOf('conditions') !== -1) {
-            tosBtn = allBtns[i];
+            tosBtn = allEls[i];
             break;
           }
         }
@@ -1412,17 +1412,7 @@ window._W5_fixed=true;
     }, true);
   })();
   </script>
-    <!-- Privacy Policy Link (required for Pi Network listing) -->
-  <script>
-  (function() {
-    var ppLink = document.createElement('a');
-    ppLink.href = '/privacy-policy.html';
-    ppLink.id = 'privacy-policy-link';
-    ppLink.style.cssText = 'position:fixed;bottom:10px;right:10px;color:#64748b;font-size:12px;z-index:9999;text-decoration:none;opacity:0.7;';
-    ppLink.textContent = 'Privacy Policy';
-    document.body.appendChild(ppLink);
-  })();
-  </script>
+    <!-- Privacy Policy moved to profile (v305) -->
 <script>
 // ---- PI SDK v290 FIX ----
 (function(){
