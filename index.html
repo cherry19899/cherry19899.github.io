@@ -474,36 +474,37 @@
         }
         if (!profileCard) return;
 
-        var ppBtn = document.createElement('div');
-        ppBtn.id = '_pp_profile_btn';
-        ppBtn.setAttribute('role', 'button');
+        // Create Privacy Policy item matching profile style (light theme compatible)
+        var ppItem = document.createElement('div');
+        ppItem.id = '_pp_profile_btn';
+        ppItem.setAttribute('role', 'button');
         var lang = localStorage.getItem('workpro_lang') || 'en';
         var titles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
-        ppBtn.textContent = '🔒 ' + (titles[lang] || 'Privacy Policy');
-        ppBtn.style.cssText = 'display:flex;align-items:center;padding:12px 16px;margin:6px 0;background:#0f172a;border:1px solid #1e293b;color:#94a3b8;border-radius:10px;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;gap:8px;';
-        ppBtn.addEventListener('click', function(e) {
+        ppItem.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;cursor:pointer;-webkit-tap-highlight-color:transparent;background:transparent;"><span style="font-size:16px;margin-right:12px;">🔒</span><span style="flex:1;font-size:14px;color:#374151;">' + (titles[lang] || 'Privacy Policy') + '</span><span style="font-size:16px;color:#9ca3af;">›</span></div>';
+        ppItem.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           window._showPrivacyPolicy();
         });
-        ppBtn.addEventListener('touchstart', function() { ppBtn.style.background = '#1e293b'; }, {passive:true});
-        ppBtn.addEventListener('touchend', function() { ppBtn.style.background = '#0f172a'; }, {passive:true});
+        ppItem.addEventListener('touchstart', function() { ppItem.style.background = '#f3f4f6'; }, {passive:true});
+        ppItem.addEventListener('touchend', function() { ppItem.style.background = 'transparent'; }, {passive:true});
 
-        // Insert BEFORE Logout button
-        var logoutBtn = null;
-        var btns = profileCard.querySelectorAll('button');
-        for (var j = 0; j < btns.length; j++) {
-          if ((btns[j].textContent || '').indexOf('Logout') !== -1) {
-            logoutBtn = btns[j];
+        // Insert AFTER Terms of Service
+        var tosParent = null;
+        var children = profileCard.children;
+        for (var j = 0; j < children.length; j++) {
+          var text = children[j].textContent || '';
+          if (text.indexOf('Terms of Service') !== -1 || text.indexOf('Условия') !== -1) {
+            tosParent = children[j];
             break;
           }
         }
-        if (logoutBtn && logoutBtn.parentNode === profileCard) {
-          profileCard.insertBefore(ppBtn, logoutBtn);
+        if (tosParent && tosParent.nextSibling) {
+          profileCard.insertBefore(ppItem, tosParent.nextSibling);
         } else {
-          profileCard.appendChild(ppBtn);
+          profileCard.appendChild(ppItem);
         }
-        console.log('[PrivacyPolicy] Button added to profile');
+        console.log('[PrivacyPolicy] Button added to profile (light theme)');
       }
 
       // Watch for profile page — try every second for 30 seconds
