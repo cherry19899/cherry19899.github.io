@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v310';</script>
+    <script>window.WORKPRO_VERSION='v311';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -1647,22 +1647,47 @@ window._W5_fixed=true;
       var parent = tosEl.parentElement;
       if (!parent) return;
 
-      // Create Privacy Policy row — insert as sibling outside React tree
-      var ppRow = document.getElementById('_pp_profile_row');
-      if (ppRow) ppRow.remove();
+      // AGGRESSIVE: Force-insert Privacy Policy row and re-insert if React removes it
+      (function() {
+        var ppId = '_pp_profile_row_' + Date.now();
+        function doInsert() {
+          var existing = document.getElementById('_pp_profile_row');
+          if (existing) return; // Already there
 
-      ppRow = document.createElement('div');
-      ppRow.id = '_pp_profile_row';
-      ppRow.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;background:#ffffff;cursor:pointer;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'#ffffff\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
-      ppRow.style.cssText = 'display:block;width:100%;background:#ffffff;margin-top:8px;position:relative;z-index:50;';
-      ppRow.onclick = function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); };
+          // Find Terms of Service
+          var all = document.querySelectorAll('div, button, a');
+          var tosEl = null;
+          for (var k = 0; k < all.length; k++) {
+            var txt = all[k].textContent || '';
+            if (txt.indexOf('Terms of Service') !== -1 || txt.indexOf('Условия') !== -1) {
+              tosEl = all[k];
+              break;
+            }
+          }
+          if (!tosEl || !tosEl.parentElement) return;
 
-      // Insert AFTER parent of Terms of Service (sibling, not child)
-      if (tosEl.parentElement && tosEl.parentElement.parentElement) {
-        var grandParent = tosEl.parentElement.parentElement;
-        grandParent.insertBefore(ppRow, tosEl.parentElement.nextSibling);
-      }
-      console.log('[PP] Row added to profile');
+          var row = document.createElement('div');
+          row.id = '_pp_profile_row';
+          row.innerHTML = '<div style="display:flex !important;align-items:center;padding:12px 16px !important;border-bottom:1px solid #e5e7eb !important;font-size:14px;color:#374151;background:#ffffff !important;cursor:pointer;-webkit-tap-highlight-color:transparent;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'#ffffff\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
+          row.style.cssText = 'display:block !important;width:100%;background:#ffffff !important;position:relative;z-index:50;';
+          row.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); });
+
+          var parent = tosEl.parentElement;
+          if (parent.nextSibling) {
+            parent.parentNode.insertBefore(row, parent.nextSibling);
+          } else {
+            parent.parentNode.appendChild(row);
+          }
+          console.log('[PP] Aggressive insert');
+        }
+
+        // Insert immediately and keep re-inserting
+        doInsert();
+        var _ppAggro = setInterval(doInsert, 500);
+        // Stop after 10 seconds
+        setTimeout(function() { clearInterval(_ppAggro); }, 10000);
+      })();
+      console.log('[PP] Aggressive mode started');
     }
 
     // Try immediately and periodically
