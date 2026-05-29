@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v309';</script>
+    <script>window.WORKPRO_VERSION='v310';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -1647,21 +1647,22 @@ window._W5_fixed=true;
       var parent = tosEl.parentElement;
       if (!parent) return;
 
-      // Create FAB (Floating Action Button) for Privacy Policy — outside React tree
-      var fab = document.getElementById('_pp_fab');
-      if (fab) fab.remove();
+      // Create Privacy Policy row — insert as sibling outside React tree
+      var ppRow = document.getElementById('_pp_profile_row');
+      if (ppRow) ppRow.remove();
 
-      fab = document.createElement('div');
-      fab.id = '_pp_fab';
-      fab.innerHTML = '🔒';
-      fab.title = ppTitle;
-      fab.style.cssText = 'position:fixed;bottom:80px;right:16px;z-index:9999;width:48px;height:48px;border-radius:50%;background:#10b981;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);-webkit-tap-highlight-color:transparent;transition:transform 0.2s;';
-      fab.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); });
-      fab.addEventListener('touchstart', function() { fab.style.transform = 'scale(0.9)'; }, {passive:true});
-      fab.addEventListener('touchend', function() { fab.style.transform = 'scale(1)'; }, {passive:true});
+      ppRow = document.createElement('div');
+      ppRow.id = '_pp_profile_row';
+      ppRow.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;background:#ffffff;cursor:pointer;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'#ffffff\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
+      ppRow.style.cssText = 'display:block;width:100%;background:#ffffff;margin-top:8px;position:relative;z-index:50;';
+      ppRow.onclick = function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); };
 
-      document.body.appendChild(fab);
-      console.log('[PP] FAB added');
+      // Insert AFTER parent of Terms of Service (sibling, not child)
+      if (tosEl.parentElement && tosEl.parentElement.parentElement) {
+        var grandParent = tosEl.parentElement.parentElement;
+        grandParent.insertBefore(ppRow, tosEl.parentElement.nextSibling);
+      }
+      console.log('[PP] Row added to profile');
     }
 
     // Try immediately and periodically
