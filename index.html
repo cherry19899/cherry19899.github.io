@@ -670,9 +670,7 @@
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
           try{
-            var s=document.createElement('script');
-            s.textContent=code;
-            document.body.appendChild(s);
+            eval(code);
           }catch(e){
             console.error('[Loader] exec error:',e.message);
             var el=document.getElementById('_error'),rl=document.getElementById('_reload');
