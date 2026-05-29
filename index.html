@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v317';</script>
+    <script>window.WORKPRO_VERSION='v318';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -670,7 +670,11 @@
         .then(function(code){
           console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
           try{
-            eval(code);
+            var s=document.createElement('script');
+            s.type='text/javascript';
+            s.textContent=code;
+            document.head.appendChild(s);
+            console.log('[Loader] Bundle loaded via script tag');
           }catch(e){
             console.error('[Loader] exec error:',e.message);
             console.error('[Loader] stack:',e.stack);
