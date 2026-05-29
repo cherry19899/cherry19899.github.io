@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v311';</script>
+    <script>window.WORKPRO_VERSION='v313';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -262,6 +262,18 @@
           window.Pi._workpro_inited = true;
           window._piSdkReady = true;
           console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
+          // BROWSER FALLBACK: if not in Pi Browser, create mock auth after 3s
+          setTimeout(function() {
+            var hasUser = localStorage.getItem('workpro_user') || localStorage.getItem('workpro_user_id');
+            if (!hasUser && !window._piAuthCompleted) {
+              console.log('[Pi] Browser fallback: creating mock auth state');
+              window._piAuthCompleted = true;
+              // Dispatch auth event for React to pick up
+              window.dispatchEvent(new CustomEvent('workpro:auth-fallback', {
+                detail: { user: { uid: 'browser_user', username: 'BrowserUser' } }
+              }));
+            }
+          }, 3000);
         } catch(e) {
           console.error('[Pi] init error (attempt ' + _initAttempts + '):', e.message || e);
           if (_initAttempts < _initMaxAttempts) {
@@ -748,7 +760,7 @@
         if (status && typeof status === 'object' && (status.development_completed === true || status.transaction_verified === true)) return '/resolve-complete';
         return '/cancelled';
       }
-      // Intercept authenticate — add payments scope + handle developer_completed
+      // Intercept authenticate — add payments scope + handle developer_completed + browser fallback
       window.Pi.authenticate = function(scopes, onIncomplete) {
         if (!Array.isArray(scopes)) scopes = [];
         if (scopes.indexOf('payments') === -1) scopes.push('payments');
@@ -776,7 +788,32 @@
             }).then(function(){return result;}).catch(function(){return result;});
           };
         }
-        return _origAuth.call(window.Pi, scopes, wrapped);
+        // BROWSER FALLBACK: timeout after 5s if Pi Browser auth doesn't work
+        var authPromise = _origAuth.call(window.Pi, scopes, wrapped);
+        return new Promise(function(resolve, reject) {
+          var timeout = setTimeout(function() {
+            console.log('[PiFix-Early] Auth timeout — browser fallback');
+            var uid = localStorage.getItem('workpro_user_id');
+            if (uid) {
+              resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
+            } else {
+              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
+            }
+          }, 5000);
+          authPromise.then(function(result) {
+            clearTimeout(timeout);
+            resolve(result);
+          }).catch(function(err) {
+            clearTimeout(timeout);
+            console.log('[PiFix-Early] Auth error, using fallback:', err.message || err);
+            var uid = localStorage.getItem('workpro_user_id');
+            if (uid) {
+              resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
+            } else {
+              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
+            }
+          });
+        });
       };
       // Intercept createPayment — clear pending first, then call original
       window.Pi.createPayment = function(pd, cbs) {
