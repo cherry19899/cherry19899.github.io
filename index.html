@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v302';</script>
+    <script>window.WORKPRO_VERSION='v303';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -270,6 +270,55 @@
         }
       }
       tryInit();
+    })();
+    </script>
+    <!-- v303: Service Worker + Chat Polling -->
+    <script>
+    (function(){
+      // 1. Register Service Worker for PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          // Skip SW in development
+          if (window.location.hostname === 'localhost') return;
+          navigator.serviceWorker.register('/sw.js').then(function(reg) {
+            console.log('[SW] Registered:', reg.scope);
+          }).catch(function(err) {
+            console.log('[SW] Registration failed:', err.message);
+          });
+        });
+      }
+      // 2. Chat polling — check for new messages every 5 seconds
+      var _chatPollInterval = null;
+      var _lastChatCheck = 0;
+      window._startChatPolling = function() {
+        if (_chatPollInterval) return;
+        console.log('[Chat] Starting polling...');
+        _chatPollInterval = setInterval(function(){
+          var uid = localStorage.getItem('workpro_user_id');
+          if (!uid) return;
+          var now = Date.now();
+          if (now - _lastChatCheck < 5000) return;
+          _lastChatCheck = now;
+          fetch('https://workpro-api.onrender.com/api/notifications/unread-count', {
+            headers: {'x-user-id': uid}
+          }).then(function(r){return r.json();}).then(function(d){
+            var count = d.unread_count || 0;
+            if (count > 0) {
+              console.log('[Chat] Unread:', count);
+              // Dispatch custom event for React to pick up
+              window.dispatchEvent(new CustomEvent('workpro:new-messages', {detail: {count: count}}));
+            }
+          }).catch(function(){});
+        }, 5000);
+      };
+      window._stopChatPolling = function() {
+        if (_chatPollInterval) { clearInterval(_chatPollInterval); _chatPollInterval = null; }
+      };
+      // Auto-start if authenticated
+      if (localStorage.getItem('workpro_user_id')) {
+        setTimeout(window._startChatPolling, 3000);
+      }
+      console.log('[WP] v303 SW + Chat polling ready');
     })();
     </script>
     <script>
