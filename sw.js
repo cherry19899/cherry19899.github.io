@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workpro-v303';
+const CACHE_NAME = 'workpro-v304';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
 
 // Install — cache static assets
 self.addEventListener('install', function(e) {
-  console.log('[SW] Installing v303...');
+  console.log('[SW] Installing v304...');
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
@@ -21,7 +21,7 @@ self.addEventListener('install', function(e) {
 
 // Activate — clean old caches
 self.addEventListener('activate', function(e) {
-  console.log('[SW] Activating v303...');
+  console.log('[SW] Activating v304...');
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(
@@ -35,16 +35,12 @@ self.addEventListener('activate', function(e) {
 
 // Fetch — network first, fallback to cache
 self.addEventListener('fetch', function(e) {
-  // Skip non-GET requests
   if (e.request.method !== 'GET') return;
-  // Skip API calls
   if (e.request.url.indexOf('workpro-api') !== -1) return;
-  // Skip Pi SDK
   if (e.request.url.indexOf('minepi.com') !== -1) return;
 
   e.respondWith(
     fetch(e.request).then(function(response) {
-      // Cache successful responses
       if (response.ok && response.status === 200) {
         var clone = response.clone();
         caches.open(CACHE_NAME).then(function(cache) {
@@ -53,10 +49,37 @@ self.addEventListener('fetch', function(e) {
       }
       return response;
     }).catch(function() {
-      // Fallback to cache
       return caches.match(e.request).then(function(cached) {
         return cached || new Response('Offline', { status: 503 });
       });
     })
+  );
+});
+
+// Push Notification handling
+self.addEventListener('push', function(e) {
+  console.log('[SW] Push received:', e);
+  var data = {};
+  try { data = e.data.json(); } catch(err) { data = { title: 'Work Pro', body: 'New notification' }; }
+  
+  var title = data.title || 'Work Pro';
+  var options = {
+    body: data.body || '',
+    icon: data.icon || '/vite.svg',
+    badge: '/vite.svg',
+    tag: data.tag || 'workpro-' + Date.now(),
+    requireInteraction: false,
+    data: data.data || {}
+  };
+  
+  e.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Notification click handling
+self.addEventListener('notificationclick', function(e) {
+  console.log('[SW] Notification click:', e.notification.tag);
+  e.notification.close();
+  e.waitUntil(
+    clients.openWindow('/')
   );
 });

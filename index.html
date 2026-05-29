@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v303';</script>
+    <script>window.WORKPRO_VERSION='v304';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -272,21 +272,93 @@
       tryInit();
     })();
     </script>
-    <!-- v303: Service Worker + Chat Polling -->
+    <!-- v304: Service Worker + Chat Polling + Push Notifications -->
     <script>
     (function(){
-      // 1. Register Service Worker for PWA
+      var API = 'https://workpro-api.onrender.com';
+      var UID = localStorage.getItem('workpro_user_id') || '';
+
+      // 1. Register Service Worker for PWA + Push
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          // Skip SW in development
           if (window.location.hostname === 'localhost') return;
           navigator.serviceWorker.register('/sw.js').then(function(reg) {
             console.log('[SW] Registered:', reg.scope);
+            // 2. Request push notification permission
+            if ('PushManager' in window) {
+              reg.pushManager.getSubscription().then(function(sub) {
+                if (!sub) {
+                  console.log('[Push] Not subscribed yet');
+                } else {
+                  console.log('[Push] Already subscribed');
+                  // Send subscription to backend
+                  sendPushSubToBackend(sub);
+                }
+              });
+            }
           }).catch(function(err) {
             console.log('[SW] Registration failed:', err.message);
           });
         });
       }
+
+      // 3. Request permission and subscribe to push
+      window._requestPushPermission = function() {
+        if (!('Notification' in window)) { console.log('[Push] Notifications not supported'); return; }
+        Notification.requestPermission().then(function(perm) {
+          console.log('[Push] Permission:', perm);
+          if (perm === 'granted') {
+            navigator.serviceWorker.ready.then(function(reg) {
+              // Use applicationServerKey from backend (VAPID public key)
+              // For now, subscribe without key (server will use VAPID later)
+              reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(localStorage.getItem('workpro_vapid_key') || 'BEl62iTMVmIwRhO5bsfW9J6iPC_8DmkSqFGGj3hN0YHzC0YwL8-6Y4g9Q3M1X7cT')
+              }).then(function(sub) {
+                console.log('[Push] Subscribed:', sub.endpoint);
+                sendPushSubToBackend(sub);
+              }).catch(function(err) {
+                console.error('[Push] Subscribe error:', err.message);
+              });
+            });
+          }
+        });
+      };
+
+      function sendPushSubToBackend(sub) {
+        var uid = localStorage.getItem('workpro_user_id');
+        if (!uid) return;
+        fetch(API + '/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
+          body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.toJSON().keys })
+        }).then(function(r){return r.json();}).then(function(d){
+          console.log('[Push] Backend sync:', d.success);
+        }).catch(function(e){console.error('[Push] Backend sync error:', e);});
+      }
+
+      function urlBase64ToUint8Array(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        var rawData = atob(base64);
+        var outputArray = new Uint8Array(rawData.length);
+        for (var i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
+        return outputArray;
+      }
+
+      // 4. Show local notification helper
+      window._showLocalNotification = function(title, body, icon) {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        navigator.serviceWorker.ready.then(function(reg) {
+          reg.showNotification(title || 'Work Pro', {
+            body: body || '',
+            icon: icon || '/vite.svg',
+            badge: '/vite.svg',
+            tag: 'workpro-' + Date.now(),
+            requireInteraction: false
+          });
+        });
+      };
       // 2. Chat polling — check for new messages every 5 seconds
       var _chatPollInterval = null;
       var _lastChatCheck = 0;
