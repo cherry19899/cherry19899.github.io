@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v320';</script>
+    <script>window.WORKPRO_VERSION='v321';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -835,15 +835,15 @@
       });
     }
 
-    // Profile endpoint fix: redirect /api/users/:uid to /api/me
-    if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1) {
+    // Profile endpoint fix: redirect /api/users/:uid to /api/me (skip availability)
+    if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1 && url.indexOf('/availability') === -1) {
       url = url.replace(/\/api\/users\/[^\/?]+/, '/api/me');
       console.log('[WP] fetch patch: redirected to', url);
     }
 
     return origFetch.call(this, url, options).then(function(response) {
       // ─── For user data endpoint: return modified response ────────────
-      if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1) {
+      if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1 && url.indexOf('/availability') === -1) {
         return response.json().then(function(data) {
           if (data && (data.balance_connects !== undefined || data.connects !== undefined)) {
             try {
