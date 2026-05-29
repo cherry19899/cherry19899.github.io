@@ -484,14 +484,18 @@
         console.log('[PrivacyPolicy] Button added to profile');
       }
 
-      // Watch for profile page
+      // Watch for profile page — try every second for 30 seconds
+      var _ppAttempts = 0;
+      var _ppInterval = setInterval(function() {
+        _ppAttempts++;
+        addPrivacyPolicyButton();
+        if (_ppAttempts > 30) clearInterval(_ppInterval);
+      }, 1000);
+      // Also watch DOM changes
       var ppObserver = new MutationObserver(function() {
         addPrivacyPolicyButton();
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
-      // Try immediately too
-      setTimeout(addPrivacyPolicyButton, 2000);
-      setTimeout(addPrivacyPolicyButton, 4000);
 
       console.log('[WP] v305 Privacy Policy modal + profile button ready');
     })();
