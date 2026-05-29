@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v296';</script>
+    <script>window.WORKPRO_VERSION='v297';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -560,15 +560,18 @@
         // Wrap onReadyForServerApproval to add fallback /approve call
         var origOnReady = cbs && cbs.onReadyForServerApproval;
         cbs.onReadyForServerApproval = function(paymentId) {
-          console.log('[PiFix-Early] onReadyForServerApproval:', paymentId);
-          // Call original first
-          if (origOnReady) origOnReady(paymentId);
+          // Normalize paymentId (can be string or {identifier: 'xxx'} object)
+          var pid = typeof paymentId === 'string' ? paymentId : (paymentId && (paymentId.identifier || paymentId.id || String(paymentId)));
+          console.log('[PiFix-Early] onReadyForServerApproval: raw=' + JSON.stringify(paymentId) + ' normalized=' + pid);
+          // Call original first (with normalized id)
+          if (origOnReady) origOnReady(pid);
           // Fallback: also call /approve directly to ensure it happens
-          var uid2 = localStorage.getItem('workpro_user_id') || '';
-          console.log('[PiFix-Early] Fallback: calling /approve for', paymentId);
-          fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + '/approve', {
+          var uid2 = localStorage.getItem('workpro_user_id') || localStorage.getItem('workpro_user') && (JSON.parse(localStorage.getItem('workpro_user')).id || JSON.parse(localStorage.getItem('workpro_user')).uid) || '';
+          if (!uid2) { console.error('[PiFix-Early] NO user_id! Cannot call /approve'); return; }
+          console.log('[PiFix-Early] Fallback: calling /approve for', pid, 'uid=', uid2.substring(0,5));
+          fetch('https://workpro-api.onrender.com/api/payments/' + encodeURIComponent(pid) + '/approve', {
             method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid2}
-          }).then(function(r){return r.json();}).then(function(d){console.log('[PiFix-Early] /approve OK:', d);}).catch(function(e){console.log('[PiFix-Early] /approve err:', e.message);});
+          }).then(function(r){return r.json();}).then(function(d){console.log('[PiFix-Early] /approve OK:', JSON.stringify(d).substring(0,100));}).catch(function(e){console.log('[PiFix-Early] /approve err:', e.message);});
         };
         // Call original createPayment IMMEDIATELY (don't wait for clear-pending!)
         console.log('[PiFix-Early] calling original createPayment NOW...');
