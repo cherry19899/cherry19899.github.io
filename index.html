@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v316';</script>
+    <script>window.WORKPRO_VERSION='v317';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -673,8 +673,9 @@
             eval(code);
           }catch(e){
             console.error('[Loader] exec error:',e.message);
+            console.error('[Loader] stack:',e.stack);
             var el=document.getElementById('_error'),rl=document.getElementById('_reload');
-            if(el){el.textContent='Error: '+e.message;el.style.display='block';}
+            if(el){el.textContent='Error: '+e.message+' (line '+(e.lineNumber||'?')+')';el.style.display='block';}
             if(rl)rl.style.display='inline-block';
           }
         })
