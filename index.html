@@ -453,50 +453,55 @@
         console.log('[PrivacyPolicy] Modal opened, lang=' + lang);
       };
 
-      // Add Privacy Policy button to profile (next to Terms of Service)
+      // Add Privacy Policy button to profile page
       function addPrivacyPolicyButton() {
-        // Look for Terms of Service button/link/div in profile
-        var allEls = document.querySelectorAll('button, a, div');
-        var tosBtn = null;
-        for (var i = 0; i < allEls.length; i++) {
-          var text = allEls[i].textContent || '';
-          if (text.indexOf('Terms of Service') !== -1 || text.indexOf('Условия') !== -1 || text.indexOf('conditions') !== -1) {
-            tosBtn = allEls[i];
+        // Don't add twice
+        if (document.getElementById('_pp_profile_btn')) return;
+
+        // Find profile card container (the element that contains Terms of Service)
+        // Strategy: look for the element that contains Terms of Service text
+        var allDivs = document.querySelectorAll('div');
+        var profileCard = null;
+        for (var i = 0; i < allDivs.length; i++) {
+          var text = allDivs[i].textContent || '';
+          // Profile page has Terms of Service + FAQ + Clear Cache + Logout
+          if (text.indexOf('Terms of Service') !== -1 &&
+              text.indexOf('FAQ') !== -1 &&
+              text.indexOf('Clear Cache') !== -1) {
+            profileCard = allDivs[i];
             break;
           }
         }
-        if (!tosBtn) return;
-
-        // Don't add twice
-        if (document.getElementById('_pp_profile_btn')) return;
+        if (!profileCard) return;
 
         var ppBtn = document.createElement('div');
         ppBtn.id = '_pp_profile_btn';
         ppBtn.setAttribute('role', 'button');
         var lang = localStorage.getItem('workpro_lang') || 'en';
         var titles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
-        ppBtn.textContent = titles[lang] || 'Privacy Policy';
-        ppBtn.style.cssText = 'display:flex;align-items:center;width:100%;padding:12px 16px;margin-top:6px;background:#0f172a;border:1px solid #1e293b;color:#94a3b8;border-radius:10px;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;';
-        // Click handler
+        ppBtn.textContent = '🔒 ' + (titles[lang] || 'Privacy Policy');
+        ppBtn.style.cssText = 'display:flex;align-items:center;padding:12px 16px;margin:6px 0;background:#0f172a;border:1px solid #1e293b;color:#94a3b8;border-radius:10px;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;gap:8px;';
         ppBtn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('[PrivacyPolicy] Button clicked!');
           window._showPrivacyPolicy();
         });
-        ppBtn.addEventListener('touchstart', function(e) {
-          ppBtn.style.background = '#1e293b';
-        }, {passive:true});
-        ppBtn.addEventListener('touchend', function() {
-          ppBtn.style.background = '#0f172a';
-        }, {passive:true});
+        ppBtn.addEventListener('touchstart', function() { ppBtn.style.background = '#1e293b'; }, {passive:true});
+        ppBtn.addEventListener('touchend', function() { ppBtn.style.background = '#0f172a'; }, {passive:true});
 
-        // Insert after Terms of Service parent's parent (the card container)
-        var container = tosBtn.parentNode;
-        if (container && container.parentNode) {
-          container.parentNode.insertBefore(ppBtn, container.nextSibling);
+        // Insert BEFORE Logout button
+        var logoutBtn = null;
+        var btns = profileCard.querySelectorAll('button');
+        for (var j = 0; j < btns.length; j++) {
+          if ((btns[j].textContent || '').indexOf('Logout') !== -1) {
+            logoutBtn = btns[j];
+            break;
+          }
+        }
+        if (logoutBtn && logoutBtn.parentNode === profileCard) {
+          profileCard.insertBefore(ppBtn, logoutBtn);
         } else {
-          tosBtn.parentNode.insertBefore(ppBtn, tosBtn.nextSibling);
+          profileCard.appendChild(ppBtn);
         }
         console.log('[PrivacyPolicy] Button added to profile');
       }
