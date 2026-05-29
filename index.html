@@ -1618,6 +1618,51 @@ window._W5_fixed=true;
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
   console.log('[PiFix] v306 done');
+
+  // ─── PRIVACY POLICY INJECTION (v308) ───────────────────────────
+  (function() {
+    var ppLang = localStorage.getItem('workpro_lang') || 'en';
+    var ppTitles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
+    var ppTitle = ppTitles[ppLang] || 'Privacy Policy';
+
+    function injectPP() {
+      // Only inject on profile page
+      if (!document.querySelector('[class*="profile"]') && !document.querySelector('button[class*="Profile"]')) return;
+      if (document.getElementById('_pp_overlay')) return;
+
+      // Find Terms of Service element
+      var allEls = document.querySelectorAll('div, button, a');
+      var tosEl = null;
+      for (var i = 0; i < allEls.length; i++) {
+        var txt = allEls[i].textContent || '';
+        if (txt.indexOf('Terms of Service') !== -1 || txt.indexOf('Условия') !== -1) {
+          tosEl = allEls[i];
+          break;
+        }
+      }
+      if (!tosEl) return;
+
+      // Get position of ToS element
+      var rect = tosEl.getBoundingClientRect();
+      var parent = tosEl.parentElement;
+      if (!parent) return;
+
+      // Create overlay button matching ToS style
+      var ppBtn = document.createElement('div');
+      ppBtn.id = '_pp_overlay';
+      ppBtn.innerHTML = '<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb;font-size:14px;color:#374151;cursor:pointer;background:transparent;" onmouseenter="this.style.background=\'#f9fafb\'" onmouseleave="this.style.background=\'transparent\'"><span style="margin-right:12px;font-size:16px;">🔒</span><span style="flex:1;">' + ppTitle + '</span><span style="color:#9ca3af;font-size:16px;">›</span></div>';
+      ppBtn.style.cssText = 'position:relative;z-index:100;width:100%;background:transparent;';
+      ppBtn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); window._showPrivacyPolicy(); };
+
+      parent.insertBefore(ppBtn, tosEl.nextSibling);
+      console.log('[PP] Injected after Terms of Service');
+    }
+
+    // Try immediately and periodically
+    setTimeout(injectPP, 1500);
+    setTimeout(injectPP, 3000);
+    setTimeout(injectPP, 5000);
+  })();
 })();
 </script>
 <!-- DEBUG CONSOLE -->
