@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workpro-v304';
+const CACHE_NAME = 'workpro-v321';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
 
 // Install — cache static assets
 self.addEventListener('install', function(e) {
-  console.log('[SW] Installing v304...');
+  console.log('[SW] Installing v321...');
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
