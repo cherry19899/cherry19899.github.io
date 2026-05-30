@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v324';</script>
+    <script>window.WORKPRO_VERSION='v325';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -1653,34 +1653,36 @@ window._W5_fixed=true;
     setTimeout(injectPP, 5000);
 
     // ─── PORTFOLIO CLICK HANDLER ────────────────────────────
-    // Make Portfolio row clickable by event delegation
+    // Make Portfolio row clickable — ONLY when directly clicked
     (function() {
-      var portfolioTexts = ['Portfolio','Портфолио','Portafolio','Portfólio','Portfolio','Portfolio','Portfolio','Portfolio','Портфоліо','ポートフォリオ','포트폴리오','作品集'];
+      var portfolioTexts = ['Portfolio','Портфолио','Portafolio','Portfólio','Портфоліо','ポートフォリオ','포트폴리오','作品集'];
       document.addEventListener('click', function(e) {
-        var el = e.target;
-        // Walk up to find the row container
-        while (el && el !== document.body) {
+        // Check target and its immediate parent only (not whole DOM tree)
+        var targets = [e.target, e.target.parentElement, e.target.parentElement && e.target.parentElement.parentElement];
+        for (var t = 0; t < targets.length; t++) {
+          var el = targets[t];
+          if (!el || el === document.body) continue;
+          // Skip if inside our modal
+          if (el.closest && el.closest('#_wp_portfolio_modal')) return;
           var txt = el.textContent || '';
-          // Check if this is a Portfolio row (has Portfolio text, no existing handler)
+          var hasPortfolioText = false;
           for (var i = 0; i < portfolioTexts.length; i++) {
-            if (txt.indexOf(portfolioTexts[i]) !== -1) {
-              // Make sure it's not a child element of our modal
-              if (el.closest && el.closest('#_wp_portfolio_modal')) return;
-              // Check if element looks like a profile row (has arrow or specific styling)
-              var html = el.innerHTML || '';
-              if (html.indexOf('arrow') !== -1 || html.indexOf('>') !== -1 || el.tagName === 'DIV' || el.tagName === 'BUTTON') {
-                // Only trigger if user clicked the row itself, not children with their own handlers
-                if (window._showPortfolio) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window._showPortfolio();
-                  console.log('[Portfolio] Click intercepted, modal opened');
-                  return;
-                }
+            if (txt === portfolioTexts[i]) { hasPortfolioText = true; break; }
+          }
+          // Must have exact Portfolio text AND arrow/chevron in innerHTML
+          if (hasPortfolioText) {
+            var html = el.innerHTML || '';
+            // Only trigger if element has a right-arrow (profile row style)
+            if (html.indexOf('M9 18l6-6-6-6') !== -1 || html.indexOf('›') !== -1 || html.indexOf('&gt;') !== -1) {
+              if (window._showPortfolio) {
+                e.preventDefault();
+                e.stopPropagation();
+                window._showPortfolio();
+                console.log('[Portfolio] Row clicked, modal opened');
+                return;
               }
             }
           }
-          el = el.parentElement;
         }
       }, true);
       console.log('[Portfolio] Click handler registered');
