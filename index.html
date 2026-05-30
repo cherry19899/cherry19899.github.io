@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v321';</script>
+    <script>window.WORKPRO_VERSION='v323';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -424,6 +424,48 @@
         zh: { title: '隐私政策', items: ['Work Pro仅收集最低限度的必要数据。','我们不收集电子邮件、电话、地址或财务信息。','数据仅与Pi Network共享。','所有通信均使用HTTPS。','您可以随时请求删除数据。'] }
       };
       var ppCloseTexts = { en:'Close', ru:'Закрыть', es:'Cerrar', de:'Schließen', fr:'Fermer', it:'Chiudi', pt:'Fechar', pl:'Zamknij', uk:'Закрити', ja:'閉じる', ko:'닫기', zh:'关闭' };
+
+      window._showBuyConnects = function() {
+        console.log('[WP] Buy Connects clicked from toast');
+        // Dispatch custom event that React bundle can listen to
+        var event = new CustomEvent('workpro:buy-connects', { detail: {} });
+        window.dispatchEvent(event);
+        // Also try to find and click the Buy button in profile
+        setTimeout(function() {
+          var buyBtn = document.querySelector('button');
+          var allBtns = document.querySelectorAll('button');
+          for (var i = 0; i < allBtns.length; i++) {
+            var text = allBtns[i].textContent || '';
+            if (text.indexOf('Buy') !== -1 || text.indexOf('Купить') !== -1) {
+              console.log('[WP] Auto-clicking Buy button');
+              allBtns[i].click();
+              return;
+            }
+          }
+          // If not on profile page, navigate there
+          console.log('[WP] Navigate to profile to buy connects');
+          // Show simple inline modal
+          var mId = '_wp_buy_modal';
+          var existing = document.getElementById(mId);
+          if (existing) existing.remove();
+          var langs = { en:'Buy Connects', ru:'Купить коннекты', es:'Comprar Connects', de:'Connects kaufen' };
+          var l = localStorage.getItem('workpro_lang') || 'en';
+          var title = langs[l] || langs.en;
+          var prices = '<div style="margin:12px 0;">' +
+            '<div onclick="alert(\'10 connects - 1.00\\u03C0\')" style="padding:12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;"><span>10 connects</span><strong>1.00 π</strong></div>' +
+            '<div onclick="alert(\'50 connects - 4.00\\u03C0\')" style="padding:12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;"><span>50 connects</span><strong>4.00 π</strong></div>' +
+            '<div onclick="alert(\'100 connects - 7.00\\u03C0\')" style="padding:12px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;"><span>100 connects</span><strong>7.00 π</strong></div>' +
+            '</div>';
+          var modal = document.createElement('div');
+          modal.id = mId;
+          modal.innerHTML = '<div style="position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;" onclick="if(event.target===this)document.getElementById(\'' + mId + '\').remove();">' +
+            '<div style="background:#fff;border-radius:16px;padding:24px;max-width:360px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+            '<h3 style="margin:0 0 16px;font-size:18px;">' + title + '</h3>' + prices +
+            '<button onclick="document.getElementById(\'' + mId + '\').remove();" style="width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>' +
+            '</div></div>';
+          document.body.appendChild(modal);
+        }, 100);
+      };
 
       window._showPrivacyPolicy = function() {
         var lang = localStorage.getItem('workpro_lang') || 'en';
@@ -881,6 +923,28 @@
           var el = document.getElementById('stat-connects');
           if (el) el.textContent = data.remaining_connects;
         }
+        // ─── Handle apply error: not enough connects ─────────────
+        if (data && data.error && data.error.indexOf('Not enough connects') !== -1) {
+          console.log('[WP] Apply rejected:', data.error, 'need', data.required, 'have', data.current);
+          // Show toast notification
+          var toastId = '_wp_toast_' + Date.now();
+          var toastHtml = '<div id="' + toastId + '" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#fee2e2;border:1px solid #ef4444;color:#991b1b;padding:16px 24px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);font-family:system-ui,sans-serif;max-width:90vw;width:320px;text-align:center;animation:slideDown 0.3s ease;">' +
+            '<div style="font-weight:600;margin-bottom:8px;">&#9888; Not enough connects</div>' +
+            '<div style="font-size:14px;margin-bottom:12px;">Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0) + '</div>' +
+            '<button onclick="document.getElementById(\'' + toastId + '\').remove();_showBuyConnects();" style="background:#10b981;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">Buy Connects</button>' +
+            '<button onclick="document.getElementById(\'' + toastId + '\').remove();" style="background:transparent;color:#666;border:none;padding:8px 16px;margin-left:8px;cursor:pointer;font-size:14px;">Close</button>' +
+            '</div>' +
+            '<style>@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>';
+          var toastDiv = document.createElement('div');
+          toastDiv.innerHTML = toastHtml;
+          document.body.appendChild(toastDiv.firstElementChild);
+          // Auto-remove after 10s
+          setTimeout(function() {
+            var t = document.getElementById(toastId);
+            if (t) t.remove();
+          }, 10000);
+        }
+
         // ─── Handle connects purchase new_balance ──────────────────
         if (data && data.new_balance !== undefined) {
           try {
