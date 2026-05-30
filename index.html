@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v325';</script>
+    <script>window.WORKPRO_VERSION='v326';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -532,6 +532,101 @@
         document.body.appendChild(overlay);
         console.log('[Portfolio] Modal opened, lang=' + lang);
       };
+
+      window._showInstallPrompt = function() {
+        var lang = localStorage.getItem('workpro_lang') || 'en';
+        var texts = {
+          en: { title:'Install Work Pro', desc:'Add Work Pro to your home screen for quick access. Install as an app on your device.', install:'Install', how:'Tap your browser menu and select "Add to Home Screen"', close:'Close' },
+          ru: { title:'Установить Work Pro', desc:'Добавьте Work Pro на главный экран для быстрого доступа. Установите как приложение.', install:'Установить', how:'Нажмите меню браузера и выберите "Добавить на главный экран"', close:'Закрыть' },
+          es: { title:'Instalar Work Pro', desc:'Añade Work Pro a tu pantalla de inicio.', install:'Instalar', how:'Toca el menú y selecciona "Añadir a pantalla de inicio"', close:'Cerrar' },
+          de: { title:'Work Pro installieren', desc:'Fügen Sie Work Pro zu Ihrem Startbildschirm hinzu.', install:'Installieren', how:'Tippen Sie auf das Menü und wählen Sie "Zum Startbildschirm"', close:'Schließen' },
+          fr: { title:'Installer Work Pro', desc:'Ajoutez Work Pro à votre écran d\'accueil.', install:'Installer', how:'Appuyez sur le menu et sélectionnez "Ajouter à l\'écran d\'accueil"', close:'Fermer' },
+          it: { title:'Installa Work Pro', desc:'Aggiungi Work Pro alla schermata iniziale.', install:'Installa', how:'Tocca il menu e seleziona "Aggiungi a schermata iniziale"', close:'Chiudi' },
+          pt: { title:'Instalar Work Pro', desc:'Adicione Work Pro à tela inicial.', install:'Instalar', how:'Toque no menu e selecione "Adicionar à tela inicial"', close:'Fechar' },
+          pl: { title:'Zainstaluj Work Pro', desc:'Dodaj Work Pro do ekranu głównego.', install:'Zainstaluj', how:'Dotknij menu i wybierz "Dodaj do ekranu głównego"', close:'Zamknij' },
+          uk: { title:'Встановити Work Pro', desc:'Додайте Work Pro на головний екран.', install:'Встановити', how:'Натисніть меню і виберіть "Додати на головний екран"', close:'Закрити' },
+          ja: { title:'Work Proをインストール', desc:'ホーム画面にWork Proを追加します。', install:'インストール', how:'メニューをタップして「ホーム画面に追加」を選択', close:'閉じる' },
+          ko: { title:'Work Pro 설치', desc:'홈 화면에 Work Pro를 추가하세요.', install:'설치', how:'메뉴를 탭하고 "홈 화면에 추가"를 선택', close:'닫기' },
+          zh: { title:'安装 Work Pro', desc:'将 Work Pro 添加到主屏幕。', install:'安装', how:'点击菜单并选择"添加到主屏幕"', close:'关闭' }
+        };
+        var t = texts[lang] || texts.en;
+
+        var modalId = '_wp_install_modal';
+        var existing = document.getElementById(modalId);
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = modalId;
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
+
+        var icon = document.createElement('div');
+        icon.textContent = '📱';
+        icon.style.cssText = 'font-size:48px;margin-bottom:12px;';
+        box.appendChild(icon);
+
+        var h2 = document.createElement('h2');
+        h2.textContent = t.title;
+        h2.style.cssText = 'color:#10b981;font-size:20px;font-weight:700;margin:0 0 8px;';
+        box.appendChild(h2);
+
+        var desc = document.createElement('p');
+        desc.textContent = t.desc;
+        desc.style.cssText = 'color:#6b7280;font-size:14px;margin:0 0 16px;line-height:1.5;';
+        box.appendChild(desc);
+
+        var howDiv = document.createElement('div');
+        howDiv.textContent = t.how;
+        howDiv.style.cssText = 'background:#f3f4f6;padding:12px;border-radius:8px;font-size:13px;color:#374151;margin-bottom:20px;';
+        box.appendChild(howDiv);
+
+        var btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:12px;';
+
+        // Try native PWA prompt
+        var installBtn = document.createElement('button');
+        installBtn.textContent = t.install;
+        installBtn.style.cssText = 'flex:1;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;';
+        installBtn.onclick = function() {
+          if (window.deferredPrompt) {
+            window.deferredPrompt.prompt();
+            window.deferredPrompt.userChoice.then(function(choice) {
+              if (choice.outcome === 'accepted') {
+                console.log('[Install] User accepted PWA install');
+              }
+              window.deferredPrompt = null;
+              overlay.remove();
+            });
+          } else {
+            // Show manual instructions
+            howDiv.style.background = '#fef3c7';
+            howDiv.style.color = '#92400e';
+            howDiv.textContent = t.how + ' 📲';
+          }
+        };
+        btnRow.appendChild(installBtn);
+
+        var closeBtn = document.createElement('button');
+        closeBtn.textContent = t.close;
+        closeBtn.style.cssText = 'flex:1;padding:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;';
+        closeBtn.onclick = function() { overlay.remove(); };
+        btnRow.appendChild(closeBtn);
+
+        box.appendChild(btnRow);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        console.log('[Install] Modal opened, lang=' + lang);
+      };
+
+      // Capture PWA beforeinstallprompt event
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        console.log('[Install] PWA install prompt captured');
+      });
 
       window._showPrivacyPolicy = function() {
         var lang = localStorage.getItem('workpro_lang') || 'en';
@@ -1686,6 +1781,37 @@ window._W5_fixed=true;
         }
       }, true);
       console.log('[Portfolio] Click handler registered');
+    })();
+
+    // ─── INSTALL WORK PRO CLICK HANDLER ─────────────────────
+    (function() {
+      var installTexts = ['Install Work Pro?','Установить Work Pro?','Instalar Work Pro?','Work Pro installieren?','Installer Work Pro?','Installa Work Pro?','Instalar Work Pro?','Zainstaluj Work Pro?','Встановити Work Pro?','Work Proをインストール?','Work Pro 설치?','安装 Work Pro?'];
+      document.addEventListener('click', function(e) {
+        var targets = [e.target, e.target.parentElement, e.target.parentElement && e.target.parentElement.parentElement];
+        for (var t = 0; t < targets.length; t++) {
+          var el = targets[t];
+          if (!el || el === document.body) continue;
+          if (el.closest && el.closest('#_wp_install_modal')) return;
+          var txt = el.textContent || '';
+          var hasInstallText = false;
+          for (var i = 0; i < installTexts.length; i++) {
+            if (txt.indexOf(installTexts[i]) !== -1) { hasInstallText = true; break; }
+          }
+          if (hasInstallText) {
+            var html = el.innerHTML || '';
+            if (html.indexOf('M9 18l6-6-6-6') !== -1 || html.indexOf('›') !== -1 || html.indexOf('&gt;') !== -1 || html.indexOf('Add to home') !== -1) {
+              if (window._showInstallPrompt) {
+                e.preventDefault();
+                e.stopPropagation();
+                window._showInstallPrompt();
+                console.log('[Install] Row clicked, modal opened');
+                return;
+              }
+            }
+          }
+        }
+      }, true);
+      console.log('[Install] Click handler registered');
     })();
   })();
 })();
