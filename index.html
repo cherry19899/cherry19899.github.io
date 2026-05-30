@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v330';</script>
+    <script>window.WORKPRO_VERSION='v331';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -1920,7 +1920,7 @@ window._W5_fixed=true;
           var txt = el.textContent || '';
           var hasInstallText = false;
           for (var i = 0; i < installTexts.length; i++) {
-            if (txt.trim() === installTexts[i]) { hasInstallText = true; break; }
+            if (txt.indexOf(installTexts[i]) !== -1) { hasInstallText = true; break; }
           }
           if (hasInstallText) {
             var html = el.innerHTML || '';
