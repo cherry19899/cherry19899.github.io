@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v331';</script>
+    <script>window.WORKPRO_VERSION='v332';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -1909,34 +1909,42 @@ window._W5_fixed=true;
     })();
 
     // ─── INSTALL WORK PRO CLICK HANDLER ─────────────────────
+    // Only trigger on DIRECT click on the Install Work Pro row
     (function() {
       var installTexts = ['Install Work Pro?','Установить Work Pro?','Instalar Work Pro?','Work Pro installieren?','Installer Work Pro?','Installa Work Pro?','Instalar Work Pro?','Zainstaluj Work Pro?','Встановити Work Pro?','Work Proをインストール?','Work Pro 설치?','安装 Work Pro?'];
+      var arrowSvg = 'M9 18l6-6-6-6'; // right arrow chevron
       document.addEventListener('click', function(e) {
-        var targets = [e.target, e.target.parentElement, e.target.parentElement && e.target.parentElement.parentElement];
+        var el = e.target;
+        // Only check target and immediate parent (not grandparent)
+        var targets = [el, el.parentElement];
         for (var t = 0; t < targets.length; t++) {
-          var el = targets[t];
-          if (!el || el === document.body) continue;
-          if (el.closest && el.closest('#_wp_install_modal')) return;
-          var txt = el.textContent || '';
+          var target = targets[t];
+          if (!target || target === document.body) continue;
+          // Skip if inside our modal
+          if (target.closest && target.closest('#_wp_install_modal')) return;
+          var txt = (target.textContent || '').trim();
+          // Must have exact install text
           var hasInstallText = false;
           for (var i = 0; i < installTexts.length; i++) {
-            if (txt.indexOf(installTexts[i]) !== -1) { hasInstallText = true; break; }
+            if (txt === installTexts[i]) { hasInstallText = true; break; }
           }
-          if (hasInstallText) {
-            var html = el.innerHTML || '';
-            if (html.indexOf('M9 18l6-6-6-6') !== -1 || html.indexOf('Add to home') !== -1) {
-              if (window._showInstallPrompt) {
-                e.preventDefault();
-                e.stopPropagation();
-                window._showInstallPrompt();
-                console.log('[Install] Row clicked, modal opened');
-                return;
-              }
+          if (!hasInstallText) continue;
+          var html = target.innerHTML || '';
+          // Must have download icon (arrow pointing down) AND right chevron
+          var hasDownloadIcon = html.indexOf('download') !== -1 || html.indexOf('M19 9l-7 7-7-7') !== -1 || html.indexOf('↓') !== -1;
+          var hasArrow = html.indexOf(arrowSvg) !== -1;
+          if (hasInstallText && hasDownloadIcon && hasArrow) {
+            if (window._showInstallPrompt) {
+              e.preventDefault();
+              e.stopPropagation();
+              window._showInstallPrompt();
+              console.log('[Install] Row clicked, modal opened');
+              return;
             }
           }
         }
       }, true);
-      console.log('[Install] Click handler registered');
+      console.log('[Install] Click handler registered (strict)');
     })();
   })();
 })();
