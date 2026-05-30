@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v328';</script>
+    <script>window.WORKPRO_VERSION='v329';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -425,6 +425,25 @@
       };
       var ppCloseTexts = { en:'Close', ru:'Закрыть', es:'Cerrar', de:'Schließen', fr:'Fermer', it:'Chiudi', pt:'Fechar', pl:'Zamknij', uk:'Закрити', ja:'閉じる', ko:'닫기', zh:'关闭' };
 
+      // Helper: show toast notification (non-blocking)
+      function showToast(message, color) {
+        color = color || '#10b981';
+        var toastId = '_wp_toast_' + Date.now();
+        var toast = document.createElement('div');
+        toast.id = toastId;
+        toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#fff;border-left:4px solid ' + color + ';color:#374151;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;font-size:14px;font-weight:500;max-width:90vw;width:auto;animation:slideDownToast 0.3s ease; display:flex; align-items:center; gap:8px;';
+        toast.innerHTML = '<span style="color:' + color + ';font-size:18px;">&#10003;</span>' + message;
+        document.body.appendChild(toast);
+        setTimeout(function() {
+          var t = document.getElementById(toastId);
+          if (t) { t.style.opacity = '0'; t.style.transition = 'opacity 0.5s'; setTimeout(function() { t.remove(); }, 500); }
+        }, 2500);
+      }
+      // Inject toast animation CSS
+      var toastStyle = document.createElement('style');
+      toastStyle.textContent = '@keyframes slideDownToast{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+      document.head.appendChild(toastStyle);
+
       // Helper: get current language from any known key
       function _getLang() {
         return localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang') || 'en';
@@ -584,7 +603,7 @@
         var addBtn = document.createElement('button');
         addBtn.textContent = t.add;
         addBtn.style.cssText = 'flex:1;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6;';
-        addBtn.onclick = function() { alert(t.coming + '!'); };
+        addBtn.onclick = function() { showToast(t.coming + '!', '#f59e0b'); };
         btnRow.appendChild(addBtn);
 
         var closeBtn = document.createElement('button');
@@ -667,10 +686,12 @@
               overlay.remove();
             });
           } else {
-            // Show manual instructions
+            // Show manual instructions with highlight
             howDiv.style.background = '#fef3c7';
             howDiv.style.color = '#92400e';
             howDiv.textContent = t.how + ' 📲';
+            // Also show toast instead of alert
+            showToast(t.coming + '!', '#f59e0b');
           }
         };
         btnRow.appendChild(installBtn);
