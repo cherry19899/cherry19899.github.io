@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v326';</script>
+    <script>window.WORKPRO_VERSION='v327';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -425,6 +425,72 @@
       };
       var ppCloseTexts = { en:'Close', ru:'Закрыть', es:'Cerrar', de:'Schließen', fr:'Fermer', it:'Chiudi', pt:'Fechar', pl:'Zamknij', uk:'Закрити', ja:'閉じる', ko:'닫기', zh:'关闭' };
 
+      // Helper: get current language from any known key
+      function _getLang() {
+        return localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang') || 'en';
+      }
+
+      window._showPostJob = function() {
+        var lang = _getLang();
+        var texts = {
+          en: { title:'Post a Job', coming:'Coming Soon', desc:'Post a job and connect with talented freelancers. This feature will be available soon.', close:'Close' },
+          ru: { title:'Разместить вакансию', coming:'Скоро', desc:'Разместите вакансию и найдите талантливых фрилансеров. Эта функция скоро будет доступна.', close:'Закрыть' },
+          es: { title:'Publicar un Trabajo', coming:'Próximamente', desc:'Publique un trabajo y conecte con freelancers talentosos.', close:'Cerrar' },
+          de: { title:'Job veröffentlichen', coming:'Demnächst', desc:'Veröffentlichen Sie einen Job und finden Sie talentierte Freelancer.', close:'Schließen' },
+          fr: { title:'Publier une mission', coming:'Bientôt', desc:'Publiez une mission et connectez-vous avec des freelances talentueux.', close:'Fermer' },
+          it: { title:'Pubblica un Lavoro', coming:'Prossimamente', desc:'Pubblica un lavoro e connettiti con freelancer talentuosi.', close:'Chiudi' },
+          pt: { title:'Publicar um Job', coming:'Em breve', desc:'Publique um job e conecte-se com freelancers talentosos.', close:'Fechar' },
+          pl: { title:'Opublikuj Zlecenie', coming:'Wkrótce', desc:'Opublikuj zlecenie i znajdź utalentowanych freelancerów.', close:'Zamknij' },
+          uk: { title:'Опублікувати роботу', coming:'Незабаром', desc:'Опублікуйте роботу та знайдіть талановитих фрілансерів.', close:'Закрити' },
+          ja: { title:'仕事を投稿', coming:'近日公開', desc:'仕事を投稿して、才能あるフリーランサーとつながります。', close:'閉じる' },
+          ko: { title:'작업 게시', coming:'곧 출시', desc:'작업을 게시하고 유능한 프리랜서와 연결하세요.', close:'닫기' },
+          zh: { title:'发布工作', coming:'即将推出', desc:'发布工作并与有才华的自由职业者建立联系。', close:'关闭' }
+        };
+        var t = texts[lang] || texts.en;
+
+        var modalId = '_wp_postjob_modal';
+        var existing = document.getElementById(modalId);
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = modalId;
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
+
+        var icon = document.createElement('div');
+        icon.textContent = '✏️';
+        icon.style.cssText = 'font-size:48px;margin-bottom:12px;';
+        box.appendChild(icon);
+
+        var h2 = document.createElement('h2');
+        h2.textContent = t.title;
+        h2.style.cssText = 'color:#10b981;font-size:20px;font-weight:700;margin:0 0 8px;';
+        box.appendChild(h2);
+
+        var badge = document.createElement('span');
+        badge.textContent = t.coming;
+        badge.style.cssText = 'display:inline-block;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;';
+        box.appendChild(badge);
+
+        var desc = document.createElement('p');
+        desc.textContent = t.desc;
+        desc.style.cssText = 'color:#6b7280;font-size:14px;margin:0 0 20px;line-height:1.5;';
+        box.appendChild(desc);
+
+        var closeBtn = document.createElement('button');
+        closeBtn.textContent = t.close;
+        closeBtn.style.cssText = 'width:100%;padding:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;';
+        closeBtn.onclick = function() { overlay.remove(); };
+        box.appendChild(closeBtn);
+
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        console.log('[PostJob] Modal opened, lang=' + lang);
+      };
+
       window._showBuyConnects = function() {
         console.log('[WP] Buy Connects clicked from toast');
         // Dispatch custom event that React bundle can listen to
@@ -468,7 +534,7 @@
       };
 
       window._showPortfolio = function() {
-        var lang = localStorage.getItem('workpro_lang') || 'en';
+        var lang = _getLang();
         var texts = {
           en: { title:'Portfolio', coming:'Coming Soon', desc:'Upload your best work to showcase your skills to potential clients. Your portfolio will appear here.', add:'Add Work', close:'Close' },
           ru: { title:'Портфолио', coming:'Скоро', desc:'Загрузите свои лучшие работы, чтобы показать навыки потенциальным клиентам. Ваше портфолио появится здесь.', add:'Добавить работу', close:'Закрыть' },
@@ -534,7 +600,7 @@
       };
 
       window._showInstallPrompt = function() {
-        var lang = localStorage.getItem('workpro_lang') || 'en';
+        var lang = _getLang();
         var texts = {
           en: { title:'Install Work Pro', desc:'Add Work Pro to your home screen for quick access. Install as an app on your device.', install:'Install', how:'Tap your browser menu and select "Add to Home Screen"', close:'Close' },
           ru: { title:'Установить Work Pro', desc:'Добавьте Work Pro на главный экран для быстрого доступа. Установите как приложение.', install:'Установить', how:'Нажмите меню браузера и выберите "Добавить на главный экран"', close:'Закрыть' },
@@ -1746,6 +1812,44 @@ window._W5_fixed=true;
     setTimeout(injectPP, 1500);
     setTimeout(injectPP, 3000);
     setTimeout(injectPP, 5000);
+
+    // ─── FAB "+" CLICK HANDLER ──────────────────────────────
+    (function() {
+      document.addEventListener('click', function(e) {
+        var el = e.target;
+        // Check if clicked element is the FAB (green circle with +)
+        var fabTexts = ['+', '➕', '⊕'];
+        var isFab = false;
+        for (var i = 0; i < fabTexts.length; i++) {
+          if ((el.textContent || '').trim() === fabTexts[i]) { isFab = true; break; }
+        }
+        // Also check by position (bottom-right corner)
+        var rect = el.getBoundingClientRect && el.getBoundingClientRect();
+        if (!isFab && rect) {
+          if (rect.bottom > window.innerHeight - 80 && rect.right > window.innerWidth - 80 && rect.width < 60 && rect.height < 60) {
+            isFab = true;
+          }
+        }
+        // Also check if it's a round green button
+        var style = window.getComputedStyle && el.style ? el.style.cssText : '';
+        if (!isFab && el.style) {
+          var bg = el.style.backgroundColor || '';
+          if ((bg.indexOf('10b981') !== -1 || bg.indexOf('green') !== -1) && (el.style.borderRadius === '50%' || el.style.borderRadius === '999px')) {
+            isFab = true;
+          }
+        }
+        if (isFab) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (window._showPostJob) {
+            window._showPostJob();
+            console.log('[FAB] Post Job modal opened');
+          }
+          return;
+        }
+      }, true);
+      console.log('[FAB] Click handler registered');
+    })();
 
     // ─── PORTFOLIO CLICK HANDLER ────────────────────────────
     // Make Portfolio row clickable — ONLY when directly clicked
