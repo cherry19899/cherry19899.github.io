@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v323';</script>
+    <script>window.WORKPRO_VERSION='v324';</script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
@@ -465,6 +465,72 @@
             '</div></div>';
           document.body.appendChild(modal);
         }, 100);
+      };
+
+      window._showPortfolio = function() {
+        var lang = localStorage.getItem('workpro_lang') || 'en';
+        var texts = {
+          en: { title:'Portfolio', coming:'Coming Soon', desc:'Upload your best work to showcase your skills to potential clients. Your portfolio will appear here.', add:'Add Work', close:'Close' },
+          ru: { title:'Портфолио', coming:'Скоро', desc:'Загрузите свои лучшие работы, чтобы показать навыки потенциальным клиентам. Ваше портфолио появится здесь.', add:'Добавить работу', close:'Закрыть' },
+          es: { title:'Portafolio', coming:'Próximamente', desc:'Sube tus mejores trabajos para mostrar tus habilidades.', add:'Agregar trabajo', close:'Cerrar' },
+          de: { title:'Portfolio', coming:'Demnächst', desc:'Laden Sie Ihre besten Arbeiten hoch.', add:'Arbeit hinzufügen', close:'Schließen' },
+          fr: { title:'Portfolio', coming:'Bientôt', desc:'Téléchargez vos meilleurs travaux.', add:'Ajouter', close:'Fermer' },
+          it: { title:'Portfolio', coming:'Prossimamente', desc:'Carica i tuoi migliori lavori.', add:'Aggiungi', close:'Chiudi' },
+          pt: { title:'Portfólio', coming:'Em breve', desc:'Envie seus melhores trabalhos.', add:'Adicionar', close:'Fechar' },
+          pl: { title:'Portfolio', coming:'Wkrótce', desc:'Prześlij swoje najlepsze prace.', add:'Dodaj', close:'Zamknij' },
+          uk: { title:'Портфоліо', coming:'Незабаром', desc:'Завантажте свої найкращі роботи.', add:'Додати', close:'Закрити' },
+          ja: { title:'ポートフォリオ', coming:'近日公開', desc:'最高の作品をアップロードしてください。', add:'追加', close:'閉じる' },
+          ko: { title:'포트폴리오', coming:'곧 출시', desc:'최고의 작품을 업로드하세요.', add:'추가', close:'닫기' },
+          zh: { title:'作品集', coming:'即将推出', desc:'上传您的最佳作品。', add:'添加', close:'关闭' }
+        };
+        var t = texts[lang] || texts.en;
+
+        var modalId = '_wp_portfolio_modal';
+        var existing = document.getElementById(modalId);
+        if (existing) existing.remove();
+
+        var overlay = document.createElement('div');
+        overlay.id = modalId;
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+        overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+
+        var h2 = document.createElement('h2');
+        h2.textContent = t.title;
+        h2.style.cssText = 'color:#10b981;font-size:20px;font-weight:700;margin:0 0 4px;';
+        box.appendChild(h2);
+
+        var badge = document.createElement('span');
+        badge.textContent = t.coming;
+        badge.style.cssText = 'display:inline-block;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;';
+        box.appendChild(badge);
+
+        var empty = document.createElement('div');
+        empty.style.cssText = 'text-align:center;padding:40px 20px;color:#9ca3af;';
+        empty.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">&#128193;</div><div style="font-size:14px;color:#6b7280;margin-bottom:20px;">' + t.desc + '</div>';
+        box.appendChild(empty);
+
+        var btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:12px;margin-top:16px;';
+
+        var addBtn = document.createElement('button');
+        addBtn.textContent = t.add;
+        addBtn.style.cssText = 'flex:1;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6;';
+        addBtn.onclick = function() { alert(t.coming + '!'); };
+        btnRow.appendChild(addBtn);
+
+        var closeBtn = document.createElement('button');
+        closeBtn.textContent = t.close;
+        closeBtn.style.cssText = 'flex:1;padding:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;';
+        closeBtn.onclick = function() { overlay.remove(); };
+        btnRow.appendChild(closeBtn);
+
+        box.appendChild(btnRow);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        console.log('[Portfolio] Modal opened, lang=' + lang);
       };
 
       window._showPrivacyPolicy = function() {
@@ -1585,6 +1651,40 @@ window._W5_fixed=true;
     setTimeout(injectPP, 1500);
     setTimeout(injectPP, 3000);
     setTimeout(injectPP, 5000);
+
+    // ─── PORTFOLIO CLICK HANDLER ────────────────────────────
+    // Make Portfolio row clickable by event delegation
+    (function() {
+      var portfolioTexts = ['Portfolio','Портфолио','Portafolio','Portfólio','Portfolio','Portfolio','Portfolio','Portfolio','Портфоліо','ポートフォリオ','포트폴리오','作品集'];
+      document.addEventListener('click', function(e) {
+        var el = e.target;
+        // Walk up to find the row container
+        while (el && el !== document.body) {
+          var txt = el.textContent || '';
+          // Check if this is a Portfolio row (has Portfolio text, no existing handler)
+          for (var i = 0; i < portfolioTexts.length; i++) {
+            if (txt.indexOf(portfolioTexts[i]) !== -1) {
+              // Make sure it's not a child element of our modal
+              if (el.closest && el.closest('#_wp_portfolio_modal')) return;
+              // Check if element looks like a profile row (has arrow or specific styling)
+              var html = el.innerHTML || '';
+              if (html.indexOf('arrow') !== -1 || html.indexOf('>') !== -1 || el.tagName === 'DIV' || el.tagName === 'BUTTON') {
+                // Only trigger if user clicked the row itself, not children with their own handlers
+                if (window._showPortfolio) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window._showPortfolio();
+                  console.log('[Portfolio] Click intercepted, modal opened');
+                  return;
+                }
+              }
+            }
+          }
+          el = el.parentElement;
+        }
+      }, true);
+      console.log('[Portfolio] Click handler registered');
+    })();
   })();
 })();
 </script>
