@@ -1,6 +1,40 @@
 // Work Pro v335 — runtime patches (loads with cache-busting timestamp)
 // This file bypasses CDN cache by loading with ?t=Date.now()
 
+// 0. XMLHttpRequest interceptor (works even if React overrides fetch)
+(function() {
+  var origOpen = XMLHttpRequest.prototype.open;
+  var origSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function(method, url) {
+    this._wpUrl = url;
+    this._wpMethod = method;
+    return origOpen.apply(this, arguments);
+  };
+  XMLHttpRequest.prototype.send = function(body) {
+    var xhr = this;
+    var isApply = this._wpUrl && this._wpUrl.indexOf('/apply') !== -1 && this._wpMethod === 'POST';
+    if (isApply) {
+      var origOnReady = this.onreadystatechange;
+      this.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          try {
+            var data = JSON.parse(xhr.responseText);
+            if (data && data.error && data.error.indexOf('Not enough connects') !== -1) {
+              console.log('[WP] XHR Apply rejected:', data.error);
+              if (window.showToast) {
+                window.showToast('Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0), '#ef4444');
+              }
+            }
+          } catch(e) {}
+        }
+        if (origOnReady) origOnReady.apply(this, arguments);
+      };
+    }
+    return origSend.apply(this, arguments);
+  };
+  console.log('[Patch v335] XMLHttpRequest interceptor installed');
+})();
+
 // 1. showToast helper
 window.showToast = function(message, color) {
   color = color || '#10b981';
