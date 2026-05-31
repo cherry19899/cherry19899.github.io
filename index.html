@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v337';</script>
+    <script>window.WORKPRO_VERSION='v400';</script>
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
     (function(){
@@ -300,7 +300,7 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
+          var isSandbox = false; // Mainnet: no sandbox
           window.Pi.init({ 
             version: "2.0", 
             sandbox: isSandbox,
@@ -359,7 +359,7 @@
               window._piAuthCompleted = true;
               // Dispatch auth event for React to pick up
               window.dispatchEvent(new CustomEvent('workpro:auth-fallback', {
-                detail: { user: { uid: 'browser_user', username: 'BrowserUser' } }
+                reject(new Error('Pi authentication required'));
               }));
             }
           }, 3000);
@@ -382,33 +382,17 @@
       // 1. Unregister old Service Workers + clear caches, then register new
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          if (window.location.hostname === 'localhost') return;
-          // Force-unregister ALL old service workers first
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            return Promise.all(regs.map(function(r) {
-              console.log('[SW] Unregistering old:', r.scope);
-              return r.unregister();
-            }));
-          }).then(function() {
-            // Clear all caches
-            if ('caches' in window) {
-              caches.keys().then(function(names) {
-                names.forEach(function(n) { caches.delete(n); });
-              });
-            }
-            console.log('[SW] All old SW unregistered, caches cleared');
-            // Now register the new no-op SW
-            return navigator.serviceWorker.register('/sw.js');
-          }).then(function(reg) {
-            console.log('[SW] Registered fresh:', reg.scope);
-            // 2. Request push notification permission
+          if (window.location.hostname === 'cherry19899.github.io') return;
+          // Register new SW for mainnet
+          navigator.serviceWorker.register('/sw.js?v=' + window.WORKPRO_VERSION).then(function(reg) {
+            console.log('[SW] Registered v400:', reg.scope);
+            // Request push notification permission
             if ('PushManager' in window) {
               reg.pushManager.getSubscription().then(function(sub) {
                 if (!sub) {
                   console.log('[Push] Not subscribed yet');
                 } else {
                   console.log('[Push] Already subscribed');
-                  // Send subscription to backend
                   sendPushSubToBackend(sub);
                 }
               });
@@ -507,7 +491,7 @@
       if (localStorage.getItem('workpro_user_id')) {
         setTimeout(window._startChatPolling, 3000);
       }
-      console.log('[WP] v303 SW + Chat polling ready');
+      console.log('[WP] v400 mainnet ready');
     })();
     </script>
     <!-- v305: Privacy Policy modal + profile button -->
@@ -927,7 +911,7 @@
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
 
-      console.log('[WP] v305 Privacy Policy modal + profile button ready');
+      console.log('[WP] v400 Privacy Policy ready');
     })();
     </script>
     
@@ -981,7 +965,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
+              reject(new Error('Pi authentication required'));
             }
           }, 5000);
           authPromise.then(function(result) {
@@ -994,7 +978,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
+              reject(new Error('Pi authentication required'));
             }
           });
         });
@@ -1054,7 +1038,7 @@
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
         }).catch(function(){});
       };
-      console.log('[PiFix-Early] v306 ready — createPayment and authenticate intercepted');
+      console.log('[PiFix] v400 mainnet Pi SDK ready');
     })();
     </script>
     <script>
@@ -1088,7 +1072,7 @@
     </script>
     <link rel="stylesheet" href="/assets/app-v173.css">
   <script>
-// ===== WORK PRO PATCH v53 =====
+// ===== WORK PRO PATCH v400 =====
 (function() {
   'use strict';
 
@@ -1688,7 +1672,7 @@ window._W5_fixed=true;
 <script>
 // ---- PI SDK v290 FIX ----
 (function(){
-  console.log('[PiFix] v306 loading...');
+  console.log('[PiFix] v400 mainnet ready');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -1844,7 +1828,7 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v306 createPayment fixed');
+    console.log('[PiFix] v400 createPayment ready');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -1862,7 +1846,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v306 done');
+  console.log('[PiFix] v400 done');
 
   // ─── PRIVACY POLICY INJECTION (v308) ───────────────────────────
   (function() {
@@ -2052,7 +2036,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v337 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v400 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
