@@ -1,6 +1,6 @@
-// Work Pro Service Worker — v400 mainnet
+// Work Pro Service Worker — v401 mainnet
 // Stale-while-revalidate for static assets, network-first for API
-const CACHE_NAME = 'workpro-v400';
+const CACHE_NAME = 'workpro-v401';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -9,7 +9,7 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', function(e) {
-  console.log('[SW] v400 install');
+  console.log('[SW] v401 install');
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
@@ -20,7 +20,7 @@ self.addEventListener('install', function(e) {
 });
 
 self.addEventListener('activate', function(e) {
-  console.log('[SW] v400 activate');
+  console.log('[SW] v401 activate');
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(
