@@ -1,7 +1,43 @@
 // Work Pro v335 — runtime patches (loads with cache-busting timestamp)
 // This file bypasses CDN cache by loading with ?t=Date.now()
 
-// 0. XMLHttpRequest interceptor (works even if React overrides fetch)
+// 0. PERSISTENT fetch interceptor — reinstalls every 100ms (React overrides fetch)
+(function() {
+  var _originalFetch = null;
+  var _patchInstalled = false;
+  function installFetchInterceptor() {
+    if (_patchInstalled && window.fetch && window.fetch._wpPatched) return;
+    var currentFetch = window.fetch;
+    if (!currentFetch || currentFetch === _originalFetch) return;
+    _originalFetch = currentFetch;
+    window.fetch = function(input, init) {
+      var url = typeof input === 'string' ? input : (input && input.url);
+      var isApply = url && url.indexOf('/apply') !== -1 && init && init.method === 'POST';
+      return currentFetch.apply(this, arguments).then(function(response) {
+        if (isApply) {
+          var clone = response.clone();
+          clone.json().then(function(data) {
+            if (data && data.error && data.error.indexOf('Not enough connects') !== -1) {
+              console.log('[WP] PERSISTENT Apply rejected:', data.error);
+              if (window.showToast) {
+                window.showToast('Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0), '#ef4444');
+              }
+            }
+          }).catch(function(){});
+        }
+        return response;
+      });
+    };
+    window.fetch._wpPatched = true;
+    _patchInstalled = true;
+    console.log('[Patch v335] PERSISTENT fetch interceptor installed');
+  }
+  // Install immediately and every 100ms
+  installFetchInterceptor();
+  setInterval(installFetchInterceptor, 100);
+})();
+
+// 0b. XMLHttpRequest interceptor (backup)
 (function() {
   var origOpen = XMLHttpRequest.prototype.open;
   var origSend = XMLHttpRequest.prototype.send;
