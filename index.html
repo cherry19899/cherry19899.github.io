@@ -23,8 +23,8 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v402';</script>
-    <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
+    <script>window.WORKPRO_VERSION='v403';</script>
+    <!-- v403: INLINE PATCH — Apply toast + Portfolio + Install handlers + SW fix -->
     <script>
     (function(){
       // showToast helper
@@ -110,7 +110,7 @@
         console.log('[INLINE] XMLHttpRequest interceptor installed');
       })();
 
-      console.log('[INLINE] v337 patches loaded');
+      console.log('[INLINE] v403 patches loaded');
     })();
     </script>
     <script>
@@ -385,7 +385,7 @@
           if (window.location.hostname === 'cherry19899.github.io') return;
           // Register new SW for mainnet
           navigator.serviceWorker.register('/sw.js?v=' + window.WORKPRO_VERSION).then(function(reg) {
-            console.log('[SW] Registered v400:', reg.scope);
+            console.log('[SW] Registered v403:', reg.scope);
             // Request push notification permission
             if ('PushManager' in window) {
               reg.pushManager.getSubscription().then(function(sub) {
@@ -491,7 +491,7 @@
       if (localStorage.getItem('workpro_user_id')) {
         setTimeout(window._startChatPolling, 3000);
       }
-      console.log('[WP] v400 mainnet ready');
+      console.log('[WP] v403 mainnet ready');
     })();
     </script>
     <!-- v305: Privacy Policy modal + profile button -->
@@ -911,7 +911,7 @@
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
 
-      console.log('[WP] v400 Privacy Policy ready');
+      console.log('[WP] v403 Privacy Policy ready');
     })();
     </script>
     
@@ -1038,7 +1038,7 @@
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
         }).catch(function(){});
       };
-      console.log('[PiFix] v400 mainnet Pi SDK ready');
+      console.log('[PiFix] v403 mainnet Pi SDK ready');
     })();
     </script>
     <script>
@@ -1072,7 +1072,7 @@
     </script>
     <link rel="stylesheet" href="/assets/app-v173.css">
   <script>
-// ===== WORK PRO PATCH v400 =====
+// ===== WORK PRO PATCH v403 =====
 (function() {
   'use strict';
 
@@ -1672,7 +1672,7 @@ window._W5_fixed=true;
 <script>
 // ---- PI SDK v290 FIX ----
 (function(){
-  console.log('[PiFix] v400 mainnet ready');
+  console.log('[PiFix] v403 mainnet ready');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -1828,7 +1828,7 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v400 createPayment ready');
+    console.log('[PiFix] v403 createPayment ready');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -1846,7 +1846,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v400 done');
+  console.log('[PiFix] v403 done');
 
   // ─── PRIVACY POLICY INJECTION (v308) ───────────────────────────
   (function() {
@@ -2036,7 +2036,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v400 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v403 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
@@ -2055,7 +2055,7 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v337 start');
+  lg('#0f0','[WP] v403 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
   console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
