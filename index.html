@@ -24,6 +24,12 @@
       }
     </script>
     <script>window.WORKPRO_VERSION='v335';</script>
+    <!-- Runtime patches — cache-busted -->
+    <script>
+      var patchScript = document.createElement('script');
+      patchScript.src = '/patch-v335.js?t=' + Date.now();
+      document.head.appendChild(patchScript);
+    </script>
     <script>
       // Version-based cache clear — triggers on every HTML version change
       (function() {
