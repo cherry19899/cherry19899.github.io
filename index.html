@@ -4,26 +4,12 @@
     <!-- AGGRESSIVE CACHE BUST: force reload if no nocache param -->
     <script>
       (function(){
-        // Detect old cached version (before v408 fix)
-        var hasModule = document.querySelector('script[type="module"][src*="app-v182"]');
-        if (!hasModule) {
-          // Old cached HTML without React loader — force reload
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              regs.forEach(function(r) { r.unregister(); });
-            });
-          }
-          sessionStorage.removeItem('_wp_busted');
-          var url = location.protocol + '//' + location.host + location.pathname + '?nocache=408&_=' + Date.now();
-          location.replace(url);
-          return;
-        }
         // Normal first-load cache bust
         if (!sessionStorage.getItem('_wp_busted')) {
           sessionStorage.setItem('_wp_busted', '1');
           var url = location.protocol + '//' + location.host + location.pathname;
           if (url.indexOf('nocache=') === -1 && url.indexOf('?_=') === -1) {
-            url += '?nocache=338&_=' + Date.now();
+            url += '?nocache=408&_=' + Date.now();
             location.replace(url);
           }
         }
