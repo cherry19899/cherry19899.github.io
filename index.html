@@ -1840,6 +1840,7 @@ window._W5_fixed=true;
   }
   // Fix 2: createPayment with clear-pending + fallback + retry
   if (window.Pi && window.Pi.createPayment && !window.__piFixed275) {
+    window._origPiCreatePayment = window.Pi.createPayment;
     var _ocp = window._origPiCreatePayment || window.Pi.createPayment;
     // Helper: wrap callbacks with x-user-id + fallback
     function wrapCallbacks(cbs, uid) {
