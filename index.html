@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v404';</script>
+    <script>window.WORKPRO_VERSION='v405';</script>
     <!-- v403: INLINE PATCH — Apply toast + Portfolio + Install handlers + SW fix -->
     <script>
     (function(){
@@ -1957,13 +1957,9 @@ window._W5_fixed=true;
             isFab = true;
           }
         }
-        // Also check if it's a round green button
-        var style = window.getComputedStyle && el.style ? el.style.cssText : '';
-        if (!isFab && el.style) {
-          var bg = el.style.backgroundColor || '';
-          if ((bg.indexOf('10b981') !== -1 || bg.indexOf('green') !== -1) && (el.style.borderRadius === '50%' || el.style.borderRadius === '999px')) {
-            isFab = true;
-          }
+        // Skip FAB detection if element is inside navigation (e.g. bottom nav Profile button)
+        if (isFab && el.closest && el.closest('nav, .bottom-nav, .navbar-links, .nav-link, [role="navigation"]')) {
+          isFab = false;
         }
         if (isFab) {
           e.preventDefault();
