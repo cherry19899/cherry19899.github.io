@@ -37,7 +37,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v339';</script>
+    <script>window.WORKPRO_VERSION='v407';</script>
     <!-- AUTO-redirect to cache-busted URL -->
     <script>
       (function(){
@@ -2121,6 +2121,10 @@ window._W5_fixed=true;
           if ((bg.indexOf('10b981') !== -1 || bg.indexOf('green') !== -1) && (el.style.borderRadius === '50%' || el.style.borderRadius === '999px')) {
             isFab = true;
           }
+        }
+        // Exclude navigation buttons from FAB handler (v407 fix)
+        if (isFab && el.closest && el.closest('nav, .bottom-nav, .navbar-links, .nav-link, [role="navigation"]')) {
+          isFab = false;
         }
         if (isFab) {
           e.preventDefault();

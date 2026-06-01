@@ -1,6 +1,5 @@
-// Work Pro Service Worker — v403 mainnet
-// Network-first for HTML, stale-while-revalidate for static assets, network-only for API
-const CACHE_NAME = 'workpro-v406';
+// Work Pro Service Worker — v407 mainnet
+const CACHE_NAME = 'workpro-v407';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -9,7 +8,7 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', function(e) {
-  console.log('[SW] v403 install');
+  console.log('[SW] v407 install');
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
@@ -20,7 +19,7 @@ self.addEventListener('install', function(e) {
 });
 
 self.addEventListener('activate', function(e) {
-  console.log('[SW] v403 activate');
+  console.log('[SW] v407 activate');
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(
@@ -34,24 +33,17 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
-  const url = new URL(e.request.url);
+  var url = new URL(e.request.url);
 
-  // API requests: always network
   if (url.pathname.startsWith('/api/')) {
     e.respondWith(fetch(e.request));
     return;
   }
 
-  // HTML pages: network-first, fallback to cache
-  if (e.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+  if (e.request.mode === 'navigate' || e.request.destination === 'document') {
     e.respondWith(
-      fetch(e.request).then(function(networkResponse) {
-        if (networkResponse && networkResponse.status === 200) {
-          caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(e.request, networkResponse.clone());
-          });
-        }
-        return networkResponse;
+      fetch(e.request).then(function(response) {
+        return response;
       }).catch(function() {
         return caches.match(e.request);
       })
@@ -59,18 +51,20 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // CSS/JS: stale-while-revalidate
   e.respondWith(
-    caches.match(e.request).then(function(response) {
+    caches.match(e.request).then(function(cached) {
       var fetchPromise = fetch(e.request).then(function(networkResponse) {
         if (networkResponse && networkResponse.status === 200) {
+          var responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(e.request, networkResponse.clone());
+            cache.put(e.request, responseClone);
           });
         }
         return networkResponse;
-      }).catch(function() { return response; });
-      return response || fetchPromise;
+      }).catch(function() {
+        return cached;
+      });
+      return cached || fetchPromise;
     })
   );
 });
