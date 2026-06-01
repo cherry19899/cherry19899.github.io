@@ -413,50 +413,7 @@
           var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
           window.Pi.init({ 
             version: "2.0", 
-            sandbox: isSandbox,
-            onIncompletePayment: function(payment) {
-              console.log('[Pi] onIncompletePayment called', payment);
-              var paymentId = payment && (payment.identifier || payment.paymentId || payment.transactionId || payment.id);
-              if (!paymentId) {
-                console.warn('[Pi] No paymentId found in incomplete payment');
-                return Promise.resolve();
-              }
-              // Check if payment is developer_completed — needs /resolve-complete, NOT /cancelled
-              var st = payment && payment.status;
-              var isCompleted = false;
-              if (typeof st === 'string') {
-                isCompleted = st === 'developer_completed' || st === 'completed';
-              } else if (st && typeof st === 'object') {
-                isCompleted = st.development_completed === true || st.transaction_verified === true;
-              }
-              var uid = localStorage.getItem('workpro_user_id') || '';
-              var endpoint = isCompleted ? '/resolve-complete' : '/cancelled';
-              console.log('[Pi] onIncompletePayment: status=' + (typeof st === 'string' ? st : JSON.stringify(st)) + ' -> endpoint=' + endpoint);
-              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-              }).then(function(r) {
-                console.log('[Pi] onIncompletePayment ' + endpoint + ' status:', r.status);
-                return r.json().catch(function(){return {};}); 
-              }).then(function(data) {
-                return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-                }).then(function(){return data;}).catch(function(){return data;});
-              }).then(function(data) {
-                console.log('[Pi] onIncompletePayment handled, waiting 5s for Pi Network...');
-                // CRITICAL: wait for Pi Network to update payment status before resolving
-                return new Promise(function(resolve){
-                  setTimeout(function(){
-                    console.log('[Pi] onIncompletePayment resolved after delay');
-                    resolve({ handled: true, resolved: isCompleted, cancelled: !isCompleted });
-                  }, 5000);
-                });
-              }).catch(function(err) {
-                console.error('[Pi] onIncompletePayment error:', err);
-                return { handled: true, error: err.message };
-              });
-            }
+            sandbox: isSandbox
           });
           window.Pi._workpro_inited = true;
           window._piSdkReady = true;
