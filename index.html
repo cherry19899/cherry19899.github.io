@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- AGGRESSIVE CACHE BUST: force reload if no nocache param -->
+    <script>
+      (function(){
+        if (!sessionStorage.getItem('_wp_busted')) {
+          sessionStorage.setItem('_wp_busted', '1');
+          var url = location.protocol + '//' + location.host + location.pathname;
+          if (url.indexOf('nocache=') === -1 && url.indexOf('?_=') === -1) {
+            url += '?nocache=338&_=' + Date.now();
+            console.log('[CACHE BUST] Forcing reload to:', url);
+            location.replace(url);
+          }
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg?v=50" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,7 +37,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v406';</script>
+    <script>window.WORKPRO_VERSION='v339';</script>
     <!-- AUTO-redirect to cache-busted URL -->
     <script>
       (function(){
@@ -2108,10 +2122,6 @@ window._W5_fixed=true;
             isFab = true;
           }
         }
-        // Exclude navigation buttons from FAB handler (v406 fix)
-        if (isFab && el.closest && el.closest('nav, .bottom-nav, .navbar-links, .nav-link, [role="navigation"]')) {
-          isFab = false;
-        }
         if (isFab) {
           e.preventDefault();
           e.stopPropagation();
@@ -2225,14 +2235,4 @@ window._W5_fixed=true;
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
   lg('#0f0','[WP] v294 start');
   var o=console.log,oe=console.error,ow=console.warn;
-  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
-  console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
-  console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
-  window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
-  window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
-})();
-</script>
-</body>
-</html>
-<!-- build trigger 1779798423 -->
-<!-- rebuild 1779800816 -->
+  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
