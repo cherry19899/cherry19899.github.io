@@ -1529,13 +1529,13 @@ window._W5_fixed=true;
   var origRemoveItem = localStorage.removeItem;
   localStorage.removeItem = function(key) {
     if (key === CONNECTS_KEY || key === BALANCE_KEY || key === SIG_KEY) {
-      console.log('[WorkPro] BLOCKED remove:', key);
+      // console.log('[WorkPro] BLOCKED remove:', key);
       return;
     }
     if (key === STORAGE_KEY) {
       var sc = origGetItem.call(localStorage, CONNECTS_KEY);
       if (sc) savedConnects = parseInt(sc, 10);
-      console.log('[WorkPro] Logout, keeping connects:', savedConnects);
+      // console.log('[WorkPro] Logout, keeping connects:', savedConnects);
       try {
         var userStr = origGetItem.call(localStorage, key);
         if (userStr) {
@@ -1574,7 +1574,7 @@ window._W5_fixed=true;
   localStorage.clear = function() {
     var sc = origGetItem.call(localStorage, CONNECTS_KEY);
     var sb = origGetItem.call(localStorage, BALANCE_KEY);
-    console.log('[WorkPro] BLOCKED clear, preserving connects:', sc);
+    // console.log('[WorkPro] BLOCKED clear, preserving connects:', sc);
     var keysToRemove = [];
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
