@@ -1384,7 +1384,7 @@
               var storedC = parseInt(sc || '0', 10);
               var serverC = data.balance_connects || data.connects || 0;
               if (storedC > serverC && (storedC - serverC) > 2) {
-                console.log('[WorkPro] MERGE response:', storedC, 'over', serverC);
+                // console.log('[WorkPro] MERGE response:', storedC, 'over', serverC);
                 data.balance_connects = storedC;
                 data.connects = storedC;
               }
