@@ -1,5 +1,5 @@
-// Work Pro Service Worker — v407 mainnet
-const CACHE_NAME = 'workpro-v407';
+// Work Pro Service Worker — v408 mainnet
+const CACHE_NAME = 'workpro-v408';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -8,7 +8,7 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', function(e) {
-  console.log('[SW] v407 install');
+  console.log('[SW] v408 install');
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
@@ -19,7 +19,7 @@ self.addEventListener('install', function(e) {
 });
 
 self.addEventListener('activate', function(e) {
-  console.log('[SW] v407 activate');
+  console.log('[SW] v408 activate');
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(
