@@ -23,7 +23,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v403';</script>
+    <script>window.WORKPRO_VERSION='v404';</script>
     <!-- v403: INLINE PATCH — Apply toast + Portfolio + Install handlers + SW fix -->
     <script>
     (function(){
@@ -300,8 +300,8 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = false; // Mainnet: no sandbox
-          window.Pi.init({ 
+          var isSandbox = window.__piSandbox !== undefined ? window.__piSandbox : false;
+          var initResult = window.Pi.init({ 
             version: "2.0", 
             sandbox: isSandbox,
             onIncompletePayment: function(payment) {
@@ -348,9 +348,20 @@
               });
             }
           });
-          window.Pi._workpro_inited = true;
-          window._piSdkReady = true;
-          console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
+          // Handle async init (Pi SDK v2.0 returns Promise in some environments)
+          function markReady() {
+            window.Pi._workpro_inited = true;
+            window._piSdkReady = true;
+            console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
+          }
+          if (initResult && typeof initResult.then === 'function') {
+            initResult.then(markReady).catch(function(e) {
+              console.error('[Pi] init promise rejected:', e);
+              markReady(); // still mark ready so fallback works
+            });
+          } else {
+            markReady();
+          }
           // BROWSER FALLBACK: if not in Pi Browser, create mock auth after 3s
           setTimeout(function() {
             var hasUser = localStorage.getItem('workpro_user') || localStorage.getItem('workpro_user_id');
@@ -359,7 +370,7 @@
               window._piAuthCompleted = true;
               // Dispatch auth event for React to pick up
               window.dispatchEvent(new CustomEvent('workpro:auth-fallback', {
-                reject(new Error('Pi authentication required'));
+                detail: { error: 'Pi authentication required' }
               }));
             }
           }, 3000);
@@ -957,7 +968,13 @@
           };
         }
         // BROWSER FALLBACK: timeout after 5s if Pi Browser auth doesn't work
-        var authPromise = _origAuth.call(window.Pi, scopes, wrapped);
+        var authPromise;
+        try {
+          authPromise = _origAuth.call(window.Pi, scopes, wrapped);
+        } catch(e) {
+          console.log('[PiFix-Early] Auth threw immediately:', e.message);
+          authPromise = Promise.reject(e);
+        }
         return new Promise(function(resolve, reject) {
           var timeout = setTimeout(function() {
             console.log('[PiFix-Early] Auth timeout — browser fallback');
@@ -965,7 +982,9 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              reject(new Error('Pi authentication required'));
+              var guestId = 'guest_' + Date.now();
+              localStorage.setItem('workpro_user_id', guestId);
+              resolve({ user: { uid: guestId, username: 'Guest' }, accessToken: 'guest_token' });
             }
           }, 5000);
           authPromise.then(function(result) {
@@ -978,7 +997,9 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              reject(new Error('Pi authentication required'));
+              var guestId = 'guest_' + Date.now();
+              localStorage.setItem('workpro_user_id', guestId);
+              resolve({ user: { uid: guestId, username: 'Guest' }, accessToken: 'guest_token' });
             }
           });
         });

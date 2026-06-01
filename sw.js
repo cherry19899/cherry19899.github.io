@@ -1,6 +1,6 @@
 // Work Pro Service Worker — v403 mainnet
 // Network-first for HTML, stale-while-revalidate for static assets, network-only for API
-const CACHE_NAME = 'workpro-v403';
+const CACHE_NAME = 'workpro-v404';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
