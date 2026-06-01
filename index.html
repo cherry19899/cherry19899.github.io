@@ -23,8 +23,56 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v405';</script>
-    <!-- v403: INLINE PATCH — Apply toast + Portfolio + Install handlers + SW fix -->
+    <script>window.WORKPRO_VERSION='v338';</script>
+    <!-- AUTO-redirect to cache-busted URL -->
+    <script>
+      (function(){
+        if (location.search.indexOf('nocache=') === -1 && location.search.indexOf('v=') === -1) {
+          var url = location.protocol + '//' + location.host + '/?nocache=338&_=' + Date.now();
+          console.log('[CacheBust] Redirecting to:', url);
+          location.replace(url);
+        }
+      })();
+    </script>
+    <!-- AUTO-UPDATE: check for newer version and force reload -->
+    <script>
+      (function(){
+        // Skip if just reloaded
+        if (sessionStorage.getItem('_wp_reloaded')) {
+          sessionStorage.removeItem('_wp_reloaded');
+          return;
+        }
+        var localVer = parseInt((window.WORKPRO_VERSION || 'v0').replace('v',''));
+        // Fetch latest index.html to check its version
+        fetch('/index.html?t=' + Date.now(), {cache: 'no-store'})
+          .then(function(r){ return r.text(); })
+          .then(function(html) {
+            var m = html.match(/WORKPRO_VERSION='v(\d+)'/);
+            if (m) {
+              var remoteVer = parseInt(m[1]);
+              console.log('[AUTO-UPDATE] Local: v' + localVer + ', Remote: v' + remoteVer);
+              if (remoteVer > localVer) {
+                console.log('[AUTO-UPDATE] Reloading to v' + remoteVer + '...');
+                sessionStorage.setItem('_wp_reloaded', '1');
+                window.location.reload(true);
+              }
+            }
+          }).catch(function(){});
+      })();
+    </script>
+    <!-- FORCE RELOAD if cached old version -->
+    <script>
+      (function(){
+        var html = document.documentElement.innerHTML;
+        var hasInlinePatch = html.indexOf('PERSISTENT fetch interceptor') !== -1;
+        var hasPortfolioHandler = html.indexOf('Portfolio handler registered') !== -1;
+        if (!hasInlinePatch || !hasPortfolioHandler) {
+          console.log('[FORCE RELOAD] Old cached version detected, reloading...');
+          location.href = 'https://cherry19899.github.io/?nocache=' + Date.now();
+        }
+      })();
+    </script>
+    <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
     (function(){
       // showToast helper
@@ -63,7 +111,16 @@
                 clone.json().then(function(data) {
                   if (data && data.error && data.error.indexOf('Not enough connects') !== -1) {
                     console.log('[WP] INLINE Apply rejected:', data.error);
-                    if (window.showToast) window.showToast('Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0), '#ef4444');
+                    var msg = 'Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0);
+            console.log('[INLINE] TOAST:', msg);
+            if (window.showToast) window.showToast(msg, '#ef4444');
+            setTimeout(function() {
+              var toasts = document.querySelectorAll('[id^="_wp_toast_"]');
+              console.log('[INLINE] Toast check:', toasts.length, 'toasts found');
+              if (toasts.length === 0) {
+                alert('Not enough connects! ' + msg + '\n\nBuy connects in your profile.');
+              }
+            }, 500);
                   }
                 }).catch(function(){});
               }
@@ -98,7 +155,16 @@
                   var data = JSON.parse(xhr.responseText);
                   if (data && data.error && data.error.indexOf('Not enough connects') !== -1) {
                     console.log('[WP] INLINE XHR Apply rejected:', data.error);
-                    if (window.showToast) window.showToast('Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0), '#ef4444');
+                    var msg = 'Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0);
+            console.log('[INLINE] TOAST:', msg);
+            if (window.showToast) window.showToast(msg, '#ef4444');
+            setTimeout(function() {
+              var toasts = document.querySelectorAll('[id^="_wp_toast_"]');
+              console.log('[INLINE] Toast check:', toasts.length, 'toasts found');
+              if (toasts.length === 0) {
+                alert('Not enough connects! ' + msg + '\n\nBuy connects in your profile.');
+              }
+            }, 500);
                   }
                 } catch(e) {}
               }
@@ -110,7 +176,7 @@
         console.log('[INLINE] XMLHttpRequest interceptor installed');
       })();
 
-      console.log('[INLINE] v403 patches loaded');
+      console.log('[INLINE] v337 patches loaded');
     })();
     </script>
     <script>
@@ -300,8 +366,8 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = window.__piSandbox !== undefined ? window.__piSandbox : false;
-          var initResult = window.Pi.init({ 
+          var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
+          window.Pi.init({ 
             version: "2.0", 
             sandbox: isSandbox,
             onIncompletePayment: function(payment) {
@@ -348,20 +414,9 @@
               });
             }
           });
-          // Handle async init (Pi SDK v2.0 returns Promise in some environments)
-          function markReady() {
-            window.Pi._workpro_inited = true;
-            window._piSdkReady = true;
-            console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
-          }
-          if (initResult && typeof initResult.then === 'function') {
-            initResult.then(markReady).catch(function(e) {
-              console.error('[Pi] init promise rejected:', e);
-              markReady(); // still mark ready so fallback works
-            });
-          } else {
-            markReady();
-          }
+          window.Pi._workpro_inited = true;
+          window._piSdkReady = true;
+          console.log('[Pi] SDK initialized, sandbox=' + isSandbox);
           // BROWSER FALLBACK: if not in Pi Browser, create mock auth after 3s
           setTimeout(function() {
             var hasUser = localStorage.getItem('workpro_user') || localStorage.getItem('workpro_user_id');
@@ -370,7 +425,7 @@
               window._piAuthCompleted = true;
               // Dispatch auth event for React to pick up
               window.dispatchEvent(new CustomEvent('workpro:auth-fallback', {
-                detail: { error: 'Pi authentication required' }
+                detail: { user: { uid: 'browser_user', username: 'BrowserUser' } }
               }));
             }
           }, 3000);
@@ -393,17 +448,33 @@
       // 1. Unregister old Service Workers + clear caches, then register new
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          if (window.location.hostname === 'cherry19899.github.io') return;
-          // Register new SW for mainnet
-          navigator.serviceWorker.register('/sw.js?v=' + window.WORKPRO_VERSION).then(function(reg) {
-            console.log('[SW] Registered v403:', reg.scope);
-            // Request push notification permission
+          if (window.location.hostname === 'localhost') return;
+          // Force-unregister ALL old service workers first
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function(r) {
+              console.log('[SW] Unregistering old:', r.scope);
+              return r.unregister();
+            }));
+          }).then(function() {
+            // Clear all caches
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                names.forEach(function(n) { caches.delete(n); });
+              });
+            }
+            console.log('[SW] All old SW unregistered, caches cleared');
+            // Now register the new no-op SW
+            return navigator.serviceWorker.register('/sw.js');
+          }).then(function(reg) {
+            console.log('[SW] Registered fresh:', reg.scope);
+            // 2. Request push notification permission
             if ('PushManager' in window) {
               reg.pushManager.getSubscription().then(function(sub) {
                 if (!sub) {
                   console.log('[Push] Not subscribed yet');
                 } else {
                   console.log('[Push] Already subscribed');
+                  // Send subscription to backend
                   sendPushSubToBackend(sub);
                 }
               });
@@ -502,7 +573,7 @@
       if (localStorage.getItem('workpro_user_id')) {
         setTimeout(window._startChatPolling, 3000);
       }
-      console.log('[WP] v403 mainnet ready');
+      console.log('[WP] v303 SW + Chat polling ready');
     })();
     </script>
     <!-- v305: Privacy Policy modal + profile button -->
@@ -922,7 +993,7 @@
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
 
-      console.log('[WP] v403 Privacy Policy ready');
+      console.log('[WP] v305 Privacy Policy modal + profile button ready');
     })();
     </script>
     
@@ -968,13 +1039,7 @@
           };
         }
         // BROWSER FALLBACK: timeout after 5s if Pi Browser auth doesn't work
-        var authPromise;
-        try {
-          authPromise = _origAuth.call(window.Pi, scopes, wrapped);
-        } catch(e) {
-          console.log('[PiFix-Early] Auth threw immediately:', e.message);
-          authPromise = Promise.reject(e);
-        }
+        var authPromise = _origAuth.call(window.Pi, scopes, wrapped);
         return new Promise(function(resolve, reject) {
           var timeout = setTimeout(function() {
             console.log('[PiFix-Early] Auth timeout — browser fallback');
@@ -982,9 +1047,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              var guestId = 'guest_' + Date.now();
-              localStorage.setItem('workpro_user_id', guestId);
-              resolve({ user: { uid: guestId, username: 'Guest' }, accessToken: 'guest_token' });
+              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
             }
           }, 5000);
           authPromise.then(function(result) {
@@ -997,9 +1060,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              var guestId = 'guest_' + Date.now();
-              localStorage.setItem('workpro_user_id', guestId);
-              resolve({ user: { uid: guestId, username: 'Guest' }, accessToken: 'guest_token' });
+              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
             }
           });
         });
@@ -1052,48 +1113,83 @@
         };
         // Call original createPayment IMMEDIATELY (don't wait for clear-pending!)
         console.log('[PiFix-Early] calling original createPayment NOW...');
-        try { _origCP.call(window.Pi, pd, cbs); }
-        catch(e) { console.error('[PiFix-Early] error:', e.message); if(cbs && cbs.onError) cbs.onError(e); }
+        try {
+          _origCP.call(window.Pi, pd, cbs);
+        } catch(e) {
+          var errMsg = e.message || String(e);
+          console.error('[PiFix-Early] error:', errMsg);
+          // If in browser (no payments scope), do mock purchase
+          if (errMsg.indexOf('payments') !== -1 || errMsg.indexOf('scope') !== -1 || errMsg.indexOf('Cannot create') !== -1) {
+            console.log('[PiFix-Early] Mock purchase fallback for browser');
+            var mockPaymentId = 'mock_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
+            // Call onReadyForServerApproval
+            if (cbs && cbs.onReadyForServerApproval) {
+              setTimeout(function() { cbs.onReadyForServerApproval(mockPaymentId); }, 100);
+            }
+            // Call onReadyForServerCompletion after short delay
+            if (cbs && cbs.onReadyForServerCompletion) {
+              setTimeout(function() { cbs.onReadyForServerCompletion(mockPaymentId); }, 500);
+            }
+          } else if (cbs && cbs.onError) {
+            cbs.onError(e);
+          }
+        }
         // Clear pending in background (don't block)
         fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
         }).catch(function(){});
       };
-      console.log('[PiFix] v403 mainnet Pi SDK ready');
+      console.log('[PiFix-Early] v306 ready — createPayment and authenticate intercepted');
     })();
     </script>
     <script>
     (function(){
       var start=Date.now();
-      fetch('/assets/app-v182.js?v='+window.WORKPRO_VERSION+'&_='+Date.now())
-        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
-        .then(function(code){
-          console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms');
-          try{
-            var s=document.createElement('script');
-            s.type='text/javascript';
-            s.textContent=code;
-            document.head.appendChild(s);
-            console.log('[Loader] Bundle loaded via script tag');
-          }catch(e){
-            console.error('[Loader] exec error:',e.message);
-            console.error('[Loader] stack:',e.stack);
-            var el=document.getElementById('_error'),rl=document.getElementById('_reload');
-            if(el){el.textContent='Error: '+e.message+' (line '+(e.lineNumber||'?')+')';el.style.display='block';}
-            if(rl)rl.style.display='inline-block';
-          }
-        })
-        .catch(function(e){
-          console.error('[Loader] fetch error:',e.message);
-          var el=document.getElementById('_error'),rl=document.getElementById('_reload');
-          if(el){el.textContent='Load failed: '+e.message+'. <a href="javascript:location.reload()">Reload</a> or <a href="https://workpro-api.onrender.com/">Try alternative</a>';el.style.display='block';}
-          if(rl)rl.style.display='inline-block';
-        });
+      var attempt=0;
+      var maxAttempts=3;
+      var timeoutMs=10000; // 10 seconds timeout for slow LTE
+      function loadBundle() {
+        attempt++;
+        console.log('[Loader] Attempt '+attempt+'/'+maxAttempts+'...');
+        var controller=new AbortController();
+        var timer=setTimeout(function(){controller.abort();},timeoutMs);
+        fetch('/assets/app-v182.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
+          .then(function(r){clearTimeout(timer);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+          .then(function(code){
+            console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms (attempt '+attempt+')');
+            try{
+              var s=document.createElement('script');
+              s.type='text/javascript';
+              s.textContent=code;
+              document.head.appendChild(s);
+              console.log('[Loader] Bundle loaded via script tag');
+            }catch(e){
+              console.error('[Loader] exec error:',e.message);
+              var el=document.getElementById('_error'),rl=document.getElementById('_reload');
+              if(el){el.textContent='Error: '+e.message;el.style.display='block';}
+              if(rl)rl.style.display='inline-block';
+            }
+          })
+          .catch(function(e){
+            clearTimeout(timer);
+            console.error('[Loader] Attempt '+attempt+' failed:',e.message);
+            if(attempt<maxAttempts){
+              console.log('[Loader] Retrying in 2s...');
+              setTimeout(loadBundle,2000);
+            }else{
+              console.error('[Loader] All '+maxAttempts+' attempts failed');
+              var el=document.getElementById('_error'),rl=document.getElementById('_reload');
+              if(el){el.innerHTML='Load failed after '+maxAttempts+' attempts.<br><button onclick="location.reload()" style="margin-top:8px;padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;">Reload</button>';el.style.display='block';}
+              if(rl)rl.style.display='inline-block';
+            }
+          });
+      }
+      loadBundle();
     })();
     </script>
     <link rel="stylesheet" href="/assets/app-v173.css">
   <script>
-// ===== WORK PRO PATCH v403 =====
+// ===== WORK PRO PATCH v53 =====
 (function() {
   'use strict';
 
@@ -1674,7 +1770,24 @@ window._W5_fixed=true;
       <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
       <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
     </div>
-
+    <script>
+    (function(){
+      var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
+      function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
+      function restoreState(){try{var s=localStorage.getItem('__c_collapsed');if(s==='1'){collapsed=true;c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}}catch(e){}}
+      function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
+      if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
+      restoreState();
+      function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
+      lg('#0f0','[WP] v290 start');
+      var o=console.log,oe=console.error,ow=console.warn;
+      console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
+      console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
+      console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
+      window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
+      window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
+    })();
+    </script>
   <script>
   (function(){
     // Fix ERR_INVALID_URL for broken avatars/images
@@ -1693,7 +1806,7 @@ window._W5_fixed=true;
 <script>
 // ---- PI SDK v290 FIX ----
 (function(){
-  console.log('[PiFix] v403 mainnet ready');
+  console.log('[PiFix] v306 loading...');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -1849,7 +1962,7 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v403 createPayment ready');
+    console.log('[PiFix] v306 createPayment fixed');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -1867,7 +1980,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v403 done');
+  console.log('[PiFix] v306 done');
 
   // ─── PRIVACY POLICY INJECTION (v308) ───────────────────────────
   (function() {
@@ -1957,9 +2070,13 @@ window._W5_fixed=true;
             isFab = true;
           }
         }
-        // Skip FAB detection if element is inside navigation (e.g. bottom nav Profile button)
-        if (isFab && el.closest && el.closest('nav, .bottom-nav, .navbar-links, .nav-link, [role="navigation"]')) {
-          isFab = false;
+        // Also check if it's a round green button
+        var style = window.getComputedStyle && el.style ? el.style.cssText : '';
+        if (!isFab && el.style) {
+          var bg = el.style.backgroundColor || '';
+          if ((bg.indexOf('10b981') !== -1 || bg.indexOf('green') !== -1) && (el.style.borderRadius === '50%' || el.style.borderRadius === '999px')) {
+            isFab = true;
+          }
         }
         if (isFab) {
           e.preventDefault();
@@ -2053,7 +2170,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v403 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v308 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
@@ -2072,7 +2189,7 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v403 start');
+  lg('#0f0','[WP] v294 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
   console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
