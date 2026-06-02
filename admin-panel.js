@@ -95,7 +95,7 @@
       if (currentTab === 'users') { if (!usersData.length) { const resp = await api('/api/admin/users'); usersData = extractArray(resp, 'users'); } return { users: usersData }; }
       if (currentTab === 'jobs') { if (!jobsData.length) { const resp = await api('/api/admin/jobs/all'); jobsData = extractArray(resp, 'jobs'); } return { jobs: jobsData }; }
       if (currentTab === 'escrows') { if (!escrowsData.length) { const resp = await api('/api/admin/escrows'); escrowsData = extractArray(resp, 'escrows'); } return { escrows: escrowsData }; }
-      if (currentTab === 'earnings') { if (!earningsData.length) { const resp = await api('/api/admin/earnings'); earningsData = extractArray(resp, 'earnings'); } return { earnings: earningsData }; }
+      if (currentTab === 'earnings') { if (!earningsData.length) { const resp = await api('/api/admin/earnings'); earningsData = extractArray(resp, 'payments'); } return { earnings: earningsData }; }
     } catch(e) { return { error: e.message }; }
     return {};
   }
@@ -145,12 +145,12 @@
         </div></div>`).join('') + '</div>';
     }
     else if (currentTab === 'earnings') {
-      const earnings = data.earnings || [];
+      const earnings = data.payments || [];
       if (!earnings.length) { content.innerHTML = '<div class="wp-admin-empty">No transactions</div>'; return; }
       content.innerHTML = '<div class="wp-admin-list">' + earnings.map(t => `
         <div class="wp-admin-item"><div class="wp-admin-item-info">
           <div class="wp-admin-item-title">${t.type||'Transaction'} &mdash; ${t.amount||0}&pi;</div>
-          <div class="wp-admin-item-meta">${t.user_id||'-'} | ${t.status||'-'} | ${t.created_at||'-'}</div>
+          <div class="wp-admin-item-meta">${t.username||t.user_id||'-'} | ${t.status||'-'} | ${t.created_at||'-'}</div>
         </div></div>`).join('') + '</div>';
     }
   }
