@@ -83,13 +83,19 @@
     return panelEl;
   }
 
+  function extractArray(resp, key) {
+    if (Array.isArray(resp)) return resp;
+    if (resp && typeof resp === 'object' && Array.isArray(resp[key])) return resp[key];
+    return [];
+  }
+
   async function loadData() {
     try {
       if (currentTab === 'stats') { const stats = await api('/api/admin/stats'); return { stats }; }
-      if (currentTab === 'users') { if (!usersData.length) usersData = await api('/api/admin/users'); return { users: usersData }; }
-      if (currentTab === 'jobs') { if (!jobsData.length) jobsData = await api('/api/admin/jobs/all'); return { jobs: jobsData }; }
-      if (currentTab === 'escrows') { if (!escrowsData.length) escrowsData = await api('/api/admin/escrows'); return { escrows: escrowsData }; }
-      if (currentTab === 'earnings') { if (!earningsData.length) earningsData = await api('/api/admin/earnings'); return { earnings: earningsData }; }
+      if (currentTab === 'users') { if (!usersData.length) { const resp = await api('/api/admin/users'); usersData = extractArray(resp, 'users'); } return { users: usersData }; }
+      if (currentTab === 'jobs') { if (!jobsData.length) { const resp = await api('/api/admin/jobs/all'); jobsData = extractArray(resp, 'jobs'); } return { jobs: jobsData }; }
+      if (currentTab === 'escrows') { if (!escrowsData.length) { const resp = await api('/api/admin/escrows'); escrowsData = extractArray(resp, 'escrows'); } return { escrows: escrowsData }; }
+      if (currentTab === 'earnings') { if (!earningsData.length) { const resp = await api('/api/admin/earnings'); earningsData = extractArray(resp, 'earnings'); } return { earnings: earningsData }; }
     } catch(e) { return { error: e.message }; }
     return {};
   }
@@ -116,7 +122,7 @@
       content.innerHTML = '<div class="wp-admin-list">' + users.map(u => `
         <div class="wp-admin-item"><div class="wp-admin-item-info">
           <div class="wp-admin-item-title">${u.username||'User '+u.id}</div>
-          <div class="wp-admin-item-meta">ID: ${u.id} | Role: ${u.role||'-'} | Connects: ${u.connects||0}</div>
+          <div class="wp-admin-item-meta">ID: ${u.id} | Role: ${u.role||'-'} | Connects: ${u.balance_connects||0}</div>
         </div></div>`).join('') + '</div>';
     }
     else if (currentTab === 'jobs') {
