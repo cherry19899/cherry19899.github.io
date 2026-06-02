@@ -9,7 +9,7 @@
           sessionStorage.setItem('_wp_busted', '1');
           var url = location.protocol + '//' + location.host + location.pathname;
           if (url.indexOf('nocache=') === -1 && url.indexOf('?_=') === -1) {
-            url += '?nocache=408&_=' + Date.now();
+            url += '?nocache=409&_=' + Date.now();
             location.replace(url);
           }
         }
