@@ -30,14 +30,15 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>
-      // Cache bust: add nocache only if NOT present (prevents infinite redirect loop)
-      var url = window.location.href;
-      if (url.indexOf('nocache=') === -1) {
-        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now();
-        window.location.replace(url);
+      // Aggressive cache-bust: always reload if stored version < v408
+      var storedVer = localStorage.getItem('workpro_version');
+      if (storedVer !== 'v408' || location.search.indexOf('nocache=') === -1) {
+        localStorage.setItem('workpro_version', 'v408');
+        var url = location.protocol + '//' + location.host + '/?nocache=408&_=' + Date.now();
+        location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v408';</script>
+    <script>window.WORKPRO_VERSION='v409';</script>
     <!-- AUTO-redirect to cache-busted URL -->
     <script>
       (function(){
@@ -1186,6 +1187,40 @@
           });
       }
       // loadBundle(); // Now loaded via \u003cscript type=\"module\"\u003e
+    })();
+    </script>
+    <script>
+    // PRE-LOAD ADMIN AUTH PATCH — must run before React bundle loads
+    (function() {
+      var origFetch = window.fetch;
+      window.fetch = function(url, options) {
+        if (typeof url !== 'string') return origFetch.call(this, url, options);
+        if (url.indexOf('/api/') !== -1) {
+          options = options || {};
+          var headers = options.headers || {};
+          if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+            var h = {}; headers.forEach(function(v, k) { h[k] = v; }); headers = h;
+          } else if (Array.isArray(headers)) {
+            var h2 = {}; headers.forEach(function(item) { h2[item[0]] = item[1]; }); headers = h2;
+          }
+          if (!headers['x-user-id'] && !headers['X-User-Id']) {
+            try {
+              var userStr = localStorage.getItem('workpro_user');
+              if (userStr) {
+                var user = JSON.parse(userStr);
+                var uid = user.username || user.id || user.uid;
+                if (uid) headers['x-user-id'] = uid;
+              }
+            } catch(e) {}
+          }
+          if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
+            var adminToken = localStorage.getItem('workpro_admin_token');
+            if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+          }
+          options.headers = headers;
+        }
+        return origFetch.call(this, url, options);
+      };
     })();
     </script>
     <script type="module" src="/assets/app-v182.js"></script>
