@@ -1301,7 +1301,7 @@
         return clone.json().then(function(data) {
           var fixed = data;
           if (url.indexOf('/users') !== -1 && Array.isArray(data)) fixed = {users: data};
-          if (url.indexOf('/jobs/all') !== -1 && Array.isArray(data)) fixed = {jobs: data};
+          if ((url.indexOf('/jobs/all') !== -1 || url.indexOf('/api/admin/jobs') !== -1) && Array.isArray(data)) fixed = {jobs: data};
           if (url.indexOf('/escrows') !== -1 && Array.isArray(data)) fixed = {escrows: data};
           if (url.indexOf('/earnings') !== -1 && data && !data.summary) {
             var payments = data.payments || [];
