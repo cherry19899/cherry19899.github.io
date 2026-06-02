@@ -1281,7 +1281,7 @@
           var userStr = localStorage.getItem('workpro_user');
           if (userStr) {
             var user = JSON.parse(userStr);
-            var uid = user.id || user.uid;
+            var uid = user.username || user.id || user.uid;
             if (uid) headers['x-user-id'] = uid;
           }
         } catch(e) {}
