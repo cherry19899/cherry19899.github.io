@@ -1345,6 +1345,15 @@
           if (url.indexOf('/users') !== -1 && Array.isArray(data)) fixed = {users: data};
           if ((url.indexOf('/jobs/all') !== -1 || url.indexOf('/api/admin/jobs') !== -1) && Array.isArray(data)) fixed = {jobs: data};
           if (url.indexOf('/escrows') !== -1 && Array.isArray(data)) fixed = {escrows: data};
+          if (url.indexOf('/stats') !== -1 && data && typeof data === 'object') {
+            console.log('[AdminFix] STATS raw:', JSON.stringify(data));
+            ['totalIncome','activeEscrows','totalUsers','totalJobs','totalEarnings','pendingEscrows'].forEach(function(k) {
+              if (data[k] !== undefined && typeof data[k] !== 'number') {
+                data[k] = parseFloat(data[k]) || 0;
+              }
+            });
+            fixed = data;
+          }
           if (url.indexOf('/earnings') !== -1 && data && !data.summary) {
             var payments = data.payments || [];
             var total = data.total || payments.length || 0;
