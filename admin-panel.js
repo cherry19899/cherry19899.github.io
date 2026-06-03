@@ -145,7 +145,7 @@
         </div></div>`).join('') + '</div>';
     }
     else if (currentTab === 'earnings') {
-      const earnings = data.payments || [];
+      const earnings = data.earnings || [];
       if (!earnings.length) { content.innerHTML = '<div class="wp-admin-empty">No transactions</div>'; return; }
       content.innerHTML = '<div class="wp-admin-list">' + earnings.map(t => `
         <div class="wp-admin-item"><div class="wp-admin-item-info">
