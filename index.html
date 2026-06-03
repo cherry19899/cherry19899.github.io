@@ -411,7 +411,7 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
+          var isSandbox = /localhost|onrender/.test(location.hostname); // github.io = production for Pi Browser
           window.Pi.init({ 
             version: "2.0", 
             sandbox: isSandbox
