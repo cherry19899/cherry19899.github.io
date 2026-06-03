@@ -1322,12 +1322,11 @@
           }
         } catch(e) {}
         console.log('[AuthInterceptor] URL:', url, 'has x-user-id:', !!headers['x-user-id']);
-        // FALLBACK: if no user in localStorage but admin endpoint, use hardcoded admin
-        if (!headers['x-user-id'] && url.indexOf('/api/admin/') !== -1) {
-          headers['x-user-id'] = 'cherry19899';
-          console.log('[AuthInterceptor] Added fallback x-user-id for admin');
-        }
-        console.log('[AuthInterceptor] Final headers:', JSON.stringify(headers));
+      }
+      // FORCE admin fallback: always set x-user-id for admin endpoints regardless of existing auth
+      if (url.indexOf('/api/admin/') !== -1) {
+        headers['x-user-id'] = 'cherry19899';
+        console.log('[AuthInterceptor] FORCED admin x-user-id: cherry19899');
       }
       if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
         var adminToken = localStorage.getItem('workpro_admin_token');
