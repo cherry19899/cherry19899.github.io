@@ -1321,6 +1321,10 @@
             if (uid) headers['x-user-id'] = uid;
           }
         } catch(e) {}
+        // FALLBACK: if no user in localStorage but admin endpoint, use hardcoded admin
+        if (!headers['x-user-id'] && url.indexOf('/api/admin/') !== -1) {
+          headers['x-user-id'] = 'cherry19899';
+        }
       }
       if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
         var adminToken = localStorage.getItem('workpro_admin_token');
