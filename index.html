@@ -1348,9 +1348,8 @@
           if (url.indexOf('/stats') !== -1 && data && typeof data === 'object') {
             console.log('[AdminFix] STATS raw:', JSON.stringify(data));
             ['totalIncome','activeEscrows','totalUsers','totalJobs','totalEarnings','pendingEscrows'].forEach(function(k) {
-              if (data[k] !== undefined && typeof data[k] !== 'number') {
-                data[k] = parseFloat(data[k]) || 0;
-              }
+              var snake = k.replace(/[A-Z]/g, function(m) { return '_' + m.toLowerCase(); });
+              if (data[k] !== undefined && typeof data[k] !== 'number') { data[k] = parseFloat(data[k]) || 0; } else if (data[snake] !== undefined && typeof data[snake] !== 'number') { data[k] = parseFloat(data[snake]) || 0; } else { continue; }
             });
             fixed = data;
           }
