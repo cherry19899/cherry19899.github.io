@@ -2420,6 +2420,69 @@ window._W5_fixed=true;
         }
       }
 
+      // ─── Manage Users Panel ────────────────────────────────
+      function showManagePanel() {
+        var panel = document.getElementById('_wp_manage_panel');
+        if (panel) { panel.style.display = 'block'; loadUsers(); return; }
+        panel = document.createElement('div');
+        panel.id = '_wp_manage_panel';
+        panel.style.cssText = 'position:fixed;top:50px;left:8px;right:8px;bottom:64px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:99999;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;';
+        panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1f2937;border-radius:12px 12px 0 0;"><span style="color:#fff;font-weight:700;font-size:15px;">👥 Manage Users</span><button id="_wp_close_panel" style="background:#6b7280;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-weight:700;cursor:pointer;">✕</button></div>' +
+          '<div style="padding:10px 14px;background:#f3f4f6;display:flex;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;"><span>🔍</span><input id="_wp_panel_search" type="text" placeholder="Search users..." style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;outline:none;"><button id="_wp_panel_reload" style="background:#3b82f6;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">Reload</button></div>' +
+          '<div id="_wp_panel_content" style="flex:1;overflow-y:auto;padding:10px 14px;"><p style="color:#6b7280;text-align:center;margin-top:40px;">Loading users...</p></div>';
+        document.body.appendChild(panel);
+        document.getElementById('_wp_close_panel').onclick = function() { panel.style.display = 'none'; };
+        document.getElementById('_wp_panel_search').addEventListener('input', function() { filterPanelUsers(this.value.trim().toLowerCase()); });
+        document.getElementById('_wp_panel_reload').onclick = function() { loadUsers(); };
+        loadUsers();
+      }
+      function loadUsers() {
+        var content = document.getElementById('_wp_panel_content');
+        if (content) content.innerHTML = '<p style="color:#6b7280;text-align:center;margin-top:40px;">Loading...</p>';
+        fetch(API + '/api/admin/users', { headers: { 'x-user-id': uid } })
+          .then(function(r) { return r.json(); })
+          .then(function(users) { renderUsers(users); })
+          .catch(function(err) { console.error('[AdminBlock]', err); var c = document.getElementById('_wp_panel_content'); if (c) c.innerHTML = '<p style="color:#ef4444;text-align:center;margin-top:40px;">Error loading users</p>'; });
+      }
+      function renderUsers(users) {
+        var content = document.getElementById('_wp_panel_content');
+        if (!content) return;
+        if (!users || !users.length) { content.innerHTML = '<p style="color:#6b7280;text-align:center;margin-top:40px;">No users found</p>'; return; }
+        var html = '<div id="_wp_user_list">';
+        for (var i = 0; i < users.length; i++) {
+          var u = users[i]; var isBlocked = u.status === 'blocked';
+          html += '<div class="_wp_urow" data-uname="' + (u.username || u.id).toLowerCase() + '" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #f3f4f6;gap:6px;">' +
+            '<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:600;">' + (u.username || u.id) + '<span style="margin-left:6px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;' + (isBlocked ? 'background:#fee2e2;color:#dc2626;' : 'background:#d1fae5;color:#059669;') + '">' + (isBlocked ? 'BLOCKED' : 'ACTIVE') + '</span></div><div style="font-size:12px;color:#6b7280;">' + (u.role || '-') + ' | π' + (u.balance_pi || 0) + ' | connects:' + (u.balance_connects || 0) + '</div></div>' +
+            '<button class="_wp_ubtn" data-user="' + (u.username || u.id) + '" data-blocked="' + (isBlocked ? '1' : '0') + '" style="background:' + (isBlocked ? '#10b981' : '#ef4444') + ';color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">' + (isBlocked ? 'Unblock' : 'Block') + '</button></div>';
+        }
+        html += '</div>'; content.innerHTML = html;
+        var btns = content.querySelectorAll('._wp_ubtn');
+        for (var j = 0; j < btns.length; j++) {
+          btns[j].onclick = function() {
+            var uname = this.getAttribute('data-user'); var curBlocked = this.getAttribute('data-blocked') === '1';
+            var action = curBlocked ? 'unblock' : 'block';
+            if (window.showToast) window.showToast((curBlocked ? 'Unblocking ' : 'Blocking ') + uname + '...', curBlocked ? '#10b981' : '#ef4444');
+            var btn = this;
+            fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid } })
+              .then(function(r) { return r.json(); }).then(function(data) {
+                if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
+                if (window.showToast) window.showToast(data.message || 'Done', curBlocked ? '#10b981' : '#ef4444');
+                btn.style.background = curBlocked ? '#ef4444' : '#10b981'; btn.textContent = curBlocked ? 'Block' : 'Unblock'; btn.setAttribute('data-blocked', curBlocked ? '0' : '1');
+                var badge = btn.parentElement.querySelector('span'); if (badge) { badge.style.background = curBlocked ? '#d1fae5' : '#fee2e2'; badge.style.color = curBlocked ? '#059669' : '#dc2626'; badge.textContent = curBlocked ? 'ACTIVE' : 'BLOCKED'; }
+              }).catch(function(err) { console.error('[AdminBlock]', err); });
+          };
+        }
+        console.log('[AdminBlock] Rendered', users.length, 'users');
+      }
+      function filterPanelUsers(query) {
+        var rows = document.querySelectorAll('._wp_urow');
+        for (var i = 0; i < rows.length; i++) {
+          var uname = rows[i].getAttribute('data-uname') || '';
+          var match = !query || uname.indexOf(query) !== -1 || (rows[i].textContent || '').toLowerCase().indexOf(query) !== -1;
+          rows[i].style.display = match ? 'flex' : 'none';
+        }
+      }
+
       function showToolbar() {
         if (document.getElementById(toolbarId)) return;
         var bar = document.createElement('div');
@@ -2453,107 +2516,4 @@ window._W5_fixed=true;
           fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/unblock', {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
           }).then(function(r) { return r.json(); }).then(function(data) {
-            if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
-            if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
-            document.getElementById('_wp_block_input').value = '';
-            setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); if (window.showToast) window.showToast('Error: ' + err.message, '#f59e0b'); });
-        };
-        document.getElementById('_wp_tb_close').onclick = function() {
-          var bar = document.getElementById(toolbarId);
-          if (bar) { bar.style.display = 'none'; document.body.style.paddingBottom = '0'; }
-        };
-        // Manage Users panel
-        document.getElementById('_wp_manage_btn').onclick = showManagePanel;
-        // Auto-fill on username click
-        document.addEventListener('click', function(e) {
-          var el = e.target;
-          var tc = el.textContent || '';
-          var um = tc.match(/User_[a-zA-Z0-9_-]+/);
-          if (um && document.getElementById('_wp_block_input')) {
-            document.getElementById('_wp_block_input').value = um[0];
-          }
-        });
-      }
-
-      // Double-click handler on usernames (admin page only)
-      function setupDblClick() {
-        var hasUsers = document.body && document.body.innerHTML.indexOf('Balance:') !== -1;
-        if (!hasUsers) return;
-        var els = document.querySelectorAll('b, strong, h3, h4, span, div');
-        for (var i = 0; i < els.length; i++) {
-          var el = els[i];
-          if (el._blockSetup) continue;
-          var tc = el.textContent || '';
-          var um = tc.match(/^User_[a-zA-Z0-9_-]+$/);
-          if (!um) continue;
-          var parent = el.parentElement;
-          if (!parent || (parent.textContent || '').indexOf('Balance:') === -1) continue;
-          el._blockSetup = true;
-          el.style.cursor = 'pointer';
-          el.title = 'Double-click to block/unblock';
-          (function(uname) {
-            el.addEventListener('dblclick', function(e) {
-              e.stopPropagation();
-              if (!confirm((e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1 ? 'Unblock ' + uname + '?' : 'Block ' + uname + '?')) return;
-              var action = (e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1 ? 'unblock' : 'block';
-              console.log('[AdminBlock] ' + action + ': ' + uname);
-              fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
-              }).then(function(r) { return r.json(); }).then(function(data) {
-                if (window.showToast) window.showToast(data.message || 'Done', action === 'block' ? '#ef4444' : '#10b981');
-                setTimeout(function() { location.reload(); }, 800);
-              }).catch(function(err) { console.error('[AdminBlock]', err); });
-            });
-          })(um[0]);
-        }
-      }
-
-      // Show toolbar + recreate if React removes it (SPA navigation)
-      function init() {
-        if (document.body) showToolbar(); else { setTimeout(init, 200); return; }
-        setupDblClick();
-      }
-      if (window.MutationObserver) {
-        var mo = new MutationObserver(function() { showToolbar(); setupDblClick(); });
-        function startMo() {
-          if (document.body) { mo.observe(document.body, { childList: true, subtree: true }); init(); }
-          else { setTimeout(startMo, 200); }
-        }
-        startMo();
-      }
-      init();
-      setTimeout(init, 500);
-      setTimeout(init, 1500);
-      setTimeout(init, 3000);
-      setInterval(function() { if (document.body && !document.getElementById(toolbarId)) showToolbar(); }, 1000);
-
-      console.log('[AdminBlock] v444 — no confirm, direct block/unblock');
-    })();
-  })();
-})();
-</script>
-<!-- FOOTER -->
-<div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v308 — Pi Network Freelance Marketplace</p>
-  <p style="margin-top: 8px;">
-    <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
-  </p>
-</div>
-<!-- DEBUG CONSOLE -->
-<div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;">
-  <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
-  <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
-</div>
-<script>
-(function(){
-  var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
-  function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
-  function restoreState(){try{var s=localStorage.getItem('__c_collapsed');if(s==='1'){collapsed=true;c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}}catch(e){}}
-  function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
-  if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
-  restoreState();
-  function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v428 start');
-  var o=console.log,oe=console.error,ow=console.warn;
-  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
+            if (data.error) { if (window.showToast) window.showToast(data.error, 
