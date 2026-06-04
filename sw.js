@@ -1,12 +1,11 @@
-// Work Pro Service Worker — disabled (cache-busting mode)
-// This SW intentionally does NOT cache anything
-// to ensure users always get the latest version.
+// Work Pro Service Worker — NO FETCH HANDLER (v455)
+// No fetch interception = browser goes directly to network
 self.addEventListener('install', function(e) {
-  console.log('[SW] v450 — cache disabled');
+  console.log('[SW] v455 — no fetch interception');
   self.skipWaiting();
 });
 self.addEventListener('activate', function(e) {
-  console.log('[SW] v448 — clearing all old caches');
+  console.log('[SW] v455 — clearing all old caches');
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(names.map(function(name) {
@@ -17,8 +16,4 @@ self.addEventListener('activate', function(e) {
       return self.clients.claim();
     })
   );
-});
-self.addEventListener('fetch', function(e) {
-  // Always go to network, never cache
-  e.respondWith(fetch(e.request));
 });

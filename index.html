@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v455: Inline SW unregister + fresh redirect -->
+    <!-- v456: SW no fetch handler + inline unregister -->
     <script>
       (function(){
         // 1. ALWAYS unregister old SW first (prevents stale cache)
@@ -17,12 +17,12 @@
           }).catch(function(){});
         }
         // 2. Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v455';
+        var KEY = '_wp_loaded_v456';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=455&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=456&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -65,7 +65,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v455';</script>
+    <script>window.WORKPRO_VERSION='v456';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
