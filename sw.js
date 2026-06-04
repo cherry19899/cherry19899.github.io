@@ -2,7 +2,7 @@
 // This SW intentionally does NOT cache anything
 // to ensure users always get the latest version.
 self.addEventListener('install', function(e) {
-  console.log('[SW] v448 — cache disabled');
+  console.log('[SW] v450 — cache disabled');
   self.skipWaiting();
 });
 self.addEventListener('activate', function(e) {
