@@ -1,31 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- ULTIMATE CACHE BUST v409 — forces fresh load on ALL devices -->
+    <!-- v411: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
-        var COOKIE_KEY = '_wp_v409';
-        var everLoaded = document.cookie.indexOf(COOKIE_KEY + '=1') !== -1;
-        var hasInline = document.documentElement.innerHTML.indexOf('showToast') !== -1;
-        
-        if (!everLoaded) {
-          // First visit ever — set cookie and force reload with cache-bust
-          document.cookie = COOKIE_KEY + '=1; path=/; max-age=86400';
-          var url = location.protocol + '//' + location.host + '/?nocache=409&_=' + Date.now();
-          console.log('[CACHE BUST v409] First load, forcing fresh:', url);
-          location.replace(url);
-          return;
+        // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
+        var KEY = '_wp_loaded_v411';
+        var alreadyLoaded = sessionStorage.getItem(KEY);
+        if (!alreadyLoaded) {
+          sessionStorage.setItem(KEY, '1');
+          // Only redirect once per session
+          if (location.search.indexOf('nocache=') === -1) {
+            var url = location.protocol + '//' + location.host + '/?nocache=411&_=' + Date.now();
+            location.replace(url);
+            return;
+          }
         }
-        
-        if (!hasInline && location.search.indexOf('retried=') === -1) {
-          // No inline patches loaded — force one more reload
-          var url = location.protocol + '//' + location.host + '/?nocache=409&retried=1&_=' + Date.now();
-          console.log('[CACHE BUST v409] No patches, retrying:', url);
-          location.replace(url);
-          return;
-        }
-        
-        console.log('[CACHE BUST v409] OK — patches loaded or retried');
       })();
     </script>
     <meta charset="UTF-8" />
@@ -43,62 +33,15 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>
-      // Cache bust: add nocache only if NOT present (prevents infinite redirect loop)
+      // v411: Minimal cache bust — only redirect once
       var url = window.location.href;
-      if (url.indexOf('nocache=') === -1) {
-        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now();
+      if (url.indexOf('nocache=') === -1 && url.indexOf('v=') === -1) {
+        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=411';
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v410';</script>
-    <!-- AUTO-redirect to cache-busted URL -->
-    <script>
-      (function(){
-        if (location.search.indexOf('nocache=') === -1 && location.search.indexOf('v=') === -1) {
-          var url = location.protocol + '//' + location.host + '/?nocache=338&_=' + Date.now();
-          console.log('[CacheBust] Redirecting to:', url);
-          location.replace(url);
-        }
-      })();
-    </script>
-    <!-- AUTO-UPDATE: check for newer version and force reload -->
-    <script>
-      (function(){
-        // Skip if just reloaded
-        if (sessionStorage.getItem('_wp_reloaded')) {
-          sessionStorage.removeItem('_wp_reloaded');
-          return;
-        }
-        var localVer = parseInt((window.WORKPRO_VERSION || 'v0').replace('v',''));
-        // Fetch latest index.html to check its version
-        fetch('/index.html?t=' + Date.now(), {cache: 'no-store'})
-          .then(function(r){ return r.text(); })
-          .then(function(html) {
-            var m = html.match(/WORKPRO_VERSION='v(\d+)'/);
-            if (m) {
-              var remoteVer = parseInt(m[1]);
-              console.log('[AUTO-UPDATE] Local: v' + localVer + ', Remote: v' + remoteVer);
-              if (remoteVer > localVer) {
-                console.log('[AUTO-UPDATE] Reloading to v' + remoteVer + '...');
-                sessionStorage.setItem('_wp_reloaded', '1');
-                window.location.reload(true);
-              }
-            }
-          }).catch(function(){});
-      })();
-    </script>
-    <!-- FORCE RELOAD if cached old version -->
-    <script>
-      (function(){
-        var html = document.documentElement.innerHTML;
-        var hasInlinePatch = html.indexOf('PERSISTENT fetch interceptor') !== -1;
-        var hasPortfolioHandler = html.indexOf('Portfolio handler registered') !== -1;
-        if (!hasInlinePatch || !hasPortfolioHandler) {
-          console.log('[FORCE RELOAD] Old cached version detected, reloading...');
-          location.href = 'https://cherry19899.github.io/?nocache=' + Date.now();
-        }
-      })();
-    </script>
+    <script>window.WORKPRO_VERSION='v411';</script>
+    <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
     (function(){
@@ -403,18 +346,23 @@
     } catch(e) {}
   })();
   </script>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <!-- v411: Only load Pi SDK script if NOT already present (Pi Browser has it natively) -->
+  <script>
+    if (!window.Pi) {
+      document.write('<script src="https://sdk.minepi.com/pi-sdk.js"><\/script>');
+    }
+  </script>
     <script>
     // ---- PI SDK INIT (must run BEFORE bundle) ----
     (function() {
       var _initAttempts = 0;
-      var _initMaxAttempts = 100; // 100 * 100ms = 10 seconds max wait
+      var _initMaxAttempts = 100;
       window._piSdkReady = false;
       function tryInit() {
         _initAttempts++;
         if (!window.Pi || typeof window.Pi.init !== 'function') {
           if (_initAttempts < _initMaxAttempts) {
-            setTimeout(tryInit, 100); // faster polling
+            setTimeout(tryInit, 100);
           } else {
             console.error('[Pi] SDK not loaded after ' + _initMaxAttempts + ' attempts');
             window._piSdkReady = false;
