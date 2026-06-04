@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v442: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v443: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v442';</script>
+    <script>window.WORKPRO_VERSION='v443';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v442 start');
+      lg('#0f0','[WP] v443 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,7 +2349,7 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v442) ────────────────────────────
+    // ─── ADMIN USER BLOCK (v443) ────────────────────────────
     // Users tab: search, block/unlock buttons, status badges
     (function() {
       var API = 'https://workpro-api.onrender.com';
@@ -2362,25 +2362,21 @@ window._W5_fixed=true;
         return tc.indexOf('Work Pro Admin') !== -1 && tc.indexOf('Balance:') !== -1;
       }
 
-      // ─── Find all user cards ───────────────────────────────
+      // ─── Find all user cards (elements containing Balance + User_xxx) ──
       function findUserCards() {
-        var all = document.querySelectorAll('*');
+        var all = document.body.querySelectorAll('*');
         var cards = [];
         for (var i = 0; i < all.length; i++) {
           var el = all[i];
-          if (el._wpProcessed) continue;
+          // Skip if already has block button
+          if (el.querySelector && el.querySelector('._wp_blockbtn')) continue;
           var tc = el.textContent || '';
+          // Must contain Balance and User_xxx, and not be too large
+          if (tc.length > 300) continue;
           if (tc.indexOf('Balance:') === -1) continue;
-          // This element or its parent is a user card
-          var parent = el;
-          while (parent && parent !== document.body) {
-            var ptc = parent.textContent || '';
-            if (ptc.match(/Balance:\s*[\d.]+\s*Pi/) && ptc.match(/User_[a-zA-Z0-9_-]+/)) {
-              if (!parent._wpProcessed) cards.push(parent);
-              break;
-            }
-            parent = parent.parentElement;
-          }
+          if (!tc.match(/Balance:\s*[\d.]+\s*Pi/)) continue;
+          if (!tc.match(/User_[a-zA-Z0-9_-]+/)) continue;
+          cards.push(el);
         }
         return cards;
       }
@@ -2388,20 +2384,18 @@ window._W5_fixed=true;
       // ─── Search Bar ────────────────────────────────────────
       function injectSearch() {
         if (document.getElementById('_wp_user_search')) return;
-        // Find first user card's parent to insert search before
         var cards = findUserCards();
         if (!cards.length) return;
-        var firstCard = cards[0];
-        var insertBefore = firstCard;
-        // Try to find a common container
-        var container = firstCard.parentElement;
-        if (container) insertBefore = container.firstElementChild || firstCard;
+        // Find common parent
+        var container = cards[0].parentElement;
+        while (container && container.children.length < 3) container = container.parentElement;
+        if (!container) container = cards[0].parentElement;
         
         var searchWrap = document.createElement('div');
         searchWrap.id = '_wp_user_search';
         searchWrap.style.cssText = 'padding:12px 16px;background:#f3f4f6;border-radius:8px;margin:8px 0;display:flex;gap:8px;align-items:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
         searchWrap.innerHTML = '<span style="font-size:16px;">🔍</span><input id="_wp_search_input" type="text" placeholder="Search users..." style="flex:1;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;outline:none;"><button id="_wp_search_btn" style="background:#3b82f6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;">Search</button><button id="_wp_search_clear" style="background:#9ca3af;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;">Clear</button>';
-        container.insertBefore(searchWrap, insertBefore);
+        container.insertBefore(searchWrap, container.firstChild);
         
         document.getElementById('_wp_search_input').addEventListener('input', function() {
           filterUsers(this.value.trim().toLowerCase());
@@ -2422,28 +2416,29 @@ window._W5_fixed=true;
         var cards = findUserCards();
         for (var i = 0; i < cards.length; i++) {
           var card = cards[i];
-          if (card._wpProcessed) continue;
-          card._wpProcessed = true;
+          // Skip if already processed
+          if (card.querySelector('._wp_blockbtn')) continue;
           
           var tc = card.textContent || '';
           var usernameMatch = tc.match(/User_[a-zA-Z0-9_-]+/);
           if (!usernameMatch) continue;
           var username = usernameMatch[0];
-          var isBlocked = tc.indexOf('BLOCKED') !== -1 || tc.indexOf('blocked') !== -1;
+          // Check backend status — blocked users have status='blocked'
+          var isBlocked = tc.indexOf('blocked') !== -1 || tc.indexOf('BLOCKED') !== -1;
           
-          // Add status badge before username
+          // Add status badge
           var badge = document.createElement('span');
           badge.className = '_wp_status';
           badge.style.cssText = 'display:inline-block;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;vertical-align:middle;' + (isBlocked ? 'background:#fee2e2;color:#dc2626;' : 'background:#d1fae5;color:#059669;');
           badge.textContent = isBlocked ? '🔴 Blocked' : '🟢 Active';
           
-          // Find username element to insert badge after
+          // Find first text node starting with User_ to attach badge
+          var children = card.querySelectorAll('*');
           var usernameEl = null;
-          var allChildren = card.querySelectorAll('*');
-          for (var j = 0; j < allChildren.length; j++) {
-            if ((allChildren[j].textContent || '').trim() === username) {
-              usernameEl = allChildren[j];
-              break;
+          for (var j = 0; j < children.length; j++) {
+            var ctc = (children[j].textContent || '').trim();
+            if (ctc === username || ctc.indexOf(username) === 0) {
+              if (children[j].children.length === 0) { usernameEl = children[j]; break; }
             }
           }
           if (usernameEl) {
@@ -2452,7 +2447,7 @@ window._W5_fixed=true;
             usernameEl.appendChild(badge);
           }
           
-          // Add block button
+          // Add block/unblock button
           var btn = document.createElement('button');
           btn.className = '_wp_blockbtn';
           btn.textContent = isBlocked ? '✓ Unblock' : '🚫 Block';
@@ -2473,9 +2468,9 @@ window._W5_fixed=true;
             }).then(function(r) { return r.json(); }).then(function(data) {
               if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
               if (window.showToast) window.showToast(data.message || 'Done', curBlocked ? '#10b981' : '#ef4444');
-              // Update UI
               var newBlocked = !curBlocked;
-              var statusBadge = card.querySelector('._wp_status');
+              var cardEl = btn.parentElement;
+              var statusBadge = cardEl.querySelector('._wp_status');
               if (statusBadge) {
                 statusBadge.style.background = newBlocked ? '#fee2e2' : '#d1fae5';
                 statusBadge.style.color = newBlocked ? '#dc2626' : '#059669';
@@ -2484,7 +2479,7 @@ window._W5_fixed=true;
               btn.style.background = newBlocked ? '#10b981' : '#ef4444';
               btn.textContent = newBlocked ? '✓ Unblock' : '🚫 Block';
               btn.setAttribute('data-blocked', newBlocked ? '1' : '0');
-              card.setAttribute('data-blocked', newBlocked ? '1' : '0');
+              cardEl.setAttribute('data-blocked', newBlocked ? '1' : '0');
             }).catch(function(err) { console.error('[AdminBlock]', err); });
           });
         }
@@ -2576,7 +2571,7 @@ window._W5_fixed=true;
         if (!document.getElementById(toolbarId)) showToolbar();
       }, 1000);
 
-      console.log('[AdminBlock] v442 — search + block buttons + status badges');
+      console.log('[AdminBlock] v443 — search + block buttons + status badges');
     })();
   })();
 })();
