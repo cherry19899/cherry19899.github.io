@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v417';</script>
+    <script>window.WORKPRO_VERSION='v418';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v417 start');
+      lg('#0f0','[WP] v418 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,11 +2349,50 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK CLICK HANDLER ─────────────────────
-    // Uses BOTH mousedown (fires first) and click as backup
+    // ─── ADMIN USER BLOCK: inject 🚫 icons + click handler ──
     (function() {
       var blockIcon = '🚫';
       var adminBase = 'https://workpro-api.onrender.com';
+      var injectInterval = null;
+      
+      // AGGRESSIVE: inject 🚫 every 500ms on admin/users page
+      function startInjecting() {
+        if (injectInterval) return;
+        injectInterval = setInterval(function() {
+          var pageText = document.body.textContent || '';
+          if (pageText.indexOf('Admin') === -1 && pageText.indexOf('Админ') === -1) return;
+          // Find all text nodes containing Balance: — user rows
+          var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+          var node;
+          while ((node = walker.nextNode()) !== null) {
+            if (node._blockChecked) continue;
+            node._blockChecked = true;
+            var text = node.textContent || '';
+            if (text.indexOf('Balance:') === -1) continue;
+            var parent = node.parentElement;
+            if (!parent || parent._blockInjected) continue;
+            parent._blockInjected = true;
+            var blockBtn = document.createElement('button');
+            blockBtn.innerHTML = '🚫';
+            blockBtn.style.cssText = 'background:none;border:none;color:#ef4444;font-size:20px;cursor:pointer;margin-left:10px;padding:4px;';
+            blockBtn.title = 'Block/unblock user';
+            parent.appendChild(blockBtn);
+            console.log('[AdminBlock] 🚫 injected into row');
+          }
+        }, 500);
+        // Stop after 30 seconds
+        setTimeout(function() { if (injectInterval) { clearInterval(injectInterval); injectInterval = null; } }, 30000);
+      }
+      // Start when page loads + when DOM changes
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startInjecting);
+      } else {
+        startInjecting();
+      }
+      if (window.MutationObserver) {
+        var mo = new MutationObserver(startInjecting);
+        mo.observe(document.body, { childList: true, subtree: true });
+      }
       
       function handleBlockClick(e) {
         var el = e.target;
@@ -2503,6 +2542,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v417 start');
+  lg('#0f0','[WP] v418 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
