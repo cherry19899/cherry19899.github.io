@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v419';</script>
+    <script>window.WORKPRO_VERSION='v420';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v419 start');
+      lg('#0f0','[WP] v420 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,186 +2349,60 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK: inject 🚫 icons + click handler ──
+    // ─── ADMIN USER BLOCK (v420) ────────────────────────────
+    // Simple: inject 🚫 buttons when URL is /admin with Users tab
     (function() {
-      var blockIcon = '🚫';
-      var adminBase = 'https://workpro-api.onrender.com';
-      var injectInterval = null;
+      var API = 'https://workpro-api.onrender.com';
+      var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
       
-      // AGGRESSIVE: inject 🚫 every 300ms on admin/users page
-      function startInjecting() {
-        if (injectInterval) return;
-        injectInterval = setInterval(function() {
-          var pageText = document.body.textContent || '';
-          if (pageText.indexOf('Admin') === -1 && pageText.indexOf('Админ') === -1) return;
-          // Find all elements with textContent containing "Balance:"
-          var all = document.querySelectorAll('div, span, p, td, li');
-          for (var k = 0; k < all.length; k++) {
-            var el = all[k];
-            if (el._blockInjected) continue;
-            var tc = el.textContent || '';
-            if (tc.indexOf('Balance:') === -1) continue;
-            // Must contain a username pattern
-            if (!tc.match(/User_[a-zA-Z0-9_-]+/)) continue;
-            // Find the parent card/container (the white box around user info)
-            var card = el;
-            for (var up = 0; up < 3 && card; up++) {
-              if (card.tagName === 'DIV' && card.children.length >= 1) break;
-              card = card.parentElement;
-            }
-            if (!card || card._blockInjected) continue;
-            card._blockInjected = true;
-            var blockBtn = document.createElement('button');
-            blockBtn.innerHTML = '🚫';
-            blockBtn.style.cssText = 'background:none;border:none;color:#ef4444;font-size:22px;cursor:pointer;padding:4px 8px;float:right;';
-            blockBtn.title = 'Block/unblock user';
-            blockBtn._blockFixed = true;
-            blockBtn.addEventListener('click', function(e) {
-              e.stopPropagation();
-              e.preventDefault();
-              handleBlockClick(e);
+      function inject() {
+        if (location.pathname !== '/admin') return;
+        var nodes = document.querySelectorAll('div');
+        for (var i = 0; i < nodes.length; i++) {
+          var card = nodes[i];
+          if (card._hasBlock) continue;
+          var tc = card.textContent || '';
+          if (tc.indexOf('Balance:') === -1) continue;
+          var um = tc.match(/User_[a-zA-Z0-9_-]+/);
+          if (!um) continue;
+          var cs = window.getComputedStyle(card);
+          if (cs.padding === '0px') continue;
+          card._hasBlock = true;
+          var username = um[0];
+          var isBlocked = tc.indexOf('BLOCKED') !== -1;
+          
+          var btn = document.createElement('button');
+          btn.innerHTML = isBlocked ? '✅ Unblock' : '🚫 Block';
+          btn.style.cssText = 'float:right;background:#ef4444;color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;';
+          if (isBlocked) btn.style.background = '#10b981';
+          btn._blockUser = username;
+          
+          btn.onclick = function(e) {
+            e.stopPropagation();
+            var uname = this._blockUser;
+            var action = this.innerHTML.indexOf('Block') !== -1 ? 'block' : 'unblock';
+            fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+              if (window.showToast) window.showToast(data.message || 'Done', action === 'block' ? '#ef4444' : '#10b981');
+              setTimeout(function() { location.reload(); }, 500);
             });
-            // Insert at top of card
-            card.insertBefore(blockBtn, card.firstChild);
-            console.log('[AdminBlock] 🚫 injected for: ' + tc.match(/User_[a-zA-Z0-9_-]+/)[0]);
-          }
-        }, 300);
-        setTimeout(function() { if (injectInterval) { clearInterval(injectInterval); injectInterval = null; } }, 30000);
-      }
-      // Start when page loads + when DOM changes
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startInjecting);
-      } else {
-        startInjecting();
-      }
-      if (window.MutationObserver) {
-        var mo = new MutationObserver(startInjecting);
-        mo.observe(document.body, { childList: true, subtree: true });
+          };
+          card.insertBefore(btn, card.firstChild);
+        }
       }
       
-      function handleBlockClick(e) {
-        var el = e.target;
-        // Check if clicked element or its parent contains 🚫
-        var checkEl = el;
-        var hasIcon = false;
-        for (var c = 0; c < 3 && checkEl; c++) {
-          var txt = (checkEl.getAttribute && checkEl.getAttribute('aria-label')) || '';
-          var title = (checkEl.getAttribute && checkEl.getAttribute('title')) || '';
-          var tc = (checkEl.textContent || '');
-          var ih = (checkEl.innerHTML || '');
-          if (txt.indexOf(blockIcon) !== -1 || title.indexOf(blockIcon) !== -1 || 
-              tc.indexOf(blockIcon) !== -1 || ih.indexOf(blockIcon) !== -1) {
-            hasIcon = true; el = checkEl; break;
-          }
-          checkEl = checkEl.parentElement;
-        }
-        console.log('[AdminBlock] Check: hasIcon=' + hasIcon + ', el=' + (el.tagName || '?'));
-        if (!hasIcon) return;
-        // Must be on admin page
-        var pageText = document.body.textContent || '';
-        if (pageText.indexOf('Админ') === -1 && pageText.indexOf('Admin') === -1) return;
-        e.preventDefault();
-        e.stopPropagation();
-        // Find user ID — look for data attribute or text pattern
-        var row = el;
-        var userId = null;
-        for (var i = 0; i < 6 && row; i++) {
-          // Check data-user-id attribute
-          var duid = row.getAttribute && row.getAttribute('data-user-id');
-          if (duid) { userId = duid; console.log('[AdminBlock] Found data-user-id: ' + userId); break; }
-          var rt = row.textContent || '';
-          // Try User_xxx pattern (display username)
-          var m1 = rt.match(/User_[a-zA-Z0-9_-]+/);
-          if (m1) { userId = m1[0]; console.log('[AdminBlock] Found User_xxx: ' + userId); break; }
-          // Try username directly (without User_ prefix)
-          var m2 = rt.match(/([a-zA-Z][a-zA-Z0-9_]{2,})/);
-          if (m2 && m2[1] !== 'Admin' && m2[1] !== 'Users' && m2[1] !== 'ID' && m2[1] !== 'Status') {
-            userId = m2[1]; console.log('[AdminBlock] Found id: ' + userId); break;
-          }
-          row = row.parentElement;
-        }
-        if (!userId) { console.log('[AdminBlock] ERROR: No user ID found'); return; }
-        // Call API
-        var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
-        console.log('[AdminBlock] API: POST /api/admin/users/' + userId + '/block');
-        fetch(adminBase + '/api/admin/users/' + encodeURIComponent(userId) + '/block', {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          console.log('[AdminBlock] Response:', JSON.stringify(data));
-          if (data.success) {
-            if (window.showToast) window.showToast('BLOCKED: ' + userId, '#ef4444');
-            if (row) row.style.opacity = '0.4';
-          } else {
-            fetch(adminBase + '/api/admin/users/' + encodeURIComponent(userId) + '/unblock', {
-              method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
-            }).then(function(r2) { return r2.json(); }).then(function(d2) {
-              if (d2.success) {
-                if (window.showToast) window.showToast('UNBLOCKED: ' + userId, '#10b981');
-                if (row) row.style.opacity = '1';
-              }
-            });
-          }
-        }).catch(function(err) { console.error('[AdminBlock] API error:', err); });
+      if (location.pathname === '/admin') {
+        var iv = setInterval(inject, 500);
+        setTimeout(function() { clearInterval(iv); }, 30000);
+        inject();
       }
+      var origPush = history.pushState;
+      history.pushState = function() { origPush.apply(this, arguments); setTimeout(function() { if (location.pathname === '/admin') { var iv = setInterval(inject, 500); setTimeout(function() { clearInterval(iv); }, 30000); inject(); } }, 100); };
+      window.addEventListener('popstate', function() { if (location.pathname === '/admin') { var iv = setInterval(inject, 500); setTimeout(function() { clearInterval(iv); }, 30000); inject(); } });
       
-      document.addEventListener('mousedown', handleBlockClick, true);
-      document.addEventListener('click', handleBlockClick, true);
-      console.log('[AdminBlock] mousedown+click handlers registered v416');
-      
-      // EXTRA: MutationObserver adds direct onclick to 🚫 elements + injects 🚫 into admin
-      if (window.MutationObserver) {
-        function fixBlockIcons() {
-          var all = document.querySelectorAll('button, span, div, svg, a');
-          for (var i = 0; i < all.length; i++) {
-            var el = all[i];
-            if (el._blockFixed) continue;
-            var tc = el.textContent || '';
-            var ih = el.innerHTML || '';
-            var al = el.getAttribute && el.getAttribute('aria-label') || '';
-            if (tc.indexOf('🚫') !== -1 || ih.indexOf('&#128683;') !== -1 || ih.indexOf('🚫') !== -1 || al.indexOf('block') !== -1) {
-              el._blockFixed = true;
-              el.style.cursor = 'pointer';
-              el.addEventListener('click', function(e) { e.stopPropagation(); handleBlockClick(e); });
-              console.log('[AdminBlock] Direct onclick added to element');
-            }
-          }
-        }
-        // INJECT 🚫 icons into admin user list
-        function injectBlockIcons() {
-          var pageText = document.body.textContent || '';
-          if (pageText.indexOf('Admin') === -1) return;
-          // Find all elements containing "Balance:" — these are user rows
-          var els = document.querySelectorAll('div, span, p');
-          for (var j = 0; j < els.length; j++) {
-            var el = els[j];
-            if (el._blockInjected) continue;
-            var tc = el.textContent || '';
-            // Check if this is a user row (has Balance: and username pattern)
-            if (tc.indexOf('Balance:') !== -1 && tc.match(/User_[a-zA-Z0-9_-]+/)) {
-              el._blockInjected = true;
-              var blockBtn = document.createElement('span');
-              blockBtn.textContent = ' 🚫';
-              blockBtn.style.cssText = 'color:#ef4444;font-size:18px;cursor:pointer;margin-left:8px;';
-              blockBtn.title = 'Block user';
-              blockBtn._blockFixed = true;
-              blockBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                handleBlockClick(e);
-              });
-              el.appendChild(blockBtn);
-              console.log('[AdminBlock] Injected 🚫 for user');
-            }
-          }
-        }
-        var mo = new MutationObserver(function() {
-          fixBlockIcons();
-          injectBlockIcons();
-        });
-        mo.observe(document.body, { childList: true, subtree: true });
-        fixBlockIcons();
-        injectBlockIcons();
-      }
+      console.log('[AdminBlock] v420 — navigates to /admin to see 🚫 buttons');
     })();
   })();
 })();
@@ -2554,6 +2428,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v419 start');
+  lg('#0f0','[WP] v420 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
