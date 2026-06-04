@@ -38,5 +38,3 @@ Pi Open Source (PiOS)
 
 [privacy-policy.html](privacy-policy.html)
 # Build trigger Tue May 26 07:50:45 PM CST 2026
-# Build trigger 2026-05-31_19:04:28
-# Force Pages rebuild
