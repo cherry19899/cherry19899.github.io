@@ -2467,15 +2467,18 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        var hasUserCards = document.body.innerHTML.indexOf('Balance:') !== -1;
-        var hasUsersTab = document.body.innerHTML.indexOf('No KYC') !== -1;
-        if (hasUserCards && hasUsersTab) showToolbar();
+        // Show toolbar on any admin page (both Jobs and Users tabs)
+        var isAdminPage = document.body.innerHTML.indexOf('Total Users') !== -1;
+        if (isAdminPage) showToolbar();
       }
 
       checkAndShowToolbar();
-      setTimeout(checkAndShowToolbar, 500);
+      setTimeout(checkAndShowToolbar, 300);
+      setTimeout(checkAndShowToolbar, 600);
       setTimeout(checkAndShowToolbar, 1000);
       setTimeout(checkAndShowToolbar, 2000);
+      // Keep checking every 2s in case React re-renders
+      setInterval(checkAndShowToolbar, 2000);
 
       var observer = new MutationObserver(function() { checkAndShowToolbar(); });
       if (document.body) observer.observe(document.body, { childList: true, subtree: true });
