@@ -16,6 +16,20 @@
             return;
           }
         }
+        // Force-check server version to bypass browser cache
+        var myMatch = document.documentElement.innerHTML.match(/WORKPRO_VERSION='(v\d+)'/);
+        var myVersion = myMatch ? myMatch[1] : 'unknown';
+        fetch('/?version-check=1', { cache: 'no-store' })
+          .then(function(r) { return r.text(); })
+          .then(function(html) {
+            var m = html.match(/WORKPRO_VERSION='(v\d+)'/);
+            var serverVersion = m ? m[1] : 'unknown';
+            if (serverVersion !== myVersion && serverVersion !== 'unknown' && myVersion !== 'unknown') {
+              console.log('[CacheBust] Server has ' + serverVersion + ', we have ' + myVersion + ', reloading...');
+              location.reload(true);
+            }
+          })
+          .catch(function() {});
       })();
     </script>
     <meta charset="UTF-8" />
