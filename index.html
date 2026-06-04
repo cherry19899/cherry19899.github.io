@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v430: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v437: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v430';</script>
+    <script>window.WORKPRO_VERSION='v437';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v430 start');
+      lg('#0f0','[WP] v437 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,18 +2349,16 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v430) ────────────────────────────
-    // Always-visible toolbar + double-click on usernames
+    // ─── ADMIN USER BLOCK (v437) ────────────────────────────
+    // Always-visible toolbar (SPA-safe, recreates if missing) + double-click
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
       
       var toolbarId = '_wp_admin_toolbar';
-      var _tbShown = false;
 
       function showToolbar() {
-        if (_tbShown || document.getElementById(toolbarId)) return;
-        _tbShown = true;
+        if (document.getElementById(toolbarId)) return;
         var bar = document.createElement('div');
         bar.id = toolbarId;
         bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1f2937;padding:10px 16px;z-index:99999;display:flex;gap:10px;align-items:center;box-shadow:0 -4px 12px rgba(0,0,0,0.3);font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
@@ -2454,7 +2452,7 @@ window._W5_fixed=true;
       setTimeout(setupDblClick, 1000);
       setTimeout(setupDblClick, 2500);
 
-      console.log('[AdminBlock] v430 — always-visible toolbar + double-click block');
+      console.log('[AdminBlock] v437 — SPA-safe always-visible toolbar');
     })();
   })();
 })();
