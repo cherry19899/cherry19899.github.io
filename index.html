@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v425';</script>
+    <script>window.WORKPRO_VERSION='v426';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v425 start');
+      lg('#0f0','[WP] v426 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2357,19 +2357,23 @@ window._W5_fixed=true;
       
       function inject() {
         if (location.pathname !== '/admin') return;
-        // Find ALL div elements
-        var all = document.querySelectorAll('div');
-        for (var i = 0; i < all.length; i++) {
-          var card = all[i];
-          if (card._hasBlock) continue;
-          var tc = card.textContent || '';
-          // Must contain BOTH User_xxx and Balance:
-          if (tc.indexOf('Balance:') === -1) continue;
+        // Use XPath to find elements containing "User_" text
+        var xpathResult = document.evaluate(
+          "//*[contains(text(), 'User_')]",
+          document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null
+        );
+        for (var i = 0; i < xpathResult.snapshotLength; i++) {
+          var el = xpathResult.snapshotItem(i);
+          if (el._hasBlock) continue;
+          var tc = el.textContent || '';
           var um = tc.match(/User_[a-zA-Z0-9_-]+/);
           if (!um) continue;
+          var card = el.parentElement;
+          if (!card || (card.textContent || '').indexOf('Balance:') === -1) continue;
+          if (card._hasBlock) continue;
           card._hasBlock = true;
           var username = um[0];
-          var isBlocked = tc.indexOf('BLOCKED') !== -1;
+          var isBlocked = card.textContent.indexOf('BLOCKED') !== -1;
           
           var btn = document.createElement('button');
           btn.innerHTML = isBlocked ? '✅ Unblock' : '🚫 Block';
@@ -2389,7 +2393,7 @@ window._W5_fixed=true;
               setTimeout(function() { location.reload(); }, 500);
             });
           };
-          card.appendChild(btn);
+          el.appendChild(btn);
         }
       }
       
@@ -2433,6 +2437,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v425 start');
+  lg('#0f0','[WP] v426 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
