@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v453: NO SW — hard reload after unregister -->
+    <!-- v454: Navigate to fresh URL after SW unregister -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
-        var KEY = '_wp_loaded_v453';
+        var KEY = '_wp_loaded_v454';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           // Only redirect once per session
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=453&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=454&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -54,7 +54,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v453';</script>
+    <script>window.WORKPRO_VERSION='v454';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -482,21 +482,14 @@
               });
             }
             console.log('[SW] All old SW unregistered, caches cleared');
-            // HARD RELOAD to bypass SW cache and load fresh HTML
-            setTimeout(function() { location.reload(true); }, 500);
+            // Navigate to fresh URL (bypasses unregistered SW cache)
+            setTimeout(function() {
+              window.location.href = location.protocol + '//' + location.host + '/?nocache=454&_=' + Date.now();
+            }, 500);
             return Promise.resolve(null);
           }).then(function() {
-            // 2. Request push notification permission
-            if ('PushManager' in window) {
-              reg.pushManager.getSubscription().then(function(sub) {
-                if (!sub) {
-                  console.log('[Push] Not subscribed yet');
-                } else {
-                  console.log('[Push] Already subscribed');
-                  // Send subscription to backend
-                  sendPushSubToBackend(sub);
-                }
-              });
+            // Skip push — no SW registered
+            console.log('[Push] Skipped (no SW)');
             }
           }).catch(function(err) {
             console.log('[SW] Registration failed:', err.message);
