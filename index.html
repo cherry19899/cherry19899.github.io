@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v424';</script>
+    <script>window.WORKPRO_VERSION='v425';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v424 start');
+      lg('#0f0','[WP] v425 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2393,14 +2393,19 @@ window._W5_fixed=true;
         }
       }
       
-      if (location.pathname === '/admin') {
-        var iv = setInterval(inject, 500);
-        setTimeout(function() { clearInterval(iv); }, 30000);
-        inject();
+      // Run inject every 500ms whenever on /admin (no timeout — keeps checking)
+      setInterval(function() {
+        if (location.pathname === '/admin') inject();
+      }, 500);
+      // Also run immediately
+      if (location.pathname === '/admin') inject();
+      // Watch for DOM changes (React tab switching)
+      if (window.MutationObserver) {
+        var mo = new MutationObserver(function() {
+          if (location.pathname === '/admin') inject();
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
       }
-      var origPush = history.pushState;
-      history.pushState = function() { origPush.apply(this, arguments); setTimeout(function() { if (location.pathname === '/admin') { var iv = setInterval(inject, 500); setTimeout(function() { clearInterval(iv); }, 30000); inject(); } }, 100); };
-      window.addEventListener('popstate', function() { if (location.pathname === '/admin') { var iv = setInterval(inject, 500); setTimeout(function() { clearInterval(iv); }, 30000); inject(); } });
       
       console.log('[AdminBlock] v420 — navigates to /admin to see 🚫 buttons');
     })();
@@ -2428,6 +2433,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v424 start');
+  lg('#0f0','[WP] v425 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
