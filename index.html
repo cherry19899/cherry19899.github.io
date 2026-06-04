@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v422';</script>
+    <script>window.WORKPRO_VERSION='v423';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v422 start');
+      lg('#0f0','[WP] v423 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2357,36 +2357,33 @@ window._W5_fixed=true;
       
       function inject() {
         if (location.pathname !== '/admin') return;
-        // Find ALL elements and check their textContent
-        var all = document.getElementsByTagName('*');
+        // Find ALL div elements
+        var all = document.querySelectorAll('div');
         for (var i = 0; i < all.length; i++) {
-          var el = all[i];
-          if (el._hasBlock) continue;
-          // Only elements with direct User_xxx text (no children)
-          if (el.children.length > 0) continue;
-          var tc = el.textContent || '';
-          var um = tc.match(/^User_[a-zA-Z0-9_-]+$/);
+          var card = all[i];
+          if (card._hasBlock) continue;
+          var tc = card.textContent || '';
+          // Must contain BOTH User_xxx and Balance:
+          if (tc.indexOf('Balance:') === -1) continue;
+          var um = tc.match(/User_[a-zA-Z0-9_-]+/);
           if (!um) continue;
-          // Parent must have Balance: text
-          var parent = el.parentElement;
-          if (!parent) continue;
-          if ((parent.textContent || '').indexOf('Balance:') === -1) continue;
-          if (parent._hasBlock) continue;
-          parent._hasBlock = true;
+          // Must look like a card (has some padding/margin in style)
+          var st = card.style;
+          if (!st || (!st.padding && !st.margin && !card.className)) continue;
+          card._hasBlock = true;
           var username = um[0];
-          var isBlocked = parent.textContent.indexOf('BLOCKED') !== -1;
+          var isBlocked = tc.indexOf('BLOCKED') !== -1;
           
           var btn = document.createElement('button');
-          btn.innerHTML = isBlocked ? '✅' : '🚫';
-          btn.style.cssText = 'background:none;border:none;color:#ef4444;font-size:22px;cursor:pointer;padding:4px;float:right;margin-top:-4px;';
-          if (isBlocked) btn.style.color = '#10b981';
-          btn.title = (isBlocked ? 'Unblock' : 'Block') + ' ' + username;
+          btn.innerHTML = isBlocked ? '✅ Unblock' : '🚫 Block';
+          btn.style.cssText = 'float:right;background:#ef4444;color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;';
+          if (isBlocked) btn.style.background = '#10b981';
           btn._blockUser = username;
           
           btn.onclick = function(e) {
             e.stopPropagation();
             var uname = this._blockUser;
-            var action = this.title.indexOf('Block') !== -1 && this.title.indexOf('Unblock') === -1 ? 'block' : 'unblock';
+            var action = this.innerHTML.indexOf('Block') !== -1 ? 'block' : 'unblock';
             fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
@@ -2395,7 +2392,7 @@ window._W5_fixed=true;
               setTimeout(function() { location.reload(); }, 500);
             });
           };
-          parent.insertBefore(btn, parent.firstChild);
+          card.insertBefore(btn, card.firstChild);
         }
       }
       
@@ -2434,6 +2431,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v422 start');
+  lg('#0f0','[WP] v423 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
