@@ -50,7 +50,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v409';</script>
+    <script>window.WORKPRO_VERSION='v410';</script>
     <!-- AUTO-redirect to cache-busted URL -->
     <script>
       (function(){
@@ -680,18 +680,10 @@
       window._showPostJob = function() {
         var lang = _getLang();
         var texts = {
-          en: { title:'Post a Job', coming:'Coming Soon', desc:'Post a job and connect with talented freelancers. This feature will be available soon.', close:'Close' },
-          ru: { title:'Разместить вакансию', coming:'Скоро', desc:'Разместите вакансию и найдите талантливых фрилансеров. Эта функция скоро будет доступна.', close:'Закрыть' },
-          es: { title:'Publicar un Trabajo', coming:'Próximamente', desc:'Publique un trabajo y conecte con freelancers talentosos.', close:'Cerrar' },
-          de: { title:'Job veröffentlichen', coming:'Demnächst', desc:'Veröffentlichen Sie einen Job und finden Sie talentierte Freelancer.', close:'Schließen' },
-          fr: { title:'Publier une mission', coming:'Bientôt', desc:'Publiez une mission et connectez-vous avec des freelances talentueux.', close:'Fermer' },
-          it: { title:'Pubblica un Lavoro', coming:'Prossimamente', desc:'Pubblica un lavoro e connettiti con freelancer talentuosi.', close:'Chiudi' },
-          pt: { title:'Publicar um Job', coming:'Em breve', desc:'Publique um job e conecte-se com freelancers talentosos.', close:'Fechar' },
-          pl: { title:'Opublikuj Zlecenie', coming:'Wkrótce', desc:'Opublikuj zlecenie i znajdź utalentowanych freelancerów.', close:'Zamknij' },
-          uk: { title:'Опублікувати роботу', coming:'Незабаром', desc:'Опублікуйте роботу та знайдіть талановитих фрілансерів.', close:'Закрити' },
-          ja: { title:'仕事を投稿', coming:'近日公開', desc:'仕事を投稿して、才能あるフリーランサーとつながります。', close:'閉じる' },
-          ko: { title:'작업 게시', coming:'곧 출시', desc:'작업을 게시하고 유능한 프리랜서와 연결하세요.', close:'닫기' },
-          zh: { title:'发布工作', coming:'即将推出', desc:'发布工作并与有才华的自由职业者建立联系。', close:'关闭' }
+          en: { title:'Post a Job', post:'Post Job', cost:'Cost: 1 connect', posting:'Posting...', success:'Job posted successfully!', error:'Error: ', close:'Close', titleLabel:'Job Title', descLabel:'Description', catLabel:'Category', budgetLabel:'Budget (π)', skillsLabel:'Skills (comma separated)', deadlineLabel:'Deadline', titlePh:'e.g. Build a mobile app', descPh:'Describe the job requirements...', skillsPh:'React, Node.js, Design', all:'All', dev:'Dev', design:'Design', writing:'Writing', marketing:'Marketing', translate:'Translate', data:'Data', va:'VA', other:'Other', required:'Title is required', budgetMin:'Budget must be at least 1 π' },
+          ru: { title:'Разместить вакансию', post:'Разместить', cost:'Стоимость: 1 коннект', posting:'Размещение...', success:'Вакансия размещена!', error:'Ошибка: ', close:'Закрыть', titleLabel:'Название', descLabel:'Описание', catLabel:'Категория', budgetLabel:'Бюджет (π)', skillsLabel:'Навыки (через запятую)', deadlineLabel:'Срок', titlePh:'Напр. Создать мобильное приложение', descPl:'Опишите требования...', skillsPh:'React, Node.js, Дизайн', all:'Все', dev:'Разработка', design:'Дизайн', writing:'Тексты', marketing:'Маркетинг', translate:'Переводы', data:'Данные', va:'Ассистент', other:'Другое', required:'Название обязательно', budgetMin:'Бюджет минимум 1 π' },
+          es: { title:'Publicar Trabajo', post:'Publicar', cost:'Costo: 1 connect', posting:'Publicando...', success:'Trabajo publicado!', error:'Error: ', close:'Cerrar', titleLabel:'Título', descLabel:'Descripción', catLabel:'Categoría', budgetLabel:'Presupuesto (π)', skillsLabel:'Habilidades (separadas por coma)', deadlineLabel:'Fecha límite', titlePh:'p. ej. Crear app móvil', descPh:'Describe los requisitos...', skillsPh:'React, Node.js, Diseño', all:'Todas', dev:'Dev', design:'Diseño', writing:'Redacción', marketing:'Marketing', translate:'Traducción', data:'Datos', va:'Asistente', other:'Otro', required:'Título es obligatorio', budgetMin:'Presupuesto mínimo 1 π' },
+          de: { title:'Job veröffentlichen', post:'Veröffentlichen', cost:'Kosten: 1 Connect', posting:'Veröffentliche...', success:'Job veröffentlicht!', error:'Fehler: ', close:'Schließen', titleLabel:'Titel', descLabel:'Beschreibung', catLabel:'Kategorie', budgetLabel:'Budget (π)', skillsLabel:'Fähigkeiten (Komma getrennt)', deadlineLabel:'Frist', titlePl:'z.B. Mobile App entwickeln', descPh:'Beschreiben Sie die Anforderungen...', skillsPh:'React, Node.js, Design', all:'Alle', dev:'Dev', design:'Design', writing:'Texte', marketing:'Marketing', translate:'Übersetzung', data:'Daten', va:'Assistent', other:'Sonstige', required:'Titel ist Pflicht', budgetMin:'Budget mindestens 1 π' }
         };
         var t = texts[lang] || texts.en;
 
@@ -701,41 +693,163 @@
 
         var overlay = document.createElement('div');
         overlay.id = modalId;
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;';
         overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
 
         var box = document.createElement('div');
-        box.style.cssText = 'background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
-
-        var icon = document.createElement('div');
-        icon.textContent = '✏️';
-        icon.style.cssText = 'font-size:48px;margin-bottom:12px;';
-        box.appendChild(icon);
+        box.style.cssText = 'background:#fff;border-radius:16px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;';
 
         var h2 = document.createElement('h2');
         h2.textContent = t.title;
-        h2.style.cssText = 'color:#10b981;font-size:20px;font-weight:700;margin:0 0 8px;';
+        h2.style.cssText = 'color:#10b981;font-size:20px;font-weight:700;margin:0 0 16px;text-align:center;';
         box.appendChild(h2);
 
-        var badge = document.createElement('span');
-        badge.textContent = t.coming;
-        badge.style.cssText = 'display:inline-block;background:#fef3c7;color:#92400e;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;';
-        box.appendChild(badge);
+        function makeField(label, type, ph, required) {
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'margin-bottom:12px;text-align:left;';
+          var lbl = document.createElement('label');
+          lbl.textContent = label;
+          lbl.style.cssText = 'display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:4px;';
+          wrap.appendChild(lbl);
+          var input;
+          if (type === 'textarea') {
+            input = document.createElement('textarea');
+            input.style.cssText = 'width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;min-height:80px;resize:vertical;box-sizing:border-box;';
+          } else if (type === 'select') {
+            input = document.createElement('select');
+            input.style.cssText = 'width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;background:#fff;box-sizing:border-box;';
+            var cats = [
+              ['all', t.all || 'All'], ['dev', t.dev || 'Dev'], ['design', t.design || 'Design'],
+              ['writing', t.writing || 'Writing'], ['marketing', t.marketing || 'Marketing'],
+              ['translate', t.translate || 'Translate'], ['data', t.data || 'Data'],
+              ['va', t.va || 'VA'], ['other', t.other || 'Other']
+            ];
+            cats.forEach(function(c) {
+              var opt = document.createElement('option');
+              opt.value = c[0];
+              opt.textContent = c[1];
+              input.appendChild(opt);
+            });
+          } else if (type === 'date') {
+            input = document.createElement('input');
+            input.type = 'date';
+            input.style.cssText = 'width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;box-sizing:border-box;';
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 7);
+            input.value = tomorrow.toISOString().split('T')[0];
+          } else {
+            input = document.createElement('input');
+            input.type = type;
+            input.style.cssText = 'width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;box-sizing:border-box;';
+          }
+          if (ph) input.placeholder = ph;
+          if (required) input.required = true;
+          wrap.appendChild(input);
+          return { wrap: wrap, input: input };
+        }
 
-        var desc = document.createElement('p');
-        desc.textContent = t.desc;
-        desc.style.cssText = 'color:#6b7280;font-size:14px;margin:0 0 20px;line-height:1.5;';
-        box.appendChild(desc);
+        var titleField = makeField(t.titleLabel, 'text', t.titlePh, true);
+        box.appendChild(titleField.wrap);
+
+        var descField = makeField(t.descLabel, 'textarea', t.descPh, true);
+        box.appendChild(descField.wrap);
+
+        var catField = makeField(t.catLabel, 'select', '', true);
+        box.appendChild(catField.wrap);
+
+        var budgetField = makeField(t.budgetLabel, 'number', '', true);
+        budgetField.input.min = '1';
+        budgetField.input.value = '10';
+        box.appendChild(budgetField.wrap);
+
+        var skillsField = makeField(t.skillsLabel, 'text', t.skillsPh, false);
+        box.appendChild(skillsField.wrap);
+
+        var deadlineField = makeField(t.deadlineLabel, 'date', '', false);
+        box.appendChild(deadlineField.wrap);
+
+        var costNote = document.createElement('p');
+        costNote.textContent = t.cost;
+        costNote.style.cssText = 'color:#6b7280;font-size:12px;margin:4px 0 12px;text-align:center;';
+        box.appendChild(costNote);
+
+        var errorMsg = document.createElement('div');
+        errorMsg.style.cssText = 'color:#ef4444;font-size:13px;margin-bottom:8px;display:none;text-align:center;';
+        box.appendChild(errorMsg);
+
+        var btnWrap = document.createElement('div');
+        btnWrap.style.cssText = 'display:flex;gap:8px;';
+
+        var postBtn = document.createElement('button');
+        postBtn.textContent = t.post;
+        postBtn.style.cssText = 'flex:1;padding:12px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;';
 
         var closeBtn = document.createElement('button');
         closeBtn.textContent = t.close;
-        closeBtn.style.cssText = 'width:100%;padding:10px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;';
+        closeBtn.style.cssText = 'flex:1;padding:12px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;';
         closeBtn.onclick = function() { overlay.remove(); };
-        box.appendChild(closeBtn);
 
+        btnWrap.appendChild(closeBtn);
+        btnWrap.appendChild(postBtn);
+        box.appendChild(btnWrap);
         overlay.appendChild(box);
         document.body.appendChild(overlay);
-        console.log('[PostJob] Modal opened, lang=' + lang);
+
+        postBtn.onclick = function() {
+          var title = titleField.input.value.trim();
+          var desc = descField.input.value.trim();
+          var cat = catField.input.value;
+          var budget = parseInt(budgetField.input.value) || 0;
+          var skills = skillsField.input.value.trim();
+          var deadline = deadlineField.input.value;
+
+          if (!title) { errorMsg.textContent = t.required; errorMsg.style.display = 'block'; return; }
+          if (budget < 1) { errorMsg.textContent = t.budgetMin; errorMsg.style.display = 'block'; return; }
+
+          errorMsg.style.display = 'none';
+          postBtn.textContent = t.posting;
+          postBtn.disabled = true;
+          postBtn.style.opacity = '0.6';
+
+          var uid = localStorage.getItem('workpro_user_id') || 'browser_user';
+          var body = {
+            title: title,
+            description: desc,
+            category: cat,
+            budget: budget,
+            skills: skills,
+            deadline: deadline,
+            requirements: desc
+          };
+
+          fetch('https://workpro-api.onrender.com/api/jobs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
+            body: JSON.stringify(body)
+          }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.error) {
+              errorMsg.textContent = t.error + data.error;
+              errorMsg.style.display = 'block';
+              postBtn.textContent = t.post;
+              postBtn.disabled = false;
+              postBtn.style.opacity = '1';
+            } else {
+              console.log('[PostJob] Success:', data);
+              overlay.remove();
+              if (window.showToast) window.showToast(t.success, '#10b981');
+              // Refresh jobs list
+              setTimeout(function() { window.location.reload(); }, 1500);
+            }
+          }).catch(function(err) {
+            errorMsg.textContent = t.error + 'Network error';
+            errorMsg.style.display = 'block';
+            postBtn.textContent = t.post;
+            postBtn.disabled = false;
+            postBtn.style.opacity = '1';
+          });
+        };
+
+        console.log('[PostJob] Real form opened, lang=' + lang);
       };
 
       window._showBuyConnects = function() {
