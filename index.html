@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v461: Toolbar shows on /admin by URL check -->
+    <!-- v462: Toolbar detection via innerText Total Users + Balance -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v461';
+        var KEY = '_wp_loaded_v462';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v461';</script>
+    <script>window.WORKPRO_VERSION='v462';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,9 +2473,9 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar on admin page (check URL path since /admin redirects to /)
-        var isAdmin = location.pathname === '/admin' || document.title.indexOf('Admin') !== -1;
-        if (isAdmin) showToolbar();
+        // Show toolbar when admin content is visible (Total Users stat cards)
+        var isAdminUsers = document.body.innerText.indexOf('Total Users') !== -1 && document.body.innerText.indexOf('Balance:') !== -1;
+        if (isAdminUsers) showToolbar();
       }
 
       checkAndShowToolbar();
