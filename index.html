@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v415';</script>
+    <script>window.WORKPRO_VERSION='v416';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v415 start');
+      lg('#0f0','[WP] v416 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2422,7 +2422,30 @@ window._W5_fixed=true;
       
       document.addEventListener('mousedown', handleBlockClick, true);
       document.addEventListener('click', handleBlockClick, true);
-      console.log('[AdminBlock] mousedown+click handlers registered v415');
+      console.log('[AdminBlock] mousedown+click handlers registered v416');
+      
+      // EXTRA: MutationObserver adds direct onclick to 🚫 elements
+      if (window.MutationObserver) {
+        function fixBlockIcons() {
+          var all = document.querySelectorAll('button, span, div, svg, a');
+          for (var i = 0; i < all.length; i++) {
+            var el = all[i];
+            if (el._blockFixed) continue;
+            var tc = el.textContent || '';
+            var ih = el.innerHTML || '';
+            var al = el.getAttribute && el.getAttribute('aria-label') || '';
+            if (tc.indexOf('🚫') !== -1 || ih.indexOf('&#128683;') !== -1 || ih.indexOf('🚫') !== -1 || al.indexOf('block') !== -1) {
+              el._blockFixed = true;
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', function(e) { e.stopPropagation(); handleBlockClick(e); });
+              console.log('[AdminBlock] Direct onclick added to element');
+            }
+          }
+        }
+        var mo = new MutationObserver(fixBlockIcons);
+        mo.observe(document.body, { childList: true, subtree: true });
+        fixBlockIcons(); // run immediately too
+      }
     })();
   })();
 })();
@@ -2448,6 +2471,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v415 start');
+  lg('#0f0','[WP] v416 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
