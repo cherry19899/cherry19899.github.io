@@ -52,7 +52,7 @@ async function loadUsers() {
   list.innerHTML = '<div class="loading">Loading users...</div>';
   try {
     const res = await fetch(API + '/api/admin/users?page=1&limit=200', {
-      headers: { 'x-user-id': ADMIN_UID, 'x-api-key': 'dev' }
+      headers: { 'x-user-id': ADMIN_UID, 'x-api-key': 'dev', 'Origin': 'https://cherry19899.github.io' }
     });
     const users = await res.json();
     const userArray = Array.isArray(users) ? users : (users.users || users.rows || []);
@@ -95,7 +95,7 @@ async function toggleBlock(userId, username, isBlocked) {
   try {
     const res = await fetch(API + '/api/admin/users/' + encodeURIComponent(userId) + '/' + action, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-user-id': ADMIN_UID, 'x-api-key': 'dev' }
+      headers: { 'Content-Type': 'application/json', 'x-user-id': ADMIN_UID, 'x-api-key': 'dev', 'Origin': 'https://cherry19899.github.io' }
     });
     const data = await res.json();
     if (data.success) {
