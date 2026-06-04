@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v418';</script>
+    <script>window.WORKPRO_VERSION='v419';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v418 start');
+      lg('#0f0','[WP] v419 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2355,32 +2355,44 @@ window._W5_fixed=true;
       var adminBase = 'https://workpro-api.onrender.com';
       var injectInterval = null;
       
-      // AGGRESSIVE: inject 🚫 every 500ms on admin/users page
+      // AGGRESSIVE: inject 🚫 every 300ms on admin/users page
       function startInjecting() {
         if (injectInterval) return;
         injectInterval = setInterval(function() {
           var pageText = document.body.textContent || '';
           if (pageText.indexOf('Admin') === -1 && pageText.indexOf('Админ') === -1) return;
-          // Find all text nodes containing Balance: — user rows
-          var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-          var node;
-          while ((node = walker.nextNode()) !== null) {
-            if (node._blockChecked) continue;
-            node._blockChecked = true;
-            var text = node.textContent || '';
-            if (text.indexOf('Balance:') === -1) continue;
-            var parent = node.parentElement;
-            if (!parent || parent._blockInjected) continue;
-            parent._blockInjected = true;
+          // Find all elements with textContent containing "Balance:"
+          var all = document.querySelectorAll('div, span, p, td, li');
+          for (var k = 0; k < all.length; k++) {
+            var el = all[k];
+            if (el._blockInjected) continue;
+            var tc = el.textContent || '';
+            if (tc.indexOf('Balance:') === -1) continue;
+            // Must contain a username pattern
+            if (!tc.match(/User_[a-zA-Z0-9_-]+/)) continue;
+            // Find the parent card/container (the white box around user info)
+            var card = el;
+            for (var up = 0; up < 3 && card; up++) {
+              if (card.tagName === 'DIV' && card.children.length >= 1) break;
+              card = card.parentElement;
+            }
+            if (!card || card._blockInjected) continue;
+            card._blockInjected = true;
             var blockBtn = document.createElement('button');
             blockBtn.innerHTML = '🚫';
-            blockBtn.style.cssText = 'background:none;border:none;color:#ef4444;font-size:20px;cursor:pointer;margin-left:10px;padding:4px;';
+            blockBtn.style.cssText = 'background:none;border:none;color:#ef4444;font-size:22px;cursor:pointer;padding:4px 8px;float:right;';
             blockBtn.title = 'Block/unblock user';
-            parent.appendChild(blockBtn);
-            console.log('[AdminBlock] 🚫 injected into row');
+            blockBtn._blockFixed = true;
+            blockBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              e.preventDefault();
+              handleBlockClick(e);
+            });
+            // Insert at top of card
+            card.insertBefore(blockBtn, card.firstChild);
+            console.log('[AdminBlock] 🚫 injected for: ' + tc.match(/User_[a-zA-Z0-9_-]+/)[0]);
           }
-        }, 500);
-        // Stop after 30 seconds
+        }, 300);
         setTimeout(function() { if (injectInterval) { clearInterval(injectInterval); injectInterval = null; } }, 30000);
       }
       // Start when page loads + when DOM changes
@@ -2542,6 +2554,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v418 start');
+  lg('#0f0','[WP] v419 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
