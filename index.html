@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v464';
+        var KEY = '_wp_loaded_v465';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v464';</script>
+    <script>window.WORKPRO_VERSION='v465';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,12 +2473,11 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar only on admin Users tab (has both stat cards AND user Balance entries)
-        var bodyText = document.body.innerText || '';
+        // Show toolbar only on admin Users tab
+        var bodyText = document.body.textContent || '';
         var hasTotalUsers = bodyText.indexOf('Total Users') !== -1;
         var hasBalancePi = bodyText.indexOf('Balance:') !== -1;
-        var hasNoKYC = bodyText.indexOf('No KYC') !== -1;
-        if (hasTotalUsers && hasBalancePi && hasNoKYC) {
+        if (hasTotalUsers && hasBalancePi) {
           console.log('[AdminBlock] Admin Users detected, showing toolbar');
           showToolbar();
         }
