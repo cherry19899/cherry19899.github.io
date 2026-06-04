@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v444: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v446: User management — clean single copy -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -11,7 +11,7 @@
           sessionStorage.setItem(KEY, '1');
           // Only redirect once per session
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=411&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=446&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -36,7 +36,7 @@
       // v411: Minimal cache bust — only redirect once
       var url = window.location.href;
       if (url.indexOf('nocache=') === -1 && url.indexOf('v=') === -1) {
-        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=411';
+        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=446';
         window.location.replace(url);
       }
     </script>
@@ -2349,78 +2349,13 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v444) ────────────────────────────
-    // No confirm() dialog — direct block/unblock with toast feedback
+    // ─── ADMIN USER BLOCK (v446) ────────────────────────────
+    // Manage Users panel — single clean copy, no duplicates
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
-      
       var toolbarId = '_wp_admin_toolbar';
 
-      // ─── Manage Users Panel ────────────────────────────────
-      function showManagePanel() {
-        var panel = document.getElementById('_wp_manage_panel');
-        if (panel) { panel.style.display = 'block'; loadUsers(); return; }
-        panel = document.createElement('div');
-        panel.id = '_wp_manage_panel';
-        panel.style.cssText = 'position:fixed;top:50px;left:8px;right:8px;bottom:64px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:99999;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;';
-        panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1f2937;border-radius:12px 12px 0 0;"><span style="color:#fff;font-weight:700;font-size:15px;">👥 Manage Users (' + API.replace('https://','') + ')</span><button id="_wp_close_panel" style="background:#6b7280;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-weight:700;cursor:pointer;">✕</button></div>' +
-          '<div style="padding:10px 14px;background:#f3f4f6;display:flex;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;"><span>🔍</span><input id="_wp_panel_search" type="text" placeholder="Search users..." style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;outline:none;"><button id="_wp_panel_reload" style="background:#3b82f6;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">Reload</button></div>' +
-          '<div id="_wp_panel_content" style="flex:1;overflow-y:auto;padding:10px 14px;"><p style="color:#6b7280;text-align:center;margin-top:40px;">Loading users...</p></div>';
-        document.body.appendChild(panel);
-        document.getElementById('_wp_close_panel').onclick = function() { panel.style.display = 'none'; };
-        document.getElementById('_wp_panel_search').addEventListener('input', function() { filterPanelUsers(this.value.trim().toLowerCase()); });
-        document.getElementById('_wp_panel_reload').onclick = function() { loadUsers(); };
-        loadUsers();
-      }
-      function loadUsers() {
-        var content = document.getElementById('_wp_panel_content');
-        if (content) content.innerHTML = '<p style="color:#6b7280;text-align:center;margin-top:40px;">Loading...</p>';
-        fetch(API + '/api/admin/users', { headers: { 'x-user-id': uid } })
-          .then(function(r) { return r.json(); })
-          .then(function(users) { renderUsers(users); })
-          .catch(function(err) { console.error('[AdminBlock]', err); var c = document.getElementById('_wp_panel_content'); if (c) c.innerHTML = '<p style="color:#ef4444;text-align:center;margin-top:40px;">Error: ' + (err.message || 'Failed to load') + '</p>'; });
-      }
-      function renderUsers(users) {
-        var content = document.getElementById('_wp_panel_content');
-        if (!content) return;
-        if (!users || !users.length) { content.innerHTML = '<p style="color:#6b7280;text-align:center;margin-top:40px;">No users</p>'; return; }
-        var html = '<div id="_wp_user_list">';
-        for (var i = 0; i < users.length; i++) {
-          var u = users[i]; var isBlocked = u.status === 'blocked';
-          html += '<div class="_wp_urow" data-uname="' + (u.username || u.id).toLowerCase() + '" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #f3f4f6;gap:6px;">' +
-            '<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:600;">' + (u.username || u.id) + '<span style="margin-left:6px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;' + (isBlocked ? 'background:#fee2e2;color:#dc2626;' : 'background:#d1fae5;color:#059669;') + '">' + (isBlocked ? 'BLOCKED' : 'ACTIVE') + '</span></div><div style="font-size:12px;color:#6b7280;">' + (u.role || '-') + ' | π' + (u.balance_pi || 0) + ' | connects:' + (u.balance_connects || 0) + '</div></div>' +
-            '<button class="_wp_ubtn" data-user="' + (u.username || u.id) + '" data-blocked="' + (isBlocked ? '1' : '0') + '" style="background:' + (isBlocked ? '#10b981' : '#ef4444') + ';color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">' + (isBlocked ? 'Unblock' : 'Block') + '</button></div>';
-        }
-        html += '</div>'; content.innerHTML = html;
-        var btns = content.querySelectorAll('._wp_ubtn');
-        for (var j = 0; j < btns.length; j++) {
-          btns[j].onclick = function() {
-            var uname = this.getAttribute('data-user'); var curBlocked = this.getAttribute('data-blocked') === '1';
-            var action = curBlocked ? 'unblock' : 'block';
-            if (window.showToast) window.showToast((curBlocked ? 'Unblocking ' : 'Blocking ') + uname + '...', curBlocked ? '#10b981' : '#ef4444');
-            var btn = this;
-            fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid } })
-              .then(function(r) { return r.json(); }).then(function(data) {
-                if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
-                if (window.showToast) window.showToast(data.message || 'Done', curBlocked ? '#10b981' : '#ef4444');
-                btn.style.background = curBlocked ? '#ef4444' : '#10b981'; btn.textContent = curBlocked ? 'Block' : 'Unblock'; btn.setAttribute('data-blocked', curBlocked ? '0' : '1');
-                var badge = btn.parentElement.querySelector('span'); if (badge) { badge.style.background = curBlocked ? '#d1fae5' : '#fee2e2'; badge.style.color = curBlocked ? '#059669' : '#dc2626'; badge.textContent = curBlocked ? 'ACTIVE' : 'BLOCKED'; }
-              }).catch(function(err) { console.error('[AdminBlock]', err); });
-          };
-        }
-        console.log('[AdminBlock] Rendered', users.length, 'users');
-      }
-      function filterPanelUsers(query) {
-        var rows = document.querySelectorAll('._wp_urow');
-        for (var i = 0; i < rows.length; i++) {
-          var uname = rows[i].getAttribute('data-uname') || '';
-          var match = !query || uname.indexOf(query) !== -1 || (rows[i].textContent || '').toLowerCase().indexOf(query) !== -1;
-          rows[i].style.display = match ? 'flex' : 'none';
-        }
-      }
-
-      // ─── Manage Users Panel ────────────────────────────────
       function showManagePanel() {
         var panel = document.getElementById('_wp_manage_panel');
         if (panel) { panel.style.display = 'block'; loadUsers(); return; }
@@ -2442,7 +2377,7 @@ window._W5_fixed=true;
         fetch(API + '/api/admin/users', { headers: { 'x-user-id': uid } })
           .then(function(r) { return r.json(); })
           .then(function(users) { renderUsers(users); })
-          .catch(function(err) { console.error('[AdminBlock]', err); var c = document.getElementById('_wp_panel_content'); if (c) c.innerHTML = '<p style="color:#ef4444;text-align:center;margin-top:40px;">Error loading users</p>'; });
+          .catch(function(err) { console.error('[AdminBlock]', err); var c = document.getElementById('_wp_panel_content'); if (c) c.innerHTML = '<p style="color:#ef4444;text-align:center;margin-top:40px;">Error: ' + (err.message || 'Failed to load') + '</p>'; });
       }
       function renderUsers(users) {
         var content = document.getElementById('_wp_panel_content');
@@ -2496,6 +2431,8 @@ window._W5_fixed=true;
         document.body.appendChild(bar);
         document.body.style.paddingBottom = '64px';
 
+        document.getElementById('_wp_manage_btn').onclick = function() { showManagePanel(); };
+
         document.getElementById('_wp_block_btn').onclick = function() {
           var uname = document.getElementById('_wp_block_input').value.trim();
           if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
@@ -2516,6 +2453,35 @@ window._W5_fixed=true;
           fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/unblock', {
             method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
           }).then(function(r) { return r.json(); }).then(function(data) {
-            if (data.error) { if (window.showToast) window.showToast(data.error,  
+            if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
+            if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
+            document.getElementById('_wp_block_input').value = '';
+            setTimeout(function() { location.reload(); }, 800);
+          }).catch(function(err) { console.error('[AdminBlock]', err); if (window.showToast) window.showToast('Error: ' + err.message, '#f59e0b'); });
+        };
+        document.getElementById('_wp_tb_close').onclick = function() {
+          var bar = document.getElementById(toolbarId);
+          if (bar) { bar.style.display = 'none'; document.body.style.paddingBottom = '0'; }
+        };
+      }
+
+      function checkAndShowToolbar() {
+        if (document.getElementById(toolbarId)) return;
+        var hasUserCards = document.body.innerHTML.indexOf('Balance:') !== -1;
+        var hasUsersTab = document.body.innerHTML.indexOf('No KYC') !== -1;
+        if (hasUserCards && hasUsersTab) showToolbar();
+      }
+
+      checkAndShowToolbar();
+      setTimeout(checkAndShowToolbar, 500);
+      setTimeout(checkAndShowToolbar, 1000);
+      setTimeout(checkAndShowToolbar, 2000);
+
+      var observer = new MutationObserver(function() { checkAndShowToolbar(); });
+      if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+      else window.addEventListener('DOMContentLoaded', function() { observer.observe(document.body, { childList: true, subtree: true }); });
+
+      console.log('[AdminBlock] v446 initialized');
+    })();  
 <!-- Fri Jun  5 04:01:33 CST 2026 -->
 <!-- 1780603358 -->
