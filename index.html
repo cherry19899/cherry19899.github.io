@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v447';</script>
+    <script>window.WORKPRO_VERSION='v448';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -469,7 +469,7 @@
             }
             console.log('[SW] All old SW unregistered, caches cleared');
             // Now register the new no-op SW
-            return navigator.serviceWorker.register('/sw.js');
+            return navigator.serviceWorker.register('/sw.js?v=448&_=' + Date.now());
           }).then(function(reg) {
             console.log('[SW] Registered fresh:', reg.scope);
             // 2. Request push notification permission

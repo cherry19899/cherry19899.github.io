@@ -2,11 +2,11 @@
 // This SW intentionally does NOT cache anything
 // to ensure users always get the latest version.
 self.addEventListener('install', function(e) {
-  console.log('[SW] v338 — cache disabled');
+  console.log('[SW] v448 — cache disabled');
   self.skipWaiting();
 });
 self.addEventListener('activate', function(e) {
-  console.log('[SW] v333 — clearing all old caches');
+  console.log('[SW] v448 — clearing all old caches');
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(names.map(function(name) {
