@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v413';</script>
+    <script>window.WORKPRO_VERSION='v412';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2350,56 +2350,74 @@ window._W5_fixed=true;
     })();
 
     // ─── ADMIN USER BLOCK CLICK HANDLER ─────────────────────
-    // Makes the 🚫 icon actually block/unblock users
     (function() {
       var blockIcon = '🚫';
       var adminBase = 'https://workpro-api.onrender.com';
       document.addEventListener('click', function(e) {
         var el = e.target;
-        // Check if clicked element contains 🚫
         var txt = (el.textContent || '').trim();
         var html = el.innerHTML || '';
         if (txt !== blockIcon && html.indexOf(blockIcon) === -1) return;
-        // Must be inside admin panel (check for "Админ" or "Admin" in page)
         var pageText = document.body.textContent || '';
         if (pageText.indexOf('Админ') === -1 && pageText.indexOf('Admin') === -1) return;
         e.preventDefault();
         e.stopPropagation();
-        // Find the user row — walk up to find username
         var row = el;
         var username = null;
-        var userId = null;
-        // Walk up max 5 levels
         for (var i = 0; i < 5 && row; i++) {
           var rowText = row.textContent || '';
-          // Look for pattern: User_xxxxxx (the username text in the row)
           var userMatch = rowText.match(/User_[a-zA-Z0-9_-]+/);
-          if (userMatch) {
-            username = userMatch[0];
-            break;
-          }
+          if (userMatch) { username = userMatch[0]; break; }
           row = row.parentElement;
         }
-        if (!username) {
-          console.log('[AdminBlock] Could not find username');
-          return;
-        }
-        // Get admin auth headers from localStorage
-        var uid = localStorage.getItem('workpro_user_id') || localStorage.getItem('workpro_user');
-        try { if (!uid) { var u = JSON.parse(localStorage.getItem('workpro_user')||'{}'); uid = u.id || u.uid || u.username; } } catch(e) {}
-        uid = uid || 'cherry19899';
-        // Call block API
-        var url = adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/block';
-        console.log('[AdminBlock] Blocking user:', username);
-        fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+        if (!username) { console.log('[AdminBlock] No username found'); return; }
+        var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
+        fetch(adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/block', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
         }).then(function(r) { return r.json(); }).then(function(data) {
           if (data.success) {
             console.log('[AdminBlock] Blocked:', username);
             if (window.showToast) window.showToast('Blocked: ' + username, '#ef4444');
-            // Visual feedback: add strikethrough to the row
-            if (row) { row.style.opacity = '0.5'; }
+            if (row) row.style.opacity = '0.5';
           } else {
-            console.log('[AdminBlock] Already blocked or error:', data);
-            // T
+            fetch(adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/unblock', {
+              method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+            }).then(function(r2) { return r2.json(); }).then(function(d2) {
+              if (d2.success) {
+                console.log('[AdminBlock] Unblocked:', username);
+                if (window.showToast) window.showToast('Unblocked: ' + username, '#10b981');
+                if (row) row.style.opacity = '1';
+              }
+            });
+          }
+        });
+      }, true);
+      console.log('[AdminBlock] User block handler registered v413');
+    })();
+  })();
+})();
+</script>
+<!-- FOOTER -->
+<div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+  <p>Work Pro v308 — Pi Network Freelance Marketplace</p>
+  <p style="margin-top: 8px;">
+    <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
+  </p>
+</div>
+<!-- DEBUG CONSOLE -->
+<div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;">
+  <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
+  <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
+</div>
+<script>
+(function(){
+  var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
+  function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
+  function restoreState(){try{var s=localStorage.getItem('__c_collapsed');if(s==='1'){collapsed=true;c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}}catch(e){}}
+  function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
+  if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
+  restoreState();
+  function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
+  lg('#0f0','[WP] v413 start');
+  var o=console.log,oe=console.error,ow=console.warn;
+  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
