@@ -578,10 +578,10 @@
       if (localStorage.getItem('workpro_user_id')) {
         setTimeout(window._startChatPolling, 3000);
       }
-      console.log('[WP] v303 SW + Chat polling ready');
+      console.log('[WP] v412 SW + Chat polling ready');
     })();
     </script>
-    <!-- v305: Privacy Policy modal + profile button -->
+    <!-- v412: Privacy Policy modal + profile button -->
     <script>
     (function(){
       // Privacy Policy translations (12 languages)
@@ -1112,7 +1112,7 @@
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
 
-      console.log('[WP] v305 Privacy Policy modal + profile button ready');
+      console.log('[WP] v412 Privacy Policy modal + profile button ready');
     })();
     </script>
     
@@ -1177,7 +1177,7 @@
     <script>
     (function(){
       if (!window.Pi) { console.error('[PiFix-Early] Pi SDK not found!'); return; }
-      console.log('[PiFix-Early] v306 loading before bundle...');
+      console.log('[PiFix-Early] v412 loading before bundle...');
       var _origCP = window.Pi.createPayment;
       var _origAuth = window.Pi.authenticate;
       // developer_completed check helper
@@ -1318,7 +1318,7 @@
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
         }).catch(function(){});
       };
-      console.log('[PiFix-Early] v306 ready — createPayment and authenticate intercepted');
+      console.log('[PiFix-Early] v412 ready — createPayment and authenticate intercepted');
     })();
     </script>
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v290 start');
+      lg('#0f0','[WP] v412 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -1981,11 +1981,11 @@ window._W5_fixed=true;
     }, true);
   })();
   </script>
-    <!-- Privacy Policy moved to profile (v305) -->
+    <!-- Privacy Policy moved to profile (v412) -->
 <script>
-// ---- PI SDK v290 FIX ----
+// ---- PI SDK v412 FIX ----
 (function(){
-  console.log('[PiFix] v306 loading...');
+  console.log('[PiFix] v412 loading...');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -2141,7 +2141,7 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v306 createPayment fixed');
+    console.log('[PiFix] v412 createPayment fixed');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -2159,7 +2159,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v306 done');
+  console.log('[PiFix] v412 done');
 
   // ─── PRIVACY POLICY INJECTION (v308) ───────────────────────────
   (function() {
@@ -2372,6 +2372,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v294 start');
+  lg('#0f0','[WP] v412 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
