@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v426';</script>
+    <script>window.WORKPRO_VERSION='v427';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v426 start');
+      lg('#0f0','[WP] v427 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2357,43 +2357,38 @@ window._W5_fixed=true;
       
       function inject() {
         if (location.pathname !== '/admin') return;
-        // Use XPath to find elements containing "User_" text
-        var xpathResult = document.evaluate(
-          "//*[contains(text(), 'User_')]",
-          document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null
-        );
-        for (var i = 0; i < xpathResult.snapshotLength; i++) {
-          var el = xpathResult.snapshotItem(i);
-          if (el._hasBlock) continue;
+        // Find username elements (b/strong/h3 with User_xxx text)
+        var els = document.querySelectorAll('b, strong, h3, h4');
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          if (el._blockSetup) continue;
           var tc = el.textContent || '';
           var um = tc.match(/User_[a-zA-Z0-9_-]+/);
           if (!um) continue;
-          var card = el.parentElement;
-          if (!card || (card.textContent || '').indexOf('Balance:') === -1) continue;
-          if (card._hasBlock) continue;
-          card._hasBlock = true;
+          // Must be on admin page with Balance text nearby
+          var parent = el.parentElement;
+          if (!parent || (parent.textContent || '').indexOf('Balance:') === -1) continue;
+          el._blockSetup = true;
+          el.style.cursor = 'pointer';
+          el.title = 'Double-click to block/unblock';
           var username = um[0];
-          var isBlocked = card.textContent.indexOf('BLOCKED') !== -1;
           
-          var btn = document.createElement('button');
-          btn.innerHTML = isBlocked ? '✅ Unblock' : '🚫 Block';
-          btn.style.cssText = 'background:#ef4444;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;margin-left:12px;';
-          if (isBlocked) btn.style.background = '#10b981';
-          btn._blockUser = username;
-          
-          btn.onclick = function(e) {
+          el.addEventListener('dblclick', function(e) {
             e.stopPropagation();
-            var uname = this._blockUser;
-            var action = this.innerHTML.indexOf('Block') !== -1 ? 'block' : 'unblock';
+            var uname = username; // capture in closure
+            var isBlocked = (e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1;
+            var action = isBlocked ? 'unblock' : 'block';
+            console.log('[AdminBlock] ' + action + ' user: ' + uname);
             fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
             }).then(function(r) { return r.json(); }).then(function(data) {
+              console.log('[AdminBlock] Result:', data);
               if (window.showToast) window.showToast(data.message || 'Done', action === 'block' ? '#ef4444' : '#10b981');
               setTimeout(function() { location.reload(); }, 500);
-            });
-          };
-          el.appendChild(btn);
+            }).catch(function(err) { console.error('[AdminBlock] Error:', err); });
+          });
+          console.log('[AdminBlock] Double-click setup for: ' + username);
         }
       }
       
@@ -2437,6 +2432,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v426 start');
+  lg('#0f0','[WP] v427 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
