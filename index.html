@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v439: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v440: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v439';</script>
+    <script>window.WORKPRO_VERSION='v440';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v439 start');
+      lg('#0f0','[WP] v440 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,8 +2349,8 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v439) ────────────────────────────
-    // Always-visible toolbar with X close button + double-click
+    // ─── ADMIN USER BLOCK (v440) ────────────────────────────
+    // No confirm() dialog — direct block/unblock with toast feedback
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
@@ -2373,24 +2373,28 @@ window._W5_fixed=true;
         document.getElementById('_wp_block_btn').onclick = function() {
           var uname = document.getElementById('_wp_block_input').value.trim();
           if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
-          if (!confirm('BLOCK user ' + uname + '?')) return;
+          if (window.showToast) window.showToast('Blocking ' + uname + '...', '#ef4444');
           fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/block', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
           }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
             if (window.showToast) window.showToast(data.message || 'Blocked!', '#ef4444');
+            document.getElementById('_wp_block_input').value = '';
             setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); });
+          }).catch(function(err) { console.error('[AdminBlock]', err); if (window.showToast) window.showToast('Error: ' + err.message, '#f59e0b'); });
         };
         document.getElementById('_wp_unblock_btn').onclick = function() {
           var uname = document.getElementById('_wp_block_input').value.trim();
           if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
-          if (!confirm('UNBLOCK user ' + uname + '?')) return;
+          if (window.showToast) window.showToast('Unblocking ' + uname + '...', '#10b981');
           fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/unblock', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
           }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
             if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
+            document.getElementById('_wp_block_input').value = '';
             setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); });
+          }).catch(function(err) { console.error('[AdminBlock]', err); if (window.showToast) window.showToast('Error: ' + err.message, '#f59e0b'); });
         };
         document.getElementById('_wp_tb_close').onclick = function() {
           var bar = document.getElementById(toolbarId);
@@ -2459,7 +2463,7 @@ window._W5_fixed=true;
       setTimeout(init, 3000);
       setInterval(function() { if (document.body && !document.getElementById(toolbarId)) showToolbar(); }, 1000);
 
-      console.log('[AdminBlock] v439 — toolbar with X close button');
+      console.log('[AdminBlock] v440 — no confirm, direct block/unblock');
     })();
   })();
 })();
