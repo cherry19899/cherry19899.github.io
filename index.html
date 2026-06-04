@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v462';
+        var KEY = '_wp_loaded_v463';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v462';</script>
+    <script>window.WORKPRO_VERSION='v463';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,9 +2473,10 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar when admin content is visible (Total Users stat cards)
+        // ALWAYS show toolbar for debugging - then narrow down
+        console.log('[AdminBlock] Checking... innerText has Total Users:', document.body.innerText.indexOf('Total Users') !== -1, 'Balance:', document.body.innerText.indexOf('Balance:') !== -1);
         var isAdminUsers = document.body.innerText.indexOf('Total Users') !== -1 && document.body.innerText.indexOf('Balance:') !== -1;
-        if (isAdminUsers) showToolbar();
+        if (isAdminUsers) { console.log('[AdminBlock] SHOWING TOOLBAR'); showToolbar(); }
       }
 
       checkAndShowToolbar();
