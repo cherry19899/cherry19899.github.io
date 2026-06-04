@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v427';</script>
+    <script>window.WORKPRO_VERSION='v428';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v427 start');
+      lg('#0f0','[WP] v428 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2392,13 +2392,11 @@ window._W5_fixed=true;
         }
       }
       
-      // Run inject every 500ms whenever on /admin (no timeout — keeps checking)
+      // Run inject every 500ms whenever on /admin
       setInterval(function() {
         if (location.pathname === '/admin') inject();
       }, 500);
-      // Also run immediately
       if (location.pathname === '/admin') inject();
-      // Watch for DOM changes (React tab switching)
       if (window.MutationObserver) {
         var mo = new MutationObserver(function() {
           if (location.pathname === '/admin') inject();
@@ -2406,7 +2404,59 @@ window._W5_fixed=true;
         mo.observe(document.body, { childList: true, subtree: true });
       }
       
-      console.log('[AdminBlock] v420 — navigates to /admin to see 🚫 buttons');
+      // FLOATING TOOLBAR for /admin — input + Block/Unblock buttons
+      (function() {
+        var toolbarId = '_wp_admin_toolbar';
+        function showToolbar() {
+          if (document.getElementById(toolbarId)) return;
+          var bar = document.createElement('div');
+          bar.id = toolbarId;
+          bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1f2937;padding:8px 16px;z-index:99999;display:flex;gap:8px;align-items:center;box-shadow:0 -4px 12px rgba(0,0,0,0.3);';
+          bar.innerHTML = '<span style="color:#fff;font-size:13px;font-weight:600;white-space:nowrap;">Block:</span>' +
+            '<input id="_wp_block_input" type="text" placeholder="Username" style="flex:1;padding:6px 10px;border-radius:6px;border:none;font-size:14px;max-width:200px;">' +
+            '<button id="_wp_block_btn" style="background:#ef4444;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;">Block</button>' +
+            '<button id="_wp_unblock_btn" style="background:#10b981;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px;">Unblock</button>';
+          document.body.appendChild(bar);
+          document.body.style.paddingBottom = '56px';
+          
+          document.getElementById('_wp_block_btn').onclick = function() {
+            var uname = document.getElementById('_wp_block_input').value.trim();
+            if (!uname) return;
+            fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/block', {
+              method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+              if (window.showToast) window.showToast(data.message || 'Blocked!', '#ef4444');
+              setTimeout(function() { location.reload(); }, 500);
+            });
+          };
+          document.getElementById('_wp_unblock_btn').onclick = function() {
+            var uname = document.getElementById('_wp_block_input').value.trim();
+            if (!uname) return;
+            fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/unblock', {
+              method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+              if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
+              setTimeout(function() { location.reload(); }, 500);
+            });
+          };
+          // Auto-fill on username click
+          document.addEventListener('click', function(e) {
+            var el = e.target;
+            var tc = el.textContent || '';
+            var um = tc.match(/User_[a-zA-Z0-9_-]+/);
+            if (um) document.getElementById('_wp_block_input').value = um[0];
+          });
+        }
+        function hideToolbar() {
+          var bar = document.getElementById(toolbarId);
+          if (bar) { bar.remove(); document.body.style.paddingBottom = '0'; }
+        }
+        setInterval(function() {
+          if (location.pathname === '/admin') showToolbar(); else hideToolbar();
+        }, 500);
+      })();
+      
+      console.log('[AdminBlock] v428 — toolbar with input + Block/Unblock buttons');
     })();
   })();
 })();
@@ -2432,6 +2482,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v427 start');
+  lg('#0f0','[WP] v428 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
