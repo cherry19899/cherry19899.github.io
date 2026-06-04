@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v459: Fix 2 missing IIFE closes + restore footer/debug console -->
+    <!-- v460: Fix toolbar detection — Balance: + No KYC check -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v459';
+        var KEY = '_wp_loaded_v460';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v459';</script>
+    <script>window.WORKPRO_VERSION='v460';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,18 +2473,18 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar on any admin page (both Jobs and Users tabs)
-        var isAdminPage = document.body.innerHTML.indexOf('Total Users') !== -1;
-        if (isAdminPage) showToolbar();
+        // Show toolbar on admin Users tab (has user cards with Balance:)
+        var hasUsers = document.body.innerHTML.indexOf('Balance:') !== -1 && document.body.innerHTML.indexOf('No KYC') !== -1;
+        if (hasUsers) showToolbar();
       }
 
       checkAndShowToolbar();
-      setTimeout(checkAndShowToolbar, 300);
-      setTimeout(checkAndShowToolbar, 600);
-      setTimeout(checkAndShowToolbar, 1000);
-      setTimeout(checkAndShowToolbar, 2000);
-      // Keep checking every 2s in case React re-renders
-      setInterval(checkAndShowToolbar, 2000);
+      setTimeout(checkAndShowToolbar, 500);
+      setTimeout(checkAndShowToolbar, 1500);
+      setTimeout(checkAndShowToolbar, 3000);
+      setTimeout(checkAndShowToolbar, 5000);
+      // Keep checking in case React re-renders
+      setInterval(checkAndShowToolbar, 3000);
 
       var observer = new MutationObserver(function() { checkAndShowToolbar(); });
       if (document.body) observer.observe(document.body, { childList: true, subtree: true });
