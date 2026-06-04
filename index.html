@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v431: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v432: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v431';</script>
+    <script>window.WORKPRO_VERSION='v432';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v431 start');
+      lg('#0f0','[WP] v432 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,8 +2349,8 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v431) ────────────────────────────
-    // Toolbar ONLY on /admin page — detected by URL + DOM content
+    // ─── ADMIN USER BLOCK (v432) ────────────────────────────
+    // Toolbar ONLY on /admin page — detected by URL pathname
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
@@ -2362,13 +2362,10 @@ window._W5_fixed=true;
       function isAdminUrl() {
         return window.location.pathname === '/admin' || window.location.hash.indexOf('/admin') !== -1;
       }
-      // Check if admin users list is visible (has "Balance:" text)
-      function hasUserList() {
-        return document.body && (document.body.textContent || '').indexOf('Balance:') !== -1;
-      }
 
       function showToolbar() {
         if (_tbShown || document.getElementById(toolbarId)) return;
+        if (!isAdminUrl()) return;
         _tbShown = true; _tbHidden = false;
         var bar = document.createElement('div');
         bar.id = toolbarId;
@@ -2420,13 +2417,13 @@ window._W5_fixed=true;
       }
 
       function checkToolbar() {
-        if (isAdminUrl() && hasUserList()) { showToolbar(); }
-        else if (_tbShown && (!isAdminUrl() || !hasUserList())) { hideToolbar(); }
+        if (isAdminUrl()) { showToolbar(); }
+        else if (_tbShown && !isAdminUrl()) { hideToolbar(); }
       }
 
       // Double-click handler on usernames (admin users list only)
       function setupDblClick() {
-        if (!isAdminUrl() || !hasUserList()) return;
+        if (!isAdminUrl()) return;
         var els = document.querySelectorAll('b, strong, h3, h4, span, div');
         for (var i = 0; i < els.length; i++) {
           var el = els[i];
@@ -2475,7 +2472,7 @@ window._W5_fixed=true;
       setTimeout(onDomChange, 1500);
       setTimeout(onDomChange, 3000);
 
-      console.log('[AdminBlock] v431 — /admin only toolbar + double-click');
+      console.log('[AdminBlock] v432 — /admin only toolbar + double-click');
     })();
   })();
 })();
