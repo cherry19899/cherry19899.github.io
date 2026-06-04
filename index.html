@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v433: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v434: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v433';</script>
+    <script>window.WORKPRO_VERSION='v434';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v433 start');
+      lg('#0f0','[WP] v434 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,19 +2349,19 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v433) ────────────────────────────
-    // Toolbar ONLY on /admin page
+    // ─── ADMIN USER BLOCK (v434) ────────────────────────────
+    // Toolbar ONLY on admin page — detected by DOM content (SPA safe)
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
       var toolbarId = '_wp_admin_toolbar';
       var _tbShown = false;
 
-      // Detect /admin by pathname OR href (SPA safe)
+      // Detect admin page by DOM — "Work Pro Admin" title is unique to admin
       function isAdminPage() {
-        var p = window.location.pathname;
-        var h = window.location.href;
-        return p === '/admin' || p.indexOf('/admin') !== -1 || h.indexOf('/admin') !== -1 || h.indexOf('admin') !== -1;
+        var t = document.title || '';
+        var tc = document.body ? (document.body.textContent || '') : '';
+        return t.indexOf('Admin') !== -1 || tc.indexOf('Work Pro Admin') !== -1 || tc.indexOf('Total Users') !== -1;
       }
 
       function showToolbar() {
@@ -2473,7 +2473,7 @@ window._W5_fixed=true;
       setTimeout(onDomChange, 1500);
       setTimeout(onDomChange, 3000);
 
-      console.log('[AdminBlock] v433 — /admin only toolbar + double-click');
+      console.log('[AdminBlock] v434 — DOM-detected admin toolbar + double-click');
     })();
   })();
 })();
