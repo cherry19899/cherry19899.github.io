@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v437: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v438: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v437';</script>
+    <script>window.WORKPRO_VERSION='v438';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v437 start');
+      lg('#0f0','[WP] v438 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2435,24 +2435,26 @@ window._W5_fixed=true;
         }
       }
 
-      // Show toolbar immediately + on mutations
+      // Show toolbar + recreate if React removes it (SPA navigation)
       function init() {
         if (document.body) showToolbar(); else { setTimeout(init, 200); return; }
         setupDblClick();
       }
       if (window.MutationObserver) {
-        var mo = new MutationObserver(setupDblClick);
+        var mo = new MutationObserver(function() { showToolbar(); setupDblClick(); });
         function startMo() {
-          if (document.body) { mo.observe(document.body, { childList: true, subtree: true }); }
+          if (document.body) { mo.observe(document.body, { childList: true, subtree: true }); init(); }
           else { setTimeout(startMo, 200); }
         }
         startMo();
       }
       init();
-      setTimeout(setupDblClick, 1000);
-      setTimeout(setupDblClick, 2500);
+      setTimeout(init, 500);
+      setTimeout(init, 1500);
+      setTimeout(init, 3000);
+      setInterval(function() { if (document.body && !document.getElementById(toolbarId)) showToolbar(); }, 1000);
 
-      console.log('[AdminBlock] v437 — SPA-safe always-visible toolbar');
+      console.log('[AdminBlock] v438 — SPA-safe always-visible toolbar');
     })();
   })();
 })();
