@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v411';</script>
+    <script>window.WORKPRO_VERSION='v412';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2233,41 +2233,45 @@ window._W5_fixed=true;
     setTimeout(injectPP, 5000);
 
     // ─── FAB "+" CLICK HANDLER ──────────────────────────────
+    // STRICT: only trigger on actual FAB — green circle with "+" text
     (function() {
       document.addEventListener('click', function(e) {
         var el = e.target;
-        // Check if clicked element is the FAB (green circle with +)
-        var fabTexts = ['+', '➕', '⊕'];
-        var isFab = false;
-        for (var i = 0; i < fabTexts.length; i++) {
-          if ((el.textContent || '').trim() === fabTexts[i]) { isFab = true; break; }
+        // 1. Must have "+" text content
+        var txt = (el.textContent || '').trim();
+        if (txt !== '+' && txt !== '➕' && txt !== '⊕') return;
+        // 2. Must be inside a CIRCLE element (border-radius 50%)
+        var circle = el;
+        while (circle && circle !== document.body) {
+          var br = window.getComputedStyle && window.getComputedStyle(circle).borderRadius;
+          if (br === '50%' || br === '999px' || parseInt(br) >= 20) break;
+          circle = circle.parentElement;
         }
-        // Also check by position (bottom-right corner)
-        var rect = el.getBoundingClientRect && el.getBoundingClientRect();
-        if (!isFab && rect) {
-          if (rect.bottom > window.innerHeight - 80 && rect.right > window.innerWidth - 80 && rect.width < 60 && rect.height < 60) {
-            isFab = true;
-          }
+        if (!circle || circle === document.body) return;
+        // 3. Must be GREEN
+        var bg = window.getComputedStyle && window.getComputedStyle(circle).backgroundColor;
+        var isGreen = bg && (bg.indexOf('10b981') !== -1 || bg.indexOf('34') !== -1 || bg.indexOf('green') !== -1 || bg.indexOf('rgb(16, 185, 129)') !== -1);
+        if (!isGreen) return;
+        // 4. Must NOT be inside bottom nav
+        var parent = el;
+        while (parent && parent !== document.body) {
+          var role = parent.getAttribute && parent.getAttribute('role');
+          var tag = parent.tagName;
+          if (role === 'navigation' || role === 'tablist') return;
+          parent = parent.parentElement;
         }
-        // Also check if it's a round green button
-        var style = window.getComputedStyle && el.style ? el.style.cssText : '';
-        if (!isFab && el.style) {
-          var bg = el.style.backgroundColor || '';
-          if ((bg.indexOf('10b981') !== -1 || bg.indexOf('green') !== -1) && (el.style.borderRadius === '50%' || el.style.borderRadius === '999px')) {
-            isFab = true;
-          }
-        }
-        if (isFab) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (window._showPostJob) {
-            window._showPostJob();
-            console.log('[FAB] Post Job modal opened');
-          }
-          return;
+        // 5. Must be LARGE enough (>50px) — FAB is 56px, nav icons are 24px
+        var rect = circle.getBoundingClientRect && circle.getBoundingClientRect();
+        if (!rect || rect.width < 50 || rect.height < 50) return;
+        // ALL checks passed — it's the real FAB
+        e.preventDefault();
+        e.stopPropagation();
+        if (window._showPostJob) {
+          window._showPostJob();
+          console.log('[FAB] Post Job modal opened');
         }
       }, true);
-      console.log('[FAB] Click handler registered');
+      console.log('[FAB] Strict handler registered');
     })();
 
     // ─── PORTFOLIO CLICK HANDLER ────────────────────────────
