@@ -4,12 +4,12 @@
     <!-- AGGRESSIVE CACHE BUST: force reload if no nocache param -->
     <script>
       (function(){
-        // Normal first-load cache bust
         if (!sessionStorage.getItem('_wp_busted')) {
           sessionStorage.setItem('_wp_busted', '1');
           var url = location.protocol + '//' + location.host + location.pathname;
           if (url.indexOf('nocache=') === -1 && url.indexOf('?_=') === -1) {
-            url += '?nocache=9999&_=' + Date.now();
+            url += '?nocache=338&_=' + Date.now();
+            console.log('[CACHE BUST] Forcing reload to:', url);
             location.replace(url);
           }
         }
@@ -30,12 +30,11 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <script>
-      // Aggressive cache-bust: always reload if stored version < v408
-      var storedVer = localStorage.getItem('workpro_version');
-      if (storedVer !== 'v408' || location.search.indexOf('nocache=') === -1) {
-        localStorage.setItem('workpro_version', 'v408');
-        var url = location.protocol + '//' + location.host + '/?nocache=408&_=' + Date.now();
-        location.replace(url);
+      // Cache bust: add nocache only if NOT present (prevents infinite redirect loop)
+      var url = window.location.href;
+      if (url.indexOf('nocache=') === -1) {
+        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=' + Date.now();
+        window.location.replace(url);
       }
     </script>
     <script>window.WORKPRO_VERSION='v409';</script>
@@ -43,7 +42,7 @@
     <script>
       (function(){
         if (location.search.indexOf('nocache=') === -1 && location.search.indexOf('v=') === -1) {
-          var url = location.protocol + '//' + location.host + '/?nocache=409&_=' + Date.now();
+          var url = location.protocol + '//' + location.host + '/?nocache=338&_=' + Date.now();
           console.log('[CacheBust] Redirecting to:', url);
           location.replace(url);
         }
@@ -411,10 +410,53 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = /localhost|onrender/.test(location.hostname); // github.io = production for Pi Browser
+          var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
           window.Pi.init({ 
             version: "2.0", 
-            sandbox: isSandbox
+            sandbox: isSandbox,
+            onIncompletePayment: function(payment) {
+              console.log('[Pi] onIncompletePayment called', payment);
+              var paymentId = payment && (payment.identifier || payment.paymentId || payment.transactionId || payment.id);
+              if (!paymentId) {
+                console.warn('[Pi] No paymentId found in incomplete payment');
+                return Promise.resolve();
+              }
+              // Check if payment is developer_completed — needs /resolve-complete, NOT /cancelled
+              var st = payment && payment.status;
+              var isCompleted = false;
+              if (typeof st === 'string') {
+                isCompleted = st === 'developer_completed' || st === 'completed';
+              } else if (st && typeof st === 'object') {
+                isCompleted = st.development_completed === true || st.transaction_verified === true;
+              }
+              var uid = localStorage.getItem('workpro_user_id') || '';
+              var endpoint = isCompleted ? '/resolve-complete' : '/cancelled';
+              console.log('[Pi] onIncompletePayment: status=' + (typeof st === 'string' ? st : JSON.stringify(st)) + ' -> endpoint=' + endpoint);
+              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+              }).then(function(r) {
+                console.log('[Pi] onIncompletePayment ' + endpoint + ' status:', r.status);
+                return r.json().catch(function(){return {};}); 
+              }).then(function(data) {
+                return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+                }).then(function(){return data;}).catch(function(){return data;});
+              }).then(function(data) {
+                console.log('[Pi] onIncompletePayment handled, waiting 5s for Pi Network...');
+                // CRITICAL: wait for Pi Network to update payment status before resolving
+                return new Promise(function(resolve){
+                  setTimeout(function(){
+                    console.log('[Pi] onIncompletePayment resolved after delay');
+                    resolve({ handled: true, resolved: isCompleted, cancelled: !isCompleted });
+                  }, 5000);
+                });
+              }).catch(function(err) {
+                console.error('[Pi] onIncompletePayment error:', err);
+                return { handled: true, error: err.message };
+              });
+            }
           });
           window.Pi._workpro_inited = true;
           window._piSdkReady = true;
@@ -999,6 +1041,63 @@
     })();
     </script>
     
+    <!-- APPLY TOAST + XHR INTERCEPTOR — guaranteed on all devices -->
+    <script>
+    (function(){
+      // showToast helper
+      window.showToast = function(message, color) {
+        color = color || '#10b981';
+        var toastId = '_wp_toast_' + Date.now();
+        var toast = document.createElement('div');
+        toast.id = toastId;
+        toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;background:#fff;border-left:4px solid ' + color + ';color:#374151;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;font-size:14px;font-weight:500;max-width:90vw;width:auto;animation:slideDown 0.3s ease; display:flex; align-items:center; gap:8px;';
+        toast.innerHTML = '<span style="color:' + color + ';font-size:18px;">&#10003;</span>' + message;
+        document.body.appendChild(toast);
+        setTimeout(function() {
+          var t = document.getElementById(toastId);
+          if (t) { t.style.opacity = '0'; t.style.transition = 'opacity 0.5s'; setTimeout(function() { t.remove(); }, 500); }
+        }, 3000);
+      };
+      // Inject toast animation CSS
+      var toastStyle = document.createElement('style');
+      toastStyle.textContent = '@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+      document.head.appendChild(toastStyle);
+      console.log('[Early] showToast ready');
+
+      // XMLHttpRequest interceptor for /apply — works even if React overrides fetch
+      var origOpen = XMLHttpRequest.prototype.open;
+      var origSend = XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.open = function(method, url) {
+        this._wpUrl = url;
+        this._wpMethod = method;
+        return origOpen.apply(this, arguments);
+      };
+      XMLHttpRequest.prototype.send = function(body) {
+        var xhr = this;
+        var isApply = this._wpUrl && this._wpUrl.indexOf('/apply') !== -1 && this._wpMethod === 'POST';
+        if (isApply) {
+          var origOnReady = this.onreadystatechange;
+          this.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+              try {
+                var data = JSON.parse(xhr.responseText);
+                if (data && data.error && data.error.indexOf('Not enough connects') !== -1) {
+                  console.log('[Early] Apply rejected:', data.error, 'need', data.required, 'have', data.current);
+                  if (window.showToast) {
+                    window.showToast('Need ' + (data.required || 1) + ' connects, you have ' + (data.current || 0), '#ef4444');
+                  }
+                }
+              } catch(e) {}
+            }
+            if (origOnReady) origOnReady.apply(this, arguments);
+          };
+        }
+        return origSend.apply(this, arguments);
+      };
+      console.log('[Early] XHR /apply interceptor ready');
+    })();
+    </script>
+
     <!-- EARLY PiFix v293 — runs BEFORE React bundle -->
     <script>
     (function(){
@@ -1099,7 +1198,10 @@
         });
         // Wrap onReadyForServerApproval to add fallback /approve call
         var origOnReady = cbs && cbs.onReadyForServerApproval;
+        var _approveCalled = false; // Guard: prevent double execution
         cbs.onReadyForServerApproval = function(paymentId) {
+          if (_approveCalled) { console.log('[PiFix-Early] onReadyForServerApproval: already called, skipping'); return; }
+          _approveCalled = true;
           // Normalize paymentId (can be string or {identifier: 'xxx'} object)
           var pid = typeof paymentId === 'string' ? paymentId : (paymentId && (paymentId.identifier || paymentId.id || String(paymentId)));
           console.log('[PiFix-Early] onReadyForServerApproval: raw=' + JSON.stringify(paymentId) + ' normalized=' + pid);
@@ -1186,45 +1288,9 @@
             }
           });
       }
-      // loadBundle(); // Now loaded via \u003cscript type=\"module\"\u003e
+      loadBundle();
     })();
     </script>
-    <script>
-    // PRE-LOAD ADMIN AUTH PATCH — must run before React bundle loads
-    (function() {
-      var origFetch = window.fetch;
-      window.fetch = function(url, options) {
-        if (typeof url !== 'string') return origFetch.call(this, url, options);
-        if (url.indexOf('/api/') !== -1) {
-          options = options || {};
-          var headers = options.headers || {};
-          if (typeof Headers !== 'undefined' && headers instanceof Headers) {
-            var h = {}; headers.forEach(function(v, k) { h[k] = v; }); headers = h;
-          } else if (Array.isArray(headers)) {
-            var h2 = {}; headers.forEach(function(item) { h2[item[0]] = item[1]; }); headers = h2;
-          }
-          if (!headers['x-user-id'] && !headers['X-User-Id']) {
-            try {
-              var userStr = localStorage.getItem('workpro_user');
-              if (userStr) {
-                var user = JSON.parse(userStr);
-                var uid = user.username || user.id || user.uid;
-                if (uid) headers['x-user-id'] = uid;
-              }
-            } catch(e) {}
-          }
-          if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
-            var adminToken = localStorage.getItem('workpro_admin_token');
-            if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
-          }
-          options.headers = headers;
-        }
-        return origFetch.call(this, url, options);
-      };
-    })();
-    </script>
-    <script type="module" src="/admin-panel.js?v=4"></script>
-<script src="/assets/app-v182.js" defer></script>
     <link rel="stylesheet" href="/assets/app-v173.css">
   <script>
 // ===== WORK PRO PATCH v53 =====
@@ -1317,16 +1383,10 @@
           var userStr = localStorage.getItem('workpro_user');
           if (userStr) {
             var user = JSON.parse(userStr);
-            var uid = user.username || user.id || user.uid;
+            var uid = user.id || user.uid;
             if (uid) headers['x-user-id'] = uid;
           }
         } catch(e) {}
-        console.log('[AuthInterceptor] URL:', url, 'has x-user-id:', !!headers['x-user-id']);
-      }
-      // FORCE admin fallback: always set x-user-id for admin endpoints regardless of existing auth
-      if (url.indexOf('/api/admin/') !== -1) {
-        headers['x-user-id'] = 'cherry19899';
-        console.log('[AuthInterceptor] FORCED admin x-user-id: cherry19899');
       }
       if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
         var adminToken = localStorage.getItem('workpro_admin_token');
@@ -1337,22 +1397,13 @@
 
     // Admin API format fix
     if (url.indexOf('/api/admin/') !== -1) {
-      console.log('[AdminFix] Intercepted admin URL:', url);
       return origFetch.call(this, url, options).then(function(response) {
         var clone = response.clone();
         return clone.json().then(function(data) {
           var fixed = data;
           if (url.indexOf('/users') !== -1 && Array.isArray(data)) fixed = {users: data};
-          if ((url.indexOf('/jobs/all') !== -1 || url.indexOf('/api/admin/jobs') !== -1) && Array.isArray(data)) fixed = {jobs: data};
+          if (url.indexOf('/jobs/all') !== -1 && Array.isArray(data)) fixed = {jobs: data};
           if (url.indexOf('/escrows') !== -1 && Array.isArray(data)) fixed = {escrows: data};
-          if (url.indexOf('/stats') !== -1 && data && typeof data === 'object') {
-            console.log('[AdminFix] STATS raw:', JSON.stringify(data));
-            ['totalIncome','activeEscrows','totalUsers','totalJobs','totalEarnings','pendingEscrows'].forEach(function(k) {
-              var snake = k.replace(/[A-Z]/g, function(m) { return '_' + m.toLowerCase(); });
-              if (data[k] !== undefined && typeof data[k] !== 'number') { data[k] = parseFloat(data[k]) || 0; } else if (data[snake] !== undefined && typeof data[snake] !== 'number') { data[k] = parseFloat(data[snake]) || 0; } else { return; }
-            });
-            fixed = data;
-          }
           if (url.indexOf('/earnings') !== -1 && data && !data.summary) {
             var payments = data.payments || [];
             var total = data.total || payments.length || 0;
@@ -1435,7 +1486,7 @@
               var storedC = parseInt(sc || '0', 10);
               var serverC = data.balance_connects || data.connects || 0;
               if (storedC > serverC && (storedC - serverC) > 2) {
-                // console.log('[WorkPro] MERGE response:', storedC, 'over', serverC);
+                console.log('[WorkPro] MERGE response:', storedC, 'over', serverC);
                 data.balance_connects = storedC;
                 data.connects = storedC;
               }
@@ -1580,13 +1631,13 @@ window._W5_fixed=true;
   var origRemoveItem = localStorage.removeItem;
   localStorage.removeItem = function(key) {
     if (key === CONNECTS_KEY || key === BALANCE_KEY || key === SIG_KEY) {
-      // console.log('[WorkPro] BLOCKED remove:', key);
+      console.log('[WorkPro] BLOCKED remove:', key);
       return;
     }
     if (key === STORAGE_KEY) {
       var sc = origGetItem.call(localStorage, CONNECTS_KEY);
       if (sc) savedConnects = parseInt(sc, 10);
-      // console.log('[WorkPro] Logout, keeping connects:', savedConnects);
+      console.log('[WorkPro] Logout, keeping connects:', savedConnects);
       try {
         var userStr = origGetItem.call(localStorage, key);
         if (userStr) {
@@ -1625,7 +1676,7 @@ window._W5_fixed=true;
   localStorage.clear = function() {
     var sc = origGetItem.call(localStorage, CONNECTS_KEY);
     var sb = origGetItem.call(localStorage, BALANCE_KEY);
-    // console.log('[WorkPro] BLOCKED clear, preserving connects:', sc);
+    console.log('[WorkPro] BLOCKED clear, preserving connects:', sc);
     var keysToRemove = [];
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
@@ -1832,7 +1883,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v408 start');
+      lg('#0f0','[WP] v290 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -1891,7 +1942,6 @@ window._W5_fixed=true;
   }
   // Fix 2: createPayment with clear-pending + fallback + retry
   if (window.Pi && window.Pi.createPayment && !window.__piFixed275) {
-    window._origPiCreatePayment = window.Pi.createPayment;
     var _ocp = window._origPiCreatePayment || window.Pi.createPayment;
     // Helper: wrap callbacks with x-user-id + fallback
     function wrapCallbacks(cbs, uid) {
@@ -2132,10 +2182,6 @@ window._W5_fixed=true;
             isFab = true;
           }
         }
-        // Exclude navigation buttons from FAB handler (v407 fix)
-        if (isFab && el.closest && el.closest('nav, .bottom-nav, .navbar-links, .nav-link, [role="navigation"]')) {
-          isFab = false;
-        }
         if (isFab) {
           e.preventDefault();
           e.stopPropagation();
@@ -2247,14 +2293,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v408 start');
+  lg('#0f0','[WP] v294 start');
   var o=console.log,oe=console.error,ow=console.warn;
-  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
-  console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
-  console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
-  window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
-  window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
-})();
-</script>
-</body>
-</html>
+  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
