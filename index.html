@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v421';</script>
+    <script>window.WORKPRO_VERSION='v422';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v421 start');
+      lg('#0f0','[WP] v422 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2357,33 +2357,36 @@ window._W5_fixed=true;
       
       function inject() {
         if (location.pathname !== '/admin') return;
-        // Find user cards — they have username heading + Balance: text
-        var headings = document.querySelectorAll('h3, strong, b, div');
-        for (var i = 0; i < headings.length; i++) {
-          var h = headings[i];
-          if (h._hasBlock) continue;
-          var tc = h.textContent || '';
-          // Must be a User_xxx username heading
+        // Find ALL elements and check their textContent
+        var all = document.getElementsByTagName('*');
+        for (var i = 0; i < all.length; i++) {
+          var el = all[i];
+          if (el._hasBlock) continue;
+          // Only elements with direct User_xxx text (no children)
+          if (el.children.length > 0) continue;
+          var tc = el.textContent || '';
           var um = tc.match(/^User_[a-zA-Z0-9_-]+$/);
           if (!um) continue;
-          // Parent must contain Balance:
-          var parent = h.parentElement;
-          if (!parent || (parent.textContent || '').indexOf('Balance:') === -1) continue;
+          // Parent must have Balance: text
+          var parent = el.parentElement;
+          if (!parent) continue;
+          if ((parent.textContent || '').indexOf('Balance:') === -1) continue;
           if (parent._hasBlock) continue;
           parent._hasBlock = true;
           var username = um[0];
           var isBlocked = parent.textContent.indexOf('BLOCKED') !== -1;
           
           var btn = document.createElement('button');
-          btn.innerHTML = isBlocked ? '✅ Unblock' : '🚫 Block';
-          btn.style.cssText = 'float:right;background:#ef4444;color:#fff;border:none;padding:4px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;margin-top:-4px;';
-          if (isBlocked) btn.style.background = '#10b981';
+          btn.innerHTML = isBlocked ? '✅' : '🚫';
+          btn.style.cssText = 'background:none;border:none;color:#ef4444;font-size:22px;cursor:pointer;padding:4px;float:right;margin-top:-4px;';
+          if (isBlocked) btn.style.color = '#10b981';
+          btn.title = (isBlocked ? 'Unblock' : 'Block') + ' ' + username;
           btn._blockUser = username;
           
           btn.onclick = function(e) {
             e.stopPropagation();
             var uname = this._blockUser;
-            var action = this.innerHTML.indexOf('Block') !== -1 ? 'block' : 'unblock';
+            var action = this.title.indexOf('Block') !== -1 && this.title.indexOf('Unblock') === -1 ? 'block' : 'unblock';
             fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
@@ -2392,10 +2395,7 @@ window._W5_fixed=true;
               setTimeout(function() { location.reload(); }, 500);
             });
           };
-          // Insert after the username heading
-          h.style.display = 'inline-block';
-          h.style.width = '70%';
-          h.parentNode.insertBefore(btn, h.nextSibling);
+          parent.insertBefore(btn, parent.firstChild);
         }
       }
       
@@ -2434,6 +2434,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v421 start');
+  lg('#0f0','[WP] v422 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
