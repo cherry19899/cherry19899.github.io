@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v438: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v439: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v438';</script>
+    <script>window.WORKPRO_VERSION='v439';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v438 start');
+      lg('#0f0','[WP] v439 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,8 +2349,8 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v437) ────────────────────────────
-    // Always-visible toolbar (SPA-safe, recreates if missing) + double-click
+    // ─── ADMIN USER BLOCK (v439) ────────────────────────────
+    // Always-visible toolbar with X close button + double-click
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
@@ -2365,7 +2365,8 @@ window._W5_fixed=true;
         bar.innerHTML = '<span style="color:#fff;font-size:14px;font-weight:700;white-space:nowrap;">Block:</span>' +
           '<input id="_wp_block_input" type="text" placeholder="Username to block/unblock" style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:14px;max-width:260px;outline:none;">' +
           '<button id="_wp_block_btn" style="background:#ef4444;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Block</button>' +
-          '<button id="_wp_unblock_btn" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Unblock</button>';
+          '<button id="_wp_unblock_btn" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Unblock</button>' +
+          '<button id="_wp_tb_close" style="background:#6b7280;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;margin-left:4px;" title="Hide">&times;</button>';
         document.body.appendChild(bar);
         document.body.style.paddingBottom = '64px';
 
@@ -2390,6 +2391,10 @@ window._W5_fixed=true;
             if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
             setTimeout(function() { location.reload(); }, 800);
           }).catch(function(err) { console.error('[AdminBlock]', err); });
+        };
+        document.getElementById('_wp_tb_close').onclick = function() {
+          var bar = document.getElementById(toolbarId);
+          if (bar) { bar.style.display = 'none'; document.body.style.paddingBottom = '0'; }
         };
         // Auto-fill on username click
         document.addEventListener('click', function(e) {
@@ -2454,7 +2459,7 @@ window._W5_fixed=true;
       setTimeout(init, 3000);
       setInterval(function() { if (document.body && !document.getElementById(toolbarId)) showToolbar(); }, 1000);
 
-      console.log('[AdminBlock] v438 — SPA-safe always-visible toolbar');
+      console.log('[AdminBlock] v439 — toolbar with X close button');
     })();
   })();
 })();
