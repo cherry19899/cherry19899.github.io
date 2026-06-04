@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
-        var KEY = '_wp_loaded_v411';
+        var KEY = '_wp_loaded_v450';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           // Only redirect once per session
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=446&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=450&_=' + Date.now();
             location.replace(url);
             return;
           }
