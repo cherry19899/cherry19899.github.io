@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v467';
+        var KEY = '_wp_loaded_v468';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v467';</script>
+    <script>window.WORKPRO_VERSION='v468';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,17 +2473,10 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar only on admin Users tab — XPath finds "Balance:" text nodes
-        var hasBalance = false;
-        try {
-          var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-          var node;
-          while (node = walker.nextNode()) {
-            if (node.nodeValue && node.nodeValue.indexOf('Balance:') !== -1) { hasBalance = true; break; }
-          }
-        } catch(e) {}
-        var bodyText = document.body.innerText || '';
+        // Show toolbar only on admin Users tab
+        var bodyText = document.body.innerText || document.body.textContent || '';
         var hasTotalUsers = bodyText.indexOf('Total Users') !== -1;
+        var hasBalance = bodyText.indexOf('Balance:') !== -1;
         if (hasTotalUsers && hasBalance) {
           console.log('[AdminBlock] Admin Users detected, showing toolbar');
           showToolbar();
@@ -2492,11 +2485,15 @@ window._W5_fixed=true;
 
       checkAndShowToolbar();
       setTimeout(checkAndShowToolbar, 500);
-      setTimeout(checkAndShowToolbar, 1500);
-      setTimeout(checkAndShowToolbar, 3000);
-      setTimeout(checkAndShowToolbar, 5000);
+      setTimeout(checkAndShowToolbar, 1000);
+      setTimeout(checkAndShowToolbar, 2000);
+      setTimeout(checkAndShowToolbar, 4000);
       // Keep checking in case React re-renders
-      setInterval(checkAndShowToolbar, 3000);
+      setInterval(checkAndShowToolbar, 2000);
+
+      // MutationObserver watches for Balance: text appearing
+      var mo = new MutationObserver(function() { checkAndShowToolbar(); });
+      if (document.body) mo.observe(document.body, { childList: true, subtree: true, characterData: true });
 
       var observer = new MutationObserver(function() { checkAndShowToolbar(); });
       if (document.body) observer.observe(document.body, { childList: true, subtree: true });
