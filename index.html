@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v443: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v444: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v443';</script>
+    <script>window.WORKPRO_VERSION='v444';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v443 start');
+      lg('#0f0','[WP] v444 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,7 +2349,7 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v443) ────────────────────────────
+    // ─── ADMIN USER BLOCK (v444) ────────────────────────────
     // Users tab: search, block/unlock buttons, status badges
     (function() {
       var API = 'https://workpro-api.onrender.com';
@@ -2543,35 +2543,37 @@ window._W5_fixed=true;
       }
 
       // ─── Init ──────────────────────────────────────────────
+      function tryInject() {
+        if (!isAdminUsersTab()) return;
+        injectSearch();
+        injectUserButtons();
+      }
       function init() {
         if (!document.body) { setTimeout(init, 200); return; }
         showToolbar();
-        if (isAdminUsersTab()) {
-          injectSearch();
-          injectUserButtons();
+        var attempts = 0;
+        function waitForUsers() {
+          attempts++;
+          var hasBalance = document.body && (document.body.textContent || '').indexOf('Balance:') !== -1;
+          if (hasBalance) { console.log('[AdminBlock] Users detected, attempt', attempts); tryInject(); }
+          else if (attempts < 30) setTimeout(waitForUsers, 300);
         }
+        waitForUsers();
       }
-
       if (window.MutationObserver) {
-        var mo = new MutationObserver(function() {
-          showToolbar();
-          if (isAdminUsersTab()) { injectSearch(); injectUserButtons(); }
-        });
+        var mo = new MutationObserver(function() { showToolbar(); if (isAdminUsersTab()) tryInject(); });
         function startMo() {
           if (document.body) { mo.observe(document.body, { childList: true, subtree: true }); init(); }
-          else { setTimeout(startMo, 200); }
+          else setTimeout(startMo, 200);
         }
         startMo();
       }
       init();
-      setTimeout(init, 500);
-      setTimeout(init, 1500);
-      setTimeout(init, 3000);
-      setInterval(function() {
-        if (!document.getElementById(toolbarId)) showToolbar();
-      }, 1000);
+      setTimeout(init, 1000);
+      setTimeout(init, 2500);
+      setTimeout(init, 5000);
 
-      console.log('[AdminBlock] v443 — search + block buttons + status badges');
+      console.log('[AdminBlock] v444 — search + block buttons + status badges');
     })();
   })();
 })();
