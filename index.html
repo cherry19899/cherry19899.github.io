@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- AGGRESSIVE CACHE BUST: force reload if no nocache param -->
+    <!-- ULTIMATE CACHE BUST v409 — forces fresh load on ALL devices -->
     <script>
       (function(){
-        if (!sessionStorage.getItem('_wp_busted')) {
-          sessionStorage.setItem('_wp_busted', '1');
-          var url = location.protocol + '//' + location.host + location.pathname;
-          if (url.indexOf('nocache=') === -1 && url.indexOf('?_=') === -1) {
-            url += '?nocache=338&_=' + Date.now();
-            console.log('[CACHE BUST] Forcing reload to:', url);
-            location.replace(url);
-          }
+        var COOKIE_KEY = '_wp_v409';
+        var everLoaded = document.cookie.indexOf(COOKIE_KEY + '=1') !== -1;
+        var hasInline = document.documentElement.innerHTML.indexOf('showToast') !== -1;
+        
+        if (!everLoaded) {
+          // First visit ever — set cookie and force reload with cache-bust
+          document.cookie = COOKIE_KEY + '=1; path=/; max-age=86400';
+          var url = location.protocol + '//' + location.host + '/?nocache=409&_=' + Date.now();
+          console.log('[CACHE BUST v409] First load, forcing fresh:', url);
+          location.replace(url);
+          return;
         }
+        
+        if (!hasInline && location.search.indexOf('retried=') === -1) {
+          // No inline patches loaded — force one more reload
+          var url = location.protocol + '//' + location.host + '/?nocache=409&retried=1&_=' + Date.now();
+          console.log('[CACHE BUST v409] No patches, retrying:', url);
+          location.replace(url);
+          return;
+        }
+        
+        console.log('[CACHE BUST v409] OK — patches loaded or retried');
       })();
     </script>
     <meta charset="UTF-8" />
