@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v414';</script>
+    <script>window.WORKPRO_VERSION='v415';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v413 start');
+      lg('#0f0','[WP] v415 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2350,68 +2350,79 @@ window._W5_fixed=true;
     })();
 
     // ─── ADMIN USER BLOCK CLICK HANDLER ─────────────────────
+    // Uses BOTH mousedown (fires first) and click as backup
     (function() {
       var blockIcon = '🚫';
       var adminBase = 'https://workpro-api.onrender.com';
-      document.addEventListener('click', function(e) {
+      
+      function handleBlockClick(e) {
         var el = e.target;
-        // STEP 1: Check if click contains 🚫
-        var txt = (el.textContent || '');
-        var html = el.innerHTML || '';
-        var hasIcon = txt.indexOf(blockIcon) !== -1 || html.indexOf(blockIcon) !== -1;
-        console.log('[AdminBlock] Click detected, hasIcon=' + hasIcon + ', txt=' + txt.substring(0,30));
+        // Check if clicked element or its parent contains 🚫
+        var checkEl = el;
+        var hasIcon = false;
+        for (var c = 0; c < 3 && checkEl; c++) {
+          var txt = (checkEl.getAttribute && checkEl.getAttribute('aria-label')) || '';
+          var title = (checkEl.getAttribute && checkEl.getAttribute('title')) || '';
+          var tc = (checkEl.textContent || '');
+          var ih = (checkEl.innerHTML || '');
+          if (txt.indexOf(blockIcon) !== -1 || title.indexOf(blockIcon) !== -1 || 
+              tc.indexOf(blockIcon) !== -1 || ih.indexOf(blockIcon) !== -1) {
+            hasIcon = true; el = checkEl; break;
+          }
+          checkEl = checkEl.parentElement;
+        }
+        console.log('[AdminBlock] Check: hasIcon=' + hasIcon + ', el=' + (el.tagName || '?'));
         if (!hasIcon) return;
-        // STEP 2: Must be on admin page
+        // Must be on admin page
         var pageText = document.body.textContent || '';
-        var isAdminPage = pageText.indexOf('Админ') !== -1 || pageText.indexOf('Admin') !== -1;
-        console.log('[AdminBlock] isAdminPage=' + isAdminPage);
-        if (!isAdminPage) return;
+        if (pageText.indexOf('Админ') === -1 && pageText.indexOf('Admin') === -1) return;
         e.preventDefault();
         e.stopPropagation();
-        // STEP 3: Find username — walk up looking for any user identifier
+        // Find user ID — look for data attribute or text pattern
         var row = el;
-        var username = null;
+        var userId = null;
         for (var i = 0; i < 6 && row; i++) {
-          var rowText = row.textContent || '';
-          console.log('[AdminBlock] Row ' + i + ' text: ' + rowText.substring(0, 60));
-          // Try User_xxx pattern
-          var m1 = rowText.match(/User_[a-zA-Z0-9_-]+/);
-          if (m1) { username = m1[0]; console.log('[AdminBlock] Found User_xxx: ' + username); break; }
-          // Try any word with at least 3 chars that could be username
-          var m2 = rowText.match(/^\s*([a-zA-Z0-9_]{3,})/);
-          if (m2 && m2[1] !== 'Admin' && m2[1] !== 'Users') { username = m2[1]; console.log('[AdminBlock] Found username: ' + username); break; }
+          // Check data-user-id attribute
+          var duid = row.getAttribute && row.getAttribute('data-user-id');
+          if (duid) { userId = duid; console.log('[AdminBlock] Found data-user-id: ' + userId); break; }
+          var rt = row.textContent || '';
+          // Try User_xxx pattern (display username)
+          var m1 = rt.match(/User_[a-zA-Z0-9_-]+/);
+          if (m1) { userId = m1[0]; console.log('[AdminBlock] Found User_xxx: ' + userId); break; }
+          // Try username directly (without User_ prefix)
+          var m2 = rt.match(/([a-zA-Z][a-zA-Z0-9_]{2,})/);
+          if (m2 && m2[1] !== 'Admin' && m2[1] !== 'Users' && m2[1] !== 'ID' && m2[1] !== 'Status') {
+            userId = m2[1]; console.log('[AdminBlock] Found id: ' + userId); break;
+          }
           row = row.parentElement;
         }
-        if (!username) { console.log('[AdminBlock] ERROR: No username found'); return; }
-        // STEP 4: Call API
+        if (!userId) { console.log('[AdminBlock] ERROR: No user ID found'); return; }
+        // Call API
         var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
-        var url = adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/block';
-        console.log('[AdminBlock] Calling: POST ' + url + ' (uid=' + uid + ')');
-        fetch(url, {
+        console.log('[AdminBlock] API: POST /api/admin/users/' + userId + '/block');
+        fetch(adminBase + '/api/admin/users/' + encodeURIComponent(userId) + '/block', {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
         }).then(function(r) { return r.json(); }).then(function(data) {
-          console.log('[AdminBlock] API response:', JSON.stringify(data));
+          console.log('[AdminBlock] Response:', JSON.stringify(data));
           if (data.success) {
-            console.log('[AdminBlock] BLOCKED:', username);
-            if (window.showToast) window.showToast('BLOCKED: ' + username, '#ef4444');
+            if (window.showToast) window.showToast('BLOCKED: ' + userId, '#ef4444');
             if (row) row.style.opacity = '0.4';
           } else {
-            // Already blocked — try unblock
-            console.log('[AdminBlock] Block failed, trying unblock...');
-            fetch(adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/unblock', {
+            fetch(adminBase + '/api/admin/users/' + encodeURIComponent(userId) + '/unblock', {
               method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
             }).then(function(r2) { return r2.json(); }).then(function(d2) {
-              console.log('[AdminBlock] Unblock response:', JSON.stringify(d2));
               if (d2.success) {
-                console.log('[AdminBlock] UNBLOCKED:', username);
-                if (window.showToast) window.showToast('UNBLOCKED: ' + username, '#10b981');
+                if (window.showToast) window.showToast('UNBLOCKED: ' + userId, '#10b981');
                 if (row) row.style.opacity = '1';
               }
-            }).catch(function(err) { console.error('[AdminBlock] Unblock error:', err); });
+            });
           }
-        }).catch(function(err) { console.error('[AdminBlock] Block error:', err); });
-      }, true);
-      console.log('[AdminBlock] Handler registered v414');
+        }).catch(function(err) { console.error('[AdminBlock] API error:', err); });
+      }
+      
+      document.addEventListener('mousedown', handleBlockClick, true);
+      document.addEventListener('click', handleBlockClick, true);
+      console.log('[AdminBlock] mousedown+click handlers registered v415');
     })();
   })();
 })();
@@ -2437,6 +2448,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v413 start');
+  lg('#0f0','[WP] v415 start');
   var o=console.log,oe=console.error,ow=console.warn;
   console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
