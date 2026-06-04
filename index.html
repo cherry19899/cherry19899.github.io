@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v436: MINIMAL cache bust — Pi Browser safe -->
+    <!-- v430: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
         // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v436';</script>
+    <script>window.WORKPRO_VERSION='v430';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1958,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v436 start');
+      lg('#0f0','[WP] v430 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2349,132 +2349,23 @@ window._W5_fixed=true;
       console.log('[Install] Click handler registered (strict)');
     })();
 
-    // ─── ADMIN USER BLOCK (v436) ────────────────────────────
-    // Toolbar: always visible with close button, double-click on usernames
+    // ─── ADMIN USER BLOCK (v430) ────────────────────────────
+    // Always-visible toolbar + double-click on usernames
     (function() {
       var API = 'https://workpro-api.onrender.com';
       var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
+      
       var toolbarId = '_wp_admin_toolbar';
-      var _tbCreated = false;
+      var _tbShown = false;
 
-      // Detect admin page by title or DOM
-      function isAdminPage() {
-        var t = document.title || '';
-        var tc = document.body ? (document.body.textContent || '') : '';
-        return t.indexOf('Admin') !== -1 || tc.indexOf('Work Pro Admin') !== -1 || tc.indexOf('Total Users') !== -1;
-      }
-
-      function createToolbar() {
-        if (_tbCreated || document.getElementById(toolbarId)) return;
-        if (!document.body) return;
-        _tbCreated = true;
+      function showToolbar() {
+        if (_tbShown || document.getElementById(toolbarId)) return;
+        _tbShown = true;
         var bar = document.createElement('div');
         bar.id = toolbarId;
         bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1f2937;padding:10px 16px;z-index:99999;display:flex;gap:10px;align-items:center;box-shadow:0 -4px 12px rgba(0,0,0,0.3);font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
         bar.innerHTML = '<span style="color:#fff;font-size:14px;font-weight:700;white-space:nowrap;">Block:</span>' +
           '<input id="_wp_block_input" type="text" placeholder="Username to block/unblock" style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:14px;max-width:260px;outline:none;">' +
-          '<button id="_wp_block_btn" style="background:#ef4444;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Block</button>' +
-          '<button id="_wp_unblock_btn" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Unblock</button>' +
-          '<button id="_wp_tb_close" style="background:#6b7280;color:#fff;border:none;padding:8px 12px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;margin-left:4px;" title="Hide toolbar">×</button>';
-        document.body.appendChild(bar);
-        document.body.style.paddingBottom = '64px';
-
-        document.getElementById('_wp_block_btn').onclick = function() {
-          var uname = document.getElementById('_wp_block_input').value.trim();
-          if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
-          if (!confirm('BLOCK user ' + uname + '?')) return;
-          fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/block', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
-          }).then(function(r) { return r.json(); }).then(function(data) {
-            if (window.showToast) window.showToast(data.message || 'Blocked!', '#ef4444');
-            setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); });
-        };
-        document.getElementById('_wp_unblock_btn').onclick = function() {
-          var uname = document.getElementById('_wp_block_input').value.trim();
-          if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
-          if (!confirm('UNBLOCK user ' + uname + '?')) return;
-          fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/unblock', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
-          }).then(function(r) { return r.json(); }).then(function(data) {
-            if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
-            setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); });
-        };
-        document.getElementById('_wp_tb_close').onclick = function() {
-          hideToolbar();
-        };
-        document.addEventListener('click', function(e) {
-          var el = e.target;
-          var tc = el.textContent || '';
-          var um = tc.match(/User_[a-zA-Z0-9_-]+/);
-          if (um && document.getElementById('_wp_block_input')) {
-            document.getElementById('_wp_block_input').value = um[0];
-          }
-        });
-      }
-
-      function hideToolbar() {
-        var bar = document.getElementById(toolbarId);
-        if (bar) { bar.style.display = 'none'; document.body.style.paddingBottom = '0'; }
-      }
-
-      // Double-click handler on usernames (admin page only)
-      function setupDblClick() {
-        if (!isAdminPage()) return;
-        var els = document.querySelectorAll('b, strong, h3, h4, span, div');
-        for (var i = 0; i < els.length; i++) {
-          var el = els[i];
-          if (el._blockSetup) continue;
-          var tc = el.textContent || '';
-          var um = tc.match(/^User_[a-zA-Z0-9_-]+$/);
-          if (!um) continue;
-          var parent = el.parentElement;
-          if (!parent || (parent.textContent || '').indexOf('Balance:') === -1) continue;
-          el._blockSetup = true;
-          el.style.cursor = 'pointer';
-          el.title = 'Double-click to block/unblock';
-          (function(uname) {
-            el.addEventListener('dblclick', function(e) {
-              e.stopPropagation();
-              if (!confirm((e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1 ? 'Unblock ' + uname + '?' : 'Block ' + uname + '?')) return;
-              var action = (e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1 ? 'unblock' : 'block';
-              console.log('[AdminBlock] ' + action + ': ' + uname);
-              fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
-              }).then(function(r) { return r.json(); }).then(function(data) {
-                if (window.showToast) window.showToast(data.message || 'Done', action === 'block' ? '#ef4444' : '#10b981');
-                setTimeout(function() { location.reload(); }, 800);
-              }).catch(function(err) { console.error('[AdminBlock]', err); });
-            });
-          })(um[0]);
-        }
-      }
-
-      // Show toolbar + setup double-click
-      function init() {
-        createToolbar();
-        setupDblClick();
-      }
-      if (window.MutationObserver) {
-        var mo = new MutationObserver(setupDblClick);
-        function startMo() {
-          if (document.body) { mo.observe(document.body, { childList: true, subtree: true }); init(); }
-          else { setTimeout(startMo, 200); }
-        }
-        startMo();
-      }
-      init();
-      setTimeout(init, 500);
-      setTimeout(init, 1500);
-      setTimeout(init, 3000);
-
-      console.log('[AdminBlock] v436 — always-visible toolbar with × close button');
-        var bar = document.createElement('div');
-        bar.id = toolbarId;
-        bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1f2937;padding:10px 16px;z-index:99999;display:flex;gap:10px;align-items:center;box-shadow:0 -4px 12px rgba(0,0,0,0.3);font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
-        bar.innerHTML = '<span style="color:#fff;font-size:14px;font-weight:700;white-space:nowrap;">Block:</span>' +
-          '<input id="_wp_block_input" type="text" placeholder="Click User_xxx or type username" style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:14px;max-width:280px;outline:none;">' +
           '<button id="_wp_block_btn" style="background:#ef4444;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Block</button>' +
           '<button id="_wp_unblock_btn" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;">Unblock</button>';
         document.body.appendChild(bar);
@@ -2513,9 +2404,60 @@ window._W5_fixed=true;
         });
       }
 
+      // Double-click handler on usernames (admin page only)
+      function setupDblClick() {
+        var hasUsers = document.body && document.body.innerHTML.indexOf('Balance:') !== -1;
+        if (!hasUsers) return;
+        var els = document.querySelectorAll('b, strong, h3, h4, span, div');
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          if (el._blockSetup) continue;
+          var tc = el.textContent || '';
+          var um = tc.match(/^User_[a-zA-Z0-9_-]+$/);
+          if (!um) continue;
+          var parent = el.parentElement;
+          if (!parent || (parent.textContent || '').indexOf('Balance:') === -1) continue;
+          el._blockSetup = true;
+          el.style.cursor = 'pointer';
+          el.title = 'Double-click to block/unblock';
+          (function(uname) {
+            el.addEventListener('dblclick', function(e) {
+              e.stopPropagation();
+              if (!confirm((e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1 ? 'Unblock ' + uname + '?' : 'Block ' + uname + '?')) return;
+              var action = (e.target.parentElement.textContent || '').indexOf('BLOCKED') !== -1 ? 'unblock' : 'block';
+              console.log('[AdminBlock] ' + action + ': ' + uname);
+              fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
+              }).then(function(r) { return r.json(); }).then(function(data) {
+                if (window.showToast) window.showToast(data.message || 'Done', action === 'block' ? '#ef4444' : '#10b981');
+                setTimeout(function() { location.reload(); }, 800);
+              }).catch(function(err) { console.error('[AdminBlock]', err); });
+            });
+          })(um[0]);
+        }
+      }
 
+      // Show toolbar immediately + on mutations
+      function init() {
+        if (document.body) showToolbar(); else { setTimeout(init, 200); return; }
+        setupDblClick();
+      }
+      if (window.MutationObserver) {
+        var mo = new MutationObserver(setupDblClick);
+        function startMo() {
+          if (document.body) { mo.observe(document.body, { childList: true, subtree: true }); }
+          else { setTimeout(startMo, 200); }
+        }
+        startMo();
+      }
+      init();
+      setTimeout(setupDblClick, 1000);
+      setTimeout(setupDblClick, 2500);
+
+      console.log('[AdminBlock] v430 — always-visible toolbar + double-click block');
     })();
   })();
+})();
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
