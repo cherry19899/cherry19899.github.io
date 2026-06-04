@@ -40,7 +40,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v413';</script>
+    <script>window.WORKPRO_VERSION='v414';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2355,44 +2355,63 @@ window._W5_fixed=true;
       var adminBase = 'https://workpro-api.onrender.com';
       document.addEventListener('click', function(e) {
         var el = e.target;
-        var txt = (el.textContent || '').trim();
+        // STEP 1: Check if click contains 🚫
+        var txt = (el.textContent || '');
         var html = el.innerHTML || '';
-        if (txt !== blockIcon && html.indexOf(blockIcon) === -1) return;
+        var hasIcon = txt.indexOf(blockIcon) !== -1 || html.indexOf(blockIcon) !== -1;
+        console.log('[AdminBlock] Click detected, hasIcon=' + hasIcon + ', txt=' + txt.substring(0,30));
+        if (!hasIcon) return;
+        // STEP 2: Must be on admin page
         var pageText = document.body.textContent || '';
-        if (pageText.indexOf('Админ') === -1 && pageText.indexOf('Admin') === -1) return;
+        var isAdminPage = pageText.indexOf('Админ') !== -1 || pageText.indexOf('Admin') !== -1;
+        console.log('[AdminBlock] isAdminPage=' + isAdminPage);
+        if (!isAdminPage) return;
         e.preventDefault();
         e.stopPropagation();
+        // STEP 3: Find username — walk up looking for any user identifier
         var row = el;
         var username = null;
-        for (var i = 0; i < 5 && row; i++) {
+        for (var i = 0; i < 6 && row; i++) {
           var rowText = row.textContent || '';
-          var userMatch = rowText.match(/User_[a-zA-Z0-9_-]+/);
-          if (userMatch) { username = userMatch[0]; break; }
+          console.log('[AdminBlock] Row ' + i + ' text: ' + rowText.substring(0, 60));
+          // Try User_xxx pattern
+          var m1 = rowText.match(/User_[a-zA-Z0-9_-]+/);
+          if (m1) { username = m1[0]; console.log('[AdminBlock] Found User_xxx: ' + username); break; }
+          // Try any word with at least 3 chars that could be username
+          var m2 = rowText.match(/^\s*([a-zA-Z0-9_]{3,})/);
+          if (m2 && m2[1] !== 'Admin' && m2[1] !== 'Users') { username = m2[1]; console.log('[AdminBlock] Found username: ' + username); break; }
           row = row.parentElement;
         }
-        if (!username) { console.log('[AdminBlock] No username found'); return; }
+        if (!username) { console.log('[AdminBlock] ERROR: No username found'); return; }
+        // STEP 4: Call API
         var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
-        fetch(adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/block', {
+        var url = adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/block';
+        console.log('[AdminBlock] Calling: POST ' + url + ' (uid=' + uid + ')');
+        fetch(url, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
         }).then(function(r) { return r.json(); }).then(function(data) {
+          console.log('[AdminBlock] API response:', JSON.stringify(data));
           if (data.success) {
-            console.log('[AdminBlock] Blocked:', username);
-            if (window.showToast) window.showToast('Blocked: ' + username, '#ef4444');
-            if (row) row.style.opacity = '0.5';
+            console.log('[AdminBlock] BLOCKED:', username);
+            if (window.showToast) window.showToast('BLOCKED: ' + username, '#ef4444');
+            if (row) row.style.opacity = '0.4';
           } else {
+            // Already blocked — try unblock
+            console.log('[AdminBlock] Block failed, trying unblock...');
             fetch(adminBase + '/api/admin/users/' + encodeURIComponent(username) + '/unblock', {
               method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-api-key': 'dev' }
             }).then(function(r2) { return r2.json(); }).then(function(d2) {
+              console.log('[AdminBlock] Unblock response:', JSON.stringify(d2));
               if (d2.success) {
-                console.log('[AdminBlock] Unblocked:', username);
-                if (window.showToast) window.showToast('Unblocked: ' + username, '#10b981');
+                console.log('[AdminBlock] UNBLOCKED:', username);
+                if (window.showToast) window.showToast('UNBLOCKED: ' + username, '#10b981');
                 if (row) row.style.opacity = '1';
               }
-            });
+            }).catch(function(err) { console.error('[AdminBlock] Unblock error:', err); });
           }
-        });
+        }).catch(function(err) { console.error('[AdminBlock] Block error:', err); });
       }, true);
-      console.log('[AdminBlock] User block handler registered v413');
+      console.log('[AdminBlock] Handler registered v414');
     })();
   })();
 })();
