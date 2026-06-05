@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v480: Admin toolbar with pathname check -->
+    <!-- v481: Admin toolbar with setInterval pathname polling -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v480';
+        var KEY = '_wp_loaded_v481';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v480';</script>
+    <script>window.WORKPRO_VERSION='v481';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2490,12 +2490,12 @@ window._W5_fixed=true;
       setTimeout(checkAndShowToolbar, 1000);
       setTimeout(checkAndShowToolbar, 2000);
       setTimeout(checkAndShowToolbar, 4000);
-      // Keep checking in case React re-renders
-      setInterval(checkAndShowToolbar, 2000);
+      // Keep checking — React may change pathname after load
+      setInterval(checkAndShowToolbar, 1000);
 
-      // MutationObserver watches for Balance: text appearing
+      // MutationObserver watches for DOM changes
       var mo = new MutationObserver(function() { checkAndShowToolbar(); });
-      if (document.body) mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+      if (document.body) mo.observe(document.body, { childList: true, subtree: true });
 
       var observer = new MutationObserver(function() { checkAndShowToolbar(); });
       if (document.body) observer.observe(document.body, { childList: true, subtree: true });
