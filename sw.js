@@ -1,4 +1,4 @@
-// Work Pro Service Worker — SELF-DESTRUCT (v458)
+// Work Pro Service Worker — SELF-DESTRUCT (v486)
 // This SW uninstalls itself to clear all cache
 self.addEventListener('install', function(e) {
   self.skipWaiting();
