@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v474';
+        var KEY = '_wp_loaded_v475';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v474';</script>
+    <script>window.WORKPRO_VERSION='v475';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,13 +2473,11 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar when admin Users tab is active
-        var bodyText = document.body.innerText || document.body.textContent || '';
+        // Show toolbar in admin panel (title check)
         var isAdminPage = document.title.indexOf('Admin') !== -1;
-        var hasUsersContent = bodyText.indexOf('users found') !== -1 || bodyText.indexOf('Balance:') !== -1 || bodyText.indexOf('No KYC') !== -1;
-        if (isAdminPage && hasUsersContent) {
+        if (isAdminPage) {
           showToolbar();
-          console.log('[AdminBlock] Admin Users tab detected');
+          console.log('[AdminBlock] Admin page detected');
         }
       }
 
