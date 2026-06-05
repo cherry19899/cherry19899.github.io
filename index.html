@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v462: Toolbar detection via innerText Total Users + Balance -->
+    <!-- v478: Admin toolbar + 404 redirect support -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v475';
+        var KEY = '_wp_loaded_v478';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=459&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=478&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v475';</script>
+    <script>window.WORKPRO_VERSION='v478';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2473,9 +2473,14 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // DEBUG: Always show toolbar to verify code loads
-        showToolbar();
-        console.log('[AdminBlock] Toolbar shown — title: ' + document.title);
+        // Show toolbar in admin panel only
+        var url = window.location.href;
+        var isAdminRedirect = url.indexOf('redirect=%2Fadmin') !== -1 || url.indexOf('redirect=/admin') !== -1;
+        var isAdminPage = document.title.indexOf('Admin') !== -1;
+        if (isAdminRedirect || isAdminPage) {
+          showToolbar();
+          console.log('[AdminBlock] Toolbar shown — admin detected');
+        }
       }
 
       checkAndShowToolbar();

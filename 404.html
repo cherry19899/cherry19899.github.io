@@ -13,7 +13,9 @@
     document.body.innerHTML = '<h1>404 Not Found</h1>';
     return;
   }
-  window.location.replace('/?redirect=' + encodeURIComponent(path) + '&_=' + Date.now());
+  var ts = Date.now();
+  var url = '/?nocache=' + ts + '&v=' + ts + '&redirect=' + encodeURIComponent(path) + '&_=' + ts;
+  window.location.replace(url);
 })();
 </script>
 </head>
