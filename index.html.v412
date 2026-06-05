@@ -1,34 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v484: Fix — removed old cache-bust conflict, clean admin toolbar -->
+    <!-- v411: MINIMAL cache bust — Pi Browser safe -->
     <script>
       (function(){
-        // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v484';
+        // Use sessionStorage instead of cookies (Pi Browser sandbox safe)
+        var KEY = '_wp_loaded_v411';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
+          // Only redirect once per session
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=478&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=411&_=' + Date.now();
             location.replace(url);
             return;
           }
         }
-        // 3. Force-check server version
-        var myMatch = document.documentElement.innerHTML.match(/WORKPRO_VERSION='(v\d+)'/);
-        var myVersion = myMatch ? myMatch[1] : 'unknown';
-        fetch('/?version-check=1', { cache: 'no-store' })
-          .then(function(r) { return r.text(); })
-          .then(function(html) {
-            var m = html.match(/WORKPRO_VERSION='(v\d+)'/);
-            var serverVersion = m ? m[1] : 'unknown';
-            if (serverVersion !== myVersion && serverVersion !== 'unknown' && myVersion !== 'unknown') {
-              console.log('[CacheBust] Server has ' + serverVersion + ', we have ' + myVersion + ', reloading...');
-              location.reload(true);
-            }
-          })
-          .catch(function() {});
       })();
     </script>
     <meta charset="UTF-8" />
@@ -45,8 +32,15 @@
     <link rel="manifest" href="/manifest.json?v=49" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
-    <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v484';</script>
+    <script>
+      // v411: Minimal cache bust — only redirect once
+      var url = window.location.href;
+      if (url.indexOf('nocache=') === -1 && url.indexOf('v=') === -1) {
+        url = url + (url.indexOf('?') === -1 ? '?' : '&') + 'nocache=411';
+        window.location.replace(url);
+      }
+    </script>
+    <script>window.WORKPRO_VERSION='v412';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -474,14 +468,21 @@
               });
             }
             console.log('[SW] All old SW unregistered, caches cleared');
-            // Navigate to fresh URL (bypasses unregistered SW cache)
-            setTimeout(function() {
-              window.location.href = location.protocol + '//' + location.host + '/?nocache=454&_=' + Date.now();
-            }, 500);
-            return Promise.resolve(null);
-          }).then(function() {
-            // Skip push — no SW registered
-            console.log('[Push] Skipped (no SW)');
+            // Now register the new no-op SW
+            return navigator.serviceWorker.register('/sw.js');
+          }).then(function(reg) {
+            console.log('[SW] Registered fresh:', reg.scope);
+            // 2. Request push notification permission
+            if ('PushManager' in window) {
+              reg.pushManager.getSubscription().then(function(sub) {
+                if (!sub) {
+                  console.log('[Push] Not subscribed yet');
+                } else {
+                  console.log('[Push] Already subscribed');
+                  // Send subscription to backend
+                  sendPushSubToBackend(sub);
+                }
+              });
             }
           }).catch(function(err) {
             console.log('[SW] Registration failed:', err.message);
@@ -577,10 +578,10 @@
       if (localStorage.getItem('workpro_user_id')) {
         setTimeout(window._startChatPolling, 3000);
       }
-      console.log('[WP] v413 SW + Chat polling ready');
+      console.log('[WP] v412 SW + Chat polling ready');
     })();
     </script>
-    <!-- v413: Privacy Policy modal + profile button -->
+    <!-- v412: Privacy Policy modal + profile button -->
     <script>
     (function(){
       // Privacy Policy translations (12 languages)
@@ -1111,7 +1112,7 @@
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
 
-      console.log('[WP] v413 Privacy Policy modal + profile button ready');
+      console.log('[WP] v412 Privacy Policy modal + profile button ready');
     })();
     </script>
     
@@ -1176,7 +1177,7 @@
     <script>
     (function(){
       if (!window.Pi) { console.error('[PiFix-Early] Pi SDK not found!'); return; }
-      console.log('[PiFix-Early] v413 loading before bundle...');
+      console.log('[PiFix-Early] v412 loading before bundle...');
       var _origCP = window.Pi.createPayment;
       var _origAuth = window.Pi.authenticate;
       // developer_completed check helper
@@ -1317,7 +1318,7 @@
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
         }).catch(function(){});
       };
-      console.log('[PiFix-Early] v413 ready — createPayment and authenticate intercepted');
+      console.log('[PiFix-Early] v412 ready — createPayment and authenticate intercepted');
     })();
     </script>
     <script>
@@ -1957,7 +1958,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v444 start');
+      lg('#0f0','[WP] v412 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -1980,11 +1981,11 @@ window._W5_fixed=true;
     }, true);
   })();
   </script>
-    <!-- Privacy Policy moved to profile (v413) -->
+    <!-- Privacy Policy moved to profile (v412) -->
 <script>
-// ---- PI SDK v413 FIX ----
+// ---- PI SDK v412 FIX ----
 (function(){
-  console.log('[PiFix] v413 loading...');
+  console.log('[PiFix] v412 loading...');
   function protectError(error) {
     if (!error) return { message: 'Payment error (no details)' };
     if (typeof error === 'string') return { message: error };
@@ -2140,7 +2141,7 @@ window._W5_fixed=true;
       });
     };
     window.__piFixed275 = true;
-    console.log('[PiFix] v413 createPayment fixed');
+    console.log('[PiFix] v412 createPayment fixed');
   }
   // Fix 3: Silent re-auth with payments scope on page load
   if (window.Pi && window.Pi.authenticate && localStorage.getItem('workpro_user_id')) {
@@ -2158,7 +2159,7 @@ window._W5_fixed=true;
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
     }).catch(function(e){ console.log('[PiFix] Re-auth skipped (already have payments)'); });
   }
-  console.log('[PiFix] v413 done');
+  console.log('[PiFix] v412 done');
 
   // ─── PRIVACY POLICY INJECTION (v308) ───────────────────────────
   (function() {
@@ -2347,161 +2348,12 @@ window._W5_fixed=true;
       }, true);
       console.log('[Install] Click handler registered (strict)');
     })();
-
-    // ─── ADMIN USER BLOCK (v446) ────────────────────────────
-    // Manage Users panel — single clean copy, no duplicates
-    (function() {
-      var API = 'https://workpro-api.onrender.com';
-      var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
-      var toolbarId = '_wp_admin_toolbar';
-
-      function showManagePanel() {
-        var panel = document.getElementById('_wp_manage_panel');
-        if (panel) { panel.style.display = 'block'; loadUsers(); return; }
-        panel = document.createElement('div');
-        panel.id = '_wp_manage_panel';
-        panel.style.cssText = 'position:fixed;top:50px;left:8px;right:8px;bottom:64px;background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5);z-index:99999;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden;';
-        panel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1f2937;border-radius:12px 12px 0 0;"><span style="color:#fff;font-weight:700;font-size:15px;">👥 Manage Users</span><button id="_wp_close_panel" style="background:#6b7280;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-weight:700;cursor:pointer;">✕</button></div>' +
-          '<div style="padding:10px 14px;background:#f3f4f6;display:flex;gap:6px;align-items:center;border-bottom:1px solid #e5e7eb;"><span>🔍</span><input id="_wp_panel_search" type="text" placeholder="Search users..." style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;outline:none;"><button id="_wp_panel_reload" style="background:#3b82f6;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">Reload</button></div>' +
-          '<div id="_wp_panel_content" style="flex:1;overflow-y:auto;padding:10px 14px;"><p style="color:#6b7280;text-align:center;margin-top:40px;">Loading users...</p></div>';
-        document.body.appendChild(panel);
-        document.getElementById('_wp_close_panel').onclick = function() { panel.style.display = 'none'; };
-        document.getElementById('_wp_panel_search').addEventListener('input', function() { filterPanelUsers(this.value.trim().toLowerCase()); });
-        document.getElementById('_wp_panel_reload').onclick = function() { loadUsers(); };
-        loadUsers();
-      }
-      function loadUsers() {
-        var content = document.getElementById('_wp_panel_content');
-        if (content) content.innerHTML = '<p style="color:#6b7280;text-align:center;margin-top:40px;">Loading...</p>';
-        fetch(API + '/api/admin/users', { headers: { 'x-user-id': uid } })
-          .then(function(r) { return r.json(); })
-          .then(function(users) { renderUsers(users); })
-          .catch(function(err) { console.error('[AdminBlock]', err); var c = document.getElementById('_wp_panel_content'); if (c) c.innerHTML = '<p style="color:#ef4444;text-align:center;margin-top:40px;">Error: ' + (err.message || 'Failed to load') + '</p>'; });
-      }
-      function renderUsers(users) {
-        var content = document.getElementById('_wp_panel_content');
-        if (!content) return;
-        if (!users || !users.length) { content.innerHTML = '<p style="color:#6b7280;text-align:center;margin-top:40px;">No users found</p>'; return; }
-        var html = '<div id="_wp_user_list">';
-        for (var i = 0; i < users.length; i++) {
-          var u = users[i]; var isBlocked = u.status === 'blocked';
-          html += '<div class="_wp_urow" data-uname="' + (u.username || u.id).toLowerCase() + '" style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #f3f4f6;gap:6px;">' +
-            '<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:600;">' + (u.username || u.id) + '<span style="margin-left:6px;padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;' + (isBlocked ? 'background:#fee2e2;color:#dc2626;' : 'background:#d1fae5;color:#059669;') + '">' + (isBlocked ? 'BLOCKED' : 'ACTIVE') + '</span></div><div style="font-size:12px;color:#6b7280;">' + (u.role || '-') + ' | π' + (u.balance_pi || 0) + ' | connects:' + (u.balance_connects || 0) + '</div></div>' +
-            '<button class="_wp_ubtn" data-user="' + (u.username || u.id) + '" data-blocked="' + (isBlocked ? '1' : '0') + '" style="background:' + (isBlocked ? '#10b981' : '#ef4444') + ';color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">' + (isBlocked ? 'Unblock' : 'Block') + '</button></div>';
-        }
-        html += '</div>'; content.innerHTML = html;
-        var btns = content.querySelectorAll('._wp_ubtn');
-        for (var j = 0; j < btns.length; j++) {
-          btns[j].onclick = function() {
-            var uname = this.getAttribute('data-user'); var curBlocked = this.getAttribute('data-blocked') === '1';
-            var action = curBlocked ? 'unblock' : 'block';
-            if (window.showToast) window.showToast((curBlocked ? 'Unblocking ' : 'Blocking ') + uname + '...', curBlocked ? '#10b981' : '#ef4444');
-            var btn = this;
-            fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid } })
-              .then(function(r) { return r.json(); }).then(function(data) {
-                if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
-                if (window.showToast) window.showToast(data.message || 'Done', curBlocked ? '#10b981' : '#ef4444');
-                btn.style.background = curBlocked ? '#ef4444' : '#10b981'; btn.textContent = curBlocked ? 'Block' : 'Unblock'; btn.setAttribute('data-blocked', curBlocked ? '0' : '1');
-                var badge = btn.parentElement.querySelector('span'); if (badge) { badge.style.background = curBlocked ? '#d1fae5' : '#fee2e2'; badge.style.color = curBlocked ? '#059669' : '#dc2626'; badge.textContent = curBlocked ? 'ACTIVE' : 'BLOCKED'; }
-              }).catch(function(err) { console.error('[AdminBlock]', err); });
-          };
-        }
-        console.log('[AdminBlock] Rendered', users.length, 'users');
-      }
-      function filterPanelUsers(query) {
-        var rows = document.querySelectorAll('._wp_urow');
-        for (var i = 0; i < rows.length; i++) {
-          var uname = rows[i].getAttribute('data-uname') || '';
-          var match = !query || uname.indexOf(query) !== -1 || (rows[i].textContent || '').toLowerCase().indexOf(query) !== -1;
-          rows[i].style.display = match ? 'flex' : 'none';
-        }
-      }
-
-      function showToolbar() {
-        if (document.getElementById(toolbarId)) return;
-        var bar = document.createElement('div');
-        bar.id = toolbarId;
-        bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1f2937;padding:10px 16px;z-index:99999;display:flex;gap:10px;align-items:center;box-shadow:0 -4px 12px rgba(0,0,0,0.3);font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
-        bar.innerHTML = '<button id="_wp_manage_btn" style="background:#3b82f6;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;white-space:nowrap;margin-right:8px;">👥 Manage</button>' +
-          '<input id="_wp_block_input" type="text" placeholder="Username" style="flex:1;padding:8px 12px;border-radius:6px;border:none;font-size:14px;max-width:180px;outline:none;">' +
-          '<button id="_wp_block_btn" style="background:#ef4444;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">Block</button>' +
-          '<button id="_wp_unblock_btn" style="background:#10b981;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;">Unblock</button>' +
-          '<button id="_wp_tb_close" style="background:#6b7280;color:#fff;border:none;padding:8px 12px;border-radius:6px;font-weight:700;cursor:pointer;font-size:14px;margin-left:4px;">&times;</button>';
-        document.body.appendChild(bar);
-        document.body.style.paddingBottom = '64px';
-
-        document.getElementById('_wp_manage_btn').onclick = function() { showManagePanel(); };
-
-        document.getElementById('_wp_block_btn').onclick = function() {
-          var uname = document.getElementById('_wp_block_input').value.trim();
-          if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
-          if (window.showToast) window.showToast('Blocking ' + uname + '...', '#ef4444');
-          fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/block', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-          }).then(function(r) { return r.json(); }).then(function(data) {
-            if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
-            if (window.showToast) window.showToast(data.message || 'Blocked!', '#ef4444');
-            document.getElementById('_wp_block_input').value = '';
-            setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); if (window.showToast) window.showToast('Error: ' + err.message, '#f59e0b'); });
-        };
-        document.getElementById('_wp_unblock_btn').onclick = function() {
-          var uname = document.getElementById('_wp_block_input').value.trim();
-          if (!uname) { if (window.showToast) window.showToast('Enter username', '#f59e0b'); return; }
-          if (window.showToast) window.showToast('Unblocking ' + uname + '...', '#10b981');
-          fetch(API + '/api/admin/users/' + encodeURIComponent(uname) + '/unblock', {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
-          }).then(function(r) { return r.json(); }).then(function(data) {
-            if (data.error) { if (window.showToast) window.showToast(data.error, '#f59e0b'); return; }
-            if (window.showToast) window.showToast(data.message || 'Unblocked!', '#10b981');
-            document.getElementById('_wp_block_input').value = '';
-            setTimeout(function() { location.reload(); }, 800);
-          }).catch(function(err) { console.error('[AdminBlock]', err); if (window.showToast) window.showToast('Error: ' + err.message, '#f59e0b'); });
-        };
-        document.getElementById('_wp_tb_close').onclick = function() {
-          var bar = document.getElementById(toolbarId);
-          if (bar) { bar.style.display = 'none'; document.body.style.paddingBottom = '0'; }
-        };
-      }
-
-      function checkAndShowToolbar() {
-        if (document.getElementById(toolbarId)) return;
-        // Show toolbar in admin panel only
-        var path = window.location.pathname;
-        var title = document.title;
-        var search = window.location.search;
-        var isAdminPath = path === '/admin';
-        var isAdminTitle = title.indexOf('Admin') !== -1;
-        var isAdminRedirect = search.indexOf('redirect=%2Fadmin') !== -1 || search.indexOf('redirect=/admin') !== -1;
-        var isAdmin = isAdminPath || isAdminTitle || isAdminRedirect;
-        if (isAdmin) {
-          showToolbar();
-          console.log('[AdminBlock] Toolbar shown');
-        }
-      }
-
-      checkAndShowToolbar();
-      setTimeout(checkAndShowToolbar, 500);
-      setTimeout(checkAndShowToolbar, 1000);
-      setTimeout(checkAndShowToolbar, 2000);
-      setTimeout(checkAndShowToolbar, 4000);
-      // Keep checking — React may change pathname after load
-      setInterval(checkAndShowToolbar, 1000);
-
-      // MutationObserver watches for DOM changes
-      var mo = new MutationObserver(function() { checkAndShowToolbar(); });
-      if (document.body) mo.observe(document.body, { childList: true, subtree: true });
-
-      // v484: Duplicate MutationObserver removed — single observer above is sufficient
-
-      console.log('[AdminBlock] v446 initialized');
-    })();
   })();
 })();
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v484 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v308 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
@@ -2520,16 +2372,6 @@ window._W5_fixed=true;
   if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
   restoreState();
   function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v428 start');
+  lg('#0f0','[WP] v412 start');
   var o=console.log,oe=console.error,ow=console.warn;
-  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
-  console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
-  console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
-  window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
-  window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
-})();
-</script>
-</body>
-</html>
-<!-- v484: Admin toolbar — Users tab detection, removed old cache-bust conflict -->
-
+  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a
