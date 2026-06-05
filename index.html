@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v487: Admin user management in React Users tab, removed toolbar -->
+    <!-- v488: Admin user management + cherry19899 mock auth fallback -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v487';
+        var KEY = '_wp_loaded_v488';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v487';</script>
+    <script>window.WORKPRO_VERSION='v488';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1222,7 +1222,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
+              resolve({ user: { uid: 'cherry19899', username: 'cherry19899' }, accessToken: 'fallback_token' });
             }
           }, 5000);
           authPromise.then(function(result) {
@@ -1235,7 +1235,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              resolve({ user: { uid: 'browser_user', username: 'BrowserUser' }, accessToken: 'fallback_token' });
+              resolve({ user: { uid: 'cherry19899', username: 'cherry19899' }, accessToken: 'fallback_token' });
             }
           });
         });
@@ -2358,7 +2358,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v487 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v488 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
