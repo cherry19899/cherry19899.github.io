@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v485: Fix — mock auth uid cherry19899 for admin API access -->
+    <!-- v486: Fix — hardcode cherry19899 uid for admin toolbar API -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v485';
+        var KEY = '_wp_loaded_v486';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v485';</script>
+    <script>window.WORKPRO_VERSION='v486';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2352,7 +2352,7 @@ window._W5_fixed=true;
     // Manage Users panel — single clean copy, no duplicates
     (function() {
       var API = 'https://workpro-api.onrender.com';
-      var uid = localStorage.getItem('workpro_user_id') || 'cherry19899';
+      var uid = 'cherry19899';
       var toolbarId = '_wp_admin_toolbar';
 
       function showManagePanel() {
@@ -2501,7 +2501,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v485 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v486 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
