@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v490: Load admin-v1.js after app bundle + fix auth fallback -->
+    <!-- v491: React CDN + admin-v1.js override + auth fallback fix -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v490';
+        var KEY = '_wp_loaded_v491';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v490';</script>
+    <script>window.WORKPRO_VERSION='v491';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1369,22 +1369,27 @@
     })();
     </script>
     <link rel="stylesheet" href="/assets/app-v173.css">
-    <!-- v490: Load admin-v1.js AFTER app bundle to override Admin component -->
+    <!-- v491: Load React CDN + admin-v1.js after app bundle -->
     <script>
     (function() {
       function loadAdminOverride() {
-        var s = document.createElement('script');
-        s.src = '/assets/admin-v1.js';
-        s.onload = function() { console.log('[Admin] admin-v1.js loaded and Admin overridden'); };
-        s.onerror = function() { console.error('[Admin] Failed to load admin-v1.js'); };
-        document.head.appendChild(s);
+        var r = document.createElement('script');
+        r.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
+        r.onload = function() {
+          var rd = document.createElement('script');
+          rd.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
+          rd.onload = function() {
+            var s = document.createElement('script');
+            s.src = '/assets/admin-v1.js';
+            s.onload = function() { console.log('[Admin] v491 loaded'); };
+            s.onerror = function() { console.error('[Admin] Failed'); };
+            document.head.appendChild(s);
+          };
+          document.head.appendChild(rd);
+        };
+        document.head.appendChild(r);
       }
-      // Wait for app bundle to load first
-      if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(loadAdminOverride, 1000);
-      } else {
-        window.addEventListener('DOMContentLoaded', function() { setTimeout(loadAdminOverride, 1000); });
-      }
+      setTimeout(loadAdminOverride, 1500);
     })();
     </script>
   <script>
@@ -2377,7 +2382,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v490 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v491 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
