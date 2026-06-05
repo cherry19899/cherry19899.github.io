@@ -2473,12 +2473,9 @@ window._W5_fixed=true;
 
       function checkAndShowToolbar() {
         if (document.getElementById(toolbarId)) return;
-        // Show toolbar in admin panel (title check)
-        var isAdminPage = document.title.indexOf('Admin') !== -1;
-        if (isAdminPage) {
-          showToolbar();
-          console.log('[AdminBlock] Admin page detected');
-        }
+        // DEBUG: Always show toolbar to verify code loads
+        showToolbar();
+        console.log('[AdminBlock] Toolbar shown — title: ' + document.title);
       }
 
       checkAndShowToolbar();
