@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v478: Admin toolbar + 404 redirect support -->
+    <!-- v479: Debug admin toolbar detection -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v478';
+        var KEY = '_wp_loaded_v479';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -53,7 +53,7 @@
         window.location.replace(url);
       }
     </script>
-    <script>window.WORKPRO_VERSION='v478';</script>
+    <script>window.WORKPRO_VERSION='v479';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2477,6 +2477,7 @@ window._W5_fixed=true;
         var url = window.location.href;
         var isAdminRedirect = url.indexOf('redirect=%2Fadmin') !== -1 || url.indexOf('redirect=/admin') !== -1;
         var isAdminPage = document.title.indexOf('Admin') !== -1;
+        console.log('[AdminBlock] Check: isAdminRedirect=' + isAdminRedirect + ' isAdminPage=' + isAdminPage + ' title=' + document.title + ' url=' + url.substring(0,80));
         if (isAdminRedirect || isAdminPage) {
           showToolbar();
           console.log('[AdminBlock] Toolbar shown — admin detected');
