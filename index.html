@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v492: Auto-reload when admin-v1.js loads window.Admin -->
+    <!-- v494: React CDN + admin-v2.js inline before app bundle -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v493';
+        var KEY = '_wp_loaded_v494';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v493';</script>
+    <script>window.WORKPRO_VERSION='v494';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1323,6 +1323,10 @@
       console.log('[PiFix-Early] v413 ready — createPayment and authenticate intercepted');
     })();
     </script>
+    <!-- v494: React CDN + Admin-v2 loaded BEFORE app bundle -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="/assets/admin-v2.js"></script>
     <script>
     (function(){
       var start=Date.now();
@@ -1369,42 +1373,7 @@
     })();
     </script>
     <link rel="stylesheet" href="/assets/app-v173.css">
-    <!-- v492: Load admin-v1.js + auto-reload when Admin available -->
-    <script>
-    (function() {
-      function loadAdminOverride() {
-        var r = document.createElement('script');
-        r.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
-        r.onload = function() {
-          var rd = document.createElement('script');
-          rd.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
-          rd.onload = function() {
-            var s = document.createElement('script');
-            s.src = '/assets/admin-v1.js';
-            s.onload = function() {
-              console.log('[Admin] v492 loaded');
-              // Poll for window.Admin then reload once to pick it up
-              var poll = setInterval(function() {
-                if (typeof window.Admin !== 'undefined' && !sessionStorage.getItem('_admin_reloaded')) {
-                  sessionStorage.setItem('_admin_reloaded', '1');
-                  clearInterval(poll);
-                  console.log('[Admin] Reloading to activate Admin...');
-                  setTimeout(function() { location.reload(); }, 500);
-                }
-              }, 500);
-              // Stop polling after 10s
-              setTimeout(function() { clearInterval(poll); }, 10000);
-            };
-            s.onerror = function() { console.error('[Admin] Failed'); };
-            document.head.appendChild(s);
-          };
-          document.head.appendChild(rd);
-        };
-        document.head.appendChild(r);
-      }
-      setTimeout(loadAdminOverride, 1500);
-    })();
-    </script>
+    <!-- v494: Admin loaded inline above -->
   <script>
 // ===== WORK PRO PATCH v53 =====
 (function() {
@@ -2395,7 +2364,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v493 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v494 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
