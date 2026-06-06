@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v495';
+        var KEY = '_wp_loaded_v496';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v495';</script>
+    <script>window.WORKPRO_VERSION='v496';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2375,43 +2375,62 @@ window._W5_fixed=true;
   <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
 </div>
 <script>
-// v494: Add Admin button to profile
+// v495: Add Admin button to profile using MutationObserver
 (function() {
-  function addAdminButton() {
-    if (document.getElementById('_wp_admin_profile_btn')) return;
-    // Find profile container by looking for Logout button
-    var logoutBtn = document.querySelector('button[class*="logout" i], button:contains("Logout")');
-    if (!logoutBtn) {
-      // Try finding by text content
-      var allBtns = document.querySelectorAll('button');
-      for (var i = 0; i < allBtns.length; i++) {
-        if ((allBtns[i].textContent || '').indexOf('Logout') !== -1) {
-          logoutBtn = allBtns[i];
-          break;
-        }
-      }
+  var mo = null, checkTimer = null;
+  function findLogoutBtn() {
+    var allBtns = document.querySelectorAll('button, div[role="button"]');
+    for (var i = 0; i < allBtns.length; i++) {
+      var txt = (allBtns[i].textContent || '').trim();
+      if (txt === 'Logout' || txt.indexOf('Logout') !== -1) return allBtns[i];
     }
-    if (!logoutBtn) return;
+    return null;
+  }
+  function addAdminButton() {
+    if (document.getElementById('_wp_admin_profile_btn')) return true;
+    var logoutBtn = findLogoutBtn();
+    if (!logoutBtn) return false;
     var adminDiv = document.createElement('div');
     adminDiv.id = '_wp_admin_profile_btn';
-    adminDiv.innerHTML = '<button style="width:100%;padding:14px 16px;background:#1f2937;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:4px 0;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>Admin Panel</button>';
+    adminDiv.innerHTML = '<button style="width:100%;padding:14px 16px;background:#1f2937;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:4px 0;font-family:inherit;">&#9881; Admin Panel</button>';
     adminDiv.querySelector('button').onclick = function() { window.location.hash = '#/admin'; };
-    logoutBtn.parentNode.insertBefore(adminDiv, logoutBtn);
-    console.log('[Admin] Profile button added');
+    if (logoutBtn.parentNode) {
+      logoutBtn.parentNode.insertBefore(adminDiv, logoutBtn);
+      console.log('[Admin] Profile button added');
+      return true;
+    }
+    return false;
   }
-  // Watch for profile page
-  var checkInterval = setInterval(function() {
-    var hash = window.location.hash;
-    if (hash === '#/profile') {
-      setTimeout(addAdminButton, 300);
+  function onProfilePage() {
+    if (window.location.hash !== '#/profile') {
+      if (mo) { mo.disconnect(); mo = null; }
+      if (checkTimer) { clearInterval(checkTimer); checkTimer = null; }
+      return;
     }
-  }, 500);
-  // Also check on hash change
-  window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#/profile') {
-      setTimeout(addAdminButton, 300);
+    if (document.getElementById('_wp_admin_profile_btn')) return;
+    // Try immediately
+    if (addAdminButton()) return;
+    // Watch DOM changes
+    if (!mo) {
+      mo = new MutationObserver(function() {
+        if (addAdminButton() && mo) { mo.disconnect(); mo = null; }
+      });
+      if (document.body) mo.observe(document.body, { childList: true, subtree: true });
     }
-  });
+    // Fallback: check periodically
+    if (!checkTimer) {
+      var attempts = 0;
+      checkTimer = setInterval(function() {
+        attempts++;
+        if (addAdminButton() || attempts > 20) {
+          clearInterval(checkTimer); checkTimer = null;
+          if (mo) { mo.disconnect(); mo = null; }
+        }
+      }, 200);
+    }
+  }
+  window.addEventListener('hashchange', onProfilePage);
+  setTimeout(onProfilePage, 500);
 })();
 (function(){
   var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
