@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- v494: React CDN + admin-v2.js inline before app bundle -->
+    <!-- v495: Admin profile button + inline admin-v2 + React CDN -->
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v494';
+        var KEY = '_wp_loaded_v495';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v494';</script>
+    <script>window.WORKPRO_VERSION='v495';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2364,7 +2364,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v494 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v495 — Pi Network Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
@@ -2375,6 +2375,44 @@ window._W5_fixed=true;
   <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
 </div>
 <script>
+// v494: Add Admin button to profile
+(function() {
+  function addAdminButton() {
+    if (document.getElementById('_wp_admin_profile_btn')) return;
+    // Find profile container by looking for Logout button
+    var logoutBtn = document.querySelector('button[class*="logout" i], button:contains("Logout")');
+    if (!logoutBtn) {
+      // Try finding by text content
+      var allBtns = document.querySelectorAll('button');
+      for (var i = 0; i < allBtns.length; i++) {
+        if ((allBtns[i].textContent || '').indexOf('Logout') !== -1) {
+          logoutBtn = allBtns[i];
+          break;
+        }
+      }
+    }
+    if (!logoutBtn) return;
+    var adminDiv = document.createElement('div');
+    adminDiv.id = '_wp_admin_profile_btn';
+    adminDiv.innerHTML = '<button style="width:100%;padding:14px 16px;background:#1f2937;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:4px 0;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>Admin Panel</button>';
+    adminDiv.querySelector('button').onclick = function() { window.location.hash = '#/admin'; };
+    logoutBtn.parentNode.insertBefore(adminDiv, logoutBtn);
+    console.log('[Admin] Profile button added');
+  }
+  // Watch for profile page
+  var checkInterval = setInterval(function() {
+    var hash = window.location.hash;
+    if (hash === '#/profile') {
+      setTimeout(addAdminButton, 300);
+    }
+  }, 500);
+  // Also check on hash change
+  window.addEventListener('hashchange', function() {
+    if (window.location.hash === '#/profile') {
+      setTimeout(addAdminButton, 300);
+    }
+  });
+})();
 (function(){
   var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
   function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
