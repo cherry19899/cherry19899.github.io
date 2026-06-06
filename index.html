@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v511';
+        var KEY = '_wp_loaded_v512';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=511&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=512&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v511';</script>
+    <script>window.WORKPRO_VERSION='v512';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1320,13 +1320,13 @@
           method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
         }).catch(function(){});
       };
-      console.log('[PiFix-Early] v511 ready — createPayment and authenticate intercepted');
+      console.log('[PiFix-Early] v512 ready — createPayment and authenticate intercepted');
     })();
     </script>
     <!-- v494: React CDN + Admin-v2 loaded BEFORE app bundle -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <!-- v511: Inline admin-v8 (no credentials, fixed stats, Earnings tab) -->
+    <!-- v512: Inline admin-v8 (no credentials, fixed stats, Earnings tab) -->
     <script>
 var AdminPanel=(function(){
 var ce=React.createElement,useState=React.useState,useEffect=React.useEffect;
@@ -1490,49 +1490,68 @@ return ce("div",{className:"page-container",style:{paddingBottom:"80px"}},
 }
 return AdminPanel;
 })();
-if(typeof window!=="undefined"){console.log("[AdminPanel] v511 loaded");window.Admin=window.AdminPanel=AdminPanel;window.dispatchEvent(new Event("hashchange"));}
+if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.Admin=window.AdminPanel=AdminPanel;window.dispatchEvent(new Event("hashchange"));}
     </script>
-    <!-- v511: Bootstrap connects for cherry19899 + notification fix -->
+    <!-- v512: Bootstrap connects for cherry19899 + notification fix -->
     <script>
     (function(){
-      // Give cherry19899 connects on first login if they have 0
+      // Bootstrap: register user + give connects on first login
       var API = 'https://workpro-api.onrender.com';
-      var BOOTSTRAP_KEY = '_wp_connects_bootstrapped_v1';
-      function bootstrapConnects(uid) {
-        if (!uid || localStorage.getItem(BOOTSTRAP_KEY + '_' + uid)) return;
+      var BOOTSTRAP_KEY = '_wp_connects_bootstrapped_v2';
+
+      function registerAndBootstrap(uid, username) {
+        if (!uid) return;
+        var bootstrapKey = BOOTSTRAP_KEY + '_' + uid;
+        if (localStorage.getItem(bootstrapKey)) return;
+
+        // Step 1: Register user in backend DB (upsert)
+        fetch(API + '/api/me', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: uid, username: username || uid.replace(/^pi_/, '') })
+        }).catch(function(){});
+
+        // Step 2: Check balance and grant connects if < 10
         fetch(API + '/api/connects/balance', {
           headers: { 'x-user-id': uid }
         }).then(function(r){ return r.json(); }).then(function(d){
-          var bal = d.balance != null ? d.balance : d.balance_connects;
-          if (bal !== null && bal < 10) {
-            // Give 50 connects for free (admin only endpoint or direct update)
-            fetch(API + '/api/admin/users/' + uid + '/grant-connects', {
+          var bal = d.balance != null ? d.balance : (d.balance_connects != null ? d.balance_connects : 0);
+          if (bal < 10) {
+            // Direct connects grant (no Pi payment needed for initial onboarding)
+            fetch(API + '/api/connects/buy', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
-              body: JSON.stringify({ amount: 50 })
-            }).catch(function(){
-              // Fallback: use connects/buy without payment (sandbox mode)
-              fetch(API + '/api/connects/buy', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
-                body: JSON.stringify({ quantity: 50, status: 'granted' })
-              }).catch(function(){});
-            });
-            localStorage.setItem(BOOTSTRAP_KEY + '_' + uid, '1');
+              body: JSON.stringify({ quantity: 50, status: 'granted' })
+            }).then(function(r){ return r.json(); }).then(function(d){
+              if (d.success) {
+                // Update localStorage connects
+                try {
+                  var stored = localStorage.getItem('workpro_user');
+                  if (stored) {
+                    var u = JSON.parse(stored);
+                    u.balance_connects = d.balance || 50;
+                    u.connects = d.balance || 50;
+                    localStorage.setItem('workpro_user', JSON.stringify(u));
+                  }
+                } catch(e) {}
+              }
+            }).catch(function(){});
+            localStorage.setItem(bootstrapKey, '1');
           }
         }).catch(function(){});
       }
 
-      // Watch for user login
+      // Watch for user login via localStorage.setItem
       var origSetItem = localStorage.setItem.bind(localStorage);
       localStorage.setItem = function(key, value) {
         origSetItem(key, value);
         if (key === 'workpro_user') {
           try {
             var u = JSON.parse(value);
-            if (u && u.uid) {
+            var uid = u.id || u.uid;
+            if (uid) {
               window._workproUser = u;
-              bootstrapConnects(u.uid);
+              registerAndBootstrap(uid, u.username || u.name);
             }
           } catch(e) {}
         }
@@ -1543,14 +1562,15 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v511 loaded");window.A
         var stored = localStorage.getItem('workpro_user');
         if (stored) {
           var u = JSON.parse(stored);
-          if (u && u.uid) {
+          var uid = u.id || u.uid;
+          if (uid) {
             window._workproUser = u;
-            bootstrapConnects(u.uid);
+            registerAndBootstrap(uid, u.username || u.name);
           }
         }
       } catch(e) {}
 
-      console.log('[v511] Connects bootstrap watcher ready');
+      console.log('[v512] User bootstrap watcher ready (v2)');
     })();
     </script>
     <script>
@@ -2191,7 +2211,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v511 start');
+      lg('#0f0','[WP] v512 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
