@@ -1551,6 +1551,8 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
             var uid = u.id || u.uid;
             if (uid) {
               window._workproUser = u;
+              // Keep workpro_user_id in sync for legacy inline code
+              origSetItem('workpro_user_id', uid);
               registerAndBootstrap(uid, u.username || u.name);
             }
           } catch(e) {}
