@@ -1590,7 +1590,7 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
         console.log('[Loader] Attempt '+attempt+'/'+maxAttempts+'...');
         var controller=new AbortController();
         var timer=setTimeout(function(){controller.abort();},timeoutMs);
-        fetch('/assets/app-v183.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
+        fetch('/assets/app-v184.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
           .then(function(r){clearTimeout(timer);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
           .then(function(code){
             console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms (attempt '+attempt+')');
