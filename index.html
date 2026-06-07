@@ -1524,19 +1524,23 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
               body: JSON.stringify({ quantity: 50, status: 'granted' })
             }).then(function(r){ return r.json(); }).then(function(d){
               if (d.success) {
+                // Mark bootstrap done only after successful grant
+                localStorage.setItem(bootstrapKey, '1');
+                var newBal = d.new_balance || d.balance || 50;
                 // Update localStorage connects
                 try {
                   var stored = localStorage.getItem('workpro_user');
                   if (stored) {
                     var u = JSON.parse(stored);
-                    u.balance_connects = d.balance || 50;
-                    u.connects = d.balance || 50;
+                    u.balance_connects = newBal;
+                    u.connects = newBal;
                     localStorage.setItem('workpro_user', JSON.stringify(u));
+                    localStorage.setItem('workpro_connects', String(newBal));
                   }
                 } catch(e) {}
               }
             }).catch(function(){});
-            localStorage.setItem(bootstrapKey, '1');
+            // Note: bootstrapKey NOT set here — will retry if server was unreachable
           }
         }).catch(function(){});
       }
@@ -1826,6 +1830,7 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
 
       var clone = response.clone();
       clone.json().then(function(data) {
+        // ─── Handle remaining_connects after apply/deduct ──────────────────
         if (data && data.remaining_connects !== undefined) {
           try {
             var userStr = localStorage.getItem('workpro_user');
@@ -1833,27 +1838,29 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
               var user = JSON.parse(userStr);
               user.balance_connects = data.remaining_connects;
               user.connects = data.remaining_connects;
-              localStorage.setItem('workpro_user', JSON.stringify(user));
+              // IMPORTANT: set workpro_connects FIRST so the setItem interceptor doesn't revert it
               localStorage.setItem('workpro_connects', String(data.remaining_connects));
+              localStorage.setItem('workpro_user', JSON.stringify(user));
             }
           } catch(e) {}
           var el = document.getElementById('stat-connects');
           if (el) el.textContent = data.remaining_connects;
         }
         // ─── Handle connects purchase new_balance ──────────────────
-        if (data && data.new_balance !== undefined) {
+        if (data && data.new_balance !== undefined && data.remaining_connects === undefined) {
           try {
-            var userStr = localStorage.getItem('workpro_user');
-            if (userStr) {
-              var user = JSON.parse(userStr);
-              user.balance_connects = data.new_balance;
-              user.connects = data.new_balance;
-              localStorage.setItem('workpro_user', JSON.stringify(user));
+            var userStr2 = localStorage.getItem('workpro_user');
+            if (userStr2) {
+              var user2 = JSON.parse(userStr2);
+              user2.balance_connects = data.new_balance;
+              user2.connects = data.new_balance;
+              // IMPORTANT: set workpro_connects FIRST so the setItem interceptor doesn't revert it
               localStorage.setItem('workpro_connects', String(data.new_balance));
+              localStorage.setItem('workpro_user', JSON.stringify(user2));
             }
           } catch(e) {}
-          var el = document.getElementById('stat-connects');
-          if (el) el.textContent = data.new_balance;
+          var el2 = document.getElementById('stat-connects');
+          if (el2) el2.textContent = data.new_balance;
         }
       }).catch(function() {});
       return response;
