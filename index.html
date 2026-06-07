@@ -2617,9 +2617,22 @@ window._W5_fixed=true;
   <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
 </div>
 <script>
-// v495: Add Admin button to profile using MutationObserver
+// v513: Add Admin button to profile — ONLY for developer cherry19899
 (function() {
+  var ADMIN_ID = 'cherry19899';
   var mo = null, checkTimer = null;
+
+  function isCurrentUserAdmin() {
+    try {
+      var stored = localStorage.getItem('workpro_user');
+      if (!stored) return false;
+      var u = JSON.parse(stored);
+      var uid = (u.id || u.uid || '').replace(/^pi_/, '').toLowerCase();
+      var uname = (u.username || u.name || '').toLowerCase();
+      return uid === ADMIN_ID || uname === ADMIN_ID || u.role === 'admin' || u.is_admin === true;
+    } catch(e) { return false; }
+  }
+
   function findLogoutBtn() {
     var allBtns = document.querySelectorAll('button, div[role="button"]');
     for (var i = 0; i < allBtns.length; i++) {
@@ -2630,6 +2643,7 @@ window._W5_fixed=true;
   }
   function addAdminButton() {
     if (document.getElementById('_wp_admin_profile_btn')) return true;
+    if (!isCurrentUserAdmin()) return true; // not admin — silently succeed (don't retry)
     var logoutBtn = findLogoutBtn();
     if (!logoutBtn) return false;
     var adminDiv = document.createElement('div');
@@ -2638,7 +2652,7 @@ window._W5_fixed=true;
     adminDiv.querySelector('button').onclick = function() { window.location.hash = '#/admin'; };
     if (logoutBtn.parentNode) {
       logoutBtn.parentNode.insertBefore(adminDiv, logoutBtn);
-      console.log('[Admin] Profile button added');
+      console.log('[Admin] Profile button added for admin user');
       return true;
     }
     return false;
@@ -2650,6 +2664,7 @@ window._W5_fixed=true;
       return;
     }
     if (document.getElementById('_wp_admin_profile_btn')) return;
+    if (!isCurrentUserAdmin()) return; // not admin — don't add button
     // Try immediately
     if (addAdminButton()) return;
     // Watch DOM changes
