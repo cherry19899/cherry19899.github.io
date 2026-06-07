@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v512';
+        var KEY = '_wp_loaded_v513';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v512';</script>
+    <script>window.WORKPRO_VERSION='v513';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1800,15 +1800,9 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
       });
     }
 
-    // Profile endpoint fix: redirect /api/users/:uid to /api/me (skip availability)
-    if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1 && url.indexOf('/availability') === -1) {
-      url = url.replace(/\/api\/users\/[^\/?]+/, '/api/me');
-      console.log('[WP] fetch patch: redirected to', url);
-    }
-
     return origFetch.call(this, url, options).then(function(response) {
-      // ─── For user data endpoint: return modified response ────────────
-      if (url.indexOf('/api/users/') !== -1 && url.indexOf('/balance') === -1 && url.indexOf('/availability') === -1) {
+      // ─── For user data endpoint: merge localStorage connects if server is lower ────────────
+      if ((url.indexOf('/api/me') !== -1 || /\/api\/users\/[^\/\?]+(\?[^\/?]*)?$/.test(url)) && url.indexOf('/balance') === -1 && url.indexOf('/availability') === -1) {
         return response.json().then(function(data) {
           if (data && (data.balance_connects !== undefined || data.connects !== undefined)) {
             try {
