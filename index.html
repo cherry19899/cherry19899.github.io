@@ -74,14 +74,6 @@
             if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
               init.headers['x-user-id'] = CANONICAL_UID;
             }
-            // Debug: log ALL API calls + persist to localStorage
-            var logMsg = (init.method||'GET') + ' ' + urlStr.replace(API,'') + ' uid:' + (init.headers['x-user-id']||'none');
-            console.log('[v554-dbg]', logMsg);
-            try {
-              var logs = JSON.parse(localStorage.getItem('_v554_fetch_log')||'[]');
-              logs.push(logMsg); if (logs.length > 50) logs = logs.slice(-50);
-              localStorage.setItem('_v554_fetch_log', JSON.stringify(logs));
-            } catch(e) {}
           }
         } catch(e) {}
         var result = _rawFetch.call(this, input, init);
@@ -115,19 +107,6 @@
         } catch(e) {}
         return result;
       };
-      // Log all localStorage keys 5s after load to find notification storage
-      setTimeout(function() {
-        try {
-          var keys = Object.keys(localStorage);
-          console.log('[v554-ls] keys:', keys.filter(function(k){ return k.indexOf('workpro') !== -1 || k.indexOf('notif') !== -1; }).join(', '));
-          // Log any notifications-related values
-          keys.forEach(function(k) {
-            if (/notif|application/i.test(k)) {
-              console.log('[v554-ls]', k, '=', (localStorage.getItem(k)||'').substring(0,100));
-            }
-          });
-        } catch(e) {}
-      }, 6000);
       console.log('[v554] Fetch user-id interceptor installed');
 
       // ── 1b. XHR interceptor: fix headers + intercept notifications/applications ─
@@ -138,10 +117,6 @@
         this._v554url = String(url || '');
         this._v554method = method;
         this._v554headers = {};
-        // Log ALL XHR opens to find where notifications come from
-        if (String(url||'').indexOf(API) !== -1) {
-          console.log('[v554-xhr-open] ' + method + ' ' + String(url).replace(API,''));
-        }
         return _origXHROpen.apply(this, arguments);
       };
       XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
@@ -151,7 +126,6 @@
         if (name.toLowerCase() === 'x-user-id' && value === 'cherry19899') {
           value = CANONICAL_UID;
         }
-        console.log('[v554-xhr] ' + name + '=' + value + ' for ' + this._v554url.replace(API,''));
         return _origXHRSetReqHeader.call(this, name, value);
       };
       XMLHttpRequest.prototype.send = function(body) {
