@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v525';
+        var KEY = '_wp_loaded_v526';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=525&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=526&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v525';</script>
+    <script>window.WORKPRO_VERSION='v526';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -463,31 +463,29 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
           if (window.location.hostname === 'localhost') return;
-          // Force-unregister ALL old service workers first
+          // Force-unregister ALL old service workers first (only navigate if SWs existed)
           navigator.serviceWorker.getRegistrations().then(function(regs) {
+            if (regs.length === 0) {
+              console.log('[SW] No old SW found, skipping navigation');
+              return;
+            }
+            console.log('[SW] Unregistering', regs.length, 'old SW...');
             return Promise.all(regs.map(function(r) {
-              console.log('[SW] Unregistering old:', r.scope);
+              console.log('[SW] Unregistering:', r.scope);
               return r.unregister();
-            }));
-          }).then(function() {
-            // Clear all caches
-            if ('caches' in window) {
-              caches.keys().then(function(names) {
-                names.forEach(function(n) { caches.delete(n); });
-              });
-            }
-            console.log('[SW] All old SW unregistered, caches cleared');
-            // Navigate to fresh URL (bypasses unregistered SW cache)
-            setTimeout(function() {
-              window.location.href = location.protocol + '//' + location.host + '/?nocache=454&_=' + Date.now();
-            }, 500);
-            return Promise.resolve(null);
-          }).then(function() {
-            // Skip push — no SW registered
-            console.log('[Push] Skipped (no SW)');
-            }
+            })).then(function() {
+              if ('caches' in window) {
+                caches.keys().then(function(names) {
+                  names.forEach(function(n) { caches.delete(n); });
+                });
+              }
+              console.log('[SW] All old SW unregistered, caches cleared');
+              setTimeout(function() {
+                window.location.href = location.protocol + '//' + location.host + '/?nocache=454&_=' + Date.now();
+              }, 500);
+            });
           }).catch(function(err) {
-            console.log('[SW] Registration failed:', err.message);
+            console.log('[SW] err:', err.message);
           });
         });
       }
@@ -1590,7 +1588,7 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
         console.log('[Loader] Attempt '+attempt+'/'+maxAttempts+'...');
         var controller=new AbortController();
         var timer=setTimeout(function(){controller.abort();},timeoutMs);
-        fetch('/assets/app-v197.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
+        fetch('/assets/app-v198.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
           .then(function(r){clearTimeout(timer);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
           .then(function(code){
             console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms (attempt '+attempt+')');
@@ -2488,23 +2486,6 @@ window._W5_fixed=true;
     setTimeout(injectPP, 3000);
     setTimeout(injectPP, 5000);
 
-    // ─── DEBUG CLICK LOGGER ─────────────────────────────────
-    (function() {
-      // Show last click from previous session (survives reload via localStorage)
-      try {
-        var last = localStorage.getItem('__dbg_last_click');
-        if (last) { console.log('[DBG] Pre-reload click: ' + last); localStorage.removeItem('__dbg_last_click'); }
-      } catch(e) {}
-      document.addEventListener('click', function(e) {
-        var el = e.target;
-        var txt = (el.textContent || '').trim().substring(0, 30);
-        var tag = el.tagName;
-        var cls = (el.className || '').substring(0, 40);
-        var info = 'tag='+tag+' txt='+JSON.stringify(txt)+' cls='+cls.substring(0,30);
-        console.log('[CLICK] ' + info);
-        try { localStorage.setItem('__dbg_last_click', info + ' @' + Date.now()); } catch(e) {}
-      }, true);
-    })();
 
     // ─── FAB "+" CLICK HANDLER ──────────────────────────────
     // STRICT: only trigger on actual FAB — green circle with "+" text
