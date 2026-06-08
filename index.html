@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v546';
+        var KEY = '_wp_loaded_v547';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=546&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=547&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v546';</script>
+    <script>window.WORKPRO_VERSION='v547';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1078,16 +1078,17 @@
         console.log('[PrivacyPolicy] Button added to profile');
       }
 
-      // Watch for profile page — try every second for 30 seconds
-      var _ppAttempts = 0;
-      var _ppInterval = setInterval(function() {
-        _ppAttempts++;
-        addPrivacyPolicyButton();
-        if (_ppAttempts > 30) clearInterval(_ppInterval);
-      }, 1000);
-      // Also watch DOM changes
+      // Expose globally for debugging
+      window.addPrivacyPolicyButton = addPrivacyPolicyButton;
+
+      // Persistent interval — runs forever, checks every 2s
+      setInterval(addPrivacyPolicyButton, 2000);
+
+      // Debounced MutationObserver — waits 400ms after last DOM change before injecting
+      // This ensures React finishes its full render cycle before we try to inject
       var ppObserver = new MutationObserver(function() {
-        addPrivacyPolicyButton();
+        clearTimeout(window._ppDebounce);
+        window._ppDebounce = setTimeout(addPrivacyPolicyButton, 400);
       });
       ppObserver.observe(document.body, { childList: true, subtree: true });
 
@@ -2204,7 +2205,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);c.scrollTop=c.scrollHeight;}
-      lg('#0f0','[WP] v546 start '+new Date().toISOString().slice(11,19));
+      lg('#0f0','[WP] v547 start '+new Date().toISOString().slice(11,19));
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
