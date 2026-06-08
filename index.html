@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v523';
+        var KEY = '_wp_loaded_v524';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=523&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=524&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v523';</script>
+    <script>window.WORKPRO_VERSION='v524';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2487,6 +2487,17 @@ window._W5_fixed=true;
     setTimeout(injectPP, 1500);
     setTimeout(injectPP, 3000);
     setTimeout(injectPP, 5000);
+
+    // ─── DEBUG CLICK LOGGER ─────────────────────────────────
+    (function() {
+      document.addEventListener('click', function(e) {
+        var el = e.target;
+        var txt = (el.textContent || '').trim().substring(0, 30);
+        var tag = el.tagName;
+        var cls = (el.className || '').substring(0, 40);
+        console.log('[CLICK] tag=' + tag + ' txt=' + JSON.stringify(txt) + ' cls=' + cls);
+      }, true);
+    })();
 
     // ─── FAB "+" CLICK HANDLER ──────────────────────────────
     // STRICT: only trigger on actual FAB — green circle with "+" text
