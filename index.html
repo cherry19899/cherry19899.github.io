@@ -104,6 +104,17 @@
             // Also update standalone connects key
             localStorage.setItem('workpro_connects', String(bal));
             console.log('[v554] balance_connects synced:', bal);
+            // Dispatch storage event so React re-reads balance from localStorage
+            try {
+              window.dispatchEvent(new StorageEvent('storage', {
+                key: 'workpro_user', storageArea: localStorage,
+                newValue: localStorage.getItem('workpro_user')
+              }));
+              window.dispatchEvent(new StorageEvent('storage', {
+                key: 'workpro_connects', storageArea: localStorage,
+                newValue: String(bal)
+              }));
+            } catch(e) {}
           }).catch(function(){});
       }
       // Sync on startup (after auth fallback fires at ~3s) and every 30s
