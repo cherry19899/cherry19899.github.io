@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v553';
+        var KEY = '_wp_loaded_v554';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=553&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=554&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -42,11 +42,117 @@
     <meta name="keywords" content="freelance, jobs, cryptocurrency, hire, work, marketplace" />
     <meta property="og:title" content="Work Pro - Freelance Marketplace" />
     <meta property="og:description" content="Hire freelancers and find jobs. Pay and get paid in cryptocurrency." />
-    <link rel="manifest" href="/manifest.json?v=553" />
+    <link rel="manifest" href="/manifest.json?v=554" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v553';</script>
+    <script>window.WORKPRO_VERSION='v554';</script>
+    <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
+    <script>
+    (function(){
+      var API = 'https://workpro-api.onrender.com';
+      var CANONICAL_UID = 'pi_cherry19899'; // All data lives under this ID
+
+      // ── 1. Fetch interceptor: force correct x-user-id on all API calls ──────
+      // The bundle may send x-user-id: cherry19899 (username), but data is stored
+      // under pi_cherry19899. We rewrite any x-user-id that belongs to this user.
+      var _rawFetch = window.fetch;
+      window.fetch = function(input, init) {
+        try {
+          var urlStr = typeof input === 'string' ? input : (input && input.url) || '';
+          if (urlStr.indexOf(API) !== -1) {
+            init = init ? Object.assign({}, init) : {};
+            init.headers = init.headers ? Object.assign({}, init.headers) : {};
+            // Normalise Headers object → plain object
+            if (typeof Headers !== 'undefined' && init.headers instanceof Headers) {
+              var plain = {};
+              init.headers.forEach(function(v,k){ plain[k] = v; });
+              init.headers = plain;
+            }
+            var curId = init.headers['x-user-id'] || init.headers['X-User-Id'] || '';
+            // Rewrite cherry19899 → pi_cherry19899 and ensure header is always set
+            if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
+              init.headers['x-user-id'] = CANONICAL_UID;
+            }
+          }
+        } catch(e) {}
+        return _rawFetch.call(this, input, init);
+      };
+      console.log('[v554] Fetch user-id interceptor installed');
+
+      // ── 2. Balance-connects sync: fetch real balance from API and save ────────
+      function syncBalance() {
+        fetch(API + '/api/connects/balance', {
+          headers: { 'x-user-id': CANONICAL_UID }
+        }).then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){
+            if (!d || d.balance === undefined) return;
+            var bal = parseInt(d.balance, 10) || 0;
+            // Update workpro_user.balance_connects
+            try {
+              var raw = localStorage.getItem('workpro_user');
+              if (raw) {
+                var u = JSON.parse(raw);
+                if (u) {
+                  u.balance_connects = bal;
+                  // Use _rawSetItem to bypass avatar-sync interceptor
+                  var _rsi = localStorage._origSetItem || localStorage.setItem.bind(localStorage);
+                  _rsi('workpro_user', JSON.stringify(u));
+                }
+              }
+            } catch(e) {}
+            // Also update standalone connects key
+            localStorage.setItem('workpro_connects', String(bal));
+            console.log('[v554] balance_connects synced:', bal);
+          }).catch(function(){});
+      }
+      // Sync on startup (after auth fallback fires at ~3s) and every 30s
+      setTimeout(syncBalance, 4000);
+      setInterval(syncBalance, 30000);
+
+      // ── 3. Hide "Apply Now" on own jobs ──────────────────────────────────────
+      function getMyUsername() {
+        try {
+          var u = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+          return u ? (u.username || '') : '';
+        } catch(e) { return ''; }
+      }
+      var _hideObs = new MutationObserver(function() {
+        var me = getMyUsername();
+        if (!me) return;
+        // Find job cards/panels showing owner = me, then hide Apply button inside them
+        document.querySelectorAll('button').forEach(function(btn) {
+          var txt = (btn.textContent || '').toLowerCase().trim();
+          if (!/apply now|откликнуться|apply$/.test(txt)) return;
+          // Walk up to find the job container and check author username
+          var container = btn;
+          for (var i = 0; i < 15; i++) {
+            container = container && container.parentElement;
+            if (!container) break;
+            var html = container.innerHTML || '';
+            // Look for author chip — usually displayed as username text
+            if (html.indexOf(me) !== -1) {
+              // Make sure this isn't just the header (profile area) — check job title sibling
+              var hasJobTitle = container.querySelector('h2, h3, [class*="title"], [class*="job"]');
+              if (hasJobTitle) {
+                btn.style.display = 'none';
+                btn.setAttribute('data-wp-hidden-own-job', '1');
+                break;
+              }
+            }
+          }
+        });
+      });
+      if (document.body) {
+        _hideObs.observe(document.body, { childList: true, subtree: true });
+      } else {
+        document.addEventListener('DOMContentLoaded', function() {
+          _hideObs.observe(document.body, { childList: true, subtree: true });
+        });
+      }
+      console.log('[v554] Own-job apply-hide observer installed');
+    })();
+    </script>
     <!-- v553: connect validation gate — intercept apply button when balance < real cost -->
     <script>
     (function(){
@@ -2781,7 +2887,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v553 — Freelance Marketplace</p>
+  <p>Work Pro v554 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
