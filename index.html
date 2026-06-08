@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v541';
+        var KEY = '_wp_loaded_v542';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=541&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=542&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v541';</script>
+    <script>window.WORKPRO_VERSION='v542';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -481,7 +481,7 @@
               }
               console.log('[SW] All old SW unregistered, caches cleared');
               setTimeout(function() {
-                window.location.href = location.protocol + '//' + location.host + '/?nocache=454&_=' + Date.now();
+                window.location.href = location.protocol + '//' + location.host + '/?nocache=' + (window.WORKPRO_VERSION||'541').replace('v','') + '&_=' + Date.now();
               }, 500);
             });
           }).catch(function(err) {
@@ -1321,9 +1321,19 @@
       console.log('[PiFix-Early] v512 ready — createPayment and authenticate intercepted');
     })();
     </script>
-    <!-- v494: React CDN + Admin-v2 loaded BEFORE app bundle -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- v542: React CDN with fallback + timing logs -->
+    <script>
+    window.__reactLoadStart = Date.now();
+    console.log('[React] Loading from unpkg...');
+    </script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin
+      onerror="console.error('[React] unpkg failed, trying jsdelivr...');document.write('<script src=\'https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js\'><\/script>')"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin
+      onerror="console.error('[ReactDOM] unpkg failed, trying jsdelivr...');document.write('<script src=\'https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js\'><\/script>')"></script>
+    <script>
+    if(window.React) console.log('[React] CDN OK in '+(Date.now()-window.__reactLoadStart)+'ms');
+    else console.error('[React] CDN FAILED — React not defined after load');
+    </script>
     <!-- v512: Inline admin-v8 (no credentials, fixed stats, Earnings tab) -->
     <script>
 var AdminPanel=(function(){
@@ -1585,13 +1595,15 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
       var timeoutMs=10000; // 10 seconds timeout for slow LTE
       function loadBundle() {
         attempt++;
-        console.log('[Loader] Attempt '+attempt+'/'+maxAttempts+'...');
+        console.log('[Loader] Attempt '+attempt+'/'+maxAttempts+' React='+(!!window.React)+' RDom='+(!!window.ReactDOM));
         var controller=new AbortController();
         var timer=setTimeout(function(){controller.abort();},timeoutMs);
+        var _ls=document.getElementById('_lstatus');if(_ls)_ls.textContent='Fetching bundle... ('+attempt+')';
         fetch('/assets/app-v200.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
           .then(function(r){clearTimeout(timer);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
           .then(function(code){
             console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms (attempt '+attempt+')');
+            if(!window.React||!window.ReactDOM){console.error('[Loader] React CDN missing! Retrying React load...');var s1=document.createElement('script');s1.src='https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js';var s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js';s2.onload=function(){console.log('[Loader] React fallback loaded, retrying bundle');setTimeout(loadBundle,100);};document.head.appendChild(s1);document.head.appendChild(s2);return;}
             try{
               var s=document.createElement('script');
               s.type='text/javascript';
@@ -2178,7 +2190,7 @@ window._W5_fixed=true;
     <!-- LOADER -->
     <div id="_loader" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);z-index:99999;font-family:sans-serif;">
       <h1 style="color:#0d9488;font-size:36px;margin-bottom:8px;">Work Pro</h1>
-      <p style="color:#666;font-size:14px;margin-bottom:20px;">Loading...</p>
+      <p id="_lstatus" style="color:#666;font-size:14px;margin-bottom:20px;">Loading...</p>
       <div style="width:40px;height:40px;border:3px solid #ddd;border-top-color:#0d9488;border-radius:50%;animation:spin 1s linear infinite;"></div>
       <div id="_error" style="display:none;color:#dc2626;font-size:13px;text-align:center;margin-top:20px;max-width:280px;padding:0 20px;"></div>
       <button id="_reload" style="display:none;margin-top:12px;padding:10px 24px;background:#0d9488;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;" onclick="location.reload()">Reload</button>
@@ -2200,7 +2212,7 @@ window._W5_fixed=true;
     </script>
     <div id="root"></div>
     <!-- DEBUG CONSOLE -->
-    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;pointer-events:none;">
+    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:99999;display:block;pointer-events:none;">
       <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:auto;">▼</div>
       <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;pointer-events:auto;"></div>
     </div>
@@ -2212,8 +2224,8 @@ window._W5_fixed=true;
       function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
-      function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-      lg('#0f0','[WP] v518 start');
+      function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+      lg('#0f0','[WP] v542 start '+new Date().toISOString().slice(11,19));
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
