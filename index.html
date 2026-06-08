@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v527';
+        var KEY = '_wp_loaded_v528';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=527&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=528&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v527';</script>
+    <script>window.WORKPRO_VERSION='v528';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1588,7 +1588,7 @@ if(typeof window!=="undefined"){console.log("[AdminPanel] v512 loaded");window.A
         console.log('[Loader] Attempt '+attempt+'/'+maxAttempts+'...');
         var controller=new AbortController();
         var timer=setTimeout(function(){controller.abort();},timeoutMs);
-        fetch('/assets/app-v199.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
+        fetch('/assets/app-v200.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
           .then(function(r){clearTimeout(timer);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
           .then(function(code){
             console.log('[Loader] JS fetched in '+(Date.now()-start)+'ms (attempt '+attempt+')');
