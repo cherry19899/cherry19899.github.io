@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v549';
+        var KEY = '_wp_loaded_v550';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=549&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=550&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -38,15 +38,15 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <meta name="theme-color" content="#10b981" />
-    <meta name="description" content="Hire and work in Pi cryptocurrency. Find freelance jobs, pay and get paid in Pi." />
-    <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
-    <meta property="og:title" content="Work Pro - Freelance on Pi" />
-    <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
+    <meta name="description" content="Hire freelancers and find jobs. Pay and get paid in cryptocurrency." />
+    <meta name="keywords" content="freelance, jobs, cryptocurrency, hire, work, marketplace" />
+    <meta property="og:title" content="Work Pro - Freelance Marketplace" />
+    <meta property="og:description" content="Hire freelancers and find jobs. Pay and get paid in cryptocurrency." />
     <link rel="manifest" href="/manifest.json?v=49" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
-    <title>Work Pro — Pi Network Freelance Marketplace</title>
+    <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v549';</script>
+    <script>window.WORKPRO_VERSION='v550';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -586,18 +586,18 @@
     (function(){
       // Privacy Policy translations (12 languages)
       var ppTexts = {
-        en: { title: 'Privacy Policy', items: ['Work Pro collects only the minimum data needed: Pi username, user ID, job/escrow data, and chat messages.','We do NOT collect email, phone, address, or financial info.','Data is shared only with Pi Network for auth and payments.','All communications use HTTPS encryption.','You can request data deletion at any time.','Last updated: May 2026.'] },
-        ru: { title: 'Политика конфиденциальности', items: ['Work Pro собирает только минимум данных: имя пользователя Pi, ID, данные job/escrow и сообщения чата.','Мы НЕ собираем email, телефон, адрес или финансовую информацию.','Данные передаются только в Pi Network для авторизации и платежей.','Все соединения используют HTTPS шифрование.','Вы можете запросить удаление данных в любое время.','Обновлено: май 2026.'] },
-        es: { title: 'Política de Privacidad', items: ['Work Pro solo recopila los datos mínimos necesarios.','NO recopilamos email, teléfono, dirección ni información financiera.','Los datos solo se comparten con Pi Network.','Todas las comunicaciones usan HTTPS.','Puede solicitar la eliminación de datos en cualquier momento.'] },
-        de: { title: 'Datenschutzrichtlinie', items: ['Work Pro erhebt nur die minimal erforderlichen Daten.','Wir sammeln KEINE E-Mail, Telefon, Adresse oder Finanzdaten.','Daten werden nur mit Pi Network geteilt.','Alle Kommunikationen nutzen HTTPS.','Sie können die Löschung von Daten jederzeit beantragen.'] },
-        fr: { title: 'Politique de confidentialité', items: ['Work Pro ne collecte que les données minimales nécessaires.','Nous ne collectons PAS d\'email, téléphone, adresse ou infos financières.','Les données sont partagées uniquement avec Pi Network.','Toutes les communications utilisent HTTPS.','Vous pouvez demander la suppression des données à tout moment.'] },
-        it: { title: 'Informativa sulla privacy', items: ['Work Pro raccoglie solo i dati minimi necessari.','NON raccogliamo email, telefono, indirizzo o dati finanziari.','I dati sono condivisi solo con Pi Network.','Tutte le comunicazioni usano HTTPS.','Puoi richiedere la cancellazione dei dati in qualsiasi momento.'] },
-        pt: { title: 'Política de Privacidade', items: ['Work Pro coleta apenas os dados mínimos necessários.','NÃO coletamos email, telefone, endereço ou dados financeiros.','Os dados são compartilhados apenas com a Pi Network.','Todas as comunicações usam HTTPS.','Você pode solicitar a exclusão de dados a qualquer momento.'] },
-        pl: { title: 'Polityka prywatności', items: ['Work Pro zbiera tylko minimalne dane.','NIE zbieramy emaila, telefonu, adresu ani danych finansowych.','Dane są udostępniane wyłącznie Pi Network.','Wszystkie komunikacje używają HTTPS.','Możesz w każdej chwili zażądać usunięcia danych.'] },
-        uk: { title: 'Політика конфіденційності', items: ['Work Pro збирає лише мінімум даних.','Ми НЕ збираємо email, телефон, адресу чи фінансову інформацію.','Дані передаються лише в Pi Network.','Всі з\'єднання використовують HTTPS.','Ви можете запросити видалення даних у будь-який час.'] },
-        ja: { title: 'プライバシーポリシー', items: ['Work Proは必要最低限のデータのみを収集します。','メール、電話、住所、金融情報は収集しません。','データはPi Networkとのみ共有されます。','すべての通信はHTTPSを使用します。','いつでもデータ削除をリクエストできます。'] },
-        ko: { title: '개인정보 보호정책', items: ['Work Pro는 최소한의 데이터만 수집합니다.','이메일, 전화번호, 주소, 금융 정보를 수집하지 않습니다.','데이터는 Pi Network와만 공유됩니다.','모든 통신은 HTTPS를 사용합니다.','언제든지 데이터 삭제를 요청할 수 있습니다.'] },
-        zh: { title: '隐私政策', items: ['Work Pro仅收集最低限度的必要数据。','我们不收集电子邮件、电话、地址或财务信息。','数据仅与Pi Network共享。','所有通信均使用HTTPS。','您可以随时请求删除数据。'] }
+        en: { title: 'Privacy Policy', items: ['Work Pro collects only the minimum data needed: username, user ID, job/escrow data, and chat messages.','We do NOT collect email, phone, address, or financial info.','Authentication is handled by the blockchain platform SDK. We do not store your private keys.','All communications use HTTPS encryption.','You can request data deletion at any time.','Last updated: May 2026.'] },
+        ru: { title: 'Политика конфиденциальности', items: ['Work Pro собирает только минимум данных: имя пользователя, ID, данные job/escrow и сообщения чата.','Мы НЕ собираем email, телефон, адрес или финансовую информацию.','Авторизация осуществляется через SDK блокчейн-платформы. Мы не храним ваши приватные ключи.','Все соединения используют HTTPS шифрование.','Вы можете запросить удаление данных в любое время.','Обновлено: май 2026.'] },
+        es: { title: 'Política de Privacidad', items: ['Work Pro solo recopila los datos mínimos necesarios.','NO recopilamos email, teléfono, dirección ni información financiera.','La autenticación la gestiona el SDK de la plataforma blockchain.','Todas las comunicaciones usan HTTPS.','Puede solicitar la eliminación de datos en cualquier momento.'] },
+        de: { title: 'Datenschutzrichtlinie', items: ['Work Pro erhebt nur die minimal erforderlichen Daten.','Wir sammeln KEINE E-Mail, Telefon, Adresse oder Finanzdaten.','Die Authentifizierung erfolgt über das SDK der Blockchain-Plattform.','Alle Kommunikationen nutzen HTTPS.','Sie können die Löschung von Daten jederzeit beantragen.'] },
+        fr: { title: 'Politique de confidentialité', items: ['Work Pro ne collecte que les données minimales nécessaires.','Nous ne collectons PAS d\'email, téléphone, adresse ou infos financières.','L\'authentification est gérée par le SDK de la plateforme blockchain.','Toutes les communications utilisent HTTPS.','Vous pouvez demander la suppression des données à tout moment.'] },
+        it: { title: 'Informativa sulla privacy', items: ['Work Pro raccoglie solo i dati minimi necessari.','NON raccogliamo email, telefono, indirizzo o dati finanziari.','L\'autenticazione è gestita dall\'SDK della piattaforma blockchain.','Tutte le comunicazioni usano HTTPS.','Puoi richiedere la cancellazione dei dati in qualsiasi momento.'] },
+        pt: { title: 'Política de Privacidade', items: ['Work Pro coleta apenas os dados mínimos necessários.','NÃO coletamos email, telefone, endereço ou dados financeiros.','A autenticação é gerenciada pelo SDK da plataforma blockchain.','Todas as comunicações usam HTTPS.','Você pode solicitar a exclusão de dados a qualquer momento.'] },
+        pl: { title: 'Polityka prywatności', items: ['Work Pro zbiera tylko minimalne dane.','NIE zbieramy emaila, telefonu, adresu ani danych finansowych.','Uwierzytelnianie jest obsługiwane przez SDK platformy blockchain.','Wszystkie komunikacje używają HTTPS.','Możesz w każdej chwili zażądać usunięcia danych.'] },
+        uk: { title: 'Політика конфіденційності', items: ['Work Pro збирає лише мінімум даних.','Ми НЕ збираємо email, телефон, адресу чи фінансову інформацію.','Авторизація здійснюється через SDK блокчейн-платформи.','Всі з\'єднання використовують HTTPS.','Ви можете запросити видалення даних у будь-який час.'] },
+        ja: { title: 'プライバシーポリシー', items: ['Work Proは必要最低限のデータのみを収集します。','メール、電話、住所、金融情報は収集しません。','認証はブロックチェーンプラットフォームのSDKによって処理されます。','すべての通信はHTTPSを使用します。','いつでもデータ削除をリクエストできます。'] },
+        ko: { title: '개인정보 보호정책', items: ['Work Pro는 최소한의 데이터만 수집합니다.','이메일, 전화번호, 주소, 금융 정보를 수집하지 않습니다.','인증은 블록체인 플랫폼 SDK에 의해 처리됩니다.','모든 통신은 HTTPS를 사용합니다.','언제든지 데이터 삭제를 요청할 수 있습니다.'] },
+        zh: { title: '隐私政策', items: ['Work Pro仅收集最低限度的必要数据。','我们不收集电子邮件、电话、地址或财务信息。','身份验证由区块链平台SDK处理。','所有通信均使用HTTPS。','您可以随时请求删除数据。'] }
       };
       var ppCloseTexts = { en:'Close', ru:'Закрыть', es:'Cerrar', de:'Schließen', fr:'Fermer', it:'Chiudi', pt:'Fechar', pl:'Zamknij', uk:'Закрити', ja:'閉じる', ko:'닫기', zh:'关闭' };
 
@@ -2578,7 +2578,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v530 — Pi Network Freelance Marketplace</p>
+  <p>Work Pro v550 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
