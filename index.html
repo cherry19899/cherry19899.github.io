@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v552';
+        var KEY = '_wp_loaded_v553';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=552&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=553&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -42,11 +42,63 @@
     <meta name="keywords" content="freelance, jobs, cryptocurrency, hire, work, marketplace" />
     <meta property="og:title" content="Work Pro - Freelance Marketplace" />
     <meta property="og:description" content="Hire freelancers and find jobs. Pay and get paid in cryptocurrency." />
-    <link rel="manifest" href="/manifest.json?v=49" />
+    <link rel="manifest" href="/manifest.json?v=553" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v552';</script>
+    <script>window.WORKPRO_VERSION='v553';</script>
+    <!-- v553: connect validation gate — intercept apply button when balance < real cost -->
+    <script>
+    (function(){
+      var API = 'https://workpro-api.onrender.com';
+      var LANGS = {
+        en: { err: 'Not enough connects. This job requires {n} connect(s), you have {b}.', ok: 'Get more connects in your profile.' },
+        ru: { err: 'Недостаточно коннектов. Эта задача требует {n} коннект(ов), у вас {b}.', ok: 'Пополните баланс в профиле.' },
+        uk: { err: 'Недостатньо конектів. Потрібно {n}, у вас {b}.', ok: 'Поповніть баланс у профілі.' }
+      };
+      function t(key, n, b) {
+        var lang = (localStorage.getItem('workpro_lang') || 'en').substring(0,2);
+        var d = LANGS[lang] || LANGS.en;
+        return d[key].replace('{n}', n).replace('{b}', b);
+      }
+      function getUser() { try { return JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) { return null; } }
+      function getBalance() { var u = getUser(); return u ? (parseInt(u.balance_connects) || 0) : 0; }
+      function showToast(msg) {
+        var el = document.createElement('div');
+        el.textContent = msg;
+        el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:99999;max-width:320px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.5)';
+        document.body.appendChild(el);
+        setTimeout(function(){ el.remove(); }, 4000);
+      }
+      // Intercept apply button clicks
+      document.addEventListener('click', function(e) {
+        var el = e.target;
+        // Walk up 3 levels to find button
+        for (var i = 0; i < 4; i++) {
+          if (!el || el === document.body) break;
+          var txt = (el.textContent || '').toLowerCase().trim();
+          var isApplyBtn = el.tagName === 'BUTTON' && (
+            /откликнуться|apply|submit.*application|отправить.*отклик|подать|応募/.test(txt)
+          );
+          if (isApplyBtn) {
+            var jobId = window._currentJobId;
+            if (!jobId) { el = el.parentElement; continue; }
+            var cost = window._jobApplyCost && window._jobApplyCost[jobId];
+            if (!cost || cost <= 1) { el = el.parentElement; continue; } // bundle handles cost=1 correctly
+            var bal = getBalance();
+            if (bal < cost) {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+              showToast(t('err', cost, bal) + ' ' + t('ok', cost, bal));
+              return false;
+            }
+            break;
+          }
+          el = el.parentElement;
+        }
+      }, true);
+    })();
+    </script>
     <!-- v552: tiered apply_cost patch (1-50π=1, 51-100π=2, ...) -->
     <script>
     (function(){
@@ -2729,7 +2781,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v550 — Freelance Marketplace</p>
+  <p>Work Pro v553 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>

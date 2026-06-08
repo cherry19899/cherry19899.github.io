@@ -1,7 +1,7 @@
 {
   "name": "Work Pro",
   "short_name": "WorkPro",
-  "description": "Decentralized freelance marketplace on Pi Network",
+  "description": "Freelance marketplace — hire talent and get paid in cryptocurrency",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
