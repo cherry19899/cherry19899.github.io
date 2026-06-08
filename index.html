@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v528';
+        var KEY = '_wp_loaded_v529';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=528&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=529&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v528';</script>
+    <script>window.WORKPRO_VERSION='v529';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2199,9 +2199,9 @@ window._W5_fixed=true;
     </script>
     <div id="root"></div>
     <!-- DEBUG CONSOLE -->
-    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;">
-      <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
-      <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
+    <div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;pointer-events:none;">
+      <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:auto;">▼</div>
+      <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;pointer-events:auto;"></div>
     </div>
     <script>
     (function(){
@@ -2618,9 +2618,9 @@ window._W5_fixed=true;
   </p>
 </div>
 <!-- DEBUG CONSOLE -->
-<div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;">
-  <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;">▼</div>
-  <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;"></div>
+<div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;pointer-events:none;">
+  <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:auto;">▼</div>
+  <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;pointer-events:auto;"></div>
 </div>
 <script>
 // v513: Add Admin button to profile — ONLY for developer cherry19899
