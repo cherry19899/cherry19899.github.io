@@ -74,8 +74,14 @@
             if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
               init.headers['x-user-id'] = CANONICAL_UID;
             }
-            // Debug: log ALL API calls to understand bundle's fetch patterns
-            console.log('[v554-dbg]', (init.method||'GET'), urlStr.replace(API,''), 'uid:', init.headers['x-user-id']||'none');
+            // Debug: log ALL API calls + persist to localStorage
+            var logMsg = (init.method||'GET') + ' ' + urlStr.replace(API,'') + ' uid:' + (init.headers['x-user-id']||'none');
+            console.log('[v554-dbg]', logMsg);
+            try {
+              var logs = JSON.parse(localStorage.getItem('_v554_fetch_log')||'[]');
+              logs.push(logMsg); if (logs.length > 50) logs = logs.slice(-50);
+              localStorage.setItem('_v554_fetch_log', JSON.stringify(logs));
+            } catch(e) {}
           }
         } catch(e) {}
         var result = _rawFetch.call(this, input, init);
