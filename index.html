@@ -434,9 +434,9 @@
             if (!hasUser && !window._piAuthCompleted) {
               console.log('[Pi] Browser fallback: creating mock auth state');
               window._piAuthCompleted = true;
-              var fallbackUser = { uid: 'cherry19899', username: 'cherry19899', is_admin: true, role: 'admin', name: 'cherry19899' };
+              var fallbackUser = { uid: 'pi_cherry19899', id: 'pi_cherry19899', username: 'cherry19899', is_admin: true, role: 'admin', name: 'cherry19899' };
               localStorage.setItem('workpro_user', JSON.stringify(fallbackUser));
-              localStorage.setItem('workpro_user_id', 'cherry19899');
+              localStorage.setItem('workpro_user_id', 'pi_cherry19899');
               // Dispatch auth event for React to pick up
               window.dispatchEvent(new CustomEvent('workpro:auth-fallback', {
                 detail: { user: fallbackUser }
