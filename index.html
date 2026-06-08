@@ -314,43 +314,50 @@
         return item;
       }
       function injectNotifDOM(d) {
-        if (document.getElementById('_wp_notif_inject')) return;
+        if (document.getElementById('_wp_notif_overlay')) return;
         var notifs = d.notifications || [];
         if (!notifs.length) return;
-        // Strategy: find a button with text "(0)" — its grandparent is the page container
-        // Insert the list AFTER the tabs row and HIDE the empty-state sibling
-        var tabsRow = null;
-        document.querySelectorAll('button').forEach(function(b) {
-          if (/\(0\)|\(\d+\)/.test(b.textContent) && !tabsRow) {
-            tabsRow = b.parentElement; // the tabs container row
-          }
-        });
-        if (!tabsRow) { console.log('[v554] notif: tabs row not found'); return; }
-        var pageContainer = tabsRow.parentElement;
-        if (!pageContainer) { console.log('[v554] notif: page container not found'); return; }
-        // Hide empty-state sibling (next sibling after tabs)
-        var next = tabsRow.nextElementSibling;
-        if (next) next.style.display = 'none';
-        // Build list
-        var wrapper = document.createElement('div');
-        wrapper.id = '_wp_notif_inject';
-        wrapper.style.cssText = 'width:100%';
-        notifs.forEach(function(n) { wrapper.appendChild(buildNotifItem(n)); });
-        // Insert after tabsRow
-        if (tabsRow.nextSibling) {
-          pageContainer.insertBefore(wrapper, tabsRow.nextSibling);
-        } else {
-          pageContainer.appendChild(wrapper);
-        }
-        // Update tab counts
+        // Use a FIXED overlay so React re-renders can't remove it
+        // Position it over the notifications page content area (below tabs)
+        var overlay = document.createElement('div');
+        overlay.id = '_wp_notif_overlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9990;background:#0f172a;overflow-y:auto;padding-top:120px';
+        // Header (mimics app header)
+        var hdr = document.createElement('div');
+        hdr.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9991;background:#0f172a;padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.08)';
+        var backBtn = document.createElement('button');
+        backBtn.textContent = '←';
+        backBtn.style.cssText = 'background:none;border:none;color:#e5e5e5;font-size:20px;cursor:pointer;padding:4px 8px';
+        backBtn.onclick = function() { overlay.remove(); };
+        var hdrtitle = document.createElement('span');
+        hdrtitle.style.cssText = 'font-size:16px;font-weight:600;color:#e5e5e5';
+        hdrtitle.textContent = 'Notifications';
+        hdr.appendChild(backBtn); hdr.appendChild(hdrtitle);
+        overlay.appendChild(hdr);
+        // Tabs row
         var unreadCount = notifs.filter(function(x){ return !x.is_read; }).length;
-        document.querySelectorAll('button').forEach(function(b) {
-          var t = b.textContent || '';
-          if (/\(0\)/.test(t)) {
-            b.textContent = /unread|непрочит/i.test(t) ? t.replace('(0)', '(' + unreadCount + ')') : t.replace('(0)', '(' + notifs.length + ')');
-          }
+        var tabs = document.createElement('div');
+        tabs.style.cssText = 'position:fixed;top:52px;left:0;right:0;z-index:9991;background:#0f172a;padding:10px 16px;display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,0.08)';
+        ['All (' + notifs.length + ')', 'Unread (' + unreadCount + ')'].forEach(function(label, i) {
+          var tab = document.createElement('button');
+          tab.textContent = label;
+          tab.style.cssText = 'flex:1;padding:8px 0;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:' + (i===0?'#10b981':'rgba(255,255,255,0.08)') + ';color:' + (i===0?'#fff':'rgba(255,255,255,0.6)');
+          tab.onclick = function() {
+            list.innerHTML = '';
+            var filtered = i===1 ? notifs.filter(function(n){ return !n.is_read; }) : notifs;
+            filtered.forEach(function(n) { list.appendChild(buildNotifItem(n)); });
+            tabs.querySelectorAll('button').forEach(function(b,j){ b.style.background = j===i?'#10b981':'rgba(255,255,255,0.08)'; b.style.color = j===i?'#fff':'rgba(255,255,255,0.6)'; });
+          };
+          tabs.appendChild(tab);
         });
-        console.log('[v554] Notifications injected:', notifs.length);
+        overlay.appendChild(tabs);
+        // List
+        var list = document.createElement('div');
+        list.style.cssText = 'padding-top:0';
+        notifs.forEach(function(n) { list.appendChild(buildNotifItem(n)); });
+        overlay.appendChild(list);
+        document.body.appendChild(overlay);
+        console.log('[v554] Notifications overlay shown:', notifs.length);
       }
       // Watch for Notifications screen appearing — debounced
       var _notifCheckTimer = null;
@@ -364,22 +371,13 @@
               onNotifScreen = true;
             }
           });
-          if (onNotifScreen && !document.getElementById('_wp_notif_inject')) {
+          if (onNotifScreen && !document.getElementById('_wp_notif_overlay')) {
             fetchAndShowNotifs();
           }
-          // Remove injected list if navigated away
+          // Remove overlay if navigated away
           if (!onNotifScreen) {
-            var inj = document.getElementById('_wp_notif_inject');
-            if (inj) {
-              // Restore hidden siblings
-              var parent = inj.parentElement;
-              if (parent) {
-                Array.prototype.slice.call(parent.children).forEach(function(c) {
-                  if (c !== inj) c.style.display = '';
-                });
-              }
-              inj.remove();
-            }
+            var ov = document.getElementById('_wp_notif_overlay');
+            if (ov) ov.remove();
           }
         }, 200);
       });
