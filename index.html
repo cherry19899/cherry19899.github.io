@@ -295,82 +295,97 @@
           }).catch(function(){});
       }
       function injectNotifDOM(d) {
+        if (document.getElementById('_wp_notif_inject')) return; // already injected
         var notifs = d.notifications || [];
         if (!notifs.length) return;
-        // Find the "No notifications yet" element
-        var els = document.querySelectorAll('*');
-        var emptyEl = null;
-        for (var i = 0; i < els.length; i++) {
-          var txt = els[i].textContent || '';
-          if (/no notifications yet|нет уведомлений|немає сповіщень/i.test(txt) && els[i].children.length === 0) {
-            emptyEl = els[i]; break;
+        // Find the Notifications page container — look for "No notifications yet" text
+        var emptyContainer = null;
+        document.querySelectorAll('*').forEach(function(el) {
+          if (!emptyContainer && el.children.length <= 1 && /no notifications yet|нет уведомлений|немає сповіщень/i.test((el.textContent||''))) {
+            // Walk up to find a scrollable/page container
+            var p = el;
+            for (var i = 0; i < 5; i++) {
+              p = p && p.parentElement;
+              if (p && p.children.length >= 2) { emptyContainer = p; break; }
+            }
           }
-        }
-        if (!emptyEl) return;
-        var container = emptyEl.parentElement && emptyEl.parentElement.parentElement;
-        if (!container) container = emptyEl.parentElement;
-        if (!container || document.getElementById('_wp_notif_inject')) return;
-        // Build notifications list
+        });
+        if (!emptyContainer) return;
+        // Build notifications wrapper
         var wrapper = document.createElement('div');
         wrapper.id = '_wp_notif_inject';
-        wrapper.style.cssText = 'padding:12px 0';
+        wrapper.style.cssText = 'width:100%;padding:0';
         notifs.forEach(function(n) {
           var dateStr = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
-          var isRead = n.is_read;
+          var isUnread = !n.is_read;
           var item = document.createElement('div');
-          item.style.cssText = 'padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);background:' + (isRead ? 'transparent' : 'rgba(16,185,129,0.05)') + ';display:flex;align-items:flex-start;gap:12px';
+          item.style.cssText = 'padding:16px;border-bottom:1px solid rgba(255,255,255,0.06);background:' + (isUnread ? 'rgba(16,185,129,0.06)' : 'transparent') + ';display:flex;align-items:flex-start;gap:10px;cursor:pointer';
           var dot = document.createElement('div');
-          dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:' + (isRead ? 'transparent' : '#10b981') + ';margin-top:6px;flex-shrink:0';
-          var body = document.createElement('div');
-          body.style.cssText = 'flex:1';
-          var title = document.createElement('div');
-          title.style.cssText = 'font-size:14px;font-weight:500;color:#e5e5e5;margin-bottom:4px';
-          title.textContent = n.title || '';
-          var desc = document.createElement('div');
-          desc.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.5)';
-          desc.textContent = (n.body || '') + (dateStr ? '  ·  ' + dateStr : '');
-          body.appendChild(title);
-          body.appendChild(desc);
+          dot.style.cssText = 'width:8px;height:8px;min-width:8px;border-radius:50%;margin-top:5px;background:' + (isUnread ? '#10b981' : 'rgba(255,255,255,0.2)');
+          var info = document.createElement('div');
+          info.style.cssText = 'flex:1;min-width:0';
+          var ttl = document.createElement('p');
+          ttl.style.cssText = 'margin:0 0 4px;font-size:13px;font-weight:' + (isUnread ? '600' : '400') + ';color:#e5e5e5;line-height:1.4';
+          ttl.textContent = n.title || '';
+          var sub = document.createElement('p');
+          sub.style.cssText = 'margin:0;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.3';
+          sub.textContent = (n.body || '') + (dateStr ? ' · ' + dateStr : '');
+          info.appendChild(ttl);
+          info.appendChild(sub);
           item.appendChild(dot);
-          item.appendChild(body);
+          item.appendChild(info);
           wrapper.appendChild(item);
         });
-        // Hide the "No notifications" empty state and replace with real list
-        var emptyParent = emptyEl.parentElement;
-        if (emptyParent) emptyParent.style.display = 'none';
-        container.appendChild(wrapper);
-        // Update the "All (0)" button text
+        // Insert BEFORE the empty-state children (hide them via wrapper)
+        var children = Array.prototype.slice.call(emptyContainer.children);
+        children.forEach(function(c) {
+          // Hide children that look like the empty state (not buttons/tabs)
+          var hasBtns = c.querySelectorAll('button').length > 0;
+          if (!hasBtns) c.style.display = 'none';
+        });
+        emptyContainer.appendChild(wrapper);
+        // Update tabs
         document.querySelectorAll('button').forEach(function(b) {
-          if (/All \(0\)|Все \(0\)/.test(b.textContent)) {
-            b.textContent = b.textContent.replace('(0)', '(' + notifs.length + ')');
-          }
-          if (/Unread \(0\)|Непрочитанные \(0\)/.test(b.textContent)) {
-            var unread = notifs.filter(function(n){ return !n.is_read; }).length;
-            b.textContent = b.textContent.replace('(0)', '(' + unread + ')');
+          var t = b.textContent || '';
+          if (/\(0\)/.test(t)) {
+            var unread = notifs.filter(function(x){ return !x.is_read; }).length;
+            b.textContent = /unread|непрочит|непрочит/i.test(t) ?
+              t.replace('(0)', '(' + unread + ')') :
+              t.replace('(0)', '(' + notifs.length + ')');
           }
         });
         console.log('[v554] Notifications injected:', notifs.length);
       }
-      // Watch for Notifications screen appearing
+      // Watch for Notifications screen appearing — debounced
+      var _notifCheckTimer = null;
       var _notifObserver = new MutationObserver(function() {
-        // Detect by any element whose direct text = "Notifications" (the page heading)
-        var onNotifScreen = false;
-        document.querySelectorAll('*').forEach(function(el) {
-          if (el.children.length <= 2 && /^notifications$|^уведомления$|^сповіщення$/i.test((el.textContent||'').trim())) {
-            onNotifScreen = true;
+        if (_notifCheckTimer) return;
+        _notifCheckTimer = setTimeout(function() {
+          _notifCheckTimer = null;
+          var onNotifScreen = false;
+          document.querySelectorAll('*').forEach(function(el) {
+            if (el.children.length <= 2 && /^notifications$|^уведомления$|^сповіщення$/i.test((el.textContent||'').trim())) {
+              onNotifScreen = true;
+            }
+          });
+          if (onNotifScreen && !document.getElementById('_wp_notif_inject')) {
+            fetchAndShowNotifs();
           }
-        });
-        if (onNotifScreen && !document.getElementById('_wp_notif_inject')) {
-          fetchAndShowNotifs();
-        }
-        // Remove injected list if navigated away
-        if (!onNotifScreen && document.getElementById('_wp_notif_inject')) {
-          var el = document.getElementById('_wp_notif_inject');
-          if (el) el.remove();
-          // Restore empty state
-          var emptyParents = document.querySelectorAll('[style*="display: none"]');
-          emptyParents.forEach(function(ep) { ep.style.display = ''; });
-        }
+          // Remove injected list if navigated away
+          if (!onNotifScreen) {
+            var inj = document.getElementById('_wp_notif_inject');
+            if (inj) {
+              // Restore hidden siblings
+              var parent = inj.parentElement;
+              if (parent) {
+                Array.prototype.slice.call(parent.children).forEach(function(c) {
+                  if (c !== inj) c.style.display = '';
+                });
+              }
+              inj.remove();
+            }
+          }
+        }, 200);
       });
       _notifObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
       console.log('[v554] Notifications DOM injector installed');
