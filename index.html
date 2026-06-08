@@ -294,64 +294,60 @@
             injectNotifDOM(d);
           }).catch(function(){});
       }
+      function buildNotifItem(n) {
+        var dateStr = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
+        var isUnread = !n.is_read;
+        var item = document.createElement('div');
+        item.style.cssText = 'padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.06);background:' + (isUnread ? 'rgba(16,185,129,0.05)' : 'transparent') + ';display:flex;align-items:flex-start;gap:10px';
+        var dot = document.createElement('div');
+        dot.style.cssText = 'width:8px;height:8px;min-width:8px;border-radius:50%;margin-top:5px;background:' + (isUnread ? '#10b981' : 'rgba(255,255,255,0.15)');
+        var info = document.createElement('div');
+        info.style.cssText = 'flex:1;min-width:0';
+        var ttl = document.createElement('div');
+        ttl.style.cssText = 'font-size:13px;font-weight:' + (isUnread ? '600' : '400') + ';color:#e5e5e5;margin-bottom:3px;line-height:1.4';
+        ttl.textContent = n.title || '';
+        var sub = document.createElement('div');
+        sub.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.45);line-height:1.3';
+        sub.textContent = (n.body || '') + (dateStr ? ' · ' + dateStr : '');
+        info.appendChild(ttl); info.appendChild(sub);
+        item.appendChild(dot); item.appendChild(info);
+        return item;
+      }
       function injectNotifDOM(d) {
-        if (document.getElementById('_wp_notif_inject')) return; // already injected
+        if (document.getElementById('_wp_notif_inject')) return;
         var notifs = d.notifications || [];
         if (!notifs.length) return;
-        // Find the Notifications page container — look for "No notifications yet" text
-        var emptyContainer = null;
-        document.querySelectorAll('*').forEach(function(el) {
-          if (!emptyContainer && el.children.length <= 1 && /no notifications yet|нет уведомлений|немає сповіщень/i.test((el.textContent||''))) {
-            // Walk up to find a scrollable/page container
-            var p = el;
-            for (var i = 0; i < 5; i++) {
-              p = p && p.parentElement;
-              if (p && p.children.length >= 2) { emptyContainer = p; break; }
-            }
+        // Strategy: find a button with text "(0)" — its grandparent is the page container
+        // Insert the list AFTER the tabs row and HIDE the empty-state sibling
+        var tabsRow = null;
+        document.querySelectorAll('button').forEach(function(b) {
+          if (/\(0\)|\(\d+\)/.test(b.textContent) && !tabsRow) {
+            tabsRow = b.parentElement; // the tabs container row
           }
         });
-        if (!emptyContainer) return;
-        // Build notifications wrapper
+        if (!tabsRow) { console.log('[v554] notif: tabs row not found'); return; }
+        var pageContainer = tabsRow.parentElement;
+        if (!pageContainer) { console.log('[v554] notif: page container not found'); return; }
+        // Hide empty-state sibling (next sibling after tabs)
+        var next = tabsRow.nextElementSibling;
+        if (next) next.style.display = 'none';
+        // Build list
         var wrapper = document.createElement('div');
         wrapper.id = '_wp_notif_inject';
-        wrapper.style.cssText = 'width:100%;padding:0';
-        notifs.forEach(function(n) {
-          var dateStr = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
-          var isUnread = !n.is_read;
-          var item = document.createElement('div');
-          item.style.cssText = 'padding:16px;border-bottom:1px solid rgba(255,255,255,0.06);background:' + (isUnread ? 'rgba(16,185,129,0.06)' : 'transparent') + ';display:flex;align-items:flex-start;gap:10px;cursor:pointer';
-          var dot = document.createElement('div');
-          dot.style.cssText = 'width:8px;height:8px;min-width:8px;border-radius:50%;margin-top:5px;background:' + (isUnread ? '#10b981' : 'rgba(255,255,255,0.2)');
-          var info = document.createElement('div');
-          info.style.cssText = 'flex:1;min-width:0';
-          var ttl = document.createElement('p');
-          ttl.style.cssText = 'margin:0 0 4px;font-size:13px;font-weight:' + (isUnread ? '600' : '400') + ';color:#e5e5e5;line-height:1.4';
-          ttl.textContent = n.title || '';
-          var sub = document.createElement('p');
-          sub.style.cssText = 'margin:0;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.3';
-          sub.textContent = (n.body || '') + (dateStr ? ' · ' + dateStr : '');
-          info.appendChild(ttl);
-          info.appendChild(sub);
-          item.appendChild(dot);
-          item.appendChild(info);
-          wrapper.appendChild(item);
-        });
-        // Insert BEFORE the empty-state children (hide them via wrapper)
-        var children = Array.prototype.slice.call(emptyContainer.children);
-        children.forEach(function(c) {
-          // Hide children that look like the empty state (not buttons/tabs)
-          var hasBtns = c.querySelectorAll('button').length > 0;
-          if (!hasBtns) c.style.display = 'none';
-        });
-        emptyContainer.appendChild(wrapper);
-        // Update tabs
+        wrapper.style.cssText = 'width:100%';
+        notifs.forEach(function(n) { wrapper.appendChild(buildNotifItem(n)); });
+        // Insert after tabsRow
+        if (tabsRow.nextSibling) {
+          pageContainer.insertBefore(wrapper, tabsRow.nextSibling);
+        } else {
+          pageContainer.appendChild(wrapper);
+        }
+        // Update tab counts
+        var unreadCount = notifs.filter(function(x){ return !x.is_read; }).length;
         document.querySelectorAll('button').forEach(function(b) {
           var t = b.textContent || '';
           if (/\(0\)/.test(t)) {
-            var unread = notifs.filter(function(x){ return !x.is_read; }).length;
-            b.textContent = /unread|непрочит|непрочит/i.test(t) ?
-              t.replace('(0)', '(' + unread + ')') :
-              t.replace('(0)', '(' + notifs.length + ')');
+            b.textContent = /unread|непрочит/i.test(t) ? t.replace('(0)', '(' + unreadCount + ')') : t.replace('(0)', '(' + notifs.length + ')');
           }
         });
         console.log('[v554] Notifications injected:', notifs.length);
