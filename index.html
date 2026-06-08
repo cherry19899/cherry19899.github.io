@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v544';
+        var KEY = '_wp_loaded_v545';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=544&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=545&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v544';</script>
+    <script>window.WORKPRO_VERSION='v545';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1072,13 +1072,13 @@
         ppItem.setAttribute('role', 'button');
         var lang = localStorage.getItem('workpro_lang') || 'en';
         var titles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
-        ppItem.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #e5e7eb;cursor:pointer;-webkit-tap-highlight-color:transparent;background:transparent;"><span style="font-size:16px;margin-right:12px;">🔒</span><span style="flex:1;font-size:14px;color:#374151;">' + (titles[lang] || 'Privacy Policy') + '</span><span style="font-size:16px;color:#9ca3af;">›</span></div>';
+        ppItem.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;-webkit-tap-highlight-color:transparent;background:transparent;"><span style="font-size:16px;margin-right:12px;">🔒</span><span style="flex:1;font-size:14px;color:inherit;">' + (titles[lang] || 'Privacy Policy') + '</span><span style="font-size:16px;color:inherit;opacity:0.5;">›</span></div>';
         ppItem.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           window._showPrivacyPolicy();
         });
-        ppItem.addEventListener('touchstart', function() { ppItem.style.background = '#f3f4f6'; }, {passive:true});
+        ppItem.addEventListener('touchstart', function() { ppItem.style.background = 'rgba(255,255,255,0.05)'; }, {passive:true});
         ppItem.addEventListener('touchend', function() { ppItem.style.background = 'transparent'; }, {passive:true});
 
         // Insert AFTER Terms of Service
@@ -2225,7 +2225,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);c.scrollTop=c.scrollHeight;}
-      lg('#0f0','[WP] v544 start '+new Date().toISOString().slice(11,19));
+      lg('#0f0','[WP] v545 start '+new Date().toISOString().slice(11,19));
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2478,7 +2478,7 @@ window._W5_fixed=true;
         ppBtn.type = 'button';
         ppBtn.className = tosBtn.className || '';
         ppBtn.innerHTML = '<div class="flex items-center gap-3 w-full"><div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="text-sm font-medium flex-1 text-left">' + ppTitle + '</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>';
-        ppBtn.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #e5e7eb;background:transparent;cursor:pointer;color:inherit;font-family:inherit;';
+        ppBtn.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.08);background:transparent;cursor:pointer;color:inherit;font-family:inherit;';
         ppBtn.onclick = function() { window._showPrivacyPolicy(); };
         
         // Insert after Terms of Service
