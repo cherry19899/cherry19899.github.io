@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v531';
+        var KEY = '_wp_loaded_v532';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=531&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=532&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v531';</script>
+    <script>window.WORKPRO_VERSION='v532';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -2211,7 +2211,7 @@ window._W5_fixed=true;
       function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
-      function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
+      function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>80)return;if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
       lg('#0f0','[WP] v518 start');
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
@@ -2617,11 +2617,6 @@ window._W5_fixed=true;
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
 </div>
-<!-- DEBUG CONSOLE -->
-<div id="__c_wrap" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:none;pointer-events:none;">
-  <div id="__c_toggle" style="position:absolute;top:-32px;right:6px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.9);color:#0f0;border:2px solid #0f0;border-radius:8px 8px 0 0;font-family:monospace;font-size:16px;cursor:pointer;z-index:99999;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;pointer-events:auto;">▼</div>
-  <div id="__c" style="max-height:120px;overflow-y:auto;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:10px;line-height:1.4;padding:6px;border-top:2px solid #0f0;pointer-events:auto;"></div>
-</div>
 <script>
 // v513: Add Admin button to profile — ONLY for developer cherry19899
 (function() {
@@ -2694,22 +2689,6 @@ window._W5_fixed=true;
   }
   window.addEventListener('hashchange', onProfilePage);
   setTimeout(onProfilePage, 500);
-})();
-(function(){
-  var wrap=document.getElementById('__c_wrap'),c=document.getElementById('__c'),btn=document.getElementById('__c_toggle'),cnt=0,collapsed=false;
-  function saveState(){try{localStorage.setItem('__c_collapsed',collapsed?'1':'0');}catch(e){}}
-  function restoreState(){try{var s=localStorage.getItem('__c_collapsed');if(s==='1'){collapsed=true;c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}}catch(e){}}
-  function toggleConsole(){collapsed=!collapsed;if(collapsed){c.style.display='none';wrap.style.minHeight='32px';wrap.style.borderTop='2px solid #0f0';btn.textContent='▲';}else{c.style.display='block';wrap.style.minHeight='0';wrap.style.borderTop='none';btn.textContent='▼';}saveState();}
-  if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
-  restoreState();
-  function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);}
-  lg('#0f0','[WP] v518b start');
-  var o=console.log,oe=console.error,ow=console.warn;
-  console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
-  console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
-  console.warn=function(){var a=Array.prototype.slice.call(arguments).join(' ');ow.apply(console,arguments);lg('#ff0','[W] '+a);};
-  window.onerror=function(m,u,l,co,err){lg('#f00','[ERR] '+m+' @'+l+':'+co);return true;};
-  window.onunhandledrejection=function(e){lg('#f00','[REJ] '+(e.reason&&e.reason.message||String(e.reason)));};
 })();
 </script>
 </body>
