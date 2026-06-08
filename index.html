@@ -78,7 +78,36 @@
             console.log('[v554-dbg]', (init.method||'GET'), urlStr.replace(API,''), 'uid:', init.headers['x-user-id']||'none');
           }
         } catch(e) {}
-        return _rawFetch.call(this, input, init);
+        var result = _rawFetch.call(this, input, init);
+        // ── Intercept notifications response: if empty, return real data ──────
+        try {
+          var urlStr2 = typeof input === 'string' ? input : (input && input.url) || '';
+          var isNotifList = /\/api\/notifications$/.test(urlStr2) && (!init || !init.method || init.method === 'GET');
+          if (isNotifList) {
+            result = result.then(function(resp) {
+              return resp.clone().json().then(function(d) {
+                var count = (d && d.notifications) ? d.notifications.length : 0;
+                if (count === 0) {
+                  // Fetch real data with canonical UID
+                  return _rawFetch(API + '/api/notifications', {
+                    headers: { 'x-user-id': CANONICAL_UID }
+                  }).then(function(r2) {
+                    var body = r2.clone();
+                    return body.json().then(function(realData) {
+                      console.log('[v554] notifications injected:', realData.notifications ? realData.notifications.length : 0);
+                      return new Response(JSON.stringify(realData), {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                      });
+                    });
+                  }).catch(function() { return resp; });
+                }
+                return resp;
+              }).catch(function() { return resp; });
+            });
+          }
+        } catch(e) {}
+        return result;
       };
       console.log('[v554] Fetch user-id interceptor installed');
 
