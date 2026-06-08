@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v537';
+        var KEY = '_wp_loaded_v538';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=537&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=538&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v537';</script>
+    <script>window.WORKPRO_VERSION='v538';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
