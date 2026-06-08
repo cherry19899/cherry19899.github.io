@@ -353,11 +353,10 @@
       }
       // Watch for Notifications screen appearing
       var _notifObserver = new MutationObserver(function() {
-        // Detect by heading text
-        var headings = document.querySelectorAll('h1, h2, [class*="header"], [class*="title"]');
+        // Detect by any element whose direct text = "Notifications" (the page heading)
         var onNotifScreen = false;
-        headings.forEach(function(h) {
-          if (/^notifications$|^уведомления$|^сповіщення$/i.test((h.textContent||'').trim())) {
+        document.querySelectorAll('*').forEach(function(el) {
+          if (el.children.length <= 2 && /^notifications$|^уведомления$|^сповіщення$/i.test((el.textContent||'').trim())) {
             onNotifScreen = true;
           }
         });
