@@ -277,6 +277,104 @@
         });
       }
       console.log('[v554] Own-job apply-hide observer installed');
+
+      // ── 4. Notifications DOM injector ────────────────────────────────────────
+      // The bundle v200 doesn't fetch the full notifications list.
+      // We detect the Notifications screen by DOM content and inject real data.
+      var _notifInjected = false;
+      var _notifData = null;
+      function fetchAndShowNotifs() {
+        if (_notifData) { injectNotifDOM(_notifData); return; }
+        fetch(API + '/api/notifications', {
+          headers: { 'x-user-id': CANONICAL_UID }
+        }).then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){
+            if (!d || !d.notifications) return;
+            _notifData = d;
+            injectNotifDOM(d);
+          }).catch(function(){});
+      }
+      function injectNotifDOM(d) {
+        var notifs = d.notifications || [];
+        if (!notifs.length) return;
+        // Find the "No notifications yet" element
+        var els = document.querySelectorAll('*');
+        var emptyEl = null;
+        for (var i = 0; i < els.length; i++) {
+          var txt = els[i].textContent || '';
+          if (/no notifications yet|нет уведомлений|немає сповіщень/i.test(txt) && els[i].children.length === 0) {
+            emptyEl = els[i]; break;
+          }
+        }
+        if (!emptyEl) return;
+        var container = emptyEl.parentElement && emptyEl.parentElement.parentElement;
+        if (!container) container = emptyEl.parentElement;
+        if (!container || document.getElementById('_wp_notif_inject')) return;
+        // Build notifications list
+        var wrapper = document.createElement('div');
+        wrapper.id = '_wp_notif_inject';
+        wrapper.style.cssText = 'padding:12px 0';
+        notifs.forEach(function(n) {
+          var dateStr = n.created_at ? new Date(n.created_at).toLocaleDateString() : '';
+          var isRead = n.is_read;
+          var item = document.createElement('div');
+          item.style.cssText = 'padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);background:' + (isRead ? 'transparent' : 'rgba(16,185,129,0.05)') + ';display:flex;align-items:flex-start;gap:12px';
+          var dot = document.createElement('div');
+          dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:' + (isRead ? 'transparent' : '#10b981') + ';margin-top:6px;flex-shrink:0';
+          var body = document.createElement('div');
+          body.style.cssText = 'flex:1';
+          var title = document.createElement('div');
+          title.style.cssText = 'font-size:14px;font-weight:500;color:#e5e5e5;margin-bottom:4px';
+          title.textContent = n.title || '';
+          var desc = document.createElement('div');
+          desc.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.5)';
+          desc.textContent = (n.body || '') + (dateStr ? '  ·  ' + dateStr : '');
+          body.appendChild(title);
+          body.appendChild(desc);
+          item.appendChild(dot);
+          item.appendChild(body);
+          wrapper.appendChild(item);
+        });
+        // Hide the "No notifications" empty state and replace with real list
+        var emptyParent = emptyEl.parentElement;
+        if (emptyParent) emptyParent.style.display = 'none';
+        container.appendChild(wrapper);
+        // Update the "All (0)" button text
+        document.querySelectorAll('button').forEach(function(b) {
+          if (/All \(0\)|Все \(0\)/.test(b.textContent)) {
+            b.textContent = b.textContent.replace('(0)', '(' + notifs.length + ')');
+          }
+          if (/Unread \(0\)|Непрочитанные \(0\)/.test(b.textContent)) {
+            var unread = notifs.filter(function(n){ return !n.is_read; }).length;
+            b.textContent = b.textContent.replace('(0)', '(' + unread + ')');
+          }
+        });
+        console.log('[v554] Notifications injected:', notifs.length);
+      }
+      // Watch for Notifications screen appearing
+      var _notifObserver = new MutationObserver(function() {
+        // Detect by heading text
+        var headings = document.querySelectorAll('h1, h2, [class*="header"], [class*="title"]');
+        var onNotifScreen = false;
+        headings.forEach(function(h) {
+          if (/^notifications$|^уведомления$|^сповіщення$/i.test((h.textContent||'').trim())) {
+            onNotifScreen = true;
+          }
+        });
+        if (onNotifScreen && !document.getElementById('_wp_notif_inject')) {
+          fetchAndShowNotifs();
+        }
+        // Remove injected list if navigated away
+        if (!onNotifScreen && document.getElementById('_wp_notif_inject')) {
+          var el = document.getElementById('_wp_notif_inject');
+          if (el) el.remove();
+          // Restore empty state
+          var emptyParents = document.querySelectorAll('[style*="display: none"]');
+          emptyParents.forEach(function(ep) { ep.style.display = ''; });
+        }
+      });
+      _notifObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
+      console.log('[v554] Notifications DOM injector installed');
     })();
     </script>
     <!-- v553: connect validation gate — intercept apply button when balance < real cost -->
