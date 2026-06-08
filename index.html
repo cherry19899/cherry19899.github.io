@@ -115,6 +115,19 @@
         } catch(e) {}
         return result;
       };
+      // Log all localStorage keys 5s after load to find notification storage
+      setTimeout(function() {
+        try {
+          var keys = Object.keys(localStorage);
+          console.log('[v554-ls] keys:', keys.filter(function(k){ return k.indexOf('workpro') !== -1 || k.indexOf('notif') !== -1; }).join(', '));
+          // Log any notifications-related values
+          keys.forEach(function(k) {
+            if (/notif|application/i.test(k)) {
+              console.log('[v554-ls]', k, '=', (localStorage.getItem(k)||'').substring(0,100));
+            }
+          });
+        } catch(e) {}
+      }, 6000);
       console.log('[v554] Fetch user-id interceptor installed');
 
       // ── 1b. XHR interceptor: fix headers + intercept notifications/applications ─
