@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v545';
+        var KEY = '_wp_loaded_v546';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=545&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=546&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v545';</script>
+    <script>window.WORKPRO_VERSION='v546';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1050,53 +1050,32 @@
         // Don't add twice
         if (document.getElementById('_pp_profile_btn')) return;
 
-        // Find profile card container (the element that contains Terms of Service)
-        // Strategy: look for the element that contains Terms of Service text
-        var allDivs = document.querySelectorAll('div');
-        var profileCard = null;
-        for (var i = 0; i < allDivs.length; i++) {
-          var text = allDivs[i].textContent || '';
-          // Profile page has Terms of Service + FAQ + Clear Cache + Logout
-          if (text.indexOf('Terms of Service') !== -1 &&
-              text.indexOf('FAQ') !== -1 &&
-              text.indexOf('Clear Cache') !== -1) {
-            profileCard = allDivs[i];
+        // Find Terms of Service button/row directly (React renders it as a button)
+        var all = document.querySelectorAll('button, div[role="button"], a');
+        var tosBtn = null;
+        for (var i = 0; i < all.length; i++) {
+          var txt = all[i].textContent || '';
+          if ((txt.indexOf('Terms of Service') !== -1 || txt.indexOf('Условия') !== -1 || txt.indexOf('Terms') !== -1) && txt.length < 60) {
+            tosBtn = all[i];
             break;
           }
         }
-        if (!profileCard) return;
+        if (!tosBtn || !tosBtn.parentNode) return;
 
-        // Create Privacy Policy item matching profile style (light theme compatible)
-        var ppItem = document.createElement('div');
-        ppItem.id = '_pp_profile_btn';
-        ppItem.setAttribute('role', 'button');
         var lang = localStorage.getItem('workpro_lang') || 'en';
         var titles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
-        ppItem.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer;-webkit-tap-highlight-color:transparent;background:transparent;"><span style="font-size:16px;margin-right:12px;">🔒</span><span style="flex:1;font-size:14px;color:inherit;">' + (titles[lang] || 'Privacy Policy') + '</span><span style="font-size:16px;color:inherit;opacity:0.5;">›</span></div>';
-        ppItem.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          window._showPrivacyPolicy();
-        });
-        ppItem.addEventListener('touchstart', function() { ppItem.style.background = 'rgba(255,255,255,0.05)'; }, {passive:true});
-        ppItem.addEventListener('touchend', function() { ppItem.style.background = 'transparent'; }, {passive:true});
+        var ppTitle = titles[lang] || 'Privacy Policy';
 
-        // Insert AFTER Terms of Service
-        var tosParent = null;
-        var children = profileCard.children;
-        for (var j = 0; j < children.length; j++) {
-          var text = children[j].textContent || '';
-          if (text.indexOf('Terms of Service') !== -1 || text.indexOf('Условия') !== -1) {
-            tosParent = children[j];
-            break;
-          }
-        }
-        if (tosParent && tosParent.nextSibling) {
-          profileCard.insertBefore(ppItem, tosParent.nextSibling);
-        } else {
-          profileCard.appendChild(ppItem);
-        }
-        console.log('[PrivacyPolicy] Button added to profile (light theme)');
+        // Create button matching the Terms of Service button's style
+        var ppBtn = document.createElement('button');
+        ppBtn.id = '_pp_profile_btn';
+        ppBtn.type = 'button';
+        ppBtn.className = tosBtn.className || '';
+        ppBtn.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.08);background:transparent;cursor:pointer;color:inherit;font-family:inherit;text-align:left;';
+        ppBtn.innerHTML = '<div class="flex items-center gap-3 w-full" style="display:flex;align-items:center;gap:12px;width:100%"><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="text-sm font-medium" style="font-size:14px;font-weight:500;flex:1">' + ppTitle + '</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.5"><path d="M9 18l6-6-6-6"/></svg></div>';
+        ppBtn.onclick = function(e) { e.preventDefault(); e.stopPropagation(); if(window._showPrivacyPolicy) window._showPrivacyPolicy(); };
+        tosBtn.parentNode.insertBefore(ppBtn, tosBtn.nextSibling);
+        console.log('[PrivacyPolicy] Button added to profile');
       }
 
       // Watch for profile page — try every second for 30 seconds
@@ -2225,7 +2204,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);c.scrollTop=c.scrollHeight;}
-      lg('#0f0','[WP] v545 start '+new Date().toISOString().slice(11,19));
+      lg('#0f0','[WP] v546 start '+new Date().toISOString().slice(11,19));
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
@@ -2456,41 +2435,14 @@ window._W5_fixed=true;
       var parent = tosEl.parentElement;
       if (!parent) return;
 
-      // RELIABLE: Insert Privacy Policy after React finishes rendering
+      // Delegate to the unified addPrivacyPolicyButton function
       function insertPrivacyPolicy() {
-        if (document.getElementById('_pp_profile_btn')) return true;
-        
-        // Find Terms of Service button/row
-        var all = document.querySelectorAll('button, div[role="button"]');
-        var tosBtn = null;
-        for (var i = 0; i < all.length; i++) {
-          var txt = all[i].textContent || '';
-          if (txt.indexOf('Terms') !== -1 && txt.indexOf('Service') !== -1) {
-            tosBtn = all[i];
-            break;
-          }
-        }
-        if (!tosBtn) return false;
-        
-        // Create PP button matching existing style
-        var ppBtn = document.createElement('button');
-        ppBtn.id = '_pp_profile_btn';
-        ppBtn.type = 'button';
-        ppBtn.className = tosBtn.className || '';
-        ppBtn.innerHTML = '<div class="flex items-center gap-3 w-full"><div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="text-sm font-medium flex-1 text-left">' + ppTitle + '</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>';
-        ppBtn.style.cssText = 'width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.08);background:transparent;cursor:pointer;color:inherit;font-family:inherit;';
-        ppBtn.onclick = function() { window._showPrivacyPolicy(); };
-        
-        // Insert after Terms of Service
-        tosBtn.parentNode.insertBefore(ppBtn, tosBtn.nextSibling);
-        console.log('[PP] Button inserted');
-        return true;
+        if (typeof addPrivacyPolicyButton === 'function') addPrivacyPolicyButton();
+        return !!document.getElementById('_pp_profile_btn');
       }
-      
-      // Try multiple times with increasing delays
+
       setTimeout(insertPrivacyPolicy, 1000);
-      setTimeout(insertPrivacyPolicy, 2000);
-      setTimeout(insertPrivacyPolicy, 3000);
+      setTimeout(insertPrivacyPolicy, 2500);
       setTimeout(insertPrivacyPolicy, 5000);
     }
 
