@@ -84,6 +84,28 @@
       };
       console.log('[v554] Fetch user-id interceptor installed');
 
+      // ── 1b. XHR interceptor: same fix for XMLHttpRequest ─────────────────────
+      var _origXHROpen = XMLHttpRequest.prototype.open;
+      var _origXHRSetReqHeader = XMLHttpRequest.prototype.setRequestHeader;
+      XMLHttpRequest.prototype.open = function(method, url) {
+        this._v554url = String(url || '');
+        this._v554headers = {};
+        return _origXHROpen.apply(this, arguments);
+      };
+      XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
+        this._v554headers = this._v554headers || {};
+        this._v554headers[name.toLowerCase()] = value;
+        // Rewrite cherry19899 → pi_cherry19899 in x-user-id
+        if (name.toLowerCase() === 'x-user-id' && value === 'cherry19899') {
+          value = CANONICAL_UID;
+        }
+        if (/applications|notifications/.test(this._v554url)) {
+          console.log('[v554-xhr] ' + name + ': ' + value + ' for ' + this._v554url.replace(API,''));
+        }
+        return _origXHRSetReqHeader.call(this, name, value);
+      };
+      console.log('[v554] XHR user-id interceptor installed');
+
       // ── 2. Balance-connects sync: fetch real balance from API and save ────────
       function syncBalance() {
         fetch(API + '/api/connects/balance', {
