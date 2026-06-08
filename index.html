@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v551';
+        var KEY = '_wp_loaded_v552';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=551&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=552&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,97 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v551';</script>
+    <script>window.WORKPRO_VERSION='v552';</script>
+    <!-- v552: tiered apply_cost patch (1-50π=1, 51-100π=2, ...) -->
+    <script>
+    (function(){
+      // Cache apply_cost per job_id from API responses
+      window._jobApplyCost = {};
+
+      function calcCost(budget) { return Math.ceil(parseFloat(budget || 1) / 50); }
+
+      // Intercept fetch to cache apply_cost from job responses
+      var _origFetch = window.fetch;
+      window.fetch = function(url, opts) {
+        var p = _origFetch.apply(this, arguments);
+        try {
+          var urlStr = String(url || '');
+          // Cache single job cost
+          if (/\/api\/jobs\/\d+$/.test(urlStr) && (!opts || !opts.method || opts.method === 'GET')) {
+            p.then(function(r) {
+              return r.clone().json();
+            }).then(function(d) {
+              var j = d && (d.job || d);
+              if (j && j.id && j.budget) {
+                window._jobApplyCost[j.id] = j.apply_cost || calcCost(j.budget);
+              }
+            }).catch(function(){});
+          }
+          // Cache list of jobs
+          if (/\/api\/jobs(\?|$)/.test(urlStr) && (!opts || !opts.method || opts.method === 'GET')) {
+            p.then(function(r) { return r.clone().json(); }).then(function(d) {
+              (d.jobs || []).forEach(function(j) {
+                if (j && j.id && j.budget) {
+                  window._jobApplyCost[j.id] = j.apply_cost || calcCost(j.budget);
+                }
+              });
+            }).catch(function(){});
+          }
+        } catch(e) {}
+        return p;
+      };
+
+      // Patch localStorage.getItem to return inflated balance for connect check
+      // The bundle checks: parseInt(localStorage.getItem("workpro_connects") || balance) < 2
+      // We make it reflect real balance so the check uses actual connects
+      // (bundle hardcodes < 2, but backend enforces real apply_cost)
+      // So we patch the hint text instead via MutationObserver
+
+      function getBalance() {
+        try {
+          var raw = localStorage.getItem('workpro_connects');
+          if (raw) return parseInt(raw, 10);
+          var u = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+          return u ? (u.balance_connects || 0) : 0;
+        } catch(e) { return 0; }
+      }
+
+      // MutationObserver: patch apply hint text and show real cost
+      var _obs = new MutationObserver(function() {
+        // Find apply hint texts like "This will cost 1 connect" / "Это стоит 1 коннект"
+        var hints = document.querySelectorAll('[class*="hint"], [class*="muted"], [class*="text-xs"], [class*="text-sm"]');
+        hints.forEach(function(el) {
+          var txt = el.textContent || '';
+          if (/cost.*1 connect|стоит 1 коннект|will cost 1|kostet 1|coûte 1|costa 1|custa 1|kosztuje 1|коштує 1|1 コネクト|1 크레딧|花费 1/.test(txt)) {
+            // Try to find current job id from URL hash or data
+            var jobId = window._currentJobId;
+            if (!jobId) return;
+            var cost = window._jobApplyCost[jobId];
+            if (!cost || cost === 1) return;
+            var bal = getBalance();
+            var canApply = bal >= cost;
+            el.textContent = txt.replace(/\d+ connect[\w]*/i, cost + ' connects')
+                                .replace(/\d+ коннект[\w]*/i, cost + ' коннекта/ов')
+                                .replace(/\d+ コネクト/i, cost + ' コネクト');
+            el.style.color = canApply ? 'rgba(255,255,255,0.5)' : '#ef4444';
+          }
+        });
+      });
+      _obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+
+      // Track current job id from navigation
+      var _origPushState = history.pushState.bind(history);
+      history.pushState = function(state, title, url) {
+        _origPushState(state, title, url);
+        var m = String(url||'').match(/jobs?[\/=](\d+)/);
+        if (m) window._currentJobId = m[1];
+      };
+      window.addEventListener('popstate', function() {
+        var m = location.href.match(/jobs?[\/=](\d+)/);
+        if (m) window._currentJobId = m[1];
+      });
+    })();
+    </script>
     <!-- v551: avatar sync localStorage↔backend -->
     <script>
     (function(){
