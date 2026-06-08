@@ -74,10 +74,8 @@
             if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
               init.headers['x-user-id'] = CANONICAL_UID;
             }
-            // Debug: log API calls to see what the bundle requests
-            if (/applications|notifications/.test(urlStr)) {
-              console.log('[v554-dbg] API call:', (init.method||'GET'), urlStr.replace(API,''), 'uid:', init.headers['x-user-id']||'none');
-            }
+            // Debug: log ALL API calls to understand bundle's fetch patterns
+            console.log('[v554-dbg]', (init.method||'GET'), urlStr.replace(API,''), 'uid:', init.headers['x-user-id']||'none');
           }
         } catch(e) {}
         return _rawFetch.call(this, input, init);
@@ -99,8 +97,8 @@
         if (name.toLowerCase() === 'x-user-id' && value === 'cherry19899') {
           value = CANONICAL_UID;
         }
-        if (/applications|notifications/.test(this._v554url)) {
-          console.log('[v554-xhr] ' + name + ': ' + value + ' for ' + this._v554url.replace(API,''));
+        if (/applications|notifications|\/api\//.test(this._v554url)) {
+          console.log('[v554-xhr] ' + name + '=' + value + ' for ' + this._v554url.replace(API,''));
         }
         return _origXHRSetReqHeader.call(this, name, value);
       };
