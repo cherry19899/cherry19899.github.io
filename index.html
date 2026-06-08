@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v542';
+        var KEY = '_wp_loaded_v543';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=542&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=543&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Pi Network Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v542';</script>
+    <script>window.WORKPRO_VERSION='v543';</script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
@@ -1327,9 +1327,9 @@
     console.log('[React] Loading from unpkg...');
     </script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin
-      onerror="console.error('[React] unpkg failed, trying jsdelivr...');document.write('<script src=\'https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js\'><\/script>')"></script>
+      onerror="(function(){console.error('[React] unpkg failed, trying jsdelivr');var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js';document.head.appendChild(s);})()"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin
-      onerror="console.error('[ReactDOM] unpkg failed, trying jsdelivr...');document.write('<script src=\'https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js\'><\/script>')"></script>
+      onerror="(function(){console.error('[ReactDOM] unpkg failed, trying jsdelivr');var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js';document.head.appendChild(s);})()"></script>
     <script>
     if(window.React) console.log('[React] CDN OK in '+(Date.now()-window.__reactLoadStart)+'ms');
     else console.error('[React] CDN FAILED — React not defined after load');
@@ -2225,7 +2225,7 @@ window._W5_fixed=true;
       if(btn){btn.onclick=toggleConsole;btn.addEventListener('touchstart',function(e){e.preventDefault();toggleConsole();},{passive:false});}
       restoreState();
       function lg(t,m){if(!c||!wrap)return;cnt++;if(cnt>200)return;wrap.style.display='block';if(!collapsed)c.style.display='block';var d=document.createElement('div');d.style.color=t;d.textContent=m;c.appendChild(d);c.scrollTop=c.scrollHeight;}
-      lg('#0f0','[WP] v542 start '+new Date().toISOString().slice(11,19));
+      lg('#0f0','[WP] v543 start '+new Date().toISOString().slice(11,19));
       var o=console.log,oe=console.error,ow=console.warn;
       console.log=function(){var a=Array.prototype.slice.call(arguments).join(' ');o.apply(console,arguments);lg('#0f0','[L] '+a);};
       console.error=function(){var a=Array.prototype.slice.call(arguments).join(' ');oe.apply(console,arguments);lg('#f00','[E] '+a);};
