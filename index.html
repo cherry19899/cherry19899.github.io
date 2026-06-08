@@ -74,6 +74,10 @@
             if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
               init.headers['x-user-id'] = CANONICAL_UID;
             }
+            // Debug: log API calls to see what the bundle requests
+            if (/applications|notifications/.test(urlStr)) {
+              console.log('[v554-dbg] API call:', (init.method||'GET'), urlStr.replace(API,''), 'uid:', init.headers['x-user-id']||'none');
+            }
           }
         } catch(e) {}
         return _rawFetch.call(this, input, init);
