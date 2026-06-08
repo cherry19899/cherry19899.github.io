@@ -18,6 +18,7 @@ try {
   };
   localStorage.setItem("workpro_user", JSON.stringify(user));
   localStorage.setItem("workpro_connects", "100");
+  localStorage.setItem("theme", "dark");
   document.getElementById("msg").textContent = "Done! Redirecting...";
   setTimeout(function() { window.location.href = "/"; }, 500);
 } catch(e) {
