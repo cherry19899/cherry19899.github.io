@@ -111,11 +111,13 @@
       };
       console.log('[v554] Fetch user-id interceptor installed');
 
-      // ── 1b. XHR interceptor: same fix for XMLHttpRequest ─────────────────────
+      // ── 1b. XHR interceptor: fix headers + intercept notifications/applications ─
       var _origXHROpen = XMLHttpRequest.prototype.open;
       var _origXHRSetReqHeader = XMLHttpRequest.prototype.setRequestHeader;
+      var _origXHRSend = XMLHttpRequest.prototype.send;
       XMLHttpRequest.prototype.open = function(method, url) {
         this._v554url = String(url || '');
+        this._v554method = method;
         this._v554headers = {};
         return _origXHROpen.apply(this, arguments);
       };
@@ -126,12 +128,49 @@
         if (name.toLowerCase() === 'x-user-id' && value === 'cherry19899') {
           value = CANONICAL_UID;
         }
-        if (/applications|notifications|\/api\//.test(this._v554url)) {
-          console.log('[v554-xhr] ' + name + '=' + value + ' for ' + this._v554url.replace(API,''));
-        }
+        console.log('[v554-xhr] ' + name + '=' + value + ' for ' + this._v554url.replace(API,''));
         return _origXHRSetReqHeader.call(this, name, value);
       };
-      console.log('[v554] XHR user-id interceptor installed');
+      XMLHttpRequest.prototype.send = function(body) {
+        var xhr = this;
+        var url = this._v554url || '';
+        var method = (this._v554method || 'GET').toUpperCase();
+        // Intercept GET /api/notifications response — inject real data if empty
+        var isNotifList = /\/api\/notifications$/.test(url) && method === 'GET';
+        var isAppsList = /\/api\/applications\/user\//.test(url) && method === 'GET';
+        if (isNotifList || isAppsList) {
+          var origOnLoad = this.onload;
+          var origOnReady = this.onreadystatechange;
+          function handleResponse() {
+            if (xhr.readyState !== 4 || xhr._v554injected) return;
+            try {
+              var data = JSON.parse(xhr.responseText);
+              var isEmpty = isNotifList ? !(data && data.notifications && data.notifications.length) :
+                                         !(data && data.applications && data.applications.length);
+              if (!isEmpty) return; // already has data, leave it
+              // Re-fetch with canonical UID and inject
+              var endpoint = isNotifList ? '/api/notifications' : '/api/applications/my';
+              var r2 = new XMLHttpRequest();
+              r2.open('GET', API + endpoint, false); // synchronous
+              r2.setRequestHeader('x-user-id', CANONICAL_UID);
+              r2.send();
+              if (r2.status === 200) {
+                var realData = JSON.parse(r2.responseText);
+                var count = isNotifList ? (realData.notifications||[]).length : (realData.applications||[]).length;
+                if (count > 0) {
+                  xhr._v554injected = true;
+                  Object.defineProperty(xhr, 'responseText', { get: function() { return r2.responseText; }, configurable: true });
+                  Object.defineProperty(xhr, 'response', { get: function() { return r2.responseText; }, configurable: true });
+                  console.log('[v554-xhr] injected', count, (isNotifList ? 'notifications' : 'applications'));
+                }
+              }
+            } catch(e) { console.log('[v554-xhr] inject error:', e.message); }
+          }
+          this.addEventListener('readystatechange', handleResponse);
+        }
+        return _origXHRSend.apply(this, arguments);
+      };
+      console.log('[v554] XHR user-id + response interceptor installed');
 
       // ── 2. Balance-connects sync: fetch real balance from API and save ────────
       function syncBalance() {
