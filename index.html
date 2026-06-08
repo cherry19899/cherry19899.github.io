@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v550';
+        var KEY = '_wp_loaded_v551';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=550&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=551&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,68 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v550';</script>
+    <script>window.WORKPRO_VERSION='v551';</script>
+    <!-- v551: avatar sync localStorage↔backend -->
+    <script>
+    (function(){
+      var API = 'https://workpro-api.onrender.com';
+      function getUser() { try { return JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) { return null; } }
+
+      // 1. On startup: restore avatar from backend if localStorage has none
+      function restoreAvatarFromBackend() {
+        var u = getUser();
+        if (!u) return;
+        var uid = u.uid || u.id || u.username;
+        if (!uid || u.avatar) return; // already have avatar locally
+        fetch(API + '/api/users/' + encodeURIComponent(uid))
+          .then(function(r){ return r.ok ? r.json() : null; })
+          .then(function(d){
+            if (!d) return;
+            var av = (d.user || d).avatar;
+            if (!av) return;
+            u.avatar = av;
+            localStorage.setItem('workpro_user', JSON.stringify(u));
+            // also update profile cache
+            try {
+              var p = JSON.parse(localStorage.getItem('workpro_profile') || '{}');
+              p.avatar = av;
+              localStorage.setItem('workpro_profile', JSON.stringify(p));
+            } catch(e) {}
+            console.log('[AvatarSync] Restored avatar from backend');
+          }).catch(function(){});
+      }
+
+      // 2. Intercept localStorage.setItem — when avatar changes, sync to backend
+      var _origSetItem = localStorage.setItem.bind(localStorage);
+      var _lastAvatar = null;
+      localStorage.setItem = function(key, value) {
+        _origSetItem(key, value);
+        if (key !== 'workpro_user') return;
+        try {
+          var u = JSON.parse(value);
+          if (!u || !u.avatar || u.avatar === _lastAvatar) return;
+          _lastAvatar = u.avatar;
+          var uid = u.uid || u.id || u.username;
+          if (!uid) return;
+          // Don't block — fire and forget
+          fetch(API + '/api/users/me', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': uid,
+              'x-username': u.username || ''
+            },
+            body: JSON.stringify({ avatar: u.avatar })
+          }).then(function(r){
+            if (r.ok) console.log('[AvatarSync] Avatar saved to backend');
+          }).catch(function(){});
+        } catch(e) {}
+      };
+
+      // Run restore after a short delay (wait for auth)
+      setTimeout(restoreAvatarFromBackend, 4000);
+    })();
+    </script>
     <!-- v411: Pi Browser safe — no force reload, no fetch checks -->
     <!-- v337: INLINE PATCH — Apply toast + Portfolio + Install handlers -->
     <script>
