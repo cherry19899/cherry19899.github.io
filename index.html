@@ -10,7 +10,7 @@
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=556p3&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=556p4&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -414,6 +414,9 @@
           _applyFixObs.observe(document.body, { childList: true, subtree: true });
         });
       }
+      // Polling fallback: React re-renders can remove our injected button.
+      // Run _checkApplyButtons every 800ms to continuously ensure injection.
+      setInterval(_checkApplyButtons, 800);
 
       // ── 4. Notifications DOM injector ────────────────────────────────────────
       // The bundle v200 doesn't fetch the full notifications list.
