@@ -10,7 +10,7 @@
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=556&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=556p2&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -255,6 +255,8 @@
         if (!me) return;
         // Find job cards/panels showing owner = me, then hide Apply button inside them
         document.querySelectorAll('button').forEach(function(btn) {
+          // Never hide Apply Now buttons we injected (those are for other users' open jobs)
+          if (btn.getAttribute('data-wp-apply-fixed')) return;
           var txt = (btn.textContent || '').toLowerCase().trim();
           if (!/apply now|откликнуться|apply$/.test(txt)) return;
           // Walk up to find the job container and check author username
