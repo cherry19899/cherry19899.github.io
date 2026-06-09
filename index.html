@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v572';
+        var KEY = '_wp_loaded_v573';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=572&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=573&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,9 +46,10 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v572';</script>
+    <script>window.WORKPRO_VERSION='v573';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
+    <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
     <style>
     /* Bug#8: Move FAB (+) up so it clears the bottom nav (no z-index hacks needed).
        FAB class: "fixed bottom-20 right-4 ... rounded-full bg-emerald-500 ... z-30"
@@ -64,37 +65,6 @@
       pointer-events: auto !important;
     }
     </style>
-    <!-- v572: tap diagnostic + click log box -->
-    <script>
-    // Persistent log box for diagnostics
-    var _tapLog = null;
-    function _getTapLog() {
-      if (!_tapLog) {
-        _tapLog = document.createElement('div');
-        _tapLog.id = 'wp-tap-log';
-        _tapLog.style.cssText = 'position:fixed;top:18px;left:0;right:0;z-index:1000000;background:rgba(0,0,20,0.95);color:#0ff;font-size:9px;font-weight:bold;padding:1px 4px;line-height:1.3;pointer-events:none;';
-        document.body ? document.body.appendChild(_tapLog) : document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(_tapLog); });
-      }
-      return _tapLog;
-    }
-    document.addEventListener('touchstart', function(e) {
-      try {
-        var t = e.touches[0];
-        var els = document.elementsFromPoint(t.clientX, t.clientY);
-        var info = els.slice(0,5).map(function(el) {
-          var cn = (el.className||'').toString();
-          var pe = window.getComputedStyle(el).pointerEvents;
-          return el.tagName + '{pe:' + pe + ' cls:' + cn.slice(0,25) + '}';
-        }).join(' | ');
-        _getTapLog().textContent = 'TS ' + Math.round(t.clientX) + ',' + Math.round(t.clientY) + ': ' + info.slice(0,200);
-      } catch(ex) { _getTapLog().textContent = 'TS ERR:' + ex.message; }
-    }, {passive:true});
-    document.addEventListener('click', function(e) {
-      try {
-        _getTapLog().textContent = 'CLK ' + Math.round(e.clientX) + ',' + Math.round(e.clientY) + ' tgt:' + (e.target.tagName||'?') + '{' + (e.target.className||'').toString().slice(0,40) + '}';
-      } catch(ex) {}
-    }, true);
-    </script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -501,13 +471,11 @@
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v572 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
-        if (_dbgBar) _dbgBar.textContent = 'v572 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
@@ -527,16 +495,14 @@
           if (!openJob && cSz > 0) openJob = _findJobByPageText();
           // SLOW PATH: DOM walk for heading match (only if cache populated)
           if (!openJob && cSz > 0) openJob = _findJobNearFilledBtn();
-          if (_dbgBar) _dbgBar.textContent += ' job:'+(openJob?openJob.title.substring(0,12):'null');
           if (openJob) {
-            if (openJob.posted_by === CANONICAL_UID) { if(_dbgBar) _dbgBar.textContent+=' OWN'; return; }
+            if (openJob.posted_by === CANONICAL_UID) { return; }
             _showApplyOverlay(openJob);
             return;
           }
           // Need to fetch — trigger immediately, don't wait for next tick
-          if (window._wp_fetchPending) { if(_dbgBar) _dbgBar.textContent+=' WAIT'; return; }
+          if (window._wp_fetchPending) { return; }
           window._wp_fetchPending = true;
-          if (_dbgBar) _dbgBar.textContent += ' FETCH';
           fetch(API + '/api/jobs?limit=50', { headers: { 'x-user-id': CANONICAL_UID } })
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d) {
