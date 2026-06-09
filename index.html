@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v561';
+        var KEY = '_wp_loaded_v562';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=561&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=562&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v561';</script>
+    <script>window.WORKPRO_VERSION='v562';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -135,6 +135,24 @@
           }
         } catch(e) {}
 
+        // ── Intercept individual job detail response: cache for Apply Now overlay ─
+        try {
+          var urlStr4 = typeof input === 'string' ? input : (input && input.url) || '';
+          var jobDetailMatch = urlStr4.match(/\/api\/jobs\/(\d+)$/);
+          var isJobDetailGET = jobDetailMatch && (!init || !init.method || init.method === 'GET');
+          if (isJobDetailGET) {
+            result = result.then(function(resp) {
+              return resp.clone().json().then(function(d) {
+                if (d && d.id) {
+                  window._wp_currentJobDetail = d;
+                  console.log('[v562] Cached job detail:', d.id, d.title, 'posted_by:', d.posted_by);
+                }
+                return resp;
+              }).catch(function() { return resp; });
+            });
+          }
+        } catch(e) {}
+
         return result;
       };
       console.log('[v554] Fetch user-id interceptor installed');
@@ -197,6 +215,20 @@
             } catch(e) { console.log('[v554-xhr] inject error:', e.message); }
           }
           this.addEventListener('readystatechange', handleResponse);
+        }
+        // Cache job detail response for Apply Now overlay
+        var jobDetailXHR = url.match(/\/api\/jobs\/(\d+)$/);
+        if (jobDetailXHR && method === 'GET') {
+          this.addEventListener('readystatechange', function() {
+            if (xhr.readyState !== 4 || xhr.status !== 200) return;
+            try {
+              var d = JSON.parse(xhr.responseText);
+              if (d && d.id) {
+                window._wp_currentJobDetail = d;
+                console.log('[v562-xhr] Cached job detail:', d.id, d.title, 'posted_by:', d.posted_by);
+              }
+            } catch(e) {}
+          });
         }
         return _origXHRSend.apply(this, arguments);
       };
@@ -416,32 +448,45 @@
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
           // Only proceed if overlay not already showing
           if (_applyOverlay && _applyOverlay.parentNode) return;
-          var openJob = _findJobNearFilledBtn();
-          console.log('[v560] Job filled detected. openJob:', openJob ? openJob.title : 'null', 'cache size:', Object.keys(window._wp_openJobs).length);
+          // PRIMARY: use the cached job detail (from XHR interceptor)
+          var openJob = null;
+          var detail = window._wp_currentJobDetail;
+          if (detail && detail.id) {
+            // Check if this job is open (not hired/completed by checking cache or _open flag)
+            var cachedVersion = window._wp_openJobs[detail.id];
+            var isOpen = cachedVersion || detail.status === 'open' || detail._real_status === 'open';
+            // Also accept status in_progress with _open:true from our cache
+            if (!isOpen && cachedVersion) isOpen = true;
+            // For safety: if the job has "job filled" on screen and we have no _open info,
+            // check if it's in the open jobs cache at all
+            if (!isOpen) isOpen = !!window._wp_openJobs[detail.id];
+            if (isOpen && detail.posted_by !== CANONICAL_UID) openJob = detail;
+          }
+          // FALLBACK: walk DOM to find job near the "Job filled" button
+          if (!openJob) openJob = _findJobNearFilledBtn();
           if (openJob) {
-            if (openJob.posted_by === CANONICAL_UID) {
-              console.log('[v560] Own job, skip overlay');
-              return;
-            }
+            if (openJob.posted_by === CANONICAL_UID) return; // own job
             _showApplyOverlay(openJob);
             return;
           }
-          // Cache miss — fetch
+          // Cache miss — fetch fresh jobs list + re-fetch current job detail
           if (window._wp_fetchPending) return;
           window._wp_fetchPending = true;
-          console.log('[v560] Cache miss, fetching jobs...');
           fetch(API + '/api/jobs?limit=50', { headers: { 'x-user-id': CANONICAL_UID } })
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d) {
               window._wp_fetchPending = false;
               if (d && d.jobs) {
                 d.jobs.forEach(function(j) { if (j._open) window._wp_openJobs[j.id] = j; });
-                console.log('[v560] Fetched jobs, cache now:', Object.keys(window._wp_openJobs).length);
+              }
+              // Retry with refreshed cache
+              var detail2 = window._wp_currentJobDetail;
+              if (detail2 && detail2.id && window._wp_openJobs[detail2.id] && detail2.posted_by !== CANONICAL_UID) {
+                _showApplyOverlay(detail2); return;
               }
               var job2 = _findJobNearFilledBtn();
-              console.log('[v560] After fetch, openJob:', job2 ? job2.title : 'null');
               if (job2 && job2.posted_by !== CANONICAL_UID) _showApplyOverlay(job2);
-            }).catch(function(e){ window._wp_fetchPending = false; console.log('[v560] fetch err:', e); });
+            }).catch(function(e){ window._wp_fetchPending = false; });
         } else {
           // Hide overlay with debounce (avoid false hide during React re-render)
           if (_applyOverlay && _applyOverlay.parentNode && !_hideOverlayTimer) {
