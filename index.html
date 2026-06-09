@@ -440,8 +440,11 @@
         hdr.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9991;background:#0f172a;padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.08)';
         var backBtn = document.createElement('button');
         backBtn.textContent = '←';
-        backBtn.style.cssText = 'background:none;border:none;color:#e5e5e5;font-size:20px;cursor:pointer;padding:4px 8px';
-        backBtn.onclick = function() { overlay.remove(); };
+        backBtn.style.cssText = 'background:none;border:none;color:#e5e5e5;font-size:24px;cursor:pointer;padding:12px 16px;min-width:48px;min-height:48px;-webkit-tap-highlight-color:rgba(255,255,255,0.1)';
+        function closeOverlay() { overlay.remove(); }
+        backBtn.addEventListener('touchstart', function(e) { e.stopPropagation(); closeOverlay(); }, { passive: true });
+        backBtn.addEventListener('click', closeOverlay);
+        overlay.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
         var hdrtitle = document.createElement('span');
         hdrtitle.style.cssText = 'font-size:16px;font-weight:600;color:#e5e5e5';
         hdrtitle.textContent = 'Notifications';
