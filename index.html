@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v566';
+        var KEY = '_wp_loaded_v567';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=566&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=567&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v566';</script>
+    <script>window.WORKPRO_VERSION='v567';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -377,6 +377,8 @@
         var btn = document.createElement('button');
         btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
         btn.style.cssText = 'background:#10b981;color:#fff;border:none;border-radius:8px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:500px;box-shadow:0 4px 12px rgba(16,185,129,0.4);';
+        // v567: exempt from _hideObs "own-job" hiding — this overlay is for OTHER users' open jobs
+        btn.setAttribute('data-wp-apply-fixed', '1');
         btn.onclick = function() {
           var msg = prompt('Cover letter (required):');
           if (!msg) return;
@@ -394,7 +396,7 @@
         overlay.appendChild(btn);
         document.body.appendChild(overlay);
         _applyOverlay = overlay;
-        console.log('[v556] Apply Now overlay shown for job:', openJob.id, openJob.title);
+        console.log('[v567] Apply Now overlay shown for job:', openJob.id, openJob.title);
       }
       function _hideApplyOverlay() {
         if (_applyOverlay && _applyOverlay.parentNode) {
@@ -451,13 +453,13 @@
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v566 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v567 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
-        if (_dbgBar) _dbgBar.textContent = 'v566 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!(window._applyOverlay&&window._applyOverlay.parentNode));
+        if (_dbgBar) _dbgBar.textContent = 'v567 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
