@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v564';
+        var KEY = '_wp_loaded_v565';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=564&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=565&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v564';</script>
+    <script>window.WORKPRO_VERSION='v565';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -403,70 +403,70 @@
         _applyOverlay = null;
       }
       function _findJobNearFilledBtn() {
-        // Find the "Job filled" button element and walk up DOM to find nearest heading
-        // This avoids matching headings from the jobs list (SPA keeps all DOM in memory)
-        var filledBtn = null;
-        var allEls = document.querySelectorAll('button, div, span, p');
-        allEls.forEach(function(el) {
-          if (filledBtn) return;
-          var txt = (el.textContent || '').trim().toLowerCase();
-          if (txt === 'job filled — freelancer hired' || txt === 'job filled' || txt === 'freelancer hired') {
-            filledBtn = el;
-          }
-        });
-        if (!filledBtn) {
-          allEls.forEach(function(el) {
-            if (filledBtn) return;
-            if (el.children.length > 3) return;
-            var txt = (el.textContent || '').toLowerCase();
-            if (txt.indexOf('job filled') !== -1 && txt.length < 60) filledBtn = el;
-          });
-        }
-        if (!filledBtn) return null;
-        // Build a set of open job titles for fast lookup
-        var openJobTitles = {};
-        Object.values(window._wp_openJobs).forEach(function(j) { openJobTitles[j.title.toLowerCase()] = j; });
-        // Walk up DOM — check h1/h2/h3/h4 AND any element whose exact text matches a job title
-        var node = filledBtn;
-        for (var i = 0; i < 25; i++) {
-          node = node.parentElement;
-          if (!node) break;
-          // Check heading tags first
-          var heading = node.querySelector('h1, h2, h3, h4');
-          if (heading) {
-            var htitle = (heading.textContent || '').trim();
-            var found = null;
-            Object.values(window._wp_openJobs).forEach(function(j) {
-              if (found) return;
-              if (htitle === j.title || htitle.indexOf(j.title) !== -1 || j.title.indexOf(htitle) !== -1) found = j;
-            });
-            if (found) return found;
-          }
-          // Also check ALL direct children for title text match (React may use div/span for titles)
-          var children = node.children;
-          for (var c = 0; c < children.length; c++) {
-            var childTxt = (children[c].textContent || '').trim().toLowerCase();
-            if (openJobTitles[childTxt]) return openJobTitles[childTxt];
-            // Also check single grandchildren
-            var grandkids = children[c].children;
-            for (var g = 0; g < grandkids.length; g++) {
-              var gTxt = (grandkids[g].textContent || '').trim().toLowerCase();
-              if (openJobTitles[gTxt]) return openJobTitles[gTxt];
+        // Find the "Job filled" button and walk up DOM to find nearest heading
+        try {
+          var filledBtn = null;
+          var allEls = document.querySelectorAll('button, div, span, p');
+          for (var ei = 0; ei < allEls.length; ei++) {
+            var txt = (allEls[ei].textContent || '').trim().toLowerCase();
+            if (txt === 'job filled — freelancer hired' || txt === 'job filled' || txt === 'freelancer hired') {
+              filledBtn = allEls[ei]; break;
             }
           }
-        }
+          if (!filledBtn) {
+            for (var ei2 = 0; ei2 < allEls.length; ei2++) {
+              var el2 = allEls[ei2];
+              if (el2.children.length > 3) continue;
+              var t2 = (el2.textContent || '').toLowerCase();
+              if (t2.indexOf('job filled') !== -1 && t2.length < 80) { filledBtn = el2; break; }
+            }
+          }
+          if (!filledBtn) return null;
+          // Walk up DOM, check ONLY heading tags (no grandkids scan — avoids O(n²) hang)
+          var node = filledBtn;
+          for (var i = 0; i < 20; i++) {
+            node = node.parentElement;
+            if (!node || node === document.body) break;
+            var headings = node.querySelectorAll('h1, h2, h3, h4');
+            for (var hi = 0; hi < headings.length; hi++) {
+              var htitle = (headings[hi].textContent || '').trim();
+              var found = null;
+              var jobs = Object.values(window._wp_openJobs || {});
+              for (var ji = 0; ji < jobs.length; ji++) {
+                var jt = jobs[ji].title || '';
+                if (htitle === jt || htitle.indexOf(jt) !== -1 || jt.indexOf(htitle) !== -1) { found = jobs[ji]; break; }
+              }
+              if (found) return found;
+            }
+          }
+        } catch(e) { console.log('[v565] _findJobNearFilledBtn error:', e); }
+        return null;
+      }
+      function _findJobByPageText() {
+        // Scan page innerText for any open non-own job title (fast O(n) scan)
+        try {
+          var pageText = (document.body ? (document.body.innerText || document.body.textContent) : '');
+          var jobs = Object.values(window._wp_openJobs || {});
+          // Sort by title length desc (match longer titles first to avoid partial matches)
+          jobs.sort(function(a,b){ return (b.title||'').length - (a.title||'').length; });
+          for (var ji = 0; ji < jobs.length; ji++) {
+            var j = jobs[ji];
+            if (!j.title || j.posted_by === CANONICAL_UID) continue;
+            if (pageText.indexOf(j.title) !== -1) return j;
+          }
+        } catch(e) {}
         return null;
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-size:9px;padding:1px 4px;z-index:999999;white-space:nowrap;overflow:hidden;"; _dbgBar.textContent="v564 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v565 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         // Check by full page text (works regardless of element type)
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
-        if (_dbgBar) _dbgBar.textContent = 'JF:'+foundJobFilled+' det:'+(det?det.id+'/'+det.posted_by:'null')+' cache:'+cSz+' ov:'+(!!(window._applyOverlay&&window._applyOverlay.parentNode));
+        if (_dbgBar) _dbgBar.textContent = 'v565 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!(window._applyOverlay&&window._applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
@@ -480,9 +480,11 @@
             var isOpen = !!(cachedVersion || detail.status === 'open' || detail._real_status === 'open');
             if (isOpen && detail.posted_by !== CANONICAL_UID) openJob = detail;
           }
-          // FALLBACK: walk DOM to find job near the "Job filled" button
+          // FALLBACK 1: walk DOM to find job near the "Job filled" button
           if (!openJob) openJob = _findJobNearFilledBtn();
-          if (_dbgBar) _dbgBar.textContent += ' job:'+(openJob?openJob.title:'null');
+          // FALLBACK 2: scan page text for any open non-own job title
+          if (!openJob && cSz > 0) openJob = _findJobByPageText();
+          if (_dbgBar) _dbgBar.textContent += ' job:'+(openJob?openJob.title.substring(0,10):'null');
           if (openJob) {
             if (openJob.posted_by === CANONICAL_UID) { if(_dbgBar) _dbgBar.textContent+=' OWN'; return; }
             _showApplyOverlay(openJob);
@@ -517,6 +519,7 @@
                 if (uj2.posted_by !== CANONICAL_UID) { _showApplyOverlay(uj2); return; }
               }
               var job2 = _findJobNearFilledBtn();
+              if (!job2) job2 = _findJobByPageText();
               if (job2 && job2.posted_by !== CANONICAL_UID) _showApplyOverlay(job2);
             }).catch(function(e){ window._wp_fetchPending = false; });
         } else {
