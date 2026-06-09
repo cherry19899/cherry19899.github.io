@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v569';
+        var KEY = '_wp_loaded_v570';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=569&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=570&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,8 +46,8 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v569';</script>
-    <!-- v569: Bug#8 FAB position fix + Bug#9 review modal pointer-events fix -->
+    <script>window.WORKPRO_VERSION='v570';</script>
+    <!-- v570: Bug#8 FAB position fix + Bug#9 review modal pointer-events fix -->
     <style>
     /* Bug#8: FAB (+) green button on Find Work overlaps bottom nav Profile tab.
        Bottom nav class: "fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-pb"
@@ -80,6 +80,21 @@
       pointer-events: auto !important;
     }
     </style>
+    <!-- v570: tap diagnostic — show top element at tap position -->
+    <script>
+    document.addEventListener('touchstart', function(e) {
+      try {
+        var t = e.touches[0];
+        var els = document.elementsFromPoint(t.clientX, t.clientY);
+        var info = els.slice(0,3).map(function(el) {
+          return (el.tagName||'?') + '(' + (el.className||'').toString().slice(0,30) + ')';
+        }).join(' > ');
+        // Show as debug bar update
+        var db = document.getElementById('wp-dbg-bar');
+        if (db) db.textContent = 'TAP ' + Math.round(t.clientX) + ',' + Math.round(t.clientY) + ': ' + info.slice(0,80);
+      } catch(e) {}
+    }, {passive:true});
+    </script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -486,13 +501,13 @@
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v569 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v570 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
-        if (_dbgBar) _dbgBar.textContent = 'v569 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
+        if (_dbgBar) _dbgBar.textContent = 'v570 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
