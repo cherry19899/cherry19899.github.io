@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v567';
+        var KEY = '_wp_loaded_v568';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=567&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=568&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,37 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v567';</script>
+    <script>window.WORKPRO_VERSION='v568';</script>
+    <!-- v568: Bug#8 chat send button z-index + Bug#9 review modal pointer-events fix -->
+    <style>
+    /* Bug#8: Chat send button overlaps bottom nav Profile tab.
+       Bottom nav must sit above the chat input send button. */
+    [class*="bottom"]:not([class*="bottom-sheet"]):not([class*="bottomSheet"]):not([class*="BottomSheet"]) nav,
+    [class*="BottomNav"], [class*="bottomNav"], [class*="bottom-nav"],
+    [class*="TabBar"], [class*="tabBar"], [class*="tab-bar"],
+    [class*="Navigation"], [class*="navbar"]:last-of-type {
+      z-index: 1200 !important;
+    }
+    /* Bug#9: Review modal Submit/Cancel buttons — ensure modal overlay has no pointer-events blocking */
+    [class*="modal"] button, [class*="Modal"] button,
+    [class*="dialog"] button, [class*="Dialog"] button,
+    [class*="review"] button, [class*="Review"] button,
+    [class*="overlay"] button:not(#wp-apply-overlay button):not(#_wp_notif_overlay button) {
+      pointer-events: auto !important;
+      position: relative !important;
+      z-index: 10 !important;
+    }
+    /* Ensure modal backdrop doesn't swallow taps on buttons inside it */
+    [class*="modal"][class*="backdrop"],
+    [class*="modal"][class*="overlay"],
+    [class*="Backdrop"], [class*="backdrop"] {
+      pointer-events: none !important;
+    }
+    [class*="modal"] > *, [class*="Modal"] > *,
+    [class*="dialog"] > *, [class*="Dialog"] > * {
+      pointer-events: auto !important;
+    }
+    </style>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -453,13 +483,13 @@
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v567 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v568 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
-        if (_dbgBar) _dbgBar.textContent = 'v567 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
+        if (_dbgBar) _dbgBar.textContent = 'v568 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
