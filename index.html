@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v554';
+        var KEY = '_wp_loaded_v555';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=554&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=555&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -42,11 +42,11 @@
     <meta name="keywords" content="freelance, jobs, cryptocurrency, hire, work, marketplace" />
     <meta property="og:title" content="Work Pro - Freelance Marketplace" />
     <meta property="og:description" content="Hire freelancers and find jobs. Pay and get paid in cryptocurrency." />
-    <link rel="manifest" href="/manifest.json?v=554" />
+    <link rel="manifest" href="/manifest.json?v=555" />
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v554';</script>
+    <script>window.WORKPRO_VERSION='v555';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -105,6 +105,35 @@
             });
           }
         } catch(e) {}
+
+        // ── Intercept /api/jobs LIST response: remap status open→in_progress ──
+        // Bug in bundle v200: Find Work feed hides all status='open' jobs.
+        // Workaround: change 'open' → 'in_progress' in list response so they render.
+        // Individual job detail (/api/jobs/:id) is left untouched → Apply button works.
+        try {
+          var urlStr3 = typeof input === 'string' ? input : (input && input.url) || '';
+          var isJobsList = /\/api\/jobs(\?|$)/.test(urlStr3) && (!init || !init.method || init.method === 'GET');
+          if (isJobsList) {
+            result = result.then(function(resp) {
+              return resp.clone().json().then(function(d) {
+                if (d && d.jobs && Array.isArray(d.jobs)) {
+                  d.jobs = d.jobs.map(function(j) {
+                    if (j.status === 'open') {
+                      return Object.assign({}, j, { status: 'in_progress', _real_status: 'open' });
+                    }
+                    return j;
+                  });
+                  console.log('[v554] jobs list: remapped open→in_progress, total:', d.jobs.length);
+                  return new Response(JSON.stringify(d), {
+                    status: 200, headers: { 'Content-Type': 'application/json' }
+                  });
+                }
+                return resp;
+              }).catch(function() { return resp; });
+            });
+          }
+        } catch(e) {}
+
         return result;
       };
       console.log('[v554] Fetch user-id interceptor installed');
@@ -3093,7 +3122,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v554 — Freelance Marketplace</p>
+  <p>Work Pro v555 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
