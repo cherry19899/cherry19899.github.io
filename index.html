@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v576';
+        var KEY = '_wp_loaded_v577';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=576&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=577&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v576';</script>
+    <script>window.WORKPRO_VERSION='v577';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -53,6 +53,7 @@
     <!-- v575: Removed __c_wrap debug console panel (was blocking nav bar at z-index:99999) -->
     <!-- v575: Bug#11 Fix Apply Now on own jobs — normalize pi_ prefix in posted_by comparison -->
     <!-- v576: Bug#12 Fix My Jobs empty — rewrite /api/jobs/user/username → /api/jobs/user/pi_username -->
+    <!-- v577: Bug#13 Fix Notifications back — suppress re-injection + navigate React back after close -->
     <script>
     // Silence all console.log (debug noise reduction)
     try { console.log = function(){}; console.info = function(){}; console.debug = function(){}; } catch(e){}
@@ -572,7 +573,9 @@
       // We detect the Notifications screen by DOM content and inject real data.
       var _notifInjected = false;
       var _notifData = null;
+      var _notifSuppressUntil = 0; // Bug#13: suppress re-injection after manual close
       function fetchAndShowNotifs() {
+        if (Date.now() < _notifSuppressUntil) return; // suppressed
         if (_notifData) { injectNotifDOM(_notifData); return; }
         fetch(API + '/api/notifications', {
           headers: { 'x-user-id': CANONICAL_UID }
@@ -617,7 +620,19 @@
         var backBtn = document.createElement('button');
         backBtn.textContent = '←';
         backBtn.style.cssText = 'background:none;border:none;color:#e5e5e5;font-size:24px;cursor:pointer;padding:12px 16px;min-width:48px;min-height:48px;-webkit-tap-highlight-color:rgba(255,255,255,0.1)';
-        function closeOverlay() { overlay.remove(); }
+        function closeOverlay() {
+          // Bug#13: suppress MutationObserver re-injection for 5s after manual close
+          _notifSuppressUntil = Date.now() + 5000;
+          overlay.remove();
+          // Also navigate React app back (click its native back button if present)
+          setTimeout(function() {
+            var btns = document.querySelectorAll('button');
+            for (var i = 0; i < btns.length; i++) {
+              var t = (btns[i].textContent || '').trim();
+              if (t === '←' || t === '‹' || t === 'Back') { btns[i].click(); break; }
+            }
+          }, 50);
+        }
         backBtn.addEventListener('touchstart', function(e) { e.stopPropagation(); closeOverlay(); }, { passive: true });
         backBtn.addEventListener('click', closeOverlay);
         overlay.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
