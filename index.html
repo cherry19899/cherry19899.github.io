@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v563';
+        var KEY = '_wp_loaded_v564';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=563&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=564&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v563';</script>
+    <script>window.WORKPRO_VERSION='v564';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -143,9 +143,12 @@
           if (isJobDetailGET) {
             result = result.then(function(resp) {
               return resp.clone().json().then(function(d) {
-                if (d && d.id) {
-                  window._wp_currentJobDetail = d;
-                  console.log('[v562] Cached job detail:', d.id, d.title, 'posted_by:', d.posted_by);
+                // API returns {job:{...},applications:[]} — unwrap the job object
+                var jobObj = (d && d.job && d.job.id) ? d.job : (d && d.id ? d : null);
+                if (jobObj && jobObj.id) {
+                  window._wp_currentJobDetail = jobObj;
+                  if (jobObj._open || jobObj.status === 'open') window._wp_openJobs[jobObj.id] = jobObj;
+                  console.log('[v564] Cached job detail:', jobObj.id, jobObj.title, 'posted_by:', jobObj.posted_by, 'status:', jobObj.status);
                 }
                 return resp;
               }).catch(function() { return resp; });
@@ -223,9 +226,12 @@
             if (xhr.readyState !== 4 || xhr.status !== 200) return;
             try {
               var d = JSON.parse(xhr.responseText);
-              if (d && d.id) {
-                window._wp_currentJobDetail = d;
-                console.log('[v562-xhr] Cached job detail:', d.id, d.title, 'posted_by:', d.posted_by);
+              // API returns {job:{...},applications:[]} — unwrap
+              var jobObj = (d && d.job && d.job.id) ? d.job : (d && d.id ? d : null);
+              if (jobObj && jobObj.id) {
+                window._wp_currentJobDetail = jobObj;
+                if (jobObj._open || jobObj.status === 'open') window._wp_openJobs[jobObj.id] = jobObj;
+                console.log('[v564-xhr] Cached job detail:', jobObj.id, jobObj.title, 'posted_by:', jobObj.posted_by);
               }
             } catch(e) {}
           });
@@ -409,37 +415,51 @@
           }
         });
         if (!filledBtn) {
-          // Fallback: search by partial text in smaller elements
           allEls.forEach(function(el) {
             if (filledBtn) return;
-            if (el.children.length > 3) return; // skip large containers
+            if (el.children.length > 3) return;
             var txt = (el.textContent || '').toLowerCase();
             if (txt.indexOf('job filled') !== -1 && txt.length < 60) filledBtn = el;
           });
         }
         if (!filledBtn) return null;
-        // Walk up DOM from the "Job filled" element to find a heading sibling/ancestor
+        // Build a set of open job titles for fast lookup
+        var openJobTitles = {};
+        Object.values(window._wp_openJobs).forEach(function(j) { openJobTitles[j.title.toLowerCase()] = j; });
+        // Walk up DOM — check h1/h2/h3/h4 AND any element whose exact text matches a job title
         var node = filledBtn;
-        for (var i = 0; i < 20; i++) {
+        for (var i = 0; i < 25; i++) {
           node = node.parentElement;
           if (!node) break;
+          // Check heading tags first
           var heading = node.querySelector('h1, h2, h3, h4');
           if (heading) {
-            var title = (heading.textContent || '').trim();
+            var htitle = (heading.textContent || '').trim();
             var found = null;
-            // Match against open jobs cache
             Object.values(window._wp_openJobs).forEach(function(j) {
               if (found) return;
-              if (title === j.title || title.indexOf(j.title) !== -1 || j.title.indexOf(title) !== -1) found = j;
+              if (htitle === j.title || htitle.indexOf(j.title) !== -1 || j.title.indexOf(htitle) !== -1) found = j;
             });
             if (found) return found;
+          }
+          // Also check ALL direct children for title text match (React may use div/span for titles)
+          var children = node.children;
+          for (var c = 0; c < children.length; c++) {
+            var childTxt = (children[c].textContent || '').trim().toLowerCase();
+            if (openJobTitles[childTxt]) return openJobTitles[childTxt];
+            // Also check single grandchildren
+            var grandkids = children[c].children;
+            for (var g = 0; g < grandkids.length; g++) {
+              var gTxt = (grandkids[g].textContent || '').trim().toLowerCase();
+              if (openJobTitles[gTxt]) return openJobTitles[gTxt];
+            }
           }
         }
         return null;
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-size:9px;padding:1px 4px;z-index:999999;white-space:nowrap;overflow:hidden;"; _dbgBar.textContent="v563 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-size:9px;padding:1px 4px;z-index:999999;white-space:nowrap;overflow:hidden;"; _dbgBar.textContent="v564 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         // Check by full page text (works regardless of element type)
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
@@ -468,6 +488,13 @@
             _showApplyOverlay(openJob);
             return;
           }
+          // Try URL-based job ID (from pushState/replaceState interceptor)
+          var urlJobId = window._currentJobId;
+          if (!openJob && urlJobId && window._wp_openJobs[urlJobId]) {
+            var urlJob = window._wp_openJobs[urlJobId];
+            if (urlJob.posted_by !== CANONICAL_UID) { openJob = urlJob; }
+          }
+          if (openJob) { _showApplyOverlay(openJob); return; }
           // Cache miss — fetch fresh jobs list
           if (window._wp_fetchPending) { if(_dbgBar) _dbgBar.textContent+=' PENDING'; return; }
           window._wp_fetchPending = true;
@@ -482,6 +509,12 @@
               var detail2 = window._wp_currentJobDetail;
               if (detail2 && detail2.id && window._wp_openJobs[detail2.id] && detail2.posted_by !== CANONICAL_UID) {
                 _showApplyOverlay(detail2); return;
+              }
+              // Try URL job ID after fetch
+              var urlJobId2 = window._currentJobId;
+              if (urlJobId2 && window._wp_openJobs[urlJobId2]) {
+                var uj2 = window._wp_openJobs[urlJobId2];
+                if (uj2.posted_by !== CANONICAL_UID) { _showApplyOverlay(uj2); return; }
               }
               var job2 = _findJobNearFilledBtn();
               if (job2 && job2.posted_by !== CANONICAL_UID) _showApplyOverlay(job2);
@@ -1273,7 +1306,7 @@
               }
               console.log('[SW] All old SW unregistered, caches cleared');
               setTimeout(function() {
-                window.location.href = location.protocol + '//' + location.host + '/?nocache=' + (window.WORKPRO_VERSION||'541').replace('v','') + '&_=' + Date.now();
+                window.location.href = location.protocol + '//' + location.host + '/?nocache=' + (window.WORKPRO_VERSION||'564').replace('v','') + '&_=' + Date.now();
               }, 500);
             });
           }).catch(function(err) {
