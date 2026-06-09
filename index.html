@@ -10,7 +10,7 @@
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=556p2&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=556p3&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -334,6 +334,7 @@
         if (btn.getAttribute('data-wp-apply-fixed')) return;
         btn.setAttribute('data-wp-apply-fixed', '1');
         var applyBtn = document.createElement('button');
+        applyBtn.setAttribute('data-wp-apply-fixed', '1'); // protect from own-job-hide observer
         applyBtn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
         applyBtn.style.cssText = btn.style.cssText + ';background:#10b981;color:#fff;opacity:1;cursor:pointer;margin-left:8px;';
         applyBtn.onclick = function() {
