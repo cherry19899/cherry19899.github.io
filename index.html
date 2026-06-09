@@ -285,6 +285,112 @@
       }
       console.log('[v554] Own-job apply-hide observer installed');
 
+      // ── 3b. Fix Apply button on job detail: open jobs show "Job filled" due to
+      // status remapping in the list. Store open job IDs and inject real Apply button.
+      window._wp_openJobs = {}; // { id: {id, title, apply_cost} }
+      // Pre-load all open jobs on startup (using real status endpoint)
+      fetch(API + '/api/jobs?limit=50', {
+        headers: { 'x-user-id': CANONICAL_UID, 'x-real-status': '1' }
+      }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d) {
+        // server returns _open:true for originally-open jobs
+        if (d && d.jobs) {
+          d.jobs.forEach(function(j) {
+            if (j._open) window._wp_openJobs[j.id] = j;
+          });
+          console.log('[v555] Open jobs cached:', Object.keys(window._wp_openJobs).length);
+        }
+      }).catch(function(){});
+      // Populated by the jobs list interceptor (see above — we need to update that too)
+      // Also patch the jobs list interceptor to populate this map:
+      (function(){
+        var _origResp = window._wp_openJobs;
+        // Hook into the already-installed fetch wrapper to catch jobs list
+        var _prevFetch = window.fetch;
+        window.fetch = function(input, init) {
+          var result = _prevFetch.apply(this, arguments);
+          try {
+            var u = typeof input === 'string' ? input : (input && input.url) || '';
+            var isJobDetail = /\/api\/jobs\/(\d+)$/.test(u) && (!init || !init.method || init.method === 'GET');
+            if (isJobDetail) {
+              // Cache individual job open status
+              result = result.then(function(resp) {
+                return resp.clone().json().then(function(d) {
+                  if (d && d.job && d.job.status === 'open') {
+                    window._wp_openJobs[d.job.id] = d.job;
+                  }
+                  return resp;
+                }).catch(function(){ return resp; });
+              });
+            }
+          } catch(e) {}
+          return result;
+        };
+      })();
+
+      // MutationObserver: watch for "Job filled" button on detail pages for open jobs
+      var _applyBtnTimer = null;
+      var _applyFixObs = new MutationObserver(function() {
+        if (_applyBtnTimer) return;
+        _applyBtnTimer = setTimeout(function() {
+          _applyBtnTimer = null;
+          // Find any "Job filled" buttons
+          document.querySelectorAll('button').forEach(function(btn) {
+            if (btn.getAttribute('data-wp-apply-fixed')) return;
+            var txt = (btn.textContent || '').toLowerCase();
+            if (!/job filled|freelancer hired/.test(txt)) return;
+            // Find job title near this button (walk up DOM)
+            var titleEl = null;
+            var node = btn;
+            for (var i = 0; i < 20; i++) {
+              node = node && node.parentElement;
+              if (!node) break;
+              titleEl = node.querySelector('h1, h2, h3');
+              if (titleEl) break;
+            }
+            if (!titleEl) return;
+            var jobTitle = (titleEl.textContent || '').trim();
+            // Find matching open job
+            var openJob = null;
+            Object.values(window._wp_openJobs).forEach(function(j) {
+              if (j.title === jobTitle) openJob = j;
+            });
+            if (!openJob) {
+              // Try fetching all open jobs if not cached
+              // Check if we have any open jobs at all
+              if (Object.keys(window._wp_openJobs).length === 0) return;
+            }
+            if (!openJob) return;
+            btn.setAttribute('data-wp-apply-fixed', '1');
+            // Inject real Apply Now button
+            var applyBtn = document.createElement('button');
+            applyBtn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
+            applyBtn.style.cssText = btn.style.cssText + ';background:#10b981;color:#fff;opacity:1;cursor:pointer;';
+            applyBtn.onclick = function() {
+              var msg = prompt('Cover letter (required):');
+              if (!msg) return;
+              fetch('https://workpro-api.onrender.com/api/jobs/' + openJob.id + '/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-user-id': 'pi_cherry19899' },
+                body: JSON.stringify({ cover_letter: msg })
+              }).then(function(r){ return r.json(); }).then(function(d) {
+                if (d.error) { alert('Error: ' + d.error); }
+                else { alert('Application submitted!'); applyBtn.textContent = 'Applied ✓'; applyBtn.disabled = true; }
+              }).catch(function(e){ alert('Network error: ' + e); });
+            };
+            btn.parentNode.insertBefore(applyBtn, btn.nextSibling);
+            btn.style.display = 'none';
+            console.log('[v555] Injected Apply Now for job:', openJob.id, openJob.title);
+          });
+        }, 300);
+      });
+      if (document.body) {
+        _applyFixObs.observe(document.body, { childList: true, subtree: true });
+      } else {
+        document.addEventListener('DOMContentLoaded', function() {
+          _applyFixObs.observe(document.body, { childList: true, subtree: true });
+        });
+      }
+
       // ── 4. Notifications DOM injector ────────────────────────────────────────
       // The bundle v200 doesn't fetch the full notifications list.
       // We detect the Notifications screen by DOM content and inject real data.
