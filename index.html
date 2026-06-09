@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v558';
+        var KEY = '_wp_loaded_v559';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=558&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=559&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v558';</script>
+    <script>window.WORKPRO_VERSION='v559';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -335,7 +335,7 @@
         if (_applyOverlay && _applyOverlay.parentNode) return; // already shown
         var overlay = document.createElement('div');
         overlay.id = 'wp-apply-overlay';
-        overlay.style.cssText = 'position:fixed;bottom:80px;left:0;right:0;z-index:99999;display:flex;justify-content:center;padding:0 16px;';
+        overlay.style.cssText = 'position:fixed;bottom:170px;left:0;right:0;z-index:99999;display:flex;justify-content:center;padding:0 16px;';
         var btn = document.createElement('button');
         btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
         btn.style.cssText = 'background:#10b981;color:#fff;border:none;border-radius:8px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:500px;box-shadow:0 4px 12px rgba(16,185,129,0.4);';
