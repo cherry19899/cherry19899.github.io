@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v556';
+        var KEY = '_wp_loaded_v557';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=556p4&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=557&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v556';</script>
+    <script>window.WORKPRO_VERSION='v557';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -329,35 +329,47 @@
         };
       })();
 
-      // MutationObserver: watch for "Job filled" button on detail pages for open jobs
-      function _injectApplyBtn(btn, openJob) {
-        if (btn.getAttribute('data-wp-apply-fixed')) return;
-        btn.setAttribute('data-wp-apply-fixed', '1');
-        var applyBtn = document.createElement('button');
-        applyBtn.setAttribute('data-wp-apply-fixed', '1'); // protect from own-job-hide observer
-        applyBtn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
-        applyBtn.style.cssText = btn.style.cssText + ';background:#10b981;color:#fff;opacity:1;cursor:pointer;margin-left:8px;';
-        applyBtn.onclick = function() {
+      // Fixed-position Apply Now overlay — outside React DOM, React can't remove it
+      var _applyOverlay = null;
+      function _showApplyOverlay(openJob) {
+        if (_applyOverlay && _applyOverlay.parentNode) return; // already shown
+        var overlay = document.createElement('div');
+        overlay.id = 'wp-apply-overlay';
+        overlay.style.cssText = 'position:fixed;bottom:80px;left:0;right:0;z-index:99999;display:flex;justify-content:center;padding:0 16px;';
+        var btn = document.createElement('button');
+        btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
+        btn.style.cssText = 'background:#10b981;color:#fff;border:none;border-radius:8px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:500px;box-shadow:0 4px 12px rgba(16,185,129,0.4);';
+        btn.onclick = function() {
           var msg = prompt('Cover letter (required):');
           if (!msg) return;
-          fetch('https://workpro-api.onrender.com/api/jobs/' + openJob.id + '/apply', {
+          btn.disabled = true;
+          btn.textContent = 'Submitting...';
+          fetch(API + '/api/jobs/' + openJob.id + '/apply', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-user-id': CANONICAL_UID },
             body: JSON.stringify({ cover_letter: msg })
           }).then(function(r){ return r.json(); }).then(function(d) {
-            if (d.error) { alert('Error: ' + d.error); }
-            else { alert('Application submitted!'); applyBtn.textContent = 'Applied ✓'; applyBtn.disabled = true; }
-          }).catch(function(e){ alert('Network error: ' + e); });
+            if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)'; }
+            else { btn.textContent = 'Applied ✓'; }
+          }).catch(function(e){ alert('Network error: ' + e); btn.disabled = false; btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)'; });
         };
-        btn.parentNode.insertBefore(applyBtn, btn.nextSibling);
-        btn.style.display = 'none';
-        console.log('[v555] Injected Apply Now for job:', openJob.id, openJob.title);
+        overlay.appendChild(btn);
+        document.body.appendChild(overlay);
+        _applyOverlay = overlay;
+        console.log('[v556] Apply Now overlay shown for job:', openJob.id, openJob.title);
+      }
+      function _hideApplyOverlay() {
+        if (_applyOverlay && _applyOverlay.parentNode) {
+          _applyOverlay.parentNode.removeChild(_applyOverlay);
+        }
+        _applyOverlay = null;
       }
       function _checkApplyButtons() {
+        var foundJobFilled = false;
         document.querySelectorAll('button').forEach(function(btn) {
-          if (btn.getAttribute('data-wp-apply-fixed')) return;
           var txt = (btn.textContent || '').toLowerCase();
           if (!/job filled|freelancer hired/.test(txt)) return;
+          foundJobFilled = true;
           // Find job title in nearest ancestor h1/h2/h3
           var titleEl = null;
           var node = btn;
@@ -375,29 +387,29 @@
             if (j.title === jobTitle) openJob = j;
           });
           if (openJob) {
-            _injectApplyBtn(btn, openJob);
+            _showApplyOverlay(openJob);
             return;
           }
-          // Cache miss — fetch open jobs fresh (handles case where preload didn't finish)
-          btn.setAttribute('data-wp-apply-fixed', 'pending');
+          // Cache miss — fetch open jobs fresh
+          if (btn.getAttribute('data-wp-fetch-pending')) return;
+          btn.setAttribute('data-wp-fetch-pending', '1');
           fetch(API + '/api/jobs?limit=50', { headers: { 'x-user-id': CANONICAL_UID } })
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d) {
+              btn.removeAttribute('data-wp-fetch-pending');
               if (d && d.jobs) {
                 d.jobs.forEach(function(j) {
                   if (j._open) window._wp_openJobs[j.id] = j;
                 });
               }
-              // Retry after cache populated
               Object.values(window._wp_openJobs).forEach(function(j) {
                 if (j.title === jobTitle) openJob = j;
               });
-              btn.removeAttribute('data-wp-apply-fixed'); // allow re-check
-              if (openJob) _injectApplyBtn(btn, openJob);
-            }).catch(function(){
-              btn.removeAttribute('data-wp-apply-fixed');
-            });
+              if (openJob) _showApplyOverlay(openJob);
+            }).catch(function(){ btn.removeAttribute('data-wp-fetch-pending'); });
         });
+        // Hide overlay if no "Job filled" button visible (navigated away)
+        if (!foundJobFilled) _hideApplyOverlay();
       }
       var _applyBtnTimer = null;
       var _applyFixObs = new MutationObserver(function() {
@@ -414,8 +426,6 @@
           _applyFixObs.observe(document.body, { childList: true, subtree: true });
         });
       }
-      // Polling fallback: React re-renders can remove our injected button.
-      // Run _checkApplyButtons every 800ms to continuously ensure injection.
       setInterval(_checkApplyButtons, 800);
 
       // ── 4. Notifications DOM injector ────────────────────────────────────────
