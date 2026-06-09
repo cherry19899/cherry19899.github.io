@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v571';
+        var KEY = '_wp_loaded_v572';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=571&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=572&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,41 +46,25 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v571';</script>
-    <!-- v570: Bug#8 FAB position fix + Bug#9 review modal pointer-events fix -->
+    <script>window.WORKPRO_VERSION='v572';</script>
+    <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
+    <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <style>
-    /* Bug#8: FAB (+) green button on Find Work overlaps bottom nav Profile tab.
-       Bottom nav class: "fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-pb"
+    /* Bug#8: Move FAB (+) up so it clears the bottom nav (no z-index hacks needed).
        FAB class: "fixed bottom-20 right-4 ... rounded-full bg-emerald-500 ... z-30"
-       Fix: raise bottom nav z-index AND move FAB higher so it clears the nav bar. */
-    [class*="fixed"][class*="bottom-0"][class*="left-0"][class*="right-0"][class*="bg-card"] {
-      z-index: 1200 !important;
-    }
-    /* Move FAB up so it doesn't overlap the bottom nav Profile tab */
+       Nav class: "fixed bottom-0 ... z-50" (z-index:50 already > FAB z-index:30) */
     [class*="bottom-20"][class*="right-4"][class*="rounded-full"][class*="bg-emerald-500"] {
       bottom: 100px !important;
     }
-    /* Bug#9: Review modal Submit/Cancel buttons — ensure modal overlay has no pointer-events blocking */
-    [class*="modal"] button, [class*="Modal"] button,
-    [class*="dialog"] button, [class*="Dialog"] button,
-    [class*="review"] button, [class*="Review"] button,
-    [class*="overlay"] button:not(#wp-apply-overlay button):not(#_wp_notif_overlay button) {
-      pointer-events: auto !important;
-      position: relative !important;
-      z-index: 10 !important;
-    }
-    /* Ensure modal backdrop doesn't swallow taps on buttons inside it */
-    [class*="modal"][class*="backdrop"],
-    [class*="modal"][class*="overlay"],
-    [class*="Backdrop"], [class*="backdrop"] {
-      pointer-events: none !important;
-    }
-    [class*="modal"] > *, [class*="Modal"] > *,
-    [class*="dialog"] > *, [class*="Dialog"] > * {
+    /* Bug#9: ReviewModal backdrop has z-[70]=70, but bottom nav has z-50=50 by default.
+       Now that we removed z-index:1200 from nav, modal (70) > nav (50), buttons are accessible.
+       Extra safety: ensure modal panel and its children have pointer-events:auto */
+    .fixed.inset-0[class*="z-[70]"] > *,
+    [class*="fixed"][class*="inset-0"][class*="z-[70]"] > * {
       pointer-events: auto !important;
     }
     </style>
-    <!-- v571: tap diagnostic + click log box -->
+    <!-- v572: tap diagnostic + click log box -->
     <script>
     // Persistent log box for diagnostics
     var _tapLog = null;
@@ -517,13 +501,13 @@
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
-      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v571 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font-size:11px;font-weight:bold;padding:2px 6px;z-index:999999;white-space:nowrap;overflow:hidden;line-height:1.2;"; _dbgBar.textContent="v572 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
-        if (_dbgBar) _dbgBar.textContent = 'v571 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
+        if (_dbgBar) _dbgBar.textContent = 'v572 JF:'+foundJobFilled+' det:'+(det?det.id:'null')+' c:'+cSz+' id:'+(window._currentJobId||'-')+' ov:'+(!!((_applyOverlay)&&_applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
