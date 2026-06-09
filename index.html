@@ -61,6 +61,7 @@
         try {
           var urlStr = typeof input === 'string' ? input : (input && input.url) || '';
           if (urlStr.indexOf(API) !== -1) {
+            console.log('[v555-dbg] fetch:', (init&&init.method)||'GET', urlStr.replace(API,''));
             init = init ? Object.assign({}, init) : {};
             init.headers = init.headers ? Object.assign({}, init.headers) : {};
             // Normalise Headers object → plain object
