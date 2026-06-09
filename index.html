@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v575';
+        var KEY = '_wp_loaded_v576';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=575&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=576&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -45,13 +45,14 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v575';</script>
+    <script>window.WORKPRO_VERSION='v576';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
     <!-- v574: Silence console.log to prevent WebView console panel from blocking nav -->
     <!-- v575: Removed __c_wrap debug console panel (was blocking nav bar at z-index:99999) -->
     <!-- v575: Bug#11 Fix Apply Now on own jobs — normalize pi_ prefix in posted_by comparison -->
+    <!-- v576: Bug#12 Fix My Jobs empty — rewrite /api/jobs/user/username → /api/jobs/user/pi_username -->
     <script>
     // Silence all console.log (debug noise reduction)
     try { console.log = function(){}; console.info = function(){}; console.debug = function(){}; } catch(e){}
@@ -105,6 +106,15 @@
             // Rewrite cherry19899 → pi_cherry19899 and ensure header is always set
             if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
               init.headers['x-user-id'] = CANONICAL_UID;
+            }
+            // Bug#12: rewrite /api/jobs/user/:username — bundle sends username without pi_ prefix
+            // e.g. /api/jobs/user/cherry19899 → /api/jobs/user/pi_cherry19899
+            var userJobMatch = urlStr.match(/\/api\/jobs\/user\/([^/?#]+)/);
+            if (userJobMatch) {
+              var uname = userJobMatch[1];
+              if (uname.indexOf('pi_') !== 0) {
+                input = urlStr.replace('/api/jobs/user/' + uname, '/api/jobs/user/pi_' + uname);
+              }
             }
           }
         } catch(e) {}
