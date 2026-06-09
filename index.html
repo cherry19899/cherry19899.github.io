@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v562';
+        var KEY = '_wp_loaded_v563';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=562&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=563&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v562';</script>
+    <script>window.WORKPRO_VERSION='v563';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -439,10 +439,14 @@
       }
       var _jobFilledLastSeen = 0;
       var _hideOverlayTimer = null;
+      var _dbgBar = document.createElement("div"); _dbgBar.id="wp-dbg-bar"; _dbgBar.style.cssText="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-size:9px;padding:1px 4px;z-index:999999;white-space:nowrap;overflow:hidden;"; _dbgBar.textContent="v563 init"; if(document.body)document.body.appendChild(_dbgBar); else document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(_dbgBar);});
       function _checkApplyButtons() {
         // Check by full page text (works regardless of element type)
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
+        var det = window._wp_currentJobDetail;
+        var cSz = Object.keys(window._wp_openJobs||{}).length;
+        if (_dbgBar) _dbgBar.textContent = 'JF:'+foundJobFilled+' det:'+(det?det.id+'/'+det.posted_by:'null')+' cache:'+cSz+' ov:'+(!!(window._applyOverlay&&window._applyOverlay.parentNode));
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
@@ -452,26 +456,22 @@
           var openJob = null;
           var detail = window._wp_currentJobDetail;
           if (detail && detail.id) {
-            // Check if this job is open (not hired/completed by checking cache or _open flag)
             var cachedVersion = window._wp_openJobs[detail.id];
-            var isOpen = cachedVersion || detail.status === 'open' || detail._real_status === 'open';
-            // Also accept status in_progress with _open:true from our cache
-            if (!isOpen && cachedVersion) isOpen = true;
-            // For safety: if the job has "job filled" on screen and we have no _open info,
-            // check if it's in the open jobs cache at all
-            if (!isOpen) isOpen = !!window._wp_openJobs[detail.id];
+            var isOpen = !!(cachedVersion || detail.status === 'open' || detail._real_status === 'open');
             if (isOpen && detail.posted_by !== CANONICAL_UID) openJob = detail;
           }
           // FALLBACK: walk DOM to find job near the "Job filled" button
           if (!openJob) openJob = _findJobNearFilledBtn();
+          if (_dbgBar) _dbgBar.textContent += ' job:'+(openJob?openJob.title:'null');
           if (openJob) {
-            if (openJob.posted_by === CANONICAL_UID) return; // own job
+            if (openJob.posted_by === CANONICAL_UID) { if(_dbgBar) _dbgBar.textContent+=' OWN'; return; }
             _showApplyOverlay(openJob);
             return;
           }
-          // Cache miss — fetch fresh jobs list + re-fetch current job detail
-          if (window._wp_fetchPending) return;
+          // Cache miss — fetch fresh jobs list
+          if (window._wp_fetchPending) { if(_dbgBar) _dbgBar.textContent+=' PENDING'; return; }
           window._wp_fetchPending = true;
+          if (_dbgBar) _dbgBar.textContent += ' FETCHING';
           fetch(API + '/api/jobs?limit=50', { headers: { 'x-user-id': CANONICAL_UID } })
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d) {
@@ -479,7 +479,6 @@
               if (d && d.jobs) {
                 d.jobs.forEach(function(j) { if (j._open) window._wp_openJobs[j.id] = j; });
               }
-              // Retry with refreshed cache
               var detail2 = window._wp_currentJobDetail;
               if (detail2 && detail2.id && window._wp_openJobs[detail2.id] && detail2.posted_by !== CANONICAL_UID) {
                 _showApplyOverlay(detail2); return;
