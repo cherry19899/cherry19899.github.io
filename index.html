@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v557';
+        var KEY = '_wp_loaded_v558';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=557&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=558&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v557';</script>
+    <script>window.WORKPRO_VERSION='v558';</script>
     <!-- v554: force correct x-user-id header + balance_connects sync + own-job apply hide -->
     <script>
     (function(){
@@ -364,49 +364,67 @@
         }
         _applyOverlay = null;
       }
+      function _findJobByPageTitle() {
+        // Try to identify current job from page headings (multiple strategies)
+        var headings = document.querySelectorAll('h1, h2, h3');
+        var candidates = [];
+        headings.forEach(function(h) {
+          var t = (h.textContent || '').trim();
+          if (t) candidates.push(t);
+        });
+        var openJob = null;
+        // Strategy 1: exact title match
+        Object.values(window._wp_openJobs).forEach(function(j) {
+          if (openJob) return;
+          candidates.forEach(function(c) {
+            if (openJob) return;
+            if (c === j.title) openJob = j;
+          });
+        });
+        // Strategy 2: page heading CONTAINS job title (or vice versa)
+        if (!openJob) {
+          Object.values(window._wp_openJobs).forEach(function(j) {
+            if (openJob) return;
+            candidates.forEach(function(c) {
+              if (openJob) return;
+              if (c.indexOf(j.title) !== -1 || j.title.indexOf(c) !== -1) openJob = j;
+            });
+          });
+        }
+        return openJob;
+      }
       function _checkApplyButtons() {
         var foundJobFilled = false;
         document.querySelectorAll('button').forEach(function(btn) {
           var txt = (btn.textContent || '').toLowerCase();
           if (!/job filled|freelancer hired/.test(txt)) return;
           foundJobFilled = true;
-          // Find job title in nearest ancestor h1/h2/h3
-          var titleEl = null;
-          var node = btn;
-          for (var i = 0; i < 20; i++) {
-            node = node && node.parentElement;
-            if (!node) break;
-            titleEl = node.querySelector('h1, h2, h3');
-            if (titleEl) break;
-          }
-          if (!titleEl) return;
-          var jobTitle = (titleEl.textContent || '').trim();
-          // Check cache first
-          var openJob = null;
-          Object.values(window._wp_openJobs).forEach(function(j) {
-            if (j.title === jobTitle) openJob = j;
-          });
+          // Try to find job from page headings
+          var openJob = _findJobByPageTitle();
           if (openJob) {
+            // Don't show Apply Now for own jobs (posted_by is like "pi_cherry19899")
+            if (openJob.posted_by && openJob.posted_by === CANONICAL_UID) return;
             _showApplyOverlay(openJob);
             return;
           }
           // Cache miss — fetch open jobs fresh
-          if (btn.getAttribute('data-wp-fetch-pending')) return;
-          btn.setAttribute('data-wp-fetch-pending', '1');
+          if (window._wp_fetchPending) return;
+          window._wp_fetchPending = true;
           fetch(API + '/api/jobs?limit=50', { headers: { 'x-user-id': CANONICAL_UID } })
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d) {
-              btn.removeAttribute('data-wp-fetch-pending');
+              window._wp_fetchPending = false;
               if (d && d.jobs) {
                 d.jobs.forEach(function(j) {
                   if (j._open) window._wp_openJobs[j.id] = j;
                 });
               }
-              Object.values(window._wp_openJobs).forEach(function(j) {
-                if (j.title === jobTitle) openJob = j;
-              });
-              if (openJob) _showApplyOverlay(openJob);
-            }).catch(function(){ btn.removeAttribute('data-wp-fetch-pending'); });
+              var job2 = _findJobByPageTitle();
+              if (job2) {
+                if (job2.posted_by && job2.posted_by === CANONICAL_UID) return;
+                _showApplyOverlay(job2);
+              }
+            }).catch(function(){ window._wp_fetchPending = false; });
         });
         // Hide overlay if no "Job filled" button visible (navigated away)
         if (!foundJobFilled) _hideApplyOverlay();
