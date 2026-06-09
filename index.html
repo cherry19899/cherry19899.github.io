@@ -479,11 +479,21 @@
         _notifCheckTimer = setTimeout(function() {
           _notifCheckTimer = null;
           var onNotifScreen = false;
-          document.querySelectorAll('*').forEach(function(el) {
-            if (el.children.length <= 2 && /^notifications$|^уведомления$|^сповіщення$/i.test((el.textContent||'').trim())) {
+          // More permissive check: look for any heading/title/span with "Notifications" text
+          document.querySelectorAll('h1,h2,h3,h4,span,p,[class*="title"],[class*="header"],[class*="Title"],[class*="Header"]').forEach(function(el) {
+            var txt = (el.textContent||'').trim();
+            if (/^notifications$|^уведомления$|^сповіщення$/i.test(txt)) {
               onNotifScreen = true;
             }
           });
+          // Also check page title as fallback
+          if (!onNotifScreen) {
+            document.querySelectorAll('*').forEach(function(el) {
+              if (el.children.length <= 5 && /notifications|уведомления|сповіщення/i.test((el.textContent||'').trim()) && (el.textContent||'').trim().length < 40) {
+                onNotifScreen = true;
+              }
+            });
+          }
           if (onNotifScreen && !document.getElementById('_wp_notif_overlay')) {
             fetchAndShowNotifs();
           }
