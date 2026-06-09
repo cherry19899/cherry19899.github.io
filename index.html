@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v573';
+        var KEY = '_wp_loaded_v574';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=573&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=574&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -46,10 +46,15 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v573';</script>
+    <script>window.WORKPRO_VERSION='v574';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
+    <!-- v574: Silence console.log to prevent WebView console panel from blocking nav -->
+    <script>
+    // Silence all console.log to keep WebView console panel closed
+    try { console.log = function(){}; console.info = function(){}; console.debug = function(){}; } catch(e){}
+    </script>
     <style>
     /* Bug#8: Move FAB (+) up so it clears the bottom nav (no z-index hacks needed).
        FAB class: "fixed bottom-20 right-4 ... rounded-full bg-emerald-500 ... z-30"
