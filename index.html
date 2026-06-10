@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v578';
+        var KEY = '_wp_loaded_v579';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v578';</script>
+    <script>window.WORKPRO_VERSION='v579';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -2490,6 +2490,18 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
         if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
       }
       options.headers = headers;
+    }
+
+    // Escrow API format fix: bundle expects array, API returns {escrows: [...]}
+    if (url.indexOf('/api/escrows') !== -1 && url.indexOf('/api/admin/') === -1) {
+      return origFetch.call(this, url, options).then(function(response) {
+        var clone = response.clone();
+        return clone.json().then(function(data) {
+          var fixed = data;
+          if (data && data.escrows && Array.isArray(data.escrows)) fixed = data.escrows;
+          return new Response(JSON.stringify(fixed), { status: response.status, statusText: response.statusText, headers: {'Content-Type': 'application/json'} });
+        }).catch(function() { return response; });
+      });
     }
 
     // Admin API format fix
