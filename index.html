@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v582';
+        var KEY = '_wp_loaded_v583';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=582&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=583&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v582';</script>
+    <script>window.WORKPRO_VERSION='v583';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -686,7 +686,8 @@
         overlay.addEventListener('touchstart', function(e) { e.stopPropagation(); }, { passive: true });
         var hdrtitle = document.createElement('span');
         hdrtitle.style.cssText = 'font-size:16px;font-weight:600;color:#e5e5e5';
-        hdrtitle.textContent = 'Notifications';
+        var _notifLang = (navigator.language || 'en').slice(0,2);
+        hdrtitle.textContent = _notifLang === 'ru' ? 'Уведомления' : _notifLang === 'uk' ? 'Сповіщення' : 'Notifications';
         hdr.appendChild(backBtn); hdr.appendChild(hdrtitle);
         overlay.appendChild(hdr);
         // Tabs row
@@ -712,6 +713,10 @@
         notifs.forEach(function(n) { list.appendChild(buildNotifItem(n)); });
         overlay.appendChild(list);
         document.body.appendChild(overlay);
+        // Mark all as read when overlay opens
+        fetch(API + '/api/notifications/mark-read', {
+          method: 'POST', headers: { 'x-user-id': CANONICAL_UID }
+        }).catch(function(){});
       }
       // Watch for Notifications screen appearing — debounced
       var _notifCheckTimer = null;
@@ -883,10 +888,12 @@
         _origPushState(state, title, url);
         var m = String(url||'').match(/jobs?[\/=](\d+)/);
         if (m) window._currentJobId = m[1];
+        else window._currentJobId = null;
       };
       window.addEventListener('popstate', function() {
         var m = location.href.match(/jobs?[\/=](\d+)/);
         if (m) window._currentJobId = m[1];
+        else window._currentJobId = null;
       });
     })();
     </script>
@@ -1007,7 +1014,7 @@
           _patchInstalled = true;
         }
         installFetchInterceptor();
-        setInterval(installFetchInterceptor, 100);
+        setInterval(installFetchInterceptor, 2000);
       })();
 
       // XMLHttpRequest interceptor (backup)
@@ -1480,9 +1487,9 @@
         var lang = _getLang();
         var texts = {
           en: { title:'Post a Job', post:'Post Job', cost:'Cost: 1 connect', posting:'Posting...', success:'Job posted successfully!', error:'Error: ', close:'Close', titleLabel:'Job Title', descLabel:'Description', catLabel:'Category', budgetLabel:'Budget (π)', skillsLabel:'Skills (comma separated)', deadlineLabel:'Deadline', titlePh:'e.g. Build a mobile app', descPh:'Describe the job requirements...', skillsPh:'React, Node.js, Design', all:'All', dev:'Dev', design:'Design', writing:'Writing', marketing:'Marketing', translate:'Translate', data:'Data', va:'VA', other:'Other', required:'Title is required', budgetMin:'Budget must be at least 1 π' },
-          ru: { title:'Разместить вакансию', post:'Разместить', cost:'Стоимость: 1 коннект', posting:'Размещение...', success:'Вакансия размещена!', error:'Ошибка: ', close:'Закрыть', titleLabel:'Название', descLabel:'Описание', catLabel:'Категория', budgetLabel:'Бюджет (π)', skillsLabel:'Навыки (через запятую)', deadlineLabel:'Срок', titlePh:'Напр. Создать мобильное приложение', descPl:'Опишите требования...', skillsPh:'React, Node.js, Дизайн', all:'Все', dev:'Разработка', design:'Дизайн', writing:'Тексты', marketing:'Маркетинг', translate:'Переводы', data:'Данные', va:'Ассистент', other:'Другое', required:'Название обязательно', budgetMin:'Бюджет минимум 1 π' },
+          ru: { title:'Разместить вакансию', post:'Разместить', cost:'Стоимость: 1 коннект', posting:'Размещение...', success:'Вакансия размещена!', error:'Ошибка: ', close:'Закрыть', titleLabel:'Название', descLabel:'Описание', catLabel:'Категория', budgetLabel:'Бюджет (π)', skillsLabel:'Навыки (через запятую)', deadlineLabel:'Срок', titlePh:'Напр. Создать мобильное приложение', descPh:'Опишите требования...', skillsPh:'React, Node.js, Дизайн', all:'Все', dev:'Разработка', design:'Дизайн', writing:'Тексты', marketing:'Маркетинг', translate:'Переводы', data:'Данные', va:'Ассистент', other:'Другое', required:'Название обязательно', budgetMin:'Бюджет минимум 1 π' },
           es: { title:'Publicar Trabajo', post:'Publicar', cost:'Costo: 1 connect', posting:'Publicando...', success:'Trabajo publicado!', error:'Error: ', close:'Cerrar', titleLabel:'Título', descLabel:'Descripción', catLabel:'Categoría', budgetLabel:'Presupuesto (π)', skillsLabel:'Habilidades (separadas por coma)', deadlineLabel:'Fecha límite', titlePh:'p. ej. Crear app móvil', descPh:'Describe los requisitos...', skillsPh:'React, Node.js, Diseño', all:'Todas', dev:'Dev', design:'Diseño', writing:'Redacción', marketing:'Marketing', translate:'Traducción', data:'Datos', va:'Asistente', other:'Otro', required:'Título es obligatorio', budgetMin:'Presupuesto mínimo 1 π' },
-          de: { title:'Job veröffentlichen', post:'Veröffentlichen', cost:'Kosten: 1 Connect', posting:'Veröffentliche...', success:'Job veröffentlicht!', error:'Fehler: ', close:'Schließen', titleLabel:'Titel', descLabel:'Beschreibung', catLabel:'Kategorie', budgetLabel:'Budget (π)', skillsLabel:'Fähigkeiten (Komma getrennt)', deadlineLabel:'Frist', titlePl:'z.B. Mobile App entwickeln', descPh:'Beschreiben Sie die Anforderungen...', skillsPh:'React, Node.js, Design', all:'Alle', dev:'Dev', design:'Design', writing:'Texte', marketing:'Marketing', translate:'Übersetzung', data:'Daten', va:'Assistent', other:'Sonstige', required:'Titel ist Pflicht', budgetMin:'Budget mindestens 1 π' }
+          de: { title:'Job veröffentlichen', post:'Veröffentlichen', cost:'Kosten: 1 Connect', posting:'Veröffentliche...', success:'Job veröffentlicht!', error:'Fehler: ', close:'Schließen', titleLabel:'Titel', descLabel:'Beschreibung', catLabel:'Kategorie', budgetLabel:'Budget (π)', skillsLabel:'Fähigkeiten (Komma getrennt)', deadlineLabel:'Frist', titlePh:'z.B. Mobile App entwickeln', descPh:'Beschreiben Sie die Anforderungen...', skillsPh:'React, Node.js, Design', all:'Alle', dev:'Dev', design:'Design', writing:'Texte', marketing:'Marketing', translate:'Übersetzung', data:'Daten', va:'Assistent', other:'Sonstige', required:'Titel ist Pflicht', budgetMin:'Budget mindestens 1 π' }
         };
         var t = texts[lang] || texts.en;
 
@@ -1518,7 +1525,7 @@
             input = document.createElement('select');
             input.style.cssText = 'width:100%;padding:10px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:14px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.9);box-sizing:border-box;';
             var cats = [
-              ['all', t.all || 'All'], ['dev', t.dev || 'Dev'], ['design', t.design || 'Design'],
+              ['dev', t.dev || 'Dev'], ['design', t.design || 'Design'],
               ['writing', t.writing || 'Writing'], ['marketing', t.marketing || 'Marketing'],
               ['translate', t.translate || 'Translate'], ['data', t.data || 'Data'],
               ['va', t.va || 'VA'], ['other', t.other || 'Other']
@@ -1606,7 +1613,7 @@
           var title = titleField.input.value.trim();
           var desc = descField.input.value.trim();
           var cat = catField.input.value;
-          var budget = parseInt(budgetField.input.value) || 0;
+          var budget = parseFloat(budgetField.input.value) || 0;
           var skills = skillsField.input.value.trim();
           var deadline = deadlineField.input.value;
 
@@ -1681,9 +1688,9 @@
           var l = localStorage.getItem('workpro_lang') || 'en';
           var title = langs[l] || langs.en;
           var prices = '<div style="margin:12px 0;">' +
-            '<div onclick="alert(\'10 connects - 1.00\\u03C0\')" style="padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;background:rgba(255,255,255,0.04);"><span>10 connects</span><strong>1.00 π</strong></div>' +
-            '<div onclick="alert(\'50 connects - 4.00\\u03C0\')" style="padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;background:rgba(255,255,255,0.04);"><span>50 connects</span><strong>4.00 π</strong></div>' +
-            '<div onclick="alert(\'100 connects - 7.00\\u03C0\')" style="padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;background:rgba(255,255,255,0.04);"><span>100 connects</span><strong>7.00 π</strong></div>' +
+            '<div onclick="alert(\'10 connects — 1.00π (10 connects per 1π)\')" style="padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;background:rgba(255,255,255,0.04);"><span>10 connects</span><strong>1.00 π</strong></div>' +
+            '<div onclick="alert(\'40 connects — 4.00π (10 connects per 1π)\')" style="padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;background:rgba(255,255,255,0.04);"><span>40 connects</span><strong>4.00 π</strong></div>' +
+            '<div onclick="alert(\'70 connects — 7.00π (10 connects per 1π)\')" style="padding:12px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;background:rgba(255,255,255,0.04);"><span>70 connects</span><strong>7.00 π</strong></div>' +
             '</div>';
           var modal = document.createElement('div');
           modal.id = mId;
