@@ -1520,8 +1520,16 @@
         box.appendChild(deadlineField.wrap);
 
         var costNote = document.createElement('p');
-        costNote.textContent = t.cost;
-        costNote.style.cssText = 'color:rgba(255,255,255,0.4);font-size:12px;margin:4px 0 12px;text-align:center;';
+        function updateCostNote() {
+          var b = parseFloat(budgetField.input.value) || 1;
+          var c = Math.ceil(b / 50);
+          var isRu = (navigator.language || 'en').startsWith('ru');
+          var suffix = isRu ? (c===1?' коннект':c<5?' коннекта':' коннектов') : (' connect'+(c===1?'':'s'));
+          costNote.textContent = (isRu ? 'Стоимость отклика: ' : 'Apply cost: ') + c + suffix + '  (1–50π=1 · 51–100π=2 · 101–150π=3…)';
+        }
+        budgetField.input.addEventListener('input', updateCostNote);
+        updateCostNote();
+        costNote.style.cssText = 'color:rgba(255,255,255,0.55);font-size:12px;margin:4px 0 12px;text-align:center;';
         box.appendChild(costNote);
 
         var errorMsg = document.createElement('div');
