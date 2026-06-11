@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v579';
+        var KEY = '_wp_loaded_v580';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v579';</script>
+    <script>window.WORKPRO_VERSION='v580';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -161,7 +161,7 @@
                 if (d && d.jobs && Array.isArray(d.jobs)) {
                   d.jobs = d.jobs.map(function(j) {
                     if (j.status === 'open') {
-                      return Object.assign({}, j, { status: 'in_progress', _real_status: 'open' });
+                      return Object.assign({}, j, { status: 'in_progress', _real_status: 'open', _open: true });
                     }
                     return j;
                   });
