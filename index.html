@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v581';
+        var KEY = '_wp_loaded_v582';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=581&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=582&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v581';</script>
+    <script>window.WORKPRO_VERSION='v582';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -401,31 +401,79 @@
         };
       })();
 
+      // Robust apply-cost: trust server apply_cost, else compute from budget (1-50π=1, 51-100π=2…)
+      function _applyCostOf(job) {
+        var c = parseInt(job && job.apply_cost, 10);
+        if (c > 0) return c;
+        var b = parseFloat(job && job.budget);
+        if (b > 0) return Math.ceil(b / 50);
+        return 1;
+      }
+      // Styled cover-letter modal (replaces native prompt). Calls cb(text) on OK, cb(null) on cancel.
+      function _wpCoverLetterModal(cb) {
+        var isRu = (navigator.language || 'en').slice(0,2) === 'ru';
+        var back = document.createElement('div');
+        back.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:24px;';
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#0f1713;border:1px solid rgba(255,255,255,0.12);border-radius:16px;width:100%;max-width:420px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,0.5);';
+        var title = document.createElement('div');
+        title.textContent = isRu ? 'Сопроводительное письмо' : 'Cover letter';
+        title.style.cssText = 'color:#fff;font-size:17px;font-weight:700;margin-bottom:6px;';
+        var sub = document.createElement('div');
+        sub.textContent = isRu ? 'Расскажите, почему выбрать именно вас' : 'Tell the client why they should pick you';
+        sub.style.cssText = 'color:rgba(255,255,255,0.5);font-size:13px;margin-bottom:12px;';
+        var ta = document.createElement('textarea');
+        ta.rows = 4;
+        ta.placeholder = isRu ? 'Ваше сообщение…' : 'Your message…';
+        ta.style.cssText = 'width:100%;box-sizing:border-box;background:#0a0f0c;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:12px;color:#fff;font-size:14px;resize:vertical;outline:none;';
+        var err = document.createElement('div');
+        err.style.cssText = 'color:#ef4444;font-size:12px;margin-top:6px;display:none;';
+        err.textContent = isRu ? 'Введите сообщение' : 'Please enter a message';
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:8px;margin-top:14px;';
+        var cancel = document.createElement('button');
+        cancel.textContent = isRu ? 'Отмена' : 'Cancel';
+        cancel.style.cssText = 'flex:1;padding:12px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;';
+        var ok = document.createElement('button');
+        ok.textContent = isRu ? 'Отправить' : 'Submit';
+        ok.style.cssText = 'flex:1;padding:12px;background:#10b981;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;';
+        function close(){ if (back.parentNode) back.parentNode.removeChild(back); }
+        cancel.onclick = function(){ close(); cb(null); };
+        ok.onclick = function(){ var v = ta.value.trim(); if (!v) { err.style.display = 'block'; return; } close(); cb(v); };
+        back.onclick = function(e){ if (e.target === back) { close(); cb(null); } };
+        row.appendChild(cancel); row.appendChild(ok);
+        card.appendChild(title); card.appendChild(sub); card.appendChild(ta); card.appendChild(err); card.appendChild(row);
+        back.appendChild(card); document.body.appendChild(back);
+        setTimeout(function(){ ta.focus(); }, 50);
+      }
       // Fixed-position Apply Now overlay — outside React DOM, React can't remove it
       var _applyOverlay = null;
       function _showApplyOverlay(openJob) {
         if (_applyOverlay && _applyOverlay.parentNode) return; // already shown
+        var cost = _applyCostOf(openJob);
+        var label = 'Apply Now (' + cost + ' connect' + (cost === 1 ? '' : 's') + ')';
         var overlay = document.createElement('div');
         overlay.id = 'wp-apply-overlay';
         overlay.style.cssText = 'position:fixed;bottom:170px;left:0;right:0;z-index:99999;display:flex;justify-content:center;padding:0 16px;';
         var btn = document.createElement('button');
-        btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)';
+        btn.textContent = label;
         btn.style.cssText = 'background:#10b981;color:#fff;border:none;border-radius:8px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:500px;box-shadow:0 4px 12px rgba(16,185,129,0.4);';
         // v567: exempt from _hideObs "own-job" hiding — this overlay is for OTHER users' open jobs
         btn.setAttribute('data-wp-apply-fixed', '1');
         btn.onclick = function() {
-          var msg = prompt('Cover letter (required):');
-          if (!msg) return;
-          btn.disabled = true;
-          btn.textContent = 'Submitting...';
-          fetch(API + '/api/jobs/' + openJob.id + '/apply', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-user-id': CANONICAL_UID },
-            body: JSON.stringify({ cover_letter: msg })
-          }).then(function(r){ return r.json(); }).then(function(d) {
-            if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)'; }
-            else { btn.textContent = 'Applied ✓'; }
-          }).catch(function(e){ alert('Network error: ' + e); btn.disabled = false; btn.textContent = 'Apply Now (' + (openJob.apply_cost||1) + ' connect)'; });
+          _wpCoverLetterModal(function(msg) {
+            if (!msg) return;
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            fetch(API + '/api/jobs/' + openJob.id + '/apply', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-user-id': CANONICAL_UID },
+              body: JSON.stringify({ message: msg })
+            }).then(function(r){ return r.json(); }).then(function(d) {
+              if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = label; }
+              else { btn.textContent = 'Applied ✓'; }
+            }).catch(function(e){ alert('Network error: ' + e); btn.disabled = false; btn.textContent = label; });
+          });
         };
         overlay.appendChild(btn);
         document.body.appendChild(overlay);
