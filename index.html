@@ -899,13 +899,12 @@
           var uid = u.uid || u.id || u.username;
           if (!uid) return;
           // Don't block — fire and forget
+          var avHdrs = { 'Content-Type': 'application/json', 'x-user-id': uid, 'x-username': u.username || '' };
+          var avTok = localStorage.getItem('workpro_token');
+          if (avTok) avHdrs['Authorization'] = 'Bearer ' + avTok;
           fetch(API + '/api/users/me', {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-user-id': uid,
-              'x-username': u.username || ''
-            },
+            headers: avHdrs,
             body: JSON.stringify({ avatar: u.avatar })
           }).then(function(r){
             // fire-and-forget avatar sync
