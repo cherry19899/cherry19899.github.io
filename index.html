@@ -104,8 +104,9 @@
               init.headers = plain;
             }
             var curId = init.headers['x-user-id'] || init.headers['X-User-Id'] || '';
-            // Rewrite cherry19899 → pi_cherry19899 and ensure header is always set
-            if (!curId || curId === 'cherry19899' || curId === CANONICAL_UID) {
+            // Rewrite cherry19899 (username) → pi_cherry19899 (canonical ID) only
+            // Do NOT add x-user-id when it is absent — let JWT auth handle unauthenticated calls
+            if (curId === 'cherry19899') {
               init.headers['x-user-id'] = CANONICAL_UID;
             }
             // Bug#12: rewrite /api/jobs/user/:username — bundle sends username without pi_ prefix
@@ -120,33 +121,7 @@
           }
         } catch(e) {}
         var result = _rawFetch.call(this, input, init);
-        // ── Intercept notifications response: if empty, return real data ──────
-        try {
-          var urlStr2 = typeof input === 'string' ? input : (input && input.url) || '';
-          var isNotifList = /\/api\/notifications$/.test(urlStr2) && (!init || !init.method || init.method === 'GET');
-          if (isNotifList) {
-            result = result.then(function(resp) {
-              return resp.clone().json().then(function(d) {
-                var count = (d && d.notifications) ? d.notifications.length : 0;
-                if (count === 0) {
-                  // Fetch real data with canonical UID
-                  return _rawFetch(API + '/api/notifications', {
-                    headers: { 'x-user-id': CANONICAL_UID }
-                  }).then(function(r2) {
-                    var body = r2.clone();
-                    return body.json().then(function(realData) {
-                      return new Response(JSON.stringify(realData), {
-                        status: 200,
-                        headers: { 'Content-Type': 'application/json' }
-                      });
-                    });
-                  }).catch(function() { return resp; });
-                }
-                return resp;
-              }).catch(function() { return resp; });
-            });
-          }
-        } catch(e) {}
+        // notifications fallback removed — was leaking cherry19899's data to other users
 
         // ── Intercept /api/jobs LIST response: remap status open→in_progress ──
         // Bug in bundle v200: Find Work feed hides all status='open' jobs.
@@ -224,39 +199,7 @@
         var xhr = this;
         var url = this._v554url || '';
         var method = (this._v554method || 'GET').toUpperCase();
-        // Intercept GET /api/notifications response — inject real data if empty
-        var isNotifList = /\/api\/notifications$/.test(url) && method === 'GET';
-        var isAppsList = /\/api\/applications\/user\//.test(url) && method === 'GET';
-        if (isNotifList || isAppsList) {
-          var origOnLoad = this.onload;
-          var origOnReady = this.onreadystatechange;
-          function handleResponse() {
-            if (xhr.readyState !== 4 || xhr._v554injected) return;
-            try {
-              var data = JSON.parse(xhr.responseText);
-              var isEmpty = isNotifList ? !(data && data.notifications && data.notifications.length) :
-                                         !(data && data.applications && data.applications.length);
-              if (!isEmpty) return; // already has data, leave it
-              // Re-fetch with canonical UID and inject
-              var endpoint = isNotifList ? '/api/notifications' : '/api/applications/my';
-              var r2 = new XMLHttpRequest();
-              r2.open('GET', API + endpoint, false); // synchronous
-              r2.setRequestHeader('x-user-id', CANONICAL_UID);
-              r2.send();
-              if (r2.status === 200) {
-                var realData = JSON.parse(r2.responseText);
-                var count = isNotifList ? (realData.notifications||[]).length : (realData.applications||[]).length;
-                if (count > 0) {
-                  xhr._v554injected = true;
-                  Object.defineProperty(xhr, 'responseText', { get: function() { return r2.responseText; }, configurable: true });
-                  Object.defineProperty(xhr, 'response', { get: function() { return r2.responseText; }, configurable: true });
-                  
-                }
-              }
-            } catch(e) {  }
-          }
-          this.addEventListener('readystatechange', handleResponse);
-        }
+        // XHR notifications/applications fallback removed — was leaking cherry19899's data to other users
         // Cache job detail response for Apply Now overlay
         var jobDetailXHR = url.match(/\/api\/jobs\/(\d+)$/);
         if (jobDetailXHR && method === 'GET') {
@@ -278,8 +221,16 @@
 
       // ── 2. Balance-connects sync: fetch real balance from API and save ────────
       function syncBalance() {
+        var _su = null;
+        try { _su = JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) {}
+        if (!_su) return; // not logged in
+        var _suid = _su.uid || _su.id;
+        if (!_suid) return;
+        var _shdrs = { 'x-user-id': _suid };
+        var _stok = localStorage.getItem('workpro_token');
+        if (_stok) _shdrs['Authorization'] = 'Bearer ' + _stok;
         fetch(API + '/api/connects/balance', {
-          headers: { 'x-user-id': CANONICAL_UID }
+          headers: _shdrs
         }).then(function(r){ return r.ok ? r.json() : null; })
           .then(function(d){
             if (!d || d.balance === undefined) return;
@@ -363,9 +314,7 @@
       // status remapping in the list. Store open job IDs and inject real Apply button.
       window._wp_openJobs = {}; // { id: {id, title, apply_cost} }
       // Pre-load all open jobs on startup (using real status endpoint)
-      fetch(API + '/api/jobs?limit=50', {
-        headers: { 'x-user-id': CANONICAL_UID, 'x-real-status': '1' }
-      }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d) {
+      fetch(API + '/api/jobs?limit=50').then(function(r){ return r.ok ? r.json() : null; }).then(function(d) {
         // server returns _open:true for originally-open jobs
         if (d && d.jobs) {
           d.jobs.forEach(function(j) {
@@ -568,7 +517,7 @@
           // Need to fetch — trigger immediately, don't wait for next tick
           if (window._wp_fetchPending) { return; }
           window._wp_fetchPending = true;
-          fetch(API + '/api/jobs?limit=50', { headers: { 'x-user-id': CANONICAL_UID } })
+          fetch(API + '/api/jobs?limit=50')
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d) {
               window._wp_fetchPending = false;
@@ -627,9 +576,12 @@
       function fetchAndShowNotifs() {
         if (Date.now() < _notifSuppressUntil) return; // suppressed
         if (_notifData) { injectNotifDOM(_notifData); return; }
-        fetch(API + '/api/notifications', {
-          headers: { 'x-user-id': CANONICAL_UID }
-        }).then(function(r){ return r.ok ? r.json() : null; })
+        var _nfhdrs = {};
+        var _nftok = localStorage.getItem('workpro_token');
+        if (_nftok) { _nfhdrs['Authorization'] = 'Bearer ' + _nftok; }
+        else { try { var _nfu = JSON.parse(localStorage.getItem('workpro_user')||'null'); if(_nfu && (_nfu.uid||_nfu.id)) _nfhdrs['x-user-id'] = _nfu.uid||_nfu.id; } catch(e) {} }
+        if (!_nfhdrs['Authorization'] && !_nfhdrs['x-user-id']) return; // not logged in
+        fetch(API + '/api/notifications', { headers: _nfhdrs }).then(function(r){ return r.ok ? r.json() : null; })
           .then(function(d){
             if (!d || !d.notifications) return;
             _notifData = d;
@@ -716,9 +668,11 @@
         overlay.appendChild(list);
         document.body.appendChild(overlay);
         // Mark all as read when overlay opens
-        fetch(API + '/api/notifications/mark-read', {
-          method: 'POST', headers: { 'x-user-id': CANONICAL_UID }
-        }).catch(function(){});
+        var _mrhdrs = { 'Content-Type': 'application/json' };
+        var _mrtok = localStorage.getItem('workpro_token');
+        if (_mrtok) { _mrhdrs['Authorization'] = 'Bearer ' + _mrtok; }
+        else { try { var _mru = JSON.parse(localStorage.getItem('workpro_user')||'null'); if(_mru && (_mru.uid||_mru.id)) _mrhdrs['x-user-id'] = _mru.uid||_mru.id; } catch(e) {} }
+        fetch(API + '/api/notifications/mark-read', { method: 'POST', headers: _mrhdrs }).catch(function(){});
       }
       // Watch for Notifications screen appearing — debounced
       var _notifCheckTimer = null;
