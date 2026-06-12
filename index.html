@@ -1298,20 +1298,6 @@
           });
           window.Pi._workpro_inited = true;
           window._piSdkReady = true;
-          // BROWSER FALLBACK: if not in Pi Browser, create mock auth after 3s
-          setTimeout(function() {
-            var hasUser = localStorage.getItem('workpro_user') || localStorage.getItem('workpro_user_id');
-            if (!hasUser && !window._piAuthCompleted) {
-              window._piAuthCompleted = true;
-              var fallbackUser = { uid: 'pi_cherry19899', id: 'pi_cherry19899', username: 'cherry19899', is_admin: true, role: 'admin', name: 'cherry19899' };
-              localStorage.setItem('workpro_user', JSON.stringify(fallbackUser));
-              localStorage.setItem('workpro_user_id', 'pi_cherry19899');
-              // Dispatch auth event for React to pick up
-              window.dispatchEvent(new CustomEvent('workpro:auth-fallback', {
-                detail: { user: fallbackUser }
-              }));
-            }
-          }, 3000);
         } catch(e) {
           console.error('[Pi] init error (attempt ' + _initAttempts + '):', e.message || e);
           if (_initAttempts < _initMaxAttempts) {
@@ -2051,7 +2037,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              resolve({ user: { uid: 'cherry19899', username: 'cherry19899' }, accessToken: 'fallback_token' });
+              reject(new Error('Pi authentication timed out'));
             }
           }, 5000);
           authPromise.then(function(result) {
@@ -2063,7 +2049,7 @@
             if (uid) {
               resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
             } else {
-              resolve({ user: { uid: 'cherry19899', username: 'cherry19899' }, accessToken: 'fallback_token' });
+              reject(err || new Error('Pi authentication failed'));
             }
           });
         });
@@ -2333,32 +2319,9 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
           headers: { 'x-user-id': uid }
         }).then(function(r){ return r.json(); }).then(function(d){
           var bal = d.balance != null ? d.balance : (d.balance_connects != null ? d.balance_connects : 0);
-          if (bal < 10) {
-            // Direct connects grant (no Pi payment needed for initial onboarding)
-            fetch(API + '/api/connects/buy', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
-              body: JSON.stringify({ quantity: 50, status: 'granted' })
-            }).then(function(r){ return r.json(); }).then(function(d){
-              if (d.success) {
-                // Mark bootstrap done only after successful grant
-                localStorage.setItem(bootstrapKey, '1');
-                var newBal = d.new_balance || d.balance || 50;
-                // Update localStorage connects
-                try {
-                  var stored = localStorage.getItem('workpro_user');
-                  if (stored) {
-                    var u = JSON.parse(stored);
-                    u.balance_connects = newBal;
-                    u.connects = newBal;
-                    localStorage.setItem('workpro_user', JSON.stringify(u));
-                    localStorage.setItem('workpro_connects', String(newBal));
-                  }
-                } catch(e) {}
-              }
-            }).catch(function(){});
-            // Note: bootstrapKey NOT set here — will retry if server was unreachable
-          }
+          // New users receive initial connects at server-side registration (auth/login).
+          // No additional bootstrap grant needed here.
+          localStorage.setItem(bootstrapKey, '1');
         }).catch(function(){});
       }
 
@@ -3367,7 +3330,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v555 — Freelance Marketplace</p>
+  <p>Work Pro v584 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
