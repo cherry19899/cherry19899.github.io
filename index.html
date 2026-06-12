@@ -2123,6 +2123,9 @@ var ce=React.createElement,useState=React.useState,useEffect=React.useEffect;
 var API="https://workpro-api.onrender.com";
 function h(){
   var hdr={"Content-Type":"application/json"};
+  // Admin calls need the admin API key (workpro_admin_token), not the user JWT
+  var adminTok=localStorage.getItem('workpro_admin_token');
+  if(adminTok){hdr['Authorization']='Bearer '+adminTok; return hdr;}
   var tok=localStorage.getItem('workpro_token');
   if(tok){hdr['Authorization']='Bearer '+tok;}
   else{
