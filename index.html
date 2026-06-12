@@ -2120,19 +2120,8 @@
           _origCP.call(window.Pi, pd, cbs);
         } catch(e) {
           var errMsg = e.message || String(e);
-          console.error('[PiFix-Early] error:', errMsg);
-          // If in browser (no payments scope), do mock purchase
-          if (errMsg.indexOf('payments') !== -1 || errMsg.indexOf('scope') !== -1 || errMsg.indexOf('Cannot create') !== -1) {
-            var mockPaymentId = 'mock_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
-            // Call onReadyForServerApproval
-            if (cbs && cbs.onReadyForServerApproval) {
-              setTimeout(function() { cbs.onReadyForServerApproval(mockPaymentId); }, 100);
-            }
-            // Call onReadyForServerCompletion after short delay
-            if (cbs && cbs.onReadyForServerCompletion) {
-              setTimeout(function() { cbs.onReadyForServerCompletion(mockPaymentId); }, 500);
-            }
-          } else if (cbs && cbs.onError) {
+          console.error('[PiFix-Early] createPayment error:', errMsg);
+          if (cbs && cbs.onError) {
             cbs.onError(e);
           }
         }
