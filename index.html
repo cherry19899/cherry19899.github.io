@@ -2208,7 +2208,7 @@ function deleteJob(id){
   }).catch(function(e){alert("Error: "+e.message);});
 }
 if(loading)return ce("div",{className:"loading-container"},ce("span",{className:"spinner large"}),ce("p",null,"Loading admin data..."));
-if(error)return ce("div",{className:"error-container"},ce("h2",null,"Error"),ce("p",null,error),ce("button",{className:"btn btn-primary",onClick:loadData},"Retry"));
+if(error)return ce("div",{className:"error-container",style:{color:"#dc2626",background:"#fff",padding:"20px"}},ce("h2",null,"Admin Error"),ce("p",{style:{color:"#dc2626",fontSize:"13px",wordBreak:"break-all"}},error),ce("button",{className:"btn btn-primary",onClick:loadData},"Retry"));
 var su=stats?(stats.total_users!=null?stats.total_users:users.length):users.length;
 var sj=stats?(stats.total_jobs!=null?stats.total_jobs:jobs.length):jobs.length;
 var sa=stats?(stats.total_applications||0):0;
