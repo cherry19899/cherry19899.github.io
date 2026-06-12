@@ -2562,7 +2562,10 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
             var toastEl = document.createElement('div');
             toastEl.id = toastId;
             toastEl.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;background:#fee2e2;border:1px solid #ef4444;color:#991b1b;padding:16px 24px;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.3);font-family:system-ui,sans-serif;max-width:90vw;width:320px;text-align:center;animation:slideDown 0.3s ease;';
-            toastEl.innerHTML = '<div style="font-weight:600;margin-bottom:8px;">&#9888; Not enough connects</div><div style="font-size:14px;margin-bottom:12px;">Need ' + (data.required || 2) + ' connects, you have ' + (data.current || 0) + '</div><button id="' + toastId + '_buy" style="background:#10b981;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">Buy Connects</button><button id="' + toastId + '_close" style="background:transparent;color:#666;border:none;padding:8px 16px;margin-left:8px;cursor:pointer;font-size:14px;">Close</button>';
+            var _hd = document.createElement('div'); _hd.style.cssText = 'font-weight:600;margin-bottom:8px;'; _hd.textContent = '⚠ Not enough connects'; toastEl.appendChild(_hd);
+            var _bd = document.createElement('div'); _bd.style.cssText = 'font-size:14px;margin-bottom:12px;'; _bd.textContent = 'Need ' + parseInt(data.required || 2, 10) + ' connects, you have ' + parseInt(data.current || 0, 10); toastEl.appendChild(_bd);
+            var _buyBtn = document.createElement('button'); _buyBtn.id = toastId + '_buy'; _buyBtn.style.cssText = 'background:#10b981;color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;'; _buyBtn.textContent = 'Buy Connects'; toastEl.appendChild(_buyBtn);
+            var _closeBtn = document.createElement('button'); _closeBtn.id = toastId + '_close'; _closeBtn.style.cssText = 'background:transparent;color:#666;border:none;padding:8px 16px;margin-left:8px;cursor:pointer;font-size:14px;'; _closeBtn.textContent = 'Close'; toastEl.appendChild(_closeBtn);
             document.body.appendChild(toastEl);
             document.getElementById(toastId + '_buy').onclick = function() { toastEl.remove(); if(window._showBuyConnects) window._showBuyConnects(); };
             document.getElementById(toastId + '_close').onclick = function() { toastEl.remove(); };
@@ -2717,7 +2720,7 @@ window._W5_fixed=true;
     var sc = localStorage.getItem(CONNECTS_KEY);
     var sb = localStorage.getItem(BALANCE_KEY);
     if (sc) savedConnects = parseInt(sc, 10);
-    if (sb) savedBalance = parseInt(sb, 0);
+    if (sb) savedBalance = parseInt(sb, 10);
   } catch(e) {}
 
   var origSetItem = localStorage.setItem;
