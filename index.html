@@ -3408,7 +3408,35 @@ window._W5_fixed=true;
     var adminDiv = document.createElement('div');
     adminDiv.id = '_wp_admin_profile_btn';
     adminDiv.innerHTML = '<button style="width:100%;padding:14px 16px;background:#1f2937;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;margin:4px 0;font-family:inherit;">&#9881; Admin Panel</button>';
-    adminDiv.querySelector('button').onclick = function() { window.location.hash = '#/admin'; };
+    adminDiv.querySelector('button').onclick = function() {
+      // Mount AdminPanel as full-screen overlay (bundle router is state-based, hash won't work)
+      var overlay = document.getElementById('_wp_admin_overlay');
+      if (overlay) { overlay.style.display = 'block'; return; }
+      overlay = document.createElement('div');
+      overlay.id = '_wp_admin_overlay';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:9999;overflow-y:auto;';
+      // Back button
+      var backBtn = document.createElement('button');
+      backBtn.textContent = '← Back';
+      backBtn.style.cssText = 'position:sticky;top:0;z-index:10;background:#10b981;color:#fff;border:none;padding:12px 20px;font-size:15px;font-weight:600;cursor:pointer;width:100%;text-align:left;';
+      backBtn.onclick = function() { overlay.style.display = 'none'; };
+      overlay.appendChild(backBtn);
+      var mountPoint = document.createElement('div');
+      overlay.appendChild(mountPoint);
+      document.body.appendChild(overlay);
+      // Get current user from localStorage
+      var userObj = null;
+      try { userObj = JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) {}
+      if (window.AdminPanel && window.React && window.ReactDOM) {
+        var root = window.ReactDOM.createRoot ? window.ReactDOM.createRoot(mountPoint) : null;
+        var el = window.React.createElement(window.AdminPanel, {
+          user: userObj,
+          onNavigate: function(path) { if(path === '/' || path === 'jobs') overlay.style.display = 'none'; }
+        });
+        if (root) root.render(el);
+        else window.ReactDOM.render(el, mountPoint);
+      }
+    };
     if (logoutBtn.parentNode) {
       logoutBtn.parentNode.insertBefore(adminDiv, logoutBtn);
       return true;
