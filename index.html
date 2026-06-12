@@ -2123,15 +2123,9 @@ var ce=React.createElement,useState=React.useState,useEffect=React.useEffect;
 var API="https://workpro-api.onrender.com";
 function h(){
   var hdr={"Content-Type":"application/json"};
-  // Admin calls need the admin API key (workpro_admin_token), not the user JWT
-  var adminTok=localStorage.getItem('workpro_admin_token');
-  if(adminTok){hdr['Authorization']='Bearer '+adminTok; return hdr;}
-  var tok=localStorage.getItem('workpro_token');
-  if(tok){hdr['Authorization']='Bearer '+tok;}
-  else{
-    var uid=localStorage.getItem('workpro_user_id')||'';
-    if(uid)hdr['x-user-id']=uid;
-  }
+  // Prefer dedicated admin token; fall back to user JWT (server accepts JWT from admin-role users)
+  var tok=localStorage.getItem('workpro_admin_token')||localStorage.getItem('workpro_token')||'';
+  if(tok) hdr['Authorization']='Bearer '+tok;
   return hdr;
 }
 function pi(v){return(!v&&v!==0)?"N/A":v+" π";}
@@ -2503,13 +2497,12 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
           }
         } catch(e) {}
       }
-      if (!headers['Authorization']) {
-        var jwtToken = localStorage.getItem('workpro_token');
-        if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
-      }
-      if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
+      if (url.indexOf('/api/admin/') !== -1) {
         var adminToken = localStorage.getItem('workpro_admin_token');
         if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+      } else if (!headers['Authorization']) {
+        var jwtToken = localStorage.getItem('workpro_token');
+        if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
       }
       options.headers = headers;
     }
