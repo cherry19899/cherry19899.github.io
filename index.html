@@ -2032,12 +2032,13 @@
           };
         }
         // BROWSER FALLBACK: timeout after 5s if Pi Browser auth doesn't work
+        // Note: no accessToken in fallback — server only allows existing accounts without token
         var authPromise = _origAuth.call(window.Pi, scopes, wrapped);
         return new Promise(function(resolve, reject) {
           var timeout = setTimeout(function() {
             var uid = localStorage.getItem('workpro_user_id');
             if (uid) {
-              resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
+              resolve({ user: { uid: uid, username: uid } });
             } else {
               reject(new Error('Pi authentication timed out'));
             }
@@ -2049,7 +2050,7 @@
             clearTimeout(timeout);
             var uid = localStorage.getItem('workpro_user_id');
             if (uid) {
-              resolve({ user: { uid: uid, username: uid }, accessToken: 'fallback_token' });
+              resolve({ user: { uid: uid, username: uid } });
             } else {
               reject(err || new Error('Pi authentication failed'));
             }
