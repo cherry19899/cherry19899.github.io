@@ -2052,7 +2052,11 @@
             window.fetch = function(url, opts) {
               if (typeof url === 'string' && url.indexOf('workpro-api') !== -1) {
                 opts = opts || {}; opts.headers = opts.headers || {};
-                if (typeof opts.headers === 'object') opts.headers['x-user-id'] = uid;
+                if (typeof opts.headers === 'object') {
+                  opts.headers['x-user-id'] = uid;
+                  var _wt = localStorage.getItem('workpro_token');
+                  if (_wt && !opts.headers['Authorization'] && !opts.headers['authorization']) opts.headers['Authorization'] = 'Bearer ' + _wt;
+                }
               }
               return _of.call(this, url, opts);
             };
@@ -2075,8 +2079,10 @@
           var uid2 = localStorage.getItem('workpro_user_id') || localStorage.getItem('workpro_user') && (JSON.parse(localStorage.getItem('workpro_user')).id || JSON.parse(localStorage.getItem('workpro_user')).uid) || '';
           if (!uid2) { console.error('[PiFix-Early] NO user_id! Cannot call /approve'); return; }
           
+          var _appHdrs = {'Content-Type':'application/json','x-user-id':uid2};
+          var _appTok = localStorage.getItem('workpro_token'); if (_appTok) _appHdrs['Authorization'] = 'Bearer ' + _appTok;
           fetch('https://workpro-api.onrender.com/api/payments/' + encodeURIComponent(pid) + '/approve', {
-            method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid2}
+            method:'POST', headers:_appHdrs
           }).then(function(r){return r.json();}).then(function(d){}).catch(function(e){});
         };
         // Call original createPayment IMMEDIATELY (don't wait for clear-pending!)
@@ -2090,8 +2096,10 @@
           }
         }
         // Clear pending in background (don't block)
+        var _cpHdrs = {'Content-Type':'application/json','x-user-id':uid||''};
+        var _cpTok = localStorage.getItem('workpro_token'); if (_cpTok) _cpHdrs['Authorization'] = 'Bearer ' + _cpTok;
         fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-          method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
+          method:'POST', headers:_cpHdrs
         }).catch(function(){});
       };
     })();
@@ -3075,8 +3083,10 @@ window._W5_fixed=true;
             setTimeout(function(){
               var uid2 = localStorage.getItem('workpro_user_id') || '';
               // Clear all pending payments first
+              var _cp2Hdrs = { 'Content-Type': 'application/json', 'x-user-id': uid2 };
+              var _cp2Tok = localStorage.getItem('workpro_token'); if (_cp2Tok) _cp2Hdrs['Authorization'] = 'Bearer ' + _cp2Tok;
               fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': uid2 }
+                method: 'POST', headers: _cp2Hdrs
               }).then(function(){})
               .catch(function(){})
               .then(function(){
