@@ -1985,8 +1985,10 @@
           var uid = localStorage.getItem('workpro_user_id') || '';
           var pid = payment.identifier || payment.id;
           var ep = getEndpoint(payment.status);
+          var wHdrs = {'Content-Type':'application/json','x-user-id':uid};
+          var wTok = localStorage.getItem('workpro_token'); if(wTok) wHdrs['Authorization']='Bearer '+wTok;
           return fetch('https://workpro-api.onrender.com/api/payments/' + pid + ep, {
-            method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
+            method:'POST', headers: wHdrs
           }).then(function(r){return r.json();}).catch(function(){}).then(function(){return{handled:true};});
         };
         if (typeof onIncomplete === 'function') {
@@ -1996,8 +1998,10 @@
             var uid = localStorage.getItem('workpro_user_id') || '';
             var pid = payment.identifier || payment.id;
             var ep = getEndpoint(payment.status);
+            var wHdrs2 = {'Content-Type':'application/json','x-user-id':uid};
+            var wTok2 = localStorage.getItem('workpro_token'); if(wTok2) wHdrs2['Authorization']='Bearer '+wTok2;
             return fetch('https://workpro-api.onrender.com/api/payments/' + pid + ep, {
-              method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
+              method:'POST', headers: wHdrs2
             }).then(function(){return result;}).catch(function(){return result;});
           };
         }
