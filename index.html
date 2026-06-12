@@ -2132,7 +2132,7 @@ function pi(v){return(!v&&v!==0)?"N/A":v+" π";}
 function ago(d){if(!d)return"";var s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return Math.floor(s/86400)+"d";}
 function AdminPanel(props){
 var user=props.user,onNavigate=props.onNavigate;
-var isAdmin=user&&(user.is_admin===true||user.role==="admin");
+var isLoggedIn=!!(user&&(user.uid||user.id));
 var usersS=useState([]),jobs_S=useState([]),statsS=useState(null),loadS=useState(true),errS=useState(""),tabS=useState("stats"),filterS=useState([]),searchS=useState(""),blockS=useState(null),escrowS=useState([]),earnS=useState(null);
 var users=usersS[0],setUsers=usersS[1];
 var jobs=jobs_S[0],setJobs=jobs_S[1];
@@ -2146,7 +2146,7 @@ var blockingUser=blockS[0],setBlockingUser=blockS[1];
 var escrows=escrowS[0],setEscrows=escrowS[1];
 var earnings=earnS[0],setEarnings=earnS[1];
 useEffect(function(){
-  if(!isAdmin){onNavigate("/");return;}
+  if(!isLoggedIn){onNavigate("/");return;}
   loadData();
 },[]);
 useEffect(function(){
@@ -2159,7 +2159,13 @@ function refreshToken(){
   if(!tok) return Promise.resolve();
   return fetch(API+"/api/auth/refresh",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok}})
     .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){if(d&&d.token){localStorage.setItem('workpro_token',d.token);}})
+    .then(function(d){
+      if(d&&d.token){
+        localStorage.setItem('workpro_token',d.token);
+        // Update is_admin in workpro_user so stale cache is fixed
+        if(d.is_admin!=null){try{var wu=JSON.parse(localStorage.getItem('workpro_user')||'null');if(wu){wu.is_admin=d.is_admin;wu.role=d.is_admin?'admin':(wu.role||'freelancer');localStorage.setItem('workpro_user',JSON.stringify(wu));}}catch(e){}}
+      }
+    })
     .catch(function(){});
 }
 function loadData(){
@@ -2169,19 +2175,28 @@ function loadData(){
       .then(function(r){return r.ok?r.json():fallback;})
       .catch(function(e){console.warn("[Admin] fetch error",url,e.message);return fallback;});
   }
-  refreshToken().then(function(){return Promise.all([
-    safeFetch(API+"/api/admin/users",{}),
-    safeFetch(API+"/api/admin/stats",{}),
-    safeFetch(API+"/api/admin/jobs",[]).then(function(d){return Array.isArray(d)?d:(d&&d.jobs)||[];}),
-    safeFetch(API+"/api/admin/escrows",[]).then(function(d){return Array.isArray(d)?d:(d&&d.escrows)||[];}),
-    safeFetch(API+"/api/admin/earnings",null)
-  ]).then(function(data){
-    var u=data[0],s=data[1],j=data[2],e=data[3],earn=data[4];
-    if(u&&u.users){setUsers(u.users);setFilteredUsers(u.users);}
-    setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
-  }).catch(function(e){
-    console.error("[Admin] error:",e);setError(e.message||"Failed to load");
-  }).finally(function(){setLoading(false);});});
+  refreshToken().then(function(){
+    // Verify admin status via API (don't rely on stale localStorage is_admin)
+    return fetch(API+"/api/admin/verify",{headers:h()})
+      .then(function(r){return r.ok?r.json():{valid:false};})
+      .catch(function(){return {valid:false};})
+      .then(function(v){
+        if(!v||!v.valid){setError("Access denied: not an admin account.");setLoading(false);return;}
+        return Promise.all([
+          safeFetch(API+"/api/admin/users",{}),
+          safeFetch(API+"/api/admin/stats",{}),
+          safeFetch(API+"/api/admin/jobs",[]).then(function(d){return Array.isArray(d)?d:(d&&d.jobs)||[];}),
+          safeFetch(API+"/api/admin/escrows",[]).then(function(d){return Array.isArray(d)?d:(d&&d.escrows)||[];}),
+          safeFetch(API+"/api/admin/earnings",null)
+        ]).then(function(data){
+          var u=data[0],s=data[1],j=data[2],e=data[3],earn=data[4];
+          if(u&&u.users){setUsers(u.users);setFilteredUsers(u.users);}
+          setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
+        }).catch(function(e){
+          console.error("[Admin] error:",e);setError(e.message||"Failed to load");
+        }).finally(function(){setLoading(false);});
+      });
+  });
 }
 function blockUser(u){
   var uid=u.id||u.username||u.name;
