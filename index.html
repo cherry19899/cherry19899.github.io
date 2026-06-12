@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v583';
+        var KEY = '_wp_loaded_v584';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=583&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=584&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v583';</script>
+    <script>window.WORKPRO_VERSION='v584';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -1753,8 +1753,10 @@
 
         var addBtn = document.createElement('button');
         addBtn.textContent = t.add;
-        addBtn.style.cssText = 'flex:1;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;opacity:0.6;';
-        addBtn.onclick = function() { showToast(t.coming + '!', '#f59e0b'); };
+        addBtn.style.cssText = 'flex:1;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:not-allowed;font-size:14px;opacity:0.35;';
+        addBtn.disabled = true;
+        addBtn.title = t.coming;
+        addBtn.onclick = function(e) { e.preventDefault(); };
         btnRow.appendChild(addBtn);
 
         var closeBtn = document.createElement('button');
@@ -2547,6 +2549,10 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
             if (user.username && !headers['x-username']) headers['x-username'] = user.username;
           }
         } catch(e) {}
+      }
+      if (!headers['Authorization']) {
+        var jwtToken = localStorage.getItem('workpro_token');
+        if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
       }
       if (url.indexOf('/api/admin/') !== -1 && !headers['Authorization']) {
         var adminToken = localStorage.getItem('workpro_admin_token');
