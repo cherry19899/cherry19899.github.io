@@ -465,9 +465,11 @@
             if (!msg) return;
             btn.disabled = true;
             btn.textContent = 'Submitting...';
+            var applyUser = getUser();
+            var applyUid = (applyUser && applyUser.uid) || CANONICAL_UID;
             fetch(API + '/api/jobs/' + openJob.id + '/apply', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'x-user-id': CANONICAL_UID },
+              headers: { 'Content-Type': 'application/json', 'x-user-id': applyUid },
               body: JSON.stringify({ message: msg })
             }).then(function(r){ return r.json(); }).then(function(d) {
               if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = label; }
