@@ -1232,10 +1232,12 @@
               }
               var uid = localStorage.getItem('workpro_user_id') || '';
               var endpoint = isCompleted ? '/resolve-complete' : '/cancelled';
-              
+              var incompHdrs = { 'Content-Type': 'application/json', 'x-user-id': uid };
+              var incompTok = localStorage.getItem('workpro_token');
+              if (incompTok) incompHdrs['Authorization'] = 'Bearer ' + incompTok;
               return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + endpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+                headers: incompHdrs
               }).then(function(r) {
                 return r.json().catch(function(){return {};}); 
               }).then(function(data) {
@@ -2395,12 +2397,15 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
           if (!user.id) user.id = 'guest_' + Date.now();
           if (!user.username) user.username = user.name || 'Guest';
           // ─── PROTECT connects from backend reset ─────────────────
+          // Only override when workpro_connects key actually exists; absent key = 0 was clobbering new-user grant
           var sc = origGet.call(localStorage, 'workpro_connects');
-          var storedC = parseInt(sc || '0', 10);
-          var userC = user.balance_connects || user.connects || 0;
-          if (storedC >= 0 && storedC !== userC) {
-            user.balance_connects = storedC;
-            user.connects = storedC;
+          if (sc !== null) {
+            var storedC = parseInt(sc, 10);
+            var userC = user.balance_connects || user.connects || 0;
+            if (!isNaN(storedC) && storedC !== userC) {
+              user.balance_connects = storedC;
+              user.connects = storedC;
+            }
           }
           return JSON.stringify(user);
         } catch(e) {}
