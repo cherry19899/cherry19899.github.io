@@ -2674,13 +2674,19 @@ window._W5_fixed=true;
       // Intercept send to inject x-user-id for API calls
       var _send = xhr.send;
       xhr.send = function(body) {
-        if (_url.indexOf('/api/') !== -1 && !_headers['x-user-id'] && !_headers['x-user-id']) {
+        if (_url.indexOf('/api/') !== -1) {
           try {
-            var userStr = localStorage.getItem('workpro_user');
-            if (userStr) {
-              var user = JSON.parse(userStr);
-              var uid = user.id || user.uid;
-              if (uid) _setHeader.call(xhr, 'x-user-id', uid);
+            if (!_headers['x-user-id'] && !_headers['X-User-Id']) {
+              var userStr = localStorage.getItem('workpro_user');
+              if (userStr) {
+                var user = JSON.parse(userStr);
+                var uid = user.id || user.uid;
+                if (uid) _setHeader.call(xhr, 'x-user-id', uid);
+              }
+            }
+            if (!_headers['authorization'] && !_headers['Authorization']) {
+              var jwtTok = localStorage.getItem('workpro_token');
+              if (jwtTok) _setHeader.call(xhr, 'Authorization', 'Bearer ' + jwtTok);
             }
           } catch(e) {}
         }
@@ -2720,16 +2726,18 @@ window._W5_fixed=true;
       try {
         var user = JSON.parse(val);
         var sc = origGetItem.call(localStorage, CONNECTS_KEY);
-        var storedC = parseInt(sc || '0', 10);
         var currentC = user.balance_connects || user.connects || 0;
         var currentB = user.balance_pi || 0;
         // If stored connects differ from what is being written, use stored value (truth)
-        if (storedC >= 0 && storedC !== currentC) {
-          // 
-          user.balance_connects = storedC;
-          user.connects = storedC;
-          currentC = storedC;
-          val = JSON.stringify(user);
+        // sc !== null guard: absent key must not override server-granted connects (e.g. 10 for new users)
+        if (sc !== null) {
+          var storedC = parseInt(sc, 10);
+          if (!isNaN(storedC) && storedC !== currentC) {
+            user.balance_connects = storedC;
+            user.connects = storedC;
+            currentC = storedC;
+            val = JSON.stringify(user);
+          }
         }
         var finalC = user.balance_connects || user.connects || 0;
         var finalB = user.balance_pi || 0;
