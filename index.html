@@ -5,12 +5,12 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v584';
+        var KEY = '_wp_loaded_v585';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=584&_=' + Date.now();
+            var url = location.protocol + '//' + location.host + '/?nocache=585&_=' + Date.now();
             location.replace(url);
             return;
           }
@@ -45,7 +45,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v584';</script>
+    <script>window.WORKPRO_VERSION='v585';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3355,7 +3355,7 @@ window._W5_fixed=true;
 </script>
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-  <p>Work Pro v584 — Freelance Marketplace</p>
+  <p>Work Pro v585 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
     <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
