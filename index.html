@@ -2154,6 +2154,14 @@ useEffect(function(){
   var q=search.toLowerCase();
   setFilteredUsers(users.filter(function(u){return(u.username||u.id||"").toLowerCase().indexOf(q)!==-1;}));
 },[search,users]);
+function refreshToken(){
+  var tok=localStorage.getItem('workpro_token')||'';
+  if(!tok) return Promise.resolve();
+  return fetch(API+"/api/auth/refresh",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok}})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){if(d&&d.token){localStorage.setItem('workpro_token',d.token);}})
+    .catch(function(){});
+}
 function loadData(){
   setLoading(true);setError("");
   function safeFetch(url,fallback){
@@ -2161,7 +2169,7 @@ function loadData(){
       .then(function(r){return r.ok?r.json():fallback;})
       .catch(function(e){console.warn("[Admin] fetch error",url,e.message);return fallback;});
   }
-  Promise.all([
+  refreshToken().then(function(){return Promise.all([
     safeFetch(API+"/api/admin/users",{}),
     safeFetch(API+"/api/admin/stats",{}),
     safeFetch(API+"/api/admin/jobs",[]).then(function(d){return Array.isArray(d)?d:(d&&d.jobs)||[];}),
@@ -2173,7 +2181,7 @@ function loadData(){
     setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
   }).catch(function(e){
     console.error("[Admin] error:",e);setError(e.message||"Failed to load");
-  }).finally(function(){setLoading(false);});
+  }).finally(function(){setLoading(false);});});
 }
 function blockUser(u){
   var uid=u.id||u.username||u.name;
