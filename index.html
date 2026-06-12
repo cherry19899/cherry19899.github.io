@@ -415,10 +415,14 @@
             btn.disabled = true;
             btn.textContent = 'Submitting...';
             var applyUser = getUser();
-            var applyUid = (applyUser && applyUser.uid) || CANONICAL_UID;
+            var applyUid = applyUser && (applyUser.uid || applyUser.id);
+            if (!applyUid) { alert('Please log in to apply.'); btn.disabled = false; btn.textContent = label; return; }
+            var applyHdrs = { 'Content-Type': 'application/json', 'x-user-id': applyUid };
+            var applyTok = localStorage.getItem('workpro_token');
+            if (applyTok) applyHdrs['Authorization'] = 'Bearer ' + applyTok;
             fetch(API + '/api/jobs/' + openJob.id + '/apply', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'x-user-id': applyUid },
+              headers: applyHdrs,
               body: JSON.stringify({ message: msg })
             }).then(function(r){ return r.json(); }).then(function(d) {
               if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = label; }
@@ -904,7 +908,7 @@
             },
             body: JSON.stringify({ avatar: u.avatar })
           }).then(function(r){
-            if (r.ok) 
+            // fire-and-forget avatar sync
           }).catch(function(){});
         } catch(e) {}
       };
@@ -1567,7 +1571,8 @@
           postBtn.disabled = true;
           postBtn.style.opacity = '0.6';
 
-          var uid = localStorage.getItem('workpro_user_id') || 'browser_user';
+          var uid = localStorage.getItem('workpro_user_id') || '';
+          if (!uid) { errorMsg.textContent = 'Please log in to post a job.'; errorMsg.style.display = 'block'; postBtn.textContent = t.post; postBtn.disabled = false; postBtn.style.opacity = '1'; return; }
           var body = {
             title: title,
             description: desc,
