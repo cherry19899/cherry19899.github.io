@@ -2176,7 +2176,10 @@ function loadData(){
     setStats(s);setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
     
   }).catch(function(e){
-    console.error("[Admin] error:",e);setError(e.message||"Failed to load");
+    console.error("[Admin] error:",e);
+    var msg=e.message||"Failed to load";
+    alert("[Admin debug] "+msg);
+    setError(msg);
   }).finally(function(){setLoading(false);});
 }
 function blockUser(u){
