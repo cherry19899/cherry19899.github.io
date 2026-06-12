@@ -2140,7 +2140,7 @@ function pi(v){return(!v&&v!==0)?"N/A":v+" π";}
 function ago(d){if(!d)return"";var s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return Math.floor(s/86400)+"d";}
 function AdminPanel(props){
 var user=props.user,onNavigate=props.onNavigate;
-var isAdmin=user&&(user.is_admin||user.username===ADMIN||user.uid===ADMIN||user.role==="admin");
+var isAdmin=user&&(user.is_admin===true||user.role==="admin");
 var usersS=useState([]),jobs_S=useState([]),statsS=useState(null),loadS=useState(true),errS=useState(""),tabS=useState("stats"),filterS=useState([]),searchS=useState(""),blockS=useState(null),escrowS=useState([]),earnS=useState(null);
 var users=usersS[0],setUsers=usersS[1];
 var jobs=jobs_S[0],setJobs=jobs_S[1];
