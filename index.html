@@ -3350,7 +3350,7 @@ window._W5_fixed=true;
       var u = JSON.parse(stored);
       var uid = (u.id || u.uid || '').replace(/^pi_/, '').toLowerCase();
       var uname = (u.username || u.name || '').toLowerCase();
-      return uid === ADMIN_ID || uname === ADMIN_ID || u.role === 'admin' || u.is_admin === true;
+      return u.role === 'admin' || u.is_admin === true;
     } catch(e) { return false; }
   }
 
