@@ -2176,10 +2176,7 @@ function loadData(){
     setStats(s);setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
     
   }).catch(function(e){
-    console.error("[Admin] error:",e);
-    var msg=e.message||"Failed to load";
-    alert("[Admin debug] "+msg);
-    setError(msg);
+    console.error("[Admin] error:",e);setError(e.message||"Failed to load");
   }).finally(function(){setLoading(false);});
 }
 function blockUser(u){
@@ -2502,7 +2499,12 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
       }
       if (url.indexOf('/api/admin/') !== -1) {
         var adminToken = localStorage.getItem('workpro_admin_token');
-        if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+        var jwtFallback = localStorage.getItem('workpro_token');
+        if (adminToken) {
+          headers['Authorization'] = 'Bearer ' + adminToken;
+        } else if (jwtFallback && !headers['Authorization']) {
+          headers['Authorization'] = 'Bearer ' + jwtFallback;
+        }
       } else if (!headers['Authorization']) {
         var jwtToken = localStorage.getItem('workpro_token');
         if (jwtToken) headers['Authorization'] = 'Bearer ' + jwtToken;
