@@ -1326,9 +1326,12 @@
       function sendPushSubToBackend(sub) {
         var uid = localStorage.getItem('workpro_user_id');
         if (!uid) return;
+        var pushHdrs = { 'Content-Type': 'application/json', 'x-user-id': uid };
+        var pushTok = localStorage.getItem('workpro_token');
+        if (pushTok) pushHdrs['Authorization'] = 'Bearer ' + pushTok;
         fetch(API + '/api/push/subscribe', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
+          headers: pushHdrs,
           body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.toJSON().keys })
         }).then(function(r){return r.json();}).then(function(d){
         }).catch(function(e){console.error('[Push] Backend sync error:', e);});
@@ -1367,8 +1370,11 @@
           var now = Date.now();
           if (now - _lastChatCheck < 5000) return;
           _lastChatCheck = now;
+          var pollHdrs = {'x-user-id': uid};
+          var pollTok = localStorage.getItem('workpro_token');
+          if (pollTok) pollHdrs['Authorization'] = 'Bearer ' + pollTok;
           fetch('https://workpro-api.onrender.com/api/notifications/unread-count', {
-            headers: {'x-user-id': uid}
+            headers: pollHdrs
           }).then(function(r){return r.json();}).then(function(d){
             var count = d.unread_count || 0;
             if (count > 0) {
