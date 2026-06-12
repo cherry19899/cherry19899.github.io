@@ -3420,12 +3420,14 @@ window._W5_fixed=true;
           allBtns[i].click(); return;
         }
       }
-      // Last resort: ensure is_admin is set in localStorage then reload to profile
+      // Last resort: set is_admin in localStorage and reload so bundle picks it up
       try {
         var u = JSON.parse(localStorage.getItem('workpro_user') || 'null');
         if (u) { u.is_admin = true; u.role = 'admin'; localStorage.setItem('workpro_user', JSON.stringify(u)); }
       } catch(e) {}
-      alert('Please scroll up in Profile — click the Admin button above to open the admin panel.');
+      // Store flag so after reload we auto-navigate to admin
+      sessionStorage.setItem('_wp_goto_admin', '1');
+      window.location.reload();
     };
     if (logoutBtn.parentNode) {
       logoutBtn.parentNode.insertBefore(adminDiv, logoutBtn);
@@ -3464,6 +3466,21 @@ window._W5_fixed=true;
   }
   window.addEventListener('hashchange', onProfilePage);
   setTimeout(onProfilePage, 500);
+  // After reload from last resort: auto-click bundle's admin button when it appears
+  if (sessionStorage.getItem('_wp_goto_admin') === '1') {
+    sessionStorage.removeItem('_wp_goto_admin');
+    var autoTimer = setInterval(function() {
+      var btn = document.querySelector('[code-path="src/sections/ProfileScreen.tsx:297:11"]');
+      if (btn) { clearInterval(autoTimer); btn.click(); return; }
+      // Also try any "Admin" list item in profile
+      var allBtns2 = document.querySelectorAll('button');
+      for (var i2 = 0; i2 < allBtns2.length; i2++) {
+        var txt2 = (allBtns2[i2].textContent || '').trim();
+        if (txt2 === 'Admin' && !allBtns2[i2].id) { clearInterval(autoTimer); allBtns2[i2].click(); return; }
+      }
+    }, 300);
+    setTimeout(function() { clearInterval(autoTimer); }, 10000);
+  }
 })();
 </script>
 </body>
