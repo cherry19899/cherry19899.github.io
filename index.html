@@ -928,7 +928,7 @@
         var toast = document.createElement('div');
         toast.id = toastId;
         toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;background:#0d1f1f;border-left:4px solid ' + color + ';color:#e5e5e5;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;font-size:14px;font-weight:500;max-width:90vw;width:auto;animation:slideDownToast 0.3s ease; display:flex; align-items:center; gap:8px;';
-        toast.innerHTML = '<span style="color:' + color + ';font-size:18px;">&#10003;</span>' + message;
+        var ck = document.createElement('span'); ck.style.cssText = 'color:' + color + ';font-size:18px;'; ck.textContent = '\u2713'; toast.appendChild(ck); toast.appendChild(document.createTextNode(message));
         document.body.appendChild(toast);
         setTimeout(function() {
           var t = document.getElementById(toastId);
@@ -1420,7 +1420,7 @@
         var toast = document.createElement('div');
         toast.id = toastId;
         toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;background:#0d1f1f;border-left:4px solid ' + color + ';color:#e5e5e5;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;font-size:14px;font-weight:500;max-width:90vw;width:auto;animation:slideDownToast 0.3s ease; display:flex; align-items:center; gap:8px;';
-        toast.innerHTML = '<span style="color:' + color + ';font-size:18px;">&#10003;</span>' + message;
+        var ck = document.createElement('span'); ck.style.cssText = 'color:' + color + ';font-size:18px;'; ck.textContent = '\u2713'; toast.appendChild(ck); toast.appendChild(document.createTextNode(message));
         document.body.appendChild(toast);
         setTimeout(function() {
           var t = document.getElementById(toastId);
@@ -1591,9 +1591,12 @@
             requirements: desc
           };
 
+          var postJobHdrs = { 'Content-Type': 'application/json', 'x-user-id': uid };
+          var postJobTok = localStorage.getItem('workpro_token');
+          if (postJobTok) postJobHdrs['Authorization'] = 'Bearer ' + postJobTok;
           fetch('https://workpro-api.onrender.com/api/jobs', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-user-id': uid },
+            headers: postJobHdrs,
             body: JSON.stringify(body)
           }).then(function(r) { return r.json(); }).then(function(data) {
             if (data.error) {
@@ -1917,7 +1920,7 @@
         var toast = document.createElement('div');
         toast.id = toastId;
         toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100000;background:#0d1f1f;border-left:4px solid ' + color + ';color:#e5e5e5;padding:12px 20px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;font-size:14px;font-weight:500;max-width:90vw;width:auto;animation:slideDown 0.3s ease; display:flex; align-items:center; gap:8px;';
-        toast.innerHTML = '<span style="color:' + color + ';font-size:18px;">&#10003;</span>' + message;
+        var ck = document.createElement('span'); ck.style.cssText = 'color:' + color + ';font-size:18px;'; ck.textContent = '\u2713'; toast.appendChild(ck); toast.appendChild(document.createTextNode(message));
         document.body.appendChild(toast);
         setTimeout(function() {
           var t = document.getElementById(toastId);
