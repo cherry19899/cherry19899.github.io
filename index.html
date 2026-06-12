@@ -1240,9 +1240,11 @@
               }).then(function(r) {
                 return r.json().catch(function(){return {};}); 
               }).then(function(data) {
+                var clearHdrs = { 'Content-Type': 'application/json', 'x-user-id': uid };
+                if (incompTok) clearHdrs['Authorization'] = 'Bearer ' + incompTok;
                 return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'x-user-id': uid }
+                  headers: clearHdrs
                 }).then(function(){return data;}).catch(function(){return data;});
               }).then(function(data) {
                 // CRITICAL: wait for Pi Network to update payment status before resolving
@@ -3027,8 +3029,10 @@ window._W5_fixed=true;
         var pid = payment.identifier || payment.id;
         // developer_completed payments need /resolve-complete (calls Pi /complete), NOT /cancelled
         var endpoint = payment.status === 'developer_completed' ? '/resolve-complete' : '/cancelled';
+        var _iHdrs = {'Content-Type':'application/json','x-user-id':uid};
+        var _iTok = localStorage.getItem('workpro_token'); if (_iTok) _iHdrs['Authorization'] = 'Bearer ' + _iTok;
         return fetch('https://workpro-api.onrender.com/api/payments/' + pid + endpoint, {
-          method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
+          method:'POST', headers:_iHdrs
         }).then(function(r){return r.json();}).catch(function(){return{handled:true};});
       };
       return _oa.call(window.Pi, scopes, wrappedOnIncomplete);
@@ -3056,7 +3060,11 @@ window._W5_fixed=true;
             didFetch = true;
             if (typeof url === 'string' && url.indexOf('workpro-api') !== -1) {
               opts = opts || {}; opts.headers = opts.headers || {};
-              if (typeof opts.headers === 'object') opts.headers['x-user-id'] = uid;
+              if (typeof opts.headers === 'object') {
+                opts.headers['x-user-id'] = uid;
+                var _wt = localStorage.getItem('workpro_token');
+                if (_wt && !opts.headers['Authorization'] && !opts.headers['authorization']) opts.headers['Authorization'] = 'Bearer ' + _wt;
+              }
             }
             return _of.call(this, url, opts);
           };
@@ -3156,8 +3164,10 @@ window._W5_fixed=true;
       var uid = localStorage.getItem('workpro_user_id') || '';
       var pid = p.identifier || p.id;
       var endpoint = p.status === 'developer_completed' ? '/resolve-complete' : '/cancelled';
+      var _aHdrs = {'Content-Type':'application/json','x-user-id':uid};
+      var _aTok = localStorage.getItem('workpro_token'); if (_aTok) _aHdrs['Authorization'] = 'Bearer ' + _aTok;
       return fetch('https://workpro-api.onrender.com/api/payments/' + pid + endpoint, {
-        method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid}
+        method:'POST', headers:_aHdrs
       }).then(function(r){return r.json();}).catch(function(){return{handled:true};});
     }).then(function(auth){
       if (auth && auth.user) { var uid = auth.user.uid || auth.user.id; if(uid){localStorage.setItem('workpro_user_id',uid);window._workproUserId=uid;} }
