@@ -2156,25 +2156,21 @@ useEffect(function(){
 },[search,users]);
 function loadData(){
   setLoading(true);setError("");
+  function safeFetch(url,fallback){
+    return fetch(url,{headers:h()})
+      .then(function(r){return r.ok?r.json():fallback;})
+      .catch(function(e){console.warn("[Admin] fetch error",url,e.message);return fallback;});
+  }
   Promise.all([
-    fetch(API+"/api/admin/users",{headers:h()}),
-    fetch(API+"/api/admin/stats",{headers:h()}),
-    fetch(API+"/api/admin/jobs",{headers:h()}).catch(function(){return{ok:false};}),
-    fetch(API+"/api/admin/escrows",{headers:h()}).catch(function(){return{ok:false};}),
-    fetch(API+"/api/admin/earnings",{headers:h()}).catch(function(){return{ok:false};})
-  ]).then(function(rs){
-    return Promise.all([
-      rs[0].ok?rs[0].json():Promise.resolve({}),
-      rs[1].ok?rs[1].json():Promise.resolve({}),
-      rs[2].ok?rs[2].json().then(function(d){return d.jobs||[];}):(Promise.resolve([])),
-      rs[3].ok?rs[3].json().then(function(d){return d.escrows||[];}):(Promise.resolve([])),
-      rs[4].ok?rs[4].json():Promise.resolve(null)
-    ]);
-  }).then(function(data){
+    safeFetch(API+"/api/admin/users",{}),
+    safeFetch(API+"/api/admin/stats",{}),
+    safeFetch(API+"/api/admin/jobs",[]).then(function(d){return Array.isArray(d)?d:(d&&d.jobs)||[];}),
+    safeFetch(API+"/api/admin/escrows",[]).then(function(d){return Array.isArray(d)?d:(d&&d.escrows)||[];}),
+    safeFetch(API+"/api/admin/earnings",null)
+  ]).then(function(data){
     var u=data[0],s=data[1],j=data[2],e=data[3],earn=data[4];
-    if(u.users){setUsers(u.users);setFilteredUsers(u.users);}
-    setStats(s);setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
-    
+    if(u&&u.users){setUsers(u.users);setFilteredUsers(u.users);}
+    setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
   }).catch(function(e){
     console.error("[Admin] error:",e);setError(e.message||"Failed to load");
   }).finally(function(){setLoading(false);});
