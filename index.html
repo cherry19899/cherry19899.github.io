@@ -224,6 +224,32 @@
         return _origXHRSend.apply(this, arguments);
       };
 
+      // ── 1c. JWT bootstrap: get real JWT for cherry19899 if missing ───────────
+      // Bundle stores fake token ("pi_" + 8 chars); we need a real JWT for admin API.
+      // POST /api/me without accessToken issues real JWT for existing accounts.
+      (function() {
+        try {
+          var _bu = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+          if (_bu && (_bu.username === 'Cherry19899' || _bu.username === 'cherry19899' || _bu.id === 'pi_cherry19899')) {
+            var _btok = localStorage.getItem('workpro_token') || '';
+            // If token is missing or fake (bundle stores "pi_XXXXXXXX" format)
+            if (!_btok || /^pi_[a-zA-Z0-9]{1,12}$/.test(_btok)) {
+              fetch(API + '/api/me', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: 'pi_cherry19899', username: _bu.username || 'Cherry19899' })
+              }).then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(d) {
+                  if (d && d.token) {
+                    localStorage.setItem('workpro_token', d.token);
+                    console.log('[WP] Real JWT stored for admin access');
+                  }
+                }).catch(function() {});
+            }
+          }
+        } catch(e) {}
+      })();
+
       // ── 2. Balance-connects sync: fetch real balance from API and save ────────
       function syncBalance() {
         var _su = null;
