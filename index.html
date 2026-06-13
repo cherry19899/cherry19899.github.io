@@ -103,6 +103,11 @@
               init.headers.forEach(function(v,k){ plain[k] = v; });
               init.headers = plain;
             }
+            // Inject JWT Authorization header for admin API calls (bundle's Oe() doesn't send it)
+            if (urlStr.indexOf('/api/admin/') !== -1 && !init.headers['Authorization'] && !init.headers['authorization']) {
+              var _tok = localStorage.getItem('workpro_token') || '';
+              if (_tok) init.headers['Authorization'] = 'Bearer ' + _tok;
+            }
             var curId = init.headers['x-user-id'] || init.headers['X-User-Id'] || '';
             // Rewrite cherry19899 (username) → pi_cherry19899 (canonical ID) only
             // Do NOT add x-user-id when it is absent — let JWT auth handle unauthenticated calls
@@ -3466,20 +3471,31 @@ window._W5_fixed=true;
   }
   window.addEventListener('hashchange', onProfilePage);
   setTimeout(onProfilePage, 500);
-  // After reload from last resort: auto-click bundle's admin button when it appears
+  // After reload from last resort: navigate Profile→Admin automatically
   if (sessionStorage.getItem('_wp_goto_admin') === '1') {
     sessionStorage.removeItem('_wp_goto_admin');
-    var autoTimer = setInterval(function() {
-      var btn = document.querySelector('[code-path="src/sections/ProfileScreen.tsx:297:11"]');
-      if (btn) { clearInterval(autoTimer); btn.click(); return; }
-      // Also try any "Admin" list item in profile
-      var allBtns2 = document.querySelectorAll('button');
-      for (var i2 = 0; i2 < allBtns2.length; i2++) {
-        var txt2 = (allBtns2[i2].textContent || '').trim();
-        if (txt2 === 'Admin' && !allBtns2[i2].id) { clearInterval(autoTimer); allBtns2[i2].click(); return; }
+    // Step 1: wait for app to load, then click Profile tab
+    setTimeout(function() {
+      // Find Profile tab button (last tab in nav)
+      var navBtns = document.querySelectorAll('nav button, [role="tablist"] button, .bottom-nav button');
+      if (!navBtns.length) {
+        // Try by text
+        var allBs = document.querySelectorAll('button');
+        for (var k = 0; k < allBs.length; k++) {
+          if ((allBs[k].textContent||'').trim().toLowerCase() === 'profile') {
+            allBs[k].click(); break;
+          }
+        }
+      } else {
+        navBtns[navBtns.length-1].click();
       }
-    }, 300);
-    setTimeout(function() { clearInterval(autoTimer); }, 10000);
+      // Step 2: after Profile renders, find and click admin button
+      var adminTimer = setInterval(function() {
+        var btn = document.querySelector('[code-path="src/sections/ProfileScreen.tsx:297:11"]');
+        if (btn) { clearInterval(adminTimer); btn.click(); return; }
+      }, 300);
+      setTimeout(function() { clearInterval(adminTimer); }, 8000);
+    }, 3000); // wait 3s for bundle to initialize
   }
 })();
 </script>
