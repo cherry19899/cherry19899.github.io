@@ -10,7 +10,8 @@
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=585&_=' + Date.now();
+            var _jj = new URLSearchParams(location.search).get('job');
+            var url = location.protocol + '//' + location.host + '/?nocache=585&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -3235,6 +3236,24 @@ window._W5_fixed=true;
 
   
 })();
+
+  // ?job=N auto-navigation for testing detail page
+  (function() {
+    var _jobId = new URLSearchParams(location.search).get('job');
+    if (!_jobId) return;
+    var _maxWait = 15000, _interval = 500, _elapsed = 0;
+    var _timer = setInterval(function() {
+      _elapsed += _interval;
+      // Wait for React app root to have children (SPA loaded)
+      var root = document.getElementById('root');
+      if (root && root.children.length > 0 && root.textContent.trim().length > 50) {
+        clearInterval(_timer);
+        setTimeout(function() { location.hash = '/jobs/' + _jobId; }, 500);
+      } else if (_elapsed >= _maxWait) {
+        clearInterval(_timer);
+      }
+    }, _interval);
+  })();
 </script>
 </head>
   <body>
