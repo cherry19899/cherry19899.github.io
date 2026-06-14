@@ -224,25 +224,29 @@
         return _origXHRSend.apply(this, arguments);
       };
 
-      // ── 1c. JWT bootstrap: get real JWT for cherry19899 if missing ───────────
-      // Bundle stores fake token ("pi_" + 8 chars); we need a real JWT for admin API.
-      // POST /api/me without accessToken issues real JWT for existing accounts.
+      // ── 1c. JWT bootstrap: get real JWT for any logged-in user ─────────────
+      // Bundle's authPi() stores fake token ("pi_" + 8 chars) and never writes
+      // workpro_token. POST /api/me without accessToken issues real 30-day JWT
+      // for any existing account. Run for every user on page load.
       (function() {
         try {
           var _bu = JSON.parse(localStorage.getItem('workpro_user') || 'null');
-          if (_bu && (_bu.username === 'Cherry19899' || _bu.username === 'cherry19899' || _bu.id === 'pi_cherry19899')) {
-            // Always refresh JWT on page load to ensure admin API calls work
-            fetch(API + '/api/me', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ uid: 'pi_cherry19899', username: _bu.username || 'Cherry19899' })
-            }).then(function(r) { return r.ok ? r.json() : null; })
-              .then(function(d) {
-                if (d && d.token) {
-                  localStorage.setItem('workpro_token', d.token);
-                  console.log('[WP] JWT refreshed for admin access');
-                }
-              }).catch(function() {});
+          var _uid = _bu && (_bu.id || _bu.uid);
+          if (_uid) {
+            var _existTok = localStorage.getItem('workpro_token');
+            // Refresh if missing or still the fake "pi_XXXXXXXX" token
+            if (!_existTok || _existTok.length < 20 || _existTok.startsWith('pi_')) {
+              fetch(API + '/api/me', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid: _uid, username: _bu.username || '' })
+              }).then(function(r) { return r.ok ? r.json() : null; })
+                .then(function(d) {
+                  if (d && d.token) {
+                    localStorage.setItem('workpro_token', d.token);
+                  }
+                }).catch(function() {});
+            }
           }
         } catch(e) {}
       })();
