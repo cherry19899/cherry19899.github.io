@@ -697,7 +697,9 @@
             el = el.parentElement;
           }
           // Replace text only for confirmed open (remapped) jobs
-          if (jobId && openIds[jobId]) {
+          // On detail page, skip replacement so _checkApplyButtons() can trigger the Apply overlay
+          var isDetailPageInner = /\/jobs\/\d+/.test(location.pathname + location.hash);
+          if (jobId && openIds[jobId] && !isDetailPageInner) {
             node.nodeValue = txt
               .replace(/Работа занята\s*[—\-]*\s*фрилансер нанят/g, 'Открыто')
               .replace(/Job filled\s*[—\-]*\s*freelancer hired/gi, 'Open');
