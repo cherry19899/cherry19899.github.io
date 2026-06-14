@@ -287,13 +287,18 @@
                 }
                 _lastKnownUid = _uid;
                 // Get real JWT 500ms after bundle finishes its own POST /api/me
+                // Capture pending accessToken now (before the timeout fires and it may be cleared)
+                var _pendingTok = window._wp_pendingAccessToken || null;
+                if (_pendingTok) { window._wp_pendingAccessToken = null; }
                 setTimeout(function() {
                   var _existTok = localStorage.getItem('workpro_token');
                   if (!_existTok || _existTok.length < 20 || _existTok.startsWith('pi_')) {
+                    var _body = { uid: _uid, username: _u.username || '' };
+                    if (_pendingTok) _body.accessToken = _pendingTok;
                     fetch(API + '/api/me', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ uid: _uid, username: _u.username || '' })
+                      body: JSON.stringify(_body)
                     }).then(function(r) { return r.ok ? r.json() : null; })
                       .then(function(d) { if (d && d.token) { _origSetItem('workpro_token', d.token); } })
                       .catch(function() {});
@@ -2192,6 +2197,11 @@
           }, 5000);
           authPromise.then(function(result) {
             clearTimeout(timeout);
+            // Save accessToken so setItem interceptor can pass it to POST /api/me for new accounts
+            if (result && result.user && result.user.accessToken) {
+              window._wp_pendingAccessToken = result.user.accessToken;
+              setTimeout(function() { window._wp_pendingAccessToken = null; }, 60000);
+            }
             resolve(result);
           }).catch(function(err) {
             clearTimeout(timeout);
