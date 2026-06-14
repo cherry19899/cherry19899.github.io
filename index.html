@@ -531,7 +531,7 @@
             var bt = allBtns[bi];
             var btxt = (bt.textContent || '').toLowerCase();
             if ((btxt.indexOf('job filled') !== -1 || btxt.indexOf('freelancer hired') !== -1 ||
-                 btxt.indexOf('работа занята') !== -1) && bt.id !== 'wp-apply-overlay') {
+                 btxt.indexOf('работа занята') !== -1 || btxt === 'open') && bt.id !== 'wp-apply-overlay') {
               bt.setAttribute('data-wp-hidden', '1');
               bt.style.display = 'none';
             }
