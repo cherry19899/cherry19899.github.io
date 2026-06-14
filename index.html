@@ -524,19 +524,23 @@
         overlay.appendChild(btn);
         document.body.appendChild(overlay);
         _applyOverlay = overlay;
-        // Hide the original "Job filled" button so it doesn't show below our overlay
-        try {
-          var allBtns = document.querySelectorAll('button');
-          for (var bi = 0; bi < allBtns.length; bi++) {
-            var bt = allBtns[bi];
-            var btxt = (bt.textContent || '').toLowerCase();
-            if ((btxt.indexOf('job filled') !== -1 || btxt.indexOf('freelancer hired') !== -1 ||
-                 btxt.indexOf('работа занята') !== -1 || btxt === 'open') && bt.id !== 'wp-apply-overlay') {
-              bt.setAttribute('data-wp-hidden', '1');
-              bt.style.display = 'none';
+        // Hide the original "Job filled" / "Open" button so it doesn't show below our overlay.
+        // Use a slight delay so the overlay renders first before we mutate other buttons.
+        setTimeout(function() {
+          try {
+            var allBtns = document.querySelectorAll('button');
+            for (var bi = 0; bi < allBtns.length; bi++) {
+              var bt = allBtns[bi];
+              if (bt.getAttribute('data-wp-apply-fixed') || bt.id === 'wp-apply-overlay') continue;
+              var btxt = (bt.textContent || '').toLowerCase();
+              if (btxt.indexOf('job filled') !== -1 || btxt.indexOf('freelancer hired') !== -1 ||
+                  btxt.indexOf('работа занята') !== -1 || btxt === 'open') {
+                bt.setAttribute('data-wp-hidden', '1');
+                bt.style.display = 'none';
+              }
             }
-          }
-        } catch(e) {}
+          } catch(e) {}
+        }, 50);
       }
       function _hideApplyOverlay() {
         // Restore any hidden "job filled" buttons
