@@ -251,6 +251,39 @@
         } catch(e) {}
       })();
 
+      // ── 1d. localStorage.setItem interceptor: get JWT the moment bundle writes workpro_user ──
+      // Page-load bootstrap (1c) only helps returning users. For first-time logins
+      // the bundle calls POST /api/me (creates user in DB), then writes workpro_user —
+      // we intercept that write and immediately fetch a JWT for the now-existing account.
+      (function() {
+        var _origSetItem = localStorage.setItem.bind(localStorage);
+        localStorage._origSetItem = _origSetItem;
+        localStorage.setItem = function(key, value) {
+          _origSetItem(key, value);
+          if (key === 'workpro_user') {
+            try {
+              var _u = JSON.parse(value || 'null');
+              var _uid = _u && (_u.id || _u.uid);
+              if (_uid) {
+                // Small delay so bundle's own POST /api/me completes and DB has the user
+                setTimeout(function() {
+                  var _existTok = localStorage.getItem('workpro_token');
+                  if (!_existTok || _existTok.length < 20 || _existTok.startsWith('pi_')) {
+                    fetch(API + '/api/me', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ uid: _uid, username: _u.username || '' })
+                    }).then(function(r) { return r.ok ? r.json() : null; })
+                      .then(function(d) { if (d && d.token) { _origSetItem('workpro_token', d.token); } })
+                      .catch(function() {});
+                  }
+                }, 500);
+              }
+            } catch(e) {}
+          }
+        };
+      })();
+
       // ── 2. Balance-connects sync: fetch real balance from API and save ────────
       function syncBalance() {
         var _su = null;
