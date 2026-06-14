@@ -276,10 +276,14 @@
               var _u = JSON.parse(value || 'null');
               var _uid = _u && (_u.id || _u.uid);
               if (_uid) {
-                // If a DIFFERENT user logged in, wipe stale connects so server value wins
+                // If a DIFFERENT user logged in, write the NEW user's real balance
+                // so the bundle's setItem interceptor reads the correct value (not stale).
+                // Never write empty string — bundle renders NaN and hides the connects label.
                 if (_lastKnownUid && _lastKnownUid !== _uid) {
-                  _origSetItem('workpro_connects', '');
-                  _origSetItem('workpro_balance', '');
+                  var _newC = parseInt(_u.balance_connects || _u.connects || 0, 10);
+                  var _newB = parseFloat(_u.balance_pi || 0);
+                  _origSetItem('workpro_connects', String(isNaN(_newC) ? 0 : _newC));
+                  _origSetItem('workpro_balance', String(isNaN(_newB) ? 0 : _newB));
                 }
                 _lastKnownUid = _uid;
                 // Get real JWT 500ms after bundle finishes its own POST /api/me
