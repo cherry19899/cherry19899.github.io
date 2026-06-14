@@ -515,7 +515,7 @@
               alert('Request timed out. Please try again.');
             }, 30000);
             try {
-              var applyUser = getUser();
+              var applyUser = (function(){ try { return JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) { return null; } })();
               var applyUid = applyUser && (applyUser.uid || applyUser.id);
               if (!applyUid) { clearTimeout(_abortTimer); alert('Please log in to apply.'); _resetBtn(); return; }
               var applyHdrs = { 'Content-Type': 'application/json', 'x-user-id': applyUid };
