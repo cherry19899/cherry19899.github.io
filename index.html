@@ -604,6 +604,20 @@
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
+        // Also trigger on detail page when text was already replaced to "Open" (cached old code path)
+        // Check for a disabled/grey "Open" button alongside known open job on detail page
+        if (!foundJobFilled && window._currentJobId && window._wp_openJobIds && window._wp_openJobIds[window._currentJobId]) {
+          var isDetailNow = /\/jobs\/\d+/.test(location.pathname + location.hash);
+          if (isDetailNow) {
+            var allBtnsChk = document.querySelectorAll ? document.querySelectorAll('button') : [];
+            for (var bci = 0; bci < allBtnsChk.length; bci++) {
+              var btxtChk = (allBtnsChk[bci].textContent || '').trim().toLowerCase();
+              if (btxtChk === 'open' && allBtnsChk[bci].id !== 'wp-apply-overlay' && !allBtnsChk[bci].getAttribute('data-wp-apply-fixed')) {
+                foundJobFilled = true; break;
+              }
+            }
+          }
+        }
         var det = window._wp_currentJobDetail;
         var cSz = Object.keys(window._wp_openJobs||{}).length;
         if (foundJobFilled) {
