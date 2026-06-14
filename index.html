@@ -770,6 +770,21 @@
         });
       }
       setInterval(_checkApplyButtons, 800);
+      // DEBUG BANNER — remove after diagnosis
+      (function() {
+        var _dbg = document.createElement('div');
+        _dbg.id = 'wp-debug-banner';
+        _dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:rgba(0,0,0,0.85);color:#0f0;font-size:10px;padding:4px;font-family:monospace;white-space:pre;word-break:break-all;max-height:120px;overflow:auto;';
+        document.body ? document.body.appendChild(_dbg) : document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(_dbg); });
+        setInterval(function() {
+          try {
+            var det = window._wp_currentJobDetail;
+            var jobIds = Object.keys(window._wp_openJobIds || {}).slice(0,5).join(',');
+            var jobsKeys = Object.keys(window._wp_openJobs || {}).slice(0,5).join(',');
+            _dbg.textContent = 'curJobId=' + window._currentJobId + '\ndetail=' + (det ? 'id:'+det.id+' st:'+det.status+' by:'+det.posted_by : 'null') + '\nopenIds=[' + jobIds + ']\nopenJobs=[' + jobsKeys + ']\nCANON=' + _CANON_NORM + '\nhash=' + location.hash + '\npath=' + location.pathname;
+          } catch(e) { _dbg.textContent = 'err:' + e; }
+        }, 1000);
+      })();
 
       // ── 4. Notifications DOM injector ────────────────────────────────────────
       // The bundle v200 doesn't fetch the full notifications list.
