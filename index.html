@@ -132,6 +132,7 @@
         // Bug in bundle v200: Find Work feed hides all status='open' jobs.
         // Workaround: change 'open' → 'in_progress' in list response so they render.
         // Individual job detail (/api/jobs/:id) is left untouched → Apply button works.
+        // v586: also track open job IDs so MutationObserver can replace "Работа занята" label.
         try {
           var urlStr3 = typeof input === 'string' ? input : (input && input.url) || '';
           var isJobsList = /\/api\/jobs(\?|$)/.test(urlStr3) && (!init || !init.method || init.method === 'GET');
@@ -139,8 +140,10 @@
             result = result.then(function(resp) {
               return resp.clone().json().then(function(d) {
                 if (d && d.jobs && Array.isArray(d.jobs)) {
+                  window._wp_openJobIds = window._wp_openJobIds || {};
                   d.jobs = d.jobs.map(function(j) {
-                    if (j.status === 'open') {
+                    if (j.status === 'open' || j._open) {
+                      window._wp_openJobIds[j.id] = true;
                       return Object.assign({}, j, { status: 'in_progress', _real_status: 'open', _open: true });
                     }
                     return j;
@@ -251,13 +254,21 @@
         } catch(e) {}
       })();
 
-      // ── 1d. localStorage.setItem interceptor: get JWT the moment bundle writes workpro_user ──
+      // ── 1d. localStorage.setItem interceptor: get JWT + fix stale connects on user switch ──
       // Page-load bootstrap (1c) only helps returning users. For first-time logins
-      // the bundle calls POST /api/me (creates user in DB), then writes workpro_user —
-      // we intercept that write and immediately fetch a JWT for the now-existing account.
+      // the bundle calls POST /api/me, then writes workpro_user — intercept to get JWT.
+      // Also: when a DIFFERENT user logs in, the old workpro_connects value (e.g. 108
+      // from cherry19899) stays in localStorage and overrides the new user's real balance.
+      // We clear workpro_connects when the uid changes so the server value wins.
       (function() {
         var _origSetItem = localStorage.setItem.bind(localStorage);
         localStorage._origSetItem = _origSetItem;
+        var _lastKnownUid = null;
+        try {
+          var _initUser = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+          _lastKnownUid = _initUser && (_initUser.id || _initUser.uid);
+        } catch(e) {}
+
         localStorage.setItem = function(key, value) {
           _origSetItem(key, value);
           if (key === 'workpro_user') {
@@ -265,7 +276,13 @@
               var _u = JSON.parse(value || 'null');
               var _uid = _u && (_u.id || _u.uid);
               if (_uid) {
-                // Small delay so bundle's own POST /api/me completes and DB has the user
+                // If a DIFFERENT user logged in, wipe stale connects so server value wins
+                if (_lastKnownUid && _lastKnownUid !== _uid) {
+                  _origSetItem('workpro_connects', '');
+                  _origSetItem('workpro_balance', '');
+                }
+                _lastKnownUid = _uid;
+                // Get real JWT 500ms after bundle finishes its own POST /api/me
                 setTimeout(function() {
                   var _existTok = localStorage.getItem('workpro_token');
                   if (!_existTok || _existTok.length < 20 || _existTok.startsWith('pi_')) {
@@ -619,11 +636,66 @@
           }
         }
       }
+      // ── Patch "Работа занята — фрилансер нанят" labels on job LIST cards ────────
+      // Server remaps open→in_progress so bundle renders jobs, but shows this label.
+      // We replace it with "Открыто" for jobs in _wp_openJobIds (truly open, remapped).
+      function _patchJobFilledLabels() {
+        var openIds = window._wp_openJobIds || {};
+        if (!Object.keys(openIds).length) return;
+        // Walk all text nodes looking for the "Job filled" / "Работа занята" string
+        var walker = document.createTreeWalker(
+          document.body || document.documentElement,
+          NodeFilter.SHOW_TEXT,
+          null, false
+        );
+        var node;
+        while ((node = walker.nextNode())) {
+          var txt = node.nodeValue || '';
+          if (txt.indexOf('Работа занята') === -1 && txt.toLowerCase().indexOf('job filled') === -1 &&
+              txt.indexOf('freelancer hired') === -1) continue;
+          // Walk up to find a job ID in a nearby link href or data attribute
+          var el = node.parentElement;
+          var jobId = null;
+          for (var i = 0; i < 12 && el && el !== document.body; i++) {
+            // Check <a> links like /jobs/123
+            var links = el.querySelectorAll ? el.querySelectorAll('a[href*="/jobs/"]') : [];
+            for (var li = 0; li < links.length; li++) {
+              var m = (links[li].getAttribute('href') || '').match(/\/jobs\/(\d+)/);
+              if (m) { jobId = m[1]; break; }
+            }
+            if (!jobId) {
+              // Check self href
+              var selfM = (el.getAttribute && el.getAttribute('href') || '').match(/\/jobs\/(\d+)/);
+              if (selfM) jobId = selfM[1];
+            }
+            if (jobId) break;
+            el = el.parentElement;
+          }
+          // Replace text only for confirmed open (remapped) jobs
+          if (jobId && openIds[jobId]) {
+            node.nodeValue = txt
+              .replace(/Работа занята\s*[—\-]*\s*фрилансер нанят/g, 'Открыто')
+              .replace(/Job filled\s*[—\-]*\s*freelancer hired/gi, 'Open');
+          } else if (!jobId) {
+            // On LIST page with multiple cards, safe to replace all
+            var allFilled = document.body.querySelectorAll ? document.body.querySelectorAll('[class]') : [];
+            // Only replace when we're NOT on a single job detail URL
+            var isDetailPage = /\/jobs\/\d+/.test(location.pathname + location.hash);
+            if (!isDetailPage) {
+              node.nodeValue = txt
+                .replace(/Работа занята\s*[—\-]*\s*фрилансер нанят/g, 'Открыто')
+                .replace(/Job filled\s*[—\-]*\s*freelancer hired/gi, 'Open');
+            }
+          }
+        }
+      }
+
       var _applyBtnTimer = null;
       var _applyFixObs = new MutationObserver(function() {
         if (_applyBtnTimer) return;
         _applyBtnTimer = setTimeout(function() {
           _applyBtnTimer = null;
+          _patchJobFilledLabels();
           _checkApplyButtons();
         }, 300);
       });
