@@ -524,11 +524,11 @@
               var _fetchOpts = { method: 'POST', headers: applyHdrs, body: JSON.stringify({ message: msg }) };
               if (_abortCtrl) _fetchOpts.signal = _abortCtrl.signal;
               fetch(API + '/api/jobs/' + openJob.id + '/apply', _fetchOpts)
-                .then(function(r) { var s = r.status; return r.text().then(function(t){ return {s:s,t:t}; }); })
-                .then(function(rt) {
+                .then(function(r) { return r.text(); })
+                .then(function(txt) {
                   clearTimeout(_abortTimer);
-                  var d; try { d = JSON.parse(rt.t); } catch(e) { d = {}; }
-                  if (d.error) { alert('Error ' + rt.s + ': ' + d.error); _resetBtn(); }
+                  var d; try { d = JSON.parse(txt); } catch(e) { d = {}; }
+                  if (d.error) { alert('Error: ' + d.error); _resetBtn(); }
                   else { btn.textContent = 'Applied ✓'; }
                 })
                 .catch(function(e) {
