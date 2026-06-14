@@ -690,7 +690,8 @@
           // SLOW PATH: DOM walk for heading match (only if cache populated)
           if (!openJob && cSz > 0) openJob = _findJobNearFilledBtn();
           if (openJob) {
-            if (_normUid(openJob.posted_by) === _CANON_NORM) { return; }
+            var _curUID = (function(){ try{ var u=JSON.parse(localStorage.getItem('workpro_user')||'null'); return u&&(u.uid||u.id)||''; }catch(e){return '';} })();
+            if (_normUid(openJob.posted_by) === _CANON_NORM || (_curUID && _normUid(openJob.posted_by) === _normUid(_curUID))) { return; }
             _showApplyOverlay(openJob);
             return;
           }
@@ -2218,6 +2219,8 @@
     (function(){
       if (!window.Pi) { console.error('[PiFix-Early] Pi SDK not found!'); return; }
       var _origCP = window.Pi.createPayment;
+      // Expose real original so PiFix-275 (loaded later) doesn't double-wrap
+      window._origPiCreatePayment = _origCP;
       var _origAuth = window.Pi.authenticate;
       // developer_completed check helper
       function getEndpoint(status) {
@@ -2329,7 +2332,7 @@
           // Call original first (with normalized id)
           if (origOnReady) origOnReady(pid);
           // Fallback: also call /approve directly to ensure it happens
-          var uid2 = localStorage.getItem('workpro_user_id') || localStorage.getItem('workpro_user') && (JSON.parse(localStorage.getItem('workpro_user')).id || JSON.parse(localStorage.getItem('workpro_user')).uid) || '';
+          var uid2 = localStorage.getItem('workpro_user_id') || (function(){ try{ var u=JSON.parse(localStorage.getItem('workpro_user')||'null'); return u&&(u.id||u.uid)||''; }catch(e){return '';} })();
           if (!uid2) { console.error('[PiFix-Early] NO user_id! Cannot call /approve'); return; }
           
           var _appHdrs = {'Content-Type':'application/json','x-user-id':uid2};
@@ -2451,7 +2454,7 @@ function loadData(){
 }
 function blockUser(u){
   var uid=u.id||u.username||u.name;
-  if(!uid||uid===ADMIN){alert("Cannot block owner");return;}
+  if(!uid||uid==='pi_cherry19899'||uid==='cherry19899'){alert("Cannot block owner");return;}
   setBlockingUser(uid);
   var isBlocked=u.status==="blocked"||!!u.is_blocked;
   var action=isBlocked?"unblock":"block";
@@ -3323,7 +3326,7 @@ window._W5_fixed=true;
   if (window.Pi && window.Pi.createPayment && !window.__piFixed275) {
     var _ocp = window._origPiCreatePayment || window.Pi.createPayment;
     // Helper: wrap callbacks with x-user-id + fallback
-    function wrapCallbacks(cbs, uid) {
+    function wrapCallbacks(cbs, uid, pd) {
       ['onReadyForServerApproval','onReadyForServerCompletion','onCancel','onError'].forEach(function(name) {
         if (!cbs || typeof cbs[name] !== 'function') return;
         var orig = cbs[name];
@@ -3352,10 +3355,11 @@ window._W5_fixed=true;
           try { var r = orig.apply(null, args); }
           finally { window.fetch = _of; }
           // Auto-retry on Cancel — break the pending payment loop
-          if (name === 'onCancel' && window._lastPaymentData) {
+          // Use closure-captured pd/cbs to avoid stale globals from concurrent payments
+          if (name === 'onCancel' && pd) {
+            var _retryPd = pd, _retryCbs = cbs;
             setTimeout(function(){
               var uid2 = localStorage.getItem('workpro_user_id') || '';
-              // Clear all pending payments first
               var _cp2Hdrs = { 'Content-Type': 'application/json', 'x-user-id': uid2 };
               var _cp2Tok = localStorage.getItem('workpro_token'); if (_cp2Tok) _cp2Hdrs['Authorization'] = 'Bearer ' + _cp2Tok;
               fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
@@ -3363,7 +3367,7 @@ window._W5_fixed=true;
               }).then(function(){})
               .catch(function(){})
               .then(function(){
-                window.Pi.createPayment(window._lastPaymentData, window._lastPaymentCallbacks);
+                window.Pi.createPayment(_retryPd, _retryCbs);
               });
             }, 5000);
           }
@@ -3419,11 +3423,8 @@ window._W5_fixed=true;
       });
     }
     window.Pi.createPayment = function(pd, cbs) {
-      // Store for auto-retry on Cancel
-      window._lastPaymentData = pd;
-      window._lastPaymentCallbacks = cbs;
       var uid = localStorage.getItem('workpro_user_id') || '';
-      wrapCallbacks(cbs, uid);
+      wrapCallbacks(cbs, uid, pd);
       // Async: clear pending, then call original
       fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
         method:'POST', headers:{'Content-Type':'application/json','x-user-id':uid||''}
