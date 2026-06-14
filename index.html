@@ -209,7 +209,7 @@
         var method = (this._v554method || 'GET').toUpperCase();
         // XHR notifications/applications fallback removed — was leaking cherry19899's data to other users
         // Cache job detail response for Apply Now overlay
-        var jobDetailXHR = url.match(/\/api\/jobs\/(\d+)$/);
+        var jobDetailXHR = url.match(/\/api\/jobs\/(\d+)(?:\?|$)/);
         if (jobDetailXHR && method === 'GET') {
           this.addEventListener('readystatechange', function() {
             if (xhr.readyState !== 4 || xhr.status !== 200) return;
@@ -630,6 +630,16 @@
             for (var bci = 0; bci < allBtnsChk.length; bci++) {
               var btxtChk = (allBtnsChk[bci].textContent || '').trim().toLowerCase();
               if (btxtChk === 'open' && allBtnsChk[bci].id !== 'wp-apply-overlay' && !allBtnsChk[bci].getAttribute('data-wp-apply-fixed')) {
+                foundJobFilled = true; break;
+              }
+            }
+          }
+          // Path C: SPA didn't refetch detail (cached from list) — detect by job title + "budget" in page
+          if (!foundJobFilled && pageText.indexOf('budget') !== -1 && Object.keys(window._wp_openJobs||{}).length > 0) {
+            var _jobs = window._wp_openJobs;
+            for (var _jid in _jobs) {
+              var _jc = _jobs[_jid];
+              if (_normUid(_jc.posted_by) !== _CANON_NORM && _jc.title && pageText.indexOf(_jc.title.toLowerCase()) !== -1) {
                 foundJobFilled = true; break;
               }
             }
