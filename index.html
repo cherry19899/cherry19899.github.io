@@ -1025,19 +1025,26 @@
       });
       _obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
-      // Track current job id from navigation
+      // Track current job id from navigation (pushState + replaceState + popstate)
+      function _syncJobIdFromUrl(url) {
+        var u = url ? String(url) : location.href;
+        var m = u.match(/jobs?[\/=#](\d+)/);
+        if (m) window._currentJobId = m[1];
+        else window._currentJobId = null;
+      }
       var _origPushState = history.pushState.bind(history);
       history.pushState = function(state, title, url) {
         _origPushState(state, title, url);
-        var m = String(url||'').match(/jobs?[\/=](\d+)/);
-        if (m) window._currentJobId = m[1];
-        else window._currentJobId = null;
+        _syncJobIdFromUrl(url);
       };
-      window.addEventListener('popstate', function() {
-        var m = location.href.match(/jobs?[\/=](\d+)/);
-        if (m) window._currentJobId = m[1];
-        else window._currentJobId = null;
-      });
+      var _origReplaceState = history.replaceState.bind(history);
+      history.replaceState = function(state, title, url) {
+        _origReplaceState(state, title, url);
+        _syncJobIdFromUrl(url);
+      };
+      window.addEventListener('popstate', function() { _syncJobIdFromUrl(null); });
+      // Sync on load in case page was loaded directly at a job URL
+      _syncJobIdFromUrl(null);
     })();
     </script>
     <!-- v551: avatar sync localStorage↔backend -->
