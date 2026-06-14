@@ -501,6 +501,20 @@
         btn.style.cssText = 'background:#10b981;color:#fff;border:none;border-radius:8px;padding:14px 24px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:500px;box-shadow:0 4px 12px rgba(16,185,129,0.4);';
         // v567: exempt from _hideObs "own-job" hiding — this overlay is for OTHER users' open jobs
         btn.setAttribute('data-wp-apply-fixed', '1');
+
+        // Check if user already applied — show "Applied ✓" immediately on load
+        (function() {
+          var _chkUser = (function(){ try{ return JSON.parse(localStorage.getItem('workpro_user')||'null'); }catch(e){return null;} })();
+          var _chkUid = _chkUser && (_chkUser.uid || _chkUser.id);
+          var _chkTok = localStorage.getItem('workpro_token');
+          if (!_chkUid || !_chkTok) return;
+          var _chkHdrs = { 'Content-Type': 'application/json', 'x-user-id': _chkUid, 'Authorization': 'Bearer ' + _chkTok };
+          fetch(API + '/api/jobs/' + openJob.id + '/check-applied', { headers: _chkHdrs })
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d){ if (d && d.applied) { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; } })
+            .catch(function(){});
+        })();
+
         btn.onclick = function() {
           _wpCoverLetterModal(function(msg) {
             if (!msg) return;
@@ -524,12 +538,14 @@
               var _fetchOpts = { method: 'POST', headers: applyHdrs, body: JSON.stringify({ message: msg }) };
               if (_abortCtrl) _fetchOpts.signal = _abortCtrl.signal;
               fetch(API + '/api/jobs/' + openJob.id + '/apply', _fetchOpts)
-                .then(function(r) { return r.text(); })
-                .then(function(txt) {
+                .then(function(r) { var s = r.status; return r.text().then(function(t){ return {s:s,t:t}; }); })
+                .then(function(rt) {
                   clearTimeout(_abortTimer);
-                  var d; try { d = JSON.parse(txt); } catch(e) { d = {}; }
-                  if (d.error) { alert('Error: ' + d.error); _resetBtn(); }
-                  else { btn.textContent = 'Applied ✓'; }
+                  var d; try { d = JSON.parse(rt.t); } catch(e) { d = {}; }
+                  if (d.alreadyApplied || rt.s === 409) {
+                    btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default';
+                  } else if (d.error) { alert('Error: ' + d.error); _resetBtn(); }
+                  else { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; }
                 })
                 .catch(function(e) {
                   clearTimeout(_abortTimer);

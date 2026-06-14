@@ -59,11 +59,31 @@ function deleteJob(id) {
 }
 
 // Applications
-function applyToJob(data) {
-  return apiFetch("/api/applications", {
+async function checkApplication(jobId) {
+  try {
+    return await apiFetch(`/api/jobs/${jobId}/check-applied`);
+  } catch (e) {
+    return { applied: false, status: null };
+  }
+}
+
+async function applyToJob(data) {
+  const response = await fetch(`${API_BASE}/api/applications`, {
     method: "POST",
+    headers: getHeaders(),
     body: JSON.stringify(data),
   });
+  if (response.status === 409) {
+    const d = await response.json().catch(() => ({}));
+    const err = new Error(d.error || "Already applied");
+    err.alreadyApplied = true;
+    throw err;
+  }
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || `HTTP ${response.status}`);
+  }
+  return response.json();
 }
 
 function fetchApplications(jobId) {

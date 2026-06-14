@@ -11,6 +11,7 @@ function JobDetail({ user, jobId, onNavigate }) {
     proposed_budget: "",
   });
   const [applying, setApplying] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
   const [applications, setApplications] = useState([]);
   const [showApps, setShowApps] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
@@ -21,7 +22,15 @@ function JobDetail({ user, jobId, onNavigate }) {
 
   useEffect(() => {
     fetchJobDetail();
+    if (user?.uid) checkApplied();
   }, [jobId]);
+
+  const checkApplied = async () => {
+    try {
+      const data = await checkApplication(jobId);
+      if (data?.applied) setHasApplied(true);
+    } catch (e) {}
+  };
 
   const fetchJobDetail = async () => {
     setLoading(true);
@@ -90,11 +99,16 @@ function JobDetail({ user, jobId, onNavigate }) {
           }),
         }
       );
+      if (res.status === 409) {
+        setHasApplied(true);
+        setShowApplyForm(false);
+        return;
+      }
       if (!res.ok) {
         const errText = await res.text();
         throw new Error(errText || "Application failed");
       }
-      alert("Application submitted successfully!");
+      setHasApplied(true);
       setShowApplyForm(false);
       setApplyData({ cover_letter: "", proposed_budget: "" });
     } catch (err) {
@@ -396,9 +410,10 @@ function JobDetail({ user, jobId, onNavigate }) {
           {!isOwner && job.status === "open" && (
             <button
               className="btn btn-primary btn-large"
-              onClick={() => setShowApplyForm(!showApplyForm)}
+              disabled={hasApplied}
+              onClick={() => !hasApplied && setShowApplyForm(!showApplyForm)}
             >
-              {showApplyForm ? "Cancel" : "Apply Now"}
+              {hasApplied ? "Applied ✓" : showApplyForm ? "Cancel" : "Apply Now"}
             </button>
           )}
           {isOwner && (
