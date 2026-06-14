@@ -506,20 +506,42 @@
             if (!msg) return;
             btn.disabled = true;
             btn.textContent = 'Submitting...';
-            var applyUser = getUser();
-            var applyUid = applyUser && (applyUser.uid || applyUser.id);
-            if (!applyUid) { alert('Please log in to apply.'); btn.disabled = false; btn.textContent = label; return; }
-            var applyHdrs = { 'Content-Type': 'application/json', 'x-user-id': applyUid };
-            var applyTok = localStorage.getItem('workpro_token');
-            if (applyTok) applyHdrs['Authorization'] = 'Bearer ' + applyTok;
-            fetch(API + '/api/jobs/' + openJob.id + '/apply', {
-              method: 'POST',
-              headers: applyHdrs,
-              body: JSON.stringify({ message: msg })
-            }).then(function(r){ return r.json(); }).then(function(d) {
-              if (d.error) { alert('Error: ' + d.error); btn.disabled = false; btn.textContent = label; }
-              else { btn.textContent = 'Applied ✓'; }
-            }).catch(function(e){ alert('Network error: ' + e); btn.disabled = false; btn.textContent = label; });
+            var _resetBtn = function() { btn.disabled = false; btn.textContent = label; };
+            // 30-second timeout guard — prevents infinite "Submitting..." on any failure
+            var _abortCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var _abortTimer = setTimeout(function() {
+              if (_abortCtrl) _abortCtrl.abort();
+              _resetBtn();
+              alert('Request timed out. Please try again.');
+            }, 30000);
+            try {
+              var applyUser = getUser();
+              var applyUid = applyUser && (applyUser.uid || applyUser.id);
+              if (!applyUid) { clearTimeout(_abortTimer); alert('Please log in to apply.'); _resetBtn(); return; }
+              var applyHdrs = { 'Content-Type': 'application/json', 'x-user-id': applyUid };
+              var applyTok = localStorage.getItem('workpro_token');
+              if (applyTok) applyHdrs['Authorization'] = 'Bearer ' + applyTok;
+              var _fetchOpts = { method: 'POST', headers: applyHdrs, body: JSON.stringify({ message: msg }) };
+              if (_abortCtrl) _fetchOpts.signal = _abortCtrl.signal;
+              fetch(API + '/api/jobs/' + openJob.id + '/apply', _fetchOpts)
+                .then(function(r) { return r.text(); })
+                .then(function(txt) {
+                  clearTimeout(_abortTimer);
+                  var d; try { d = JSON.parse(txt); } catch(e) { d = {}; }
+                  if (d.error) { alert('Error: ' + d.error); _resetBtn(); }
+                  else { btn.textContent = 'Applied ✓'; }
+                })
+                .catch(function(e) {
+                  clearTimeout(_abortTimer);
+                  if (e && e.name === 'AbortError') return; // timeout already handled
+                  alert('Network error: ' + e);
+                  _resetBtn();
+                });
+            } catch(e) {
+              clearTimeout(_abortTimer);
+              alert('Error: ' + e);
+              _resetBtn();
+            }
           });
         };
         overlay.appendChild(btn);
