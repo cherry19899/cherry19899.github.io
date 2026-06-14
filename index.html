@@ -519,8 +519,29 @@
         overlay.appendChild(btn);
         document.body.appendChild(overlay);
         _applyOverlay = overlay;
+        // Hide the original "Job filled" button so it doesn't show below our overlay
+        try {
+          var allBtns = document.querySelectorAll('button');
+          for (var bi = 0; bi < allBtns.length; bi++) {
+            var bt = allBtns[bi];
+            var btxt = (bt.textContent || '').toLowerCase();
+            if ((btxt.indexOf('job filled') !== -1 || btxt.indexOf('freelancer hired') !== -1 ||
+                 btxt.indexOf('работа занята') !== -1) && bt.id !== 'wp-apply-overlay') {
+              bt.setAttribute('data-wp-hidden', '1');
+              bt.style.display = 'none';
+            }
+          }
+        } catch(e) {}
       }
       function _hideApplyOverlay() {
+        // Restore any hidden "job filled" buttons
+        try {
+          var hiddenBtns = document.querySelectorAll('[data-wp-hidden="1"]');
+          for (var hi = 0; hi < hiddenBtns.length; hi++) {
+            hiddenBtns[hi].style.display = '';
+            hiddenBtns[hi].removeAttribute('data-wp-hidden');
+          }
+        } catch(e) {}
         if (_applyOverlay && _applyOverlay.parentNode) {
           _applyOverlay.parentNode.removeChild(_applyOverlay);
         }
