@@ -1674,8 +1674,16 @@
             } else {
               overlay.remove();
               if (window.showToast) window.showToast(t.success, '#10b981');
-              // Refresh jobs list
-              setTimeout(function() { window.location.reload(); }, 1500);
+              // Navigate to the new job detail page
+              var newJobId = data.job && (data.job.id || data.job._id);
+              setTimeout(function() {
+                if (newJobId && window.history && window.history.pushState) {
+                  window.history.pushState({}, '', '/jobs/' + newJobId);
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                } else {
+                  window.location.reload();
+                }
+              }, 1500);
             }
           }).catch(function(err) {
             errorMsg.textContent = t.error + 'Network error';
