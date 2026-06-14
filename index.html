@@ -608,32 +608,29 @@
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
-        // Also trigger on detail page when the bundle shows "Open" button (job is open but text was
-        // replaced or the bundle uses different text). Two detection paths:
-        // Path A: URL-based — _currentJobId in _wp_openJobIds
-        // Path B: cached detail — _wp_currentJobDetail.status === 'open' (works even if _currentJobId not set)
+        // Also trigger on detail page for open jobs. Two detection paths:
+        // Path A: URL-based — _currentJobId in _wp_openJobIds + "Open" button in DOM
+        // Path B: cached API detail — if we have a confirmed open job from API, trigger directly
         if (!foundJobFilled) {
           var isDetailNow = /\/jobs\/\d+/.test(location.pathname + location.hash);
-          if (!isDetailNow && window._wp_currentJobDetail && (window._wp_currentJobDetail.status === 'open' || window._wp_currentJobDetail._real_status === 'open')) {
-            // Also check hash-less detail routes (app may use ?id= or other patterns)
-            isDetailNow = true;
-          }
-          if (isDetailNow) {
-            var _canTrigger = false;
-            // Path A
-            if (window._currentJobId && window._wp_openJobIds && window._wp_openJobIds[window._currentJobId]) _canTrigger = true;
-            // Path B: fresh detail response for an open job
-            if (!_canTrigger && window._wp_currentJobDetail) {
-              var _det0 = window._wp_currentJobDetail;
-              if ((_det0.status === 'open' || _det0._real_status === 'open') && _normUid(_det0.posted_by) !== _CANON_NORM) _canTrigger = true;
+          // Path B: API confirmed open job — trigger without needing a specific DOM button
+          if (window._wp_currentJobDetail) {
+            var _det0 = window._wp_currentJobDetail;
+            if ((_det0.status === 'open' || _det0._real_status === 'open') && _normUid(_det0.posted_by) !== _CANON_NORM) {
+              // Only trigger if page appears to be showing this job (title in page text or on detail URL)
+              var _pgTxt = pageText;
+              if (isDetailNow || (_det0.title && _pgTxt.indexOf((_det0.title || '').toLowerCase()) !== -1)) {
+                foundJobFilled = true;
+              }
             }
-            if (_canTrigger) {
-              var allBtnsChk = document.querySelectorAll ? document.querySelectorAll('button') : [];
-              for (var bci = 0; bci < allBtnsChk.length; bci++) {
-                var btxtChk = (allBtnsChk[bci].textContent || '').trim().toLowerCase();
-                if (btxtChk === 'open' && allBtnsChk[bci].id !== 'wp-apply-overlay' && !allBtnsChk[bci].getAttribute('data-wp-apply-fixed')) {
-                  foundJobFilled = true; break;
-                }
+          }
+          // Path A: URL-based + DOM scan (fallback if _wp_currentJobDetail not yet set)
+          if (!foundJobFilled && isDetailNow && window._currentJobId && window._wp_openJobIds && window._wp_openJobIds[window._currentJobId]) {
+            var allBtnsChk = document.querySelectorAll ? document.querySelectorAll('button, [role="button"]') : [];
+            for (var bci = 0; bci < allBtnsChk.length; bci++) {
+              var btxtChk = (allBtnsChk[bci].textContent || '').trim().toLowerCase();
+              if (btxtChk === 'open' && allBtnsChk[bci].id !== 'wp-apply-overlay' && !allBtnsChk[bci].getAttribute('data-wp-apply-fixed')) {
+                foundJobFilled = true; break;
               }
             }
           }
