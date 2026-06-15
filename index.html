@@ -883,6 +883,7 @@
         function closeOverlay() {
           // Bug#13: suppress MutationObserver re-injection for 5s after manual close
           _notifSuppressUntil = Date.now() + 5000;
+          _notifData = null;
           overlay.remove();
           // Also navigate React app back (click its native back button if present)
           setTimeout(function() {
@@ -906,7 +907,12 @@
         var unreadCount = notifs.filter(function(x){ return !x.is_read; }).length;
         var tabs = document.createElement('div');
         tabs.style.cssText = 'position:fixed;top:52px;left:0;right:0;z-index:9991;background:#0f172a;padding:10px 16px;display:flex;gap:8px;border-bottom:1px solid rgba(255,255,255,0.08)';
-        ['All (' + notifs.length + ')', 'Unread (' + unreadCount + ')'].forEach(function(label, i) {
+        var _tabLabels = _notifLang === 'ru'
+          ? ['Все (' + notifs.length + ')', 'Непрочитанные (' + unreadCount + ')']
+          : _notifLang === 'uk'
+          ? ['Всі (' + notifs.length + ')', 'Непрочитані (' + unreadCount + ')']
+          : ['All (' + notifs.length + ')', 'Unread (' + unreadCount + ')'];
+        _tabLabels.forEach(function(label, i) {
           var tab = document.createElement('button');
           tab.textContent = label;
           tab.style.cssText = 'flex:1;padding:8px 0;border-radius:20px;border:none;font-size:13px;font-weight:500;cursor:pointer;background:' + (i===0?'#10b981':'rgba(255,255,255,0.08)') + ';color:' + (i===0?'#fff':'rgba(255,255,255,0.6)');
