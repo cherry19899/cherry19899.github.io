@@ -603,7 +603,9 @@
           for (var bi = 0; bi < btns.length; bi++) {
             var t = (btns[bi].textContent || '').trim().toLowerCase();
             if (t === 'job filled — freelancer hired' || t === 'job filled' || t === 'freelancer hired' ||
-                (t.indexOf('job filled') !== -1 && t.length < 80)) {
+                (t.indexOf('job filled') !== -1 && t.length < 80) ||
+                t === 'работа занята — фрилансер нанят' || t === 'работа занята' || t === 'фрилансер нанят' ||
+                (t.indexOf('работа занята') !== -1 && t.length < 80)) {
               filledBtn = btns[bi]; break;
             }
           }
@@ -646,7 +648,8 @@
       var _hideOverlayTimer = null;
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
-        var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1;
+        var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1 ||
+          pageText.indexOf('работа занята') !== -1 || pageText.indexOf('фрилансер нанят') !== -1;
         // Also trigger on detail page for open jobs. Two detection paths:
         // Path A: URL-based — _currentJobId in _wp_openJobIds + "Open" button in DOM
         // Path B: cached API detail — if we have a confirmed open job from API, trigger directly
@@ -674,7 +677,7 @@
             }
           }
           // Path C: SPA didn't refetch detail (cached from list) — detect by job title + "budget" in page
-          if (!foundJobFilled && pageText.indexOf('budget') !== -1 && Object.keys(window._wp_openJobs||{}).length > 0) {
+          if (!foundJobFilled && (pageText.indexOf('budget') !== -1 || pageText.indexOf('бюджет') !== -1) && Object.keys(window._wp_openJobs||{}).length > 0) {
             var _jobs = window._wp_openJobs;
             for (var _jid in _jobs) {
               var _jc = _jobs[_jid];
@@ -740,7 +743,8 @@
             _hideOverlayTimer = setTimeout(function() {
               _hideOverlayTimer = null;
               var pg = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
-              if (pg.indexOf('job filled') === -1 && pg.indexOf('freelancer hired') === -1) {
+              if (pg.indexOf('job filled') === -1 && pg.indexOf('freelancer hired') === -1 &&
+                  pg.indexOf('работа занята') === -1 && pg.indexOf('фрилансер нанят') === -1) {
                 _hideApplyOverlay();
               }
             }, 2000);
