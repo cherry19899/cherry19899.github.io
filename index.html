@@ -489,8 +489,11 @@
       }
       // Fixed-position Apply Now overlay — outside React DOM, React can't remove it
       var _applyOverlay = null;
+      var _applyOverlayJobId = null;
       function _showApplyOverlay(openJob) {
-        if (_applyOverlay && _applyOverlay.parentNode) return; // already shown
+        // BUG #26 fix: if overlay exists for a DIFFERENT job, tear it down first
+        if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId === openJob.id) return; // same job, already shown
+        if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId !== openJob.id) _hideApplyOverlay();
         var cost = _applyCostOf(openJob);
         var label = 'Apply Now (' + cost + ' connect' + (cost === 1 ? '' : 's') + ')';
         var overlay = document.createElement('div');
@@ -563,6 +566,7 @@
         overlay.appendChild(btn);
         document.body.appendChild(overlay);
         _applyOverlay = overlay;
+        _applyOverlayJobId = openJob.id;
         // Hide the original "Job filled" / "Open" button so it doesn't show below our overlay.
         // Use a slight delay so the overlay renders first before we mutate other buttons.
         setTimeout(function() {
@@ -594,6 +598,7 @@
           _applyOverlay.parentNode.removeChild(_applyOverlay);
         }
         _applyOverlay = null;
+        _applyOverlayJobId = null;
       }
       function _findJobNearFilledBtn() {
         // Fast: scan only BUTTON elements (much fewer than all div/span/p)
