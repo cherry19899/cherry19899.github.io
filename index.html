@@ -85,6 +85,18 @@
         return uid || '';
       }
       var _CANON_NORM = _normUid(CANONICAL_UID); // 'cherry19899'
+      // Returns true if the given posted_by belongs to the current logged-in user.
+      // Replaces all hardcoded _CANON_NORM checks so OTHER users' own jobs are also excluded.
+      function _isOwnJob(postedBy) {
+        try {
+          var norm = _normUid(postedBy || '');
+          if (!norm) return false;
+          if (norm === _CANON_NORM) return true;
+          var u = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+          var uid = u && (u.uid || u.id) || '';
+          return !!(uid && norm === _normUid(uid));
+        } catch(e) { return false; }
+      }
 
       // ── 1. Fetch interceptor: force correct x-user-id on all API calls ──────
       // The bundle may send x-user-id: cherry19899 (username), but data is stored
@@ -642,7 +654,7 @@
           jobs.sort(function(a,b){ return (b.title||'').length - (a.title||'').length; });
           for (var ji = 0; ji < jobs.length; ji++) {
             var j = jobs[ji];
-            if (!j.title || _normUid(j.posted_by) === _CANON_NORM) continue;
+            if (!j.title || _isOwnJob(j.posted_by)) continue;
             if (pageText.indexOf(j.title) !== -1) return j;
           }
         } catch(e) {}
@@ -662,7 +674,7 @@
           // Path B: API confirmed open job — trigger without needing a specific DOM button
           if (window._wp_currentJobDetail) {
             var _det0 = window._wp_currentJobDetail;
-            if ((_det0.status === 'open' || _det0._real_status === 'open') && _normUid(_det0.posted_by) !== _CANON_NORM) {
+            if ((_det0.status === 'open' || _det0._real_status === 'open') && !_isOwnJob(_det0.posted_by)) {
               // Only trigger if page appears to be showing this job (title in page text or on detail URL)
               var _pgTxt = pageText;
               if (isDetailNow || (_det0.title && _pgTxt.indexOf((_det0.title || '').toLowerCase()) !== -1)) {
@@ -685,7 +697,7 @@
             var _jobs = window._wp_openJobs;
             for (var _jid in _jobs) {
               var _jc = _jobs[_jid];
-              if (_normUid(_jc.posted_by) !== _CANON_NORM && _jc.title && pageText.indexOf(_jc.title.toLowerCase()) !== -1) {
+              if (!_isOwnJob(_jc.posted_by) && _jc.title && pageText.indexOf(_jc.title.toLowerCase()) !== -1) {
                 foundJobFilled = true; break;
               }
             }
@@ -699,14 +711,14 @@
           if (_applyOverlay && _applyOverlay.parentNode) return;
           // FAST PATH 1: use cached job detail from API interceptor
           var openJob = null;
-          if (det && det.id && _normUid(det.posted_by) !== _CANON_NORM) {
+          if (det && det.id && !_isOwnJob(det.posted_by)) {
             var isOpen = !!(window._wp_openJobs[det.id] || det.status === 'open' || det._real_status === 'open');
             if (isOpen) openJob = det;
           }
           // FAST PATH 2: URL-based job ID
           if (!openJob && window._currentJobId && window._wp_openJobs[window._currentJobId]) {
             var uj = window._wp_openJobs[window._currentJobId];
-            if (_normUid(uj.posted_by) !== _CANON_NORM) openJob = uj;
+            if (!_isOwnJob(uj.posted_by)) openJob = uj;
           }
           // FAST PATH 3: page text scan (O(n) over cached jobs, fast)
           if (!openJob && cSz > 0) openJob = _findJobByPageText();
@@ -714,7 +726,7 @@
           if (!openJob && cSz > 0) openJob = _findJobNearFilledBtn();
           if (openJob) {
             var _curUID = (function(){ try{ var u=JSON.parse(localStorage.getItem('workpro_user')||'null'); return u&&(u.uid||u.id)||''; }catch(e){return '';} })();
-            if (_normUid(openJob.posted_by) === _CANON_NORM || (_curUID && _normUid(openJob.posted_by) === _normUid(_curUID))) { return; }
+            if (_isOwnJob(openJob.posted_by)) { return; }
             _showApplyOverlay(openJob);
             return;
           }
@@ -731,16 +743,16 @@
               // Re-run all fast paths now that cache is populated
               var det2 = window._wp_currentJobDetail;
               var j2 = null;
-              if (det2 && det2.id && _normUid(det2.posted_by) !== _CANON_NORM) {
+              if (det2 && det2.id && !_isOwnJob(det2.posted_by)) {
                 if (window._wp_openJobs[det2.id] || det2.status === 'open') j2 = det2;
               }
               if (!j2 && window._currentJobId && window._wp_openJobs[window._currentJobId]) {
                 var uj2 = window._wp_openJobs[window._currentJobId];
-                if (_normUid(uj2.posted_by) !== _CANON_NORM) j2 = uj2;
+                if (!_isOwnJob(uj2.posted_by)) j2 = uj2;
               }
               if (!j2) j2 = _findJobByPageText();
               if (!j2) j2 = _findJobNearFilledBtn();
-              if (j2 && _normUid(j2.posted_by) !== _CANON_NORM) _showApplyOverlay(j2);
+              if (j2 && !_isOwnJob(j2.posted_by)) _showApplyOverlay(j2);
             }).catch(function(e){ window._wp_fetchPending = false; });
         } else {
           if (_applyOverlay && _applyOverlay.parentNode && !_hideOverlayTimer) {
@@ -1482,7 +1494,7 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = /github\.io|localhost|onrender/.test(location.hostname);
+          var isSandbox = /localhost|127\.0\.0\.1/.test(location.hostname);
           window.Pi.init({ 
             version: "2.0", 
             sandbox: isSandbox,
