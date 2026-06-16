@@ -156,7 +156,7 @@ function CreateJob({ user, onNavigate }) {
                 id="budget"
                 name="budget"
                 step="0.01"
-                min="0"
+                min="0.01"
                 value={formData.budget}
                 onChange={handleChange}
                 placeholder="0.00"
