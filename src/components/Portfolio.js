@@ -146,7 +146,7 @@ function Portfolio({ user, profileUserId, onNavigate }) {
           {!isOwnProfile && (
             <button
               className="btn btn-secondary"
-              onClick={() => onNavigate(`/chat/new/${targetId}`)}
+              onClick={() => onNavigate(`/chat`)}
               style={{ background: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.4)" }}
             >
               💬 Message
