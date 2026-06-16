@@ -232,13 +232,7 @@ function JobDetail({ user, jobId, onNavigate }) {
     );
     if (!confirmed) return;
     try {
-      // Find escrow for this job
-      const escrowRes = await fetch(
-        `https://workpro-api.onrender.com/api/escrow`,
-        { headers: { "x-user-id": user.uid } }
-      );
-      if (!escrowRes.ok) throw new Error("Could not load escrow");
-      const escrowData = await escrowRes.json();
+      const escrowData = await fetchEscrows();
       const escrow = (escrowData.escrows || []).find(
         (e) => String(e.job_id) === String(jobId) && e.status === "funded"
       );
