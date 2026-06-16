@@ -25,8 +25,9 @@ function Auth({ onLogin }) {
     setError("");
 
     try {
-      // Pi SDK already initialized globally in index.html
-      const isSandbox = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (typeof Pi === 'undefined' || !Pi.authenticate) {
+        throw new Error("Pi SDK not loaded. Please open in Pi Browser.");
+      }
       const scopes = ["username", "payments"];
       const authResult = await Pi.authenticate(
         scopes,
@@ -71,11 +72,16 @@ function Auth({ onLogin }) {
   };
 
   function onIncompletePaymentFound(payment) {
-    console.log("Incomplete payment found:", payment);
-    // Handle incomplete payment - send to backend for completion/cancellation
+    const token = localStorage.getItem("workpro_token") || "";
+    const stored = localStorage.getItem("workpro_user");
+    let uid = "";
+    try { uid = stored ? (JSON.parse(stored).uid || "") : ""; } catch(e) {}
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+    else if (uid) headers["x-user-id"] = uid;
     return fetch("https://workpro-api.onrender.com/api/payments/incomplete", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ payment })
     })
       .then(res => res.json())
