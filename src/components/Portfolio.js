@@ -21,31 +21,16 @@ function Portfolio({ user, profileUserId, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const [profileRes, reviewsRes, portfolioRes] = await Promise.all([
-        fetch(`https://workpro-api.onrender.com/api/users/${targetId}`, {
-          headers: { "x-user-id": user?.uid || "" }
-        }),
-        fetch(`https://workpro-api.onrender.com/api/reviews?user_id=${targetId}`, {
-          headers: { "x-user-id": user?.uid || "" }
-        }),
-        fetch(`https://workpro-api.onrender.com/api/users/${targetId}/portfolio`, {
-          headers: { "x-user-id": user?.uid || "" }
-        }),
+      const [profileData, reviewsData, portfolioData] = await Promise.all([
+        apiFetch(`/api/users/${targetId}`),
+        fetchUserReviews(targetId),
+        apiFetch(`/api/users/${targetId}/portfolio`).catch(() => ({})),
       ]);
 
-      if (profileRes.ok) {
-        const d = await profileRes.json();
-        setProfile(d);
-      }
-      if (reviewsRes.ok) {
-        const d = await reviewsRes.json();
-        setReviews(d.reviews || d.ratings || []);
-      }
-      if (portfolioRes.ok) {
-        const d = await portfolioRes.json();
-        setPortfolio(d.portfolio || null);
-        setPortfolioItems(d.items || []);
-      }
+      setProfile(profileData);
+      setReviews(reviewsData.reviews || reviewsData.ratings || []);
+      setPortfolio(portfolioData.portfolio || null);
+      setPortfolioItems(portfolioData.items || []);
     } catch (err) {
       setError(err.message);
     } finally {

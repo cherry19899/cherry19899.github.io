@@ -10,7 +10,7 @@ function Admin({ user, onNavigate }) {
   const [tab, setTab] = useState("jobs");
 
   useEffect(() => {
-    if (!user?.is_admin && user?.username !== 'cherry19899' && user?.uid !== 'cherry19899') {
+    if (!user?.is_admin && user?.username !== 'cherry19899') {
       onNavigate("/");
       return;
     }
@@ -21,29 +21,14 @@ function Admin({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user?.uid || "",
-      };
-      
-      const [jobsRes, usersRes, statsRes] = await Promise.all([
-        fetch("https://workpro-api.onrender.com/api/admin/jobs/all", { headers }),
-        fetch("https://workpro-api.onrender.com/api/admin/users", { headers }),
-        fetch("https://workpro-api.onrender.com/api/admin/stats", { headers }),
+      const [jobsData, usersData, statsData] = await Promise.all([
+        apiFetch("/api/admin/jobs/all"),
+        apiFetch("/api/admin/users"),
+        apiFetch("/api/admin/stats"),
       ]);
-
-      if (jobsRes.ok) {
-        const data = await jobsRes.json();
-        setJobs(data.jobs || data || []);
-      }
-      if (usersRes.ok) {
-        const data = await usersRes.json();
-        setUsers(data.users || data || []);
-      }
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setStats(data);
-      }
+      setJobs(jobsData.jobs || jobsData || []);
+      setUsers(usersData.users || usersData || []);
+      setStats(statsData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -54,21 +39,9 @@ function Admin({ user, onNavigate }) {
   const handleDeleteJob = async (jobId) => {
     if (!confirm("Delete this job?")) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user?.uid || "",
-      };
-      const res = await fetch(`https://workpro-api.onrender.com/api/jobs/${jobId}`, {
-        method: "DELETE",
-        headers,
-      });
-      if (res.ok) {
-        setJobs((prev) => prev.filter((j) => (j.id || j._id) !== jobId));
-        alert("Job deleted");
-      } else {
-        const err = await res.text();
-        throw new Error(err);
-      }
+      await deleteJob(jobId);
+      setJobs((prev) => prev.filter((j) => (j.id || j._id) !== jobId));
+      alert("Job deleted");
     } catch (err) {
       alert("Delete failed: " + err.message);
     }

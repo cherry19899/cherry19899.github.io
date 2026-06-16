@@ -24,18 +24,8 @@ function Navbar({ user, onLogout, onNavigate, currentPath }) {
     };
     const fetchUnread = async () => {
       try {
-        const headers = {
-          "Content-Type": "application/json",
-          "x-user-id": user.uid,
-        };
-        const res = await fetch(
-          "https://workpro-api.onrender.com/api/chat/unread",
-          { headers }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setUnread(data.count || 0);
-        }
+        const data = await apiFetch("/api/chat/unread");
+        setUnread(data.count || 0);
       } catch (e) {
         /* silent fail */
       }
@@ -58,7 +48,7 @@ function Navbar({ user, onLogout, onNavigate, currentPath }) {
     { path: "/profile", label: "Profile" },
   ];
 
-  const isAdmin = user?.is_admin || user?.username === 'cherry19899' || user?.uid === 'cherry19899';
+  const isAdmin = user?.is_admin || user?.username === 'cherry19899';
   if (isAdmin) {
     navLinks.push({ path: "/admin", label: "Admin" });
   }

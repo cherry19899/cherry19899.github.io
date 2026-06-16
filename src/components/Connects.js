@@ -137,45 +137,6 @@ function Connects({ user, onUpdateUser }) {
     }
   };
 
-  const fallbackBuy = async (quantity) => {
-    // Fallback for sandbox - just call API directly
-    if (!user?.uid) return;
-    setPurchasing(quantity);
-    setError("");
-    try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/connects/buy",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ quantity }),
-        }
-      );
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Purchase failed");
-      }
-      const data = await res.json();
-      const newBalance = data.balance ?? data.balance_connects ?? (balance + quantity);
-      setBalance(newBalance);
-
-      const stored = JSON.parse(localStorage.getItem("workpro_user") || "{}");
-      stored.balance_connects = newBalance;
-      localStorage.setItem("workpro_user", JSON.stringify(stored));
-      onUpdateUser(stored);
-
-      alert(`Purchased ${quantity} connects!`);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setPurchasing(false);
-    }
-  };
-
   return (
     <div className="page-container">
       <div className="page-header">
