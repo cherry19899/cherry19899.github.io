@@ -46,9 +46,9 @@ function Connects({ user, onUpdateUser }) {
     setError("");
 
     try {
-      // Pi SDK already initialized globally in index.html
-      const isSandbox = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
+      if (typeof Pi === 'undefined' || !Pi.createPayment) {
+        throw new Error("Pi SDK not loaded. Please open in Pi Browser.");
+      }
       const paymentData = {
         amount: price,
         memo: `Buy ${quantity} WorkPro Connects`,
