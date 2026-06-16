@@ -504,6 +504,7 @@ function App() {
       return (
         <Portfolio
           user={user}
+          profileUserId={parts[1] || null}
           onNavigate={navigateTo}
         />
       );
@@ -554,9 +555,6 @@ function App() {
 
       case "/profile":
         return <Profile user={user} onUpdateUser={handleUpdateUser} />;
-
-      case "/portfolio":
-        return <Portfolio user={user} onNavigate={navigateTo} />;
 
       case "/connects":
         return <Connects user={user} onUpdateUser={handleUpdateUser} />;
