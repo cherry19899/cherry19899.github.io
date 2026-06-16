@@ -63,36 +63,17 @@ function JobDetail({ user, jobId, onNavigate }) {
     }
     setApplying(true);
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/applications",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            job_id: parseInt(jobId),
-            message: applyData.cover_letter,
-            bid_amount: parseFloat(applyData.proposed_budget) || job.budget,
-            username: user.username,
-          }),
-        }
-      );
-      if (res.status === 409) {
-        setHasApplied(true);
-        setShowApplyForm(false);
-        return;
-      }
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Application failed");
-      }
+      await applyToJob({
+        job_id: parseInt(jobId),
+        message: applyData.cover_letter,
+        bid_amount: parseFloat(applyData.proposed_budget) || job.budget,
+        username: user.username,
+      });
       setHasApplied(true);
       setShowApplyForm(false);
       setApplyData({ cover_letter: "", proposed_budget: "" });
     } catch (err) {
+      if (err.alreadyApplied) { setHasApplied(true); setShowApplyForm(false); return; }
       alert(err.message);
     } finally {
       setApplying(false);
