@@ -21,8 +21,7 @@ function CreateJob({ user, onNavigate }) {
     "Writing",
     "Marketing",
     "Data",
-    "Translation",
-    "Admin",
+    "Support",
     "Other",
   ];
 
