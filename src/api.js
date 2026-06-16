@@ -1,13 +1,14 @@
-// API helper functions - All fetch calls include x-user-id header
+// API helper functions
 const API_BASE = "https://workpro-api.onrender.com";
 
 function getHeaders() {
-  const user = localStorage.getItem("workpro_user");
-  const userId = user ? JSON.parse(user).uid : "";
-  return {
-    "Content-Type": "application/json",
-    "x-user-id": userId,
-  };
+  const token = localStorage.getItem("workpro_token") || "";
+  const raw = localStorage.getItem("workpro_user");
+  const uid = raw ? (JSON.parse(raw).uid || "") : "";
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = "Bearer " + token;
+  else if (uid) headers["x-user-id"] = uid;
+  return headers;
 }
 
 async function apiFetch(path, options = {}) {
