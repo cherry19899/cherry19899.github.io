@@ -56,10 +56,10 @@ function Reviews({ user, onNavigate }) {
           method: "POST",
           headers,
           body: JSON.stringify({
-            target_id: formData.reviewee_uid,
+            to_user_id: formData.reviewee_uid,
             job_id: formData.job_id,
             rating: parseInt(formData.rating),
-            text: formData.comment,
+            comment: formData.comment,
             reviewer_name: user.username,
           }),
         }
