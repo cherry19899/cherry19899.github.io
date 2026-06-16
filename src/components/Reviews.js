@@ -23,16 +23,7 @@ function Reviews({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/reviews?user_id=${user.uid}`,
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch reviews");
-      const data = await res.json();
+      const data = await fetchUserReviews(user.uid);
       setReviews(data.reviews || data || []);
     } catch (err) {
       setError(err.message);
@@ -50,24 +41,13 @@ function Reviews({ user, onNavigate }) {
         "Content-Type": "application/json",
         "x-user-id": user.uid,
       };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/reviews",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            to_user_id: formData.reviewee_uid,
-            job_id: formData.job_id,
-            rating: parseInt(formData.rating),
-            comment: formData.comment,
-            reviewer_name: user.username,
-          }),
-        }
-      );
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Failed to submit review");
-      }
+      await submitReview({
+        to_user_id: formData.reviewee_uid,
+        job_id: formData.job_id,
+        rating: parseInt(formData.rating),
+        comment: formData.comment,
+        reviewer_name: user.username,
+      });
       alert("Review submitted successfully!");
       setShowForm(false);
       setFormData({ reviewee_uid: "", job_id: "", rating: 5, comment: "" });

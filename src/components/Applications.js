@@ -17,46 +17,25 @@ function Applications({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-
       // My sent applications
-      const myRes = await fetch(
-        "https://workpro-api.onrender.com/api/applications/my",
-        { headers }
-      );
-      if (myRes.ok) {
-        const data = await myRes.json();
-        setApplications(data.applications || data || []);
-      }
+      const myData = await fetchMyApplications();
+      setApplications(myData.applications || myData || []);
 
       // Received applications (for jobs I posted)
-      const jobsRes = await fetch(
-        `https://workpro-api.onrender.com/api/jobs?client_uid=${user.uid}`,
-        { headers }
-      );
-      if (jobsRes.ok) {
-        const jobsData = await jobsRes.json();
-        const jobs = jobsData.jobs || jobsData || [];
-        const allReceived = [];
-        for (const job of jobs) {
-          const appsRes = await fetch(
-            `https://workpro-api.onrender.com/api/applications/job/${job.id || job._id}`,
-            { headers }
-          );
-          if (appsRes.ok) {
-            const appsData = await appsRes.json();
-            const apps = appsData.applications || appsData || [];
-            apps.forEach((app) => {
-              app.job_title = job.title;
-              allReceived.push(app);
-            });
-          }
-        }
-        setReceivedApps(allReceived);
-      }
+      const jobsData = await fetchJobs("limit=100");
+      const jobs = (jobsData.jobs || []).filter(j => j.posted_by === user.uid);
+      const allReceived = [];
+      await Promise.all(jobs.map(async (job) => {
+        try {
+          const appsData = await fetchApplications(job.id || job._id);
+          const apps = appsData.applications || appsData || [];
+          apps.forEach((app) => {
+            app.job_title = job.title;
+            allReceived.push(app);
+          });
+        } catch (e) { /* skip failed job */ }
+      }));
+      setReceivedApps(allReceived);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -66,19 +45,7 @@ function Applications({ user, onNavigate }) {
 
   const handleStatusUpdate = async (appId, status) => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/applications/${appId}/status`,
-        {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({ status }),
-        }
-      );
-      if (!res.ok) throw new Error("Update failed");
+      await updateApplicationStatus(appId, status);
       alert(`Application ${status}!`);
       fetchApplicationsData();
     } catch (err) {

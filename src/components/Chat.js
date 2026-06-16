@@ -8,24 +8,15 @@ function Chat({ user, onNavigate }) {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchConversations();
-    const interval = setInterval(fetchConversations, 10000);
+    loadConversations();
+    const interval = setInterval(loadConversations, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  const fetchConversations = async () => {
+  const loadConversations = async () => {
     if (!user?.uid) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/chat/rooms",
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch conversations");
-      const data = await res.json();
+      const data = await fetchConversations();
       setConversations(data.conversations || data || []);
       setError("");
     } catch (err) {
@@ -72,7 +63,7 @@ function Chat({ user, onNavigate }) {
       {error && (
         <div className="error-message">
           {error}
-          <button className="btn btn-primary" onClick={fetchConversations}>
+          <button className="btn btn-primary" onClick={loadConversations}>
             Retry
           </button>
         </div>

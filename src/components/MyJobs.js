@@ -16,31 +16,12 @@ function MyJobs({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user?.uid || "",
-      };
-
-      // Fetch posted jobs — filter client-side since backend has no client_uid filter
-      const postedRes = await fetch(
-        `https://workpro-api.onrender.com/api/jobs?limit=100`,
-        { headers }
-      );
-      if (postedRes.ok) {
-        const data = await postedRes.json();
-        const allJobs = data.jobs || data || [];
-        setPostedJobs(allJobs.filter(j => j.posted_by === user?.uid));
-      }
-
-      // Fetch applied jobs
-      const appliedRes = await fetch(
-        "https://workpro-api.onrender.com/api/applications/me",
-        { headers }
-      );
-      if (appliedRes.ok) {
-        const data = await appliedRes.json();
-        setAppliedJobs(data.applications || data || []);
-      }
+      const [jobsData, appsData] = await Promise.all([
+        fetchJobs("limit=100"),
+        fetchMyApplications(),
+      ]);
+      setPostedJobs((jobsData.jobs || []).filter(j => j.posted_by === user?.uid));
+      setAppliedJobs(appsData.applications || appsData || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -51,20 +32,9 @@ function MyJobs({ user, onNavigate }) {
   const handleDelete = async (jobId) => {
     if (!confirm("Are you sure you want to delete this job?")) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/jobs/${jobId}`,
-        { method: "DELETE", headers }
-      );
-      if (res.ok) {
-        setPostedJobs((prev) => prev.filter((j) => (j.id || j._id) !== jobId));
-        alert("Job deleted successfully");
-      } else {
-        throw new Error("Delete failed");
-      }
+      await deleteJob(jobId);
+      setPostedJobs((prev) => prev.filter((j) => (j.id || j._id) !== jobId));
+      alert("Job deleted successfully");
     } catch (err) {
       alert(err.message);
     }

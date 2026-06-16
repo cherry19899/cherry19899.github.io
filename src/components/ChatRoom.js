@@ -11,8 +11,8 @@ function ChatRoom({ user, conversationId, onNavigate }) {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    fetchConversationData();
-    const interval = setInterval(fetchMessages, 5000);
+    loadConversationData();
+    const interval = setInterval(loadMessages, 5000);
     return () => clearInterval(interval);
   }, [conversationId]);
 
@@ -20,30 +20,17 @@ function ChatRoom({ user, conversationId, onNavigate }) {
     scrollToBottom();
   }, [messages]);
 
-  const fetchConversationData = async () => {
+  const loadConversationData = async () => {
     setLoading(true);
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user?.uid || "",
-      };
-
-      // Fetch conversation details
-      const convRes = await fetch(
-        `https://workpro-api.onrender.com/api/chat/rooms`,
-        { headers }
+      const convData = await fetchConversations().catch(() => ({ conversations: [] }));
+      const convs = convData.conversations || convData || [];
+      const conv = convs.find(
+        (c) => (c.id || c.conversation_id || c._id) === conversationId
       );
-      if (convRes.ok) {
-        const data = await convRes.json();
-        const convs = data.conversations || data || [];
-        const conv = convs.find(
-          (c) =>
-            (c.id || c.conversation_id || c._id) === conversationId
-        );
-        if (conv) setConversation(conv);
-      }
+      if (conv) setConversation(conv);
 
-      await fetchMessages();
+      await loadMessages();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -51,27 +38,17 @@ function ChatRoom({ user, conversationId, onNavigate }) {
     }
   };
 
-  const fetchMessages = async () => {
+  const loadMessages = async () => {
     if (!user?.uid) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/chat/rooms/${conversationId}/messages`,
-        { headers }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data.messages || data || []);
-      }
+      const data = await fetchMessages(conversationId);
+      setMessages(data.messages || data || []);
     } catch (e) {
       /* silent fail on polling */
     }
   };
 
-  const sendMessage = async (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim() || !user?.uid) return;
 
@@ -88,30 +65,12 @@ function ChatRoom({ user, conversationId, onNavigate }) {
     setInput("");
 
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/chat/rooms/${conversationId}/messages`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ content: tempMessage.content }),
-        }
+      const data = await sendMessage(conversationId, tempMessage.content);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...data, pending: false } : m
+        )
       );
-      if (res.ok) {
-        const data = await res.json();
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === tempId
-              ? { ...data, pending: false }
-              : m
-          )
-        );
-      } else {
-        throw new Error("Send failed");
-      }
     } catch (err) {
       setMessages((prev) =>
         prev.map((m) =>
@@ -160,7 +119,7 @@ function ChatRoom({ user, conversationId, onNavigate }) {
       {error && (
         <div className="chat-error">
           {error}
-          <button className="btn btn-primary" onClick={fetchConversationData}>
+          <button className="btn btn-primary" onClick={loadConversationData}>
             Retry
           </button>
         </div>
@@ -199,7 +158,7 @@ function ChatRoom({ user, conversationId, onNavigate }) {
         <div ref={messagesEndRef} />
       </div>
 
-      <form className="chat-input-form" onSubmit={sendMessage}>
+      <form className="chat-input-form" onSubmit={handleSendMessage}>
         <input
           type="text"
           value={input}

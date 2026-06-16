@@ -16,18 +16,8 @@ function Navbar({ user, onLogout, onNavigate, currentPath }) {
     if (!user?.uid) return;
     const fetchBalance = async () => {
       try {
-        const headers = {
-          "Content-Type": "application/json",
-          "x-user-id": user.uid,
-        };
-        const res = await fetch(
-          "https://workpro-api.onrender.com/api/connects/balance",
-          { headers }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setConnects(data.balance ?? data.balance_connects ?? 0);
-        }
+        const data = await fetchConnectsBalance();
+        setConnects(data.balance ?? data.balance_connects ?? 0);
       } catch (e) {
         /* silent fail */
       }
