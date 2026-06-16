@@ -37,10 +37,6 @@ function Reviews({ user, onNavigate }) {
     if (!user?.uid) return;
     setSubmitting(true);
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
       await submitReview({
         to_user_id: formData.reviewee_uid,
         job_id: formData.job_id,

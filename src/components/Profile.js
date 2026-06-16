@@ -26,16 +26,7 @@ function Profile({ user, onUpdateUser }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/users/me`,
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch profile");
-      const data = await res.json();
+      const data = await fetchUserProfile();
       const userData = data.user || data;
       setProfile(userData);
       setFormData({
@@ -59,28 +50,15 @@ function Profile({ user, onUpdateUser }) {
     if (!user?.uid) return;
     setSaving(true);
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/users/me`,
-        {
-          method: "PUT",
-          headers,
-          body: JSON.stringify({
-            username: formData.display_name,
-            bio: formData.bio,
-            skills: formData.skills.split(",").map((s) => s.trim()).filter(Boolean),
-            title: formData.title,
-            hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
-            location: formData.location,
-            website: formData.website,
-          }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to update profile");
-      const data = await res.json();
+      const data = await updateUserProfile({
+        username: formData.display_name,
+        bio: formData.bio,
+        skills: formData.skills.split(",").map((s) => s.trim()).filter(Boolean),
+        title: formData.title,
+        hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+        location: formData.location,
+        website: formData.website,
+      });
       setProfile(data);
 
       // Update stored user

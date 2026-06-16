@@ -21,19 +21,8 @@ function Connects({ user, onUpdateUser }) {
   const fetchBalance = async () => {
     if (!user?.uid) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/connects/balance",
-        { headers }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const bal = data.balance ?? data.balance_connects ?? 0;
-        setBalance(bal);
-      }
+      const data = await fetchConnectsBalance();
+      setBalance(data.balance ?? data.balance_connects ?? 0);
     } catch (e) {
       /* silent fail */
     }
@@ -57,62 +46,30 @@ function Connects({ user, onUpdateUser }) {
 
       const payment = await Pi.createPayment(paymentData, {
         onReadyForServerApproval: async (paymentId) => {
-          // Notify backend of pending payment
           try {
-            await fetch(
-              "https://workpro-api.onrender.com/api/connects/buy",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "x-user-id": user.uid,
-                },
-                body: JSON.stringify({
-                  quantity,
-                  payment_id: paymentId,
-                  amount: price,
-                  status: "pending",
-                }),
-              }
-            );
+            await apiFetch("/api/connects/buy", {
+              method: "POST",
+              body: JSON.stringify({ quantity, payment_id: paymentId, amount: price, status: "pending" }),
+            });
           } catch (e) {
             console.error("Approval error:", e);
           }
         },
         onReadyForServerCompletion: async (paymentId, txid) => {
-          // Complete the payment
           try {
-            const res = await fetch(
-              "https://workpro-api.onrender.com/api/connects/buy",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "x-user-id": user.uid,
-                },
-                body: JSON.stringify({
-                  quantity,
-                  payment_id: paymentId,
-                  txid,
-                  status: "completed",
-                }),
-              }
-            );
-            if (res.ok) {
-              const data = await res.json();
-              const newBalance = data.balance ?? data.balance_connects ?? (balance + quantity);
-              setBalance(newBalance);
+            const data = await apiFetch("/api/connects/buy", {
+              method: "POST",
+              body: JSON.stringify({ quantity, payment_id: paymentId, txid, status: "completed" }),
+            });
+            const newBalance = data.balance ?? data.balance_connects ?? (balance + quantity);
+            setBalance(newBalance);
 
-              // Update stored user
-              const stored = JSON.parse(
-                localStorage.getItem("workpro_user") || "{}"
-              );
-              stored.balance_connects = newBalance;
-              localStorage.setItem("workpro_user", JSON.stringify(stored));
-              onUpdateUser(stored);
+            const stored = JSON.parse(localStorage.getItem("workpro_user") || "{}");
+            stored.balance_connects = newBalance;
+            localStorage.setItem("workpro_user", JSON.stringify(stored));
+            onUpdateUser(stored);
 
-              alert(`Successfully purchased ${quantity} connects!`);
-            }
+            alert(`Successfully purchased ${quantity} connects!`);
           } catch (e) {
             console.error("Completion error:", e);
             setError("Payment processing failed. Contact support.");
@@ -128,7 +85,6 @@ function Connects({ user, onUpdateUser }) {
         },
       });
 
-      console.log("Payment created:", payment);
     } catch (err) {
       console.error("Buy error:", err);
       setError(err.message || "Failed to process payment.");

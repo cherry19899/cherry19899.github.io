@@ -146,10 +146,10 @@ function createConversation(data) {
 }
 
 // Connects
-function buyConnects(quantity) {
+function buyConnects(quantity, payment_id, txid, status) {
   return apiFetch("/api/connects/buy", {
     method: "POST",
-    body: JSON.stringify({ quantity }),
+    body: JSON.stringify({ quantity, payment_id, txid, status }),
   });
 }
 

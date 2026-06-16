@@ -16,6 +16,7 @@ function Auth({ onLogin }) {
         }
       } catch (e) {
         localStorage.removeItem("workpro_user");
+        localStorage.removeItem("workpro_token");
       }
     }
   }, []);
@@ -61,6 +62,9 @@ function Auth({ onLogin }) {
         ...data,
       };
 
+      if (data.token) {
+        localStorage.setItem("workpro_token", data.token);
+      }
       localStorage.setItem("workpro_user", JSON.stringify(userData));
       onLogin(userData);
     } catch (err) {
@@ -72,26 +76,12 @@ function Auth({ onLogin }) {
   };
 
   function onIncompletePaymentFound(payment) {
-    const token = localStorage.getItem("workpro_token") || "";
-    const stored = localStorage.getItem("workpro_user");
-    let uid = "";
-    try { uid = stored ? (JSON.parse(stored).uid || "") : ""; } catch(e) {}
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = "Bearer " + token;
-    else if (uid) headers["x-user-id"] = uid;
-    return fetch("https://workpro-api.onrender.com/api/payments/incomplete", {
+    return apiFetch("/api/payments/incomplete", {
       method: "POST",
-      headers,
       body: JSON.stringify({ payment })
     })
-      .then(res => res.json())
-      .then(result => {
-        console.log("Incomplete payment handled:", result);
-        return result;
-      })
       .catch(err => {
         console.error("Failed to handle incomplete payment:", err);
-        // Return resolved promise so auth can continue
         return Promise.resolve();
       });
   }

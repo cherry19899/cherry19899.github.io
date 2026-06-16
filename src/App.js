@@ -452,6 +452,10 @@ function App() {
         const parsed = JSON.parse(stored);
         if (parsed && parsed.uid) {
           setUser(parsed);
+          // Restore token for getHeaders() if it was stored in workpro_user but not as workpro_token
+          if (parsed.token && !localStorage.getItem("workpro_token")) {
+            localStorage.setItem("workpro_token", parsed.token);
+          }
         }
       } catch (e) {
         console.error("Error parsing stored user:", e);
@@ -476,6 +480,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("workpro_user");
+    localStorage.removeItem("workpro_token");
     setUser(null);
     navigateTo("/");
   };

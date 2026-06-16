@@ -56,8 +56,7 @@
     <!-- v576: Bug#12 Fix My Jobs empty — rewrite /api/jobs/user/username → /api/jobs/user/pi_username -->
     <!-- v577: Bug#13 Fix Notifications back — suppress re-injection + navigate React back after close -->
     <script>
-    // Silence all console.log (debug noise reduction)
-    try { console.log = function(){}; console.info = function(){}; console.debug = function(){}; } catch(e){}
+    // console.log/info/debug suppression removed — Pi Browser users need to see all logs for debugging
     </script>
     <style>
     /* Bug#8: Move FAB (+) up so it clears the bottom nav (no z-index hacks needed).
@@ -828,7 +827,7 @@
           _applyFixObs.observe(document.body, { childList: true, subtree: true });
         });
       }
-      setInterval(_checkApplyButtons, 800);
+      setInterval(_checkApplyButtons, 3000);
 
       // ── 4. Notifications DOM injector ────────────────────────────────────────
       // The bundle v200 doesn't fetch the full notifications list.
