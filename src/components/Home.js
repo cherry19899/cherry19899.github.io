@@ -27,17 +27,7 @@ function Home({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const userId = user?.uid || "";
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": userId,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/jobs?limit=8",
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      const data = await res.json();
+      const data = await fetchJobs("limit=8");
       setJobs(data.jobs || data || []);
     } catch (err) {
       setError(err.message);

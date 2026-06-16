@@ -61,29 +61,10 @@ function CreateJob({ user, onNavigate }) {
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
-        client_uid: user.uid,
         posted_by_name: user.name || user.username || user.uid || 'User',
       };
 
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/jobs",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Failed to create job");
-      }
-
-      const data = await res.json();
+      const data = await createJob(payload);
       setSuccess("Job posted successfully!");
       setTimeout(() => {
         onNavigate(`/jobs/${data.id || data.job_id || data._id}`);

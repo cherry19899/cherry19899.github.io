@@ -22,16 +22,7 @@ function Escrow({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/escrows/me",
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch escrows");
-      const data = await res.json();
+      const data = await fetchEscrows();
       setEscrows(data.escrows || data || []);
     } catch (err) {
       setError(err.message);
@@ -45,26 +36,11 @@ function Escrow({ user, onNavigate }) {
     if (!user?.uid) return;
     setCreating(true);
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/escrows",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            job_id: formData.job_id,
-            freelancer_id: formData.freelancer_uid,
-            amount: parseFloat(formData.amount),
-          }),
-        }
-      );
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "Failed to create escrow");
-      }
+      await createEscrow({
+        job_id: formData.job_id,
+        freelancer_id: formData.freelancer_uid,
+        amount: parseFloat(formData.amount),
+      });
       alert("Escrow created successfully!");
       setShowCreateForm(false);
       setFormData({ job_id: "", freelancer_uid: "", amount: "" });
@@ -79,15 +55,7 @@ function Escrow({ user, onNavigate }) {
   const handleRelease = async (escrowId) => {
     if (!confirm("Release funds to freelancer? This action cannot be undone.")) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/escrows/${escrowId}/release`,
-        { method: "POST", headers }
-      );
-      if (!res.ok) throw new Error("Release failed");
+      await releaseEscrow(escrowId);
       alert("Funds released successfully!");
       fetchEscrowsData();
     } catch (err) {
@@ -98,15 +66,7 @@ function Escrow({ user, onNavigate }) {
   const handleRefund = async (escrowId) => {
     if (!confirm("Refund the escrow amount? This action cannot be undone.")) return;
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/escrows/${escrowId}/cancel`,
-        { method: "POST", headers }
-      );
-      if (!res.ok) throw new Error("Refund failed");
+      await refundEscrow(escrowId);
       alert("Escrow refunded successfully!");
       fetchEscrowsData();
     } catch (err) {
