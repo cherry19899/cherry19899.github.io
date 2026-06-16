@@ -36,16 +36,7 @@ function JobDetail({ user, jobId, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user?.uid || "",
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/jobs/${jobId}`,
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch job details");
-      const data = await res.json();
+      const data = await fetchJob(jobId);
       setJob(data);
       setIsOwner(data.client_id === user?.uid || data.client_uid === user?.uid || data.posted_by === user?.uid);
     } catch (err) {
@@ -55,20 +46,10 @@ function JobDetail({ user, jobId, onNavigate }) {
     }
   };
 
-  const fetchApplications = async () => {
+  const loadApplications = async () => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user?.uid || "",
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/jobs/${jobId}/applications`,
-        { headers }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setApplications(data.applications || data || []);
-      }
+      const data = await fetchApplications(jobId);
+      setApplications(data.applications || data || []);
     } catch (e) {
       console.error("Failed to load applications:", e);
     }
@@ -183,7 +164,7 @@ function JobDetail({ user, jobId, onNavigate }) {
             if (hireRes.ok) {
               alert(`${freelancerName} hired! π${amount} locked in escrow.`);
               fetchJobDetail();
-              fetchApplications();
+              loadApplications();
             }
           } catch (e) {
             console.error("Hire completion error:", e);
@@ -208,18 +189,9 @@ function JobDetail({ user, jobId, onNavigate }) {
 
   const handleStatusUpdate = async (appId, status) => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const endpoint = status === "accepted" ? "accept" : "reject";
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/applications/${appId}/${endpoint}`,
-        { method: "POST", headers }
-      );
-      if (!res.ok) throw new Error("Update failed");
+      await updateApplicationStatus(appId, status);
       alert(`Application ${status}!`);
-      fetchApplications();
+      loadApplications();
     } catch (err) {
       alert(err.message);
     }
@@ -421,7 +393,7 @@ function JobDetail({ user, jobId, onNavigate }) {
                 className="btn btn-secondary"
                 onClick={() => {
                   setShowApps(!showApps);
-                  if (!showApps) fetchApplications();
+                  if (!showApps) loadApplications();
                 }}
               >
                 {showApps ? "Hide" : "View"} Applications
