@@ -24,10 +24,10 @@ function JobList({ user, onNavigate }) {
   ];
 
   useEffect(() => {
-    fetchJobs();
+    loadJobs();
   }, [category, sortBy, page]);
 
-  const fetchJobs = async () => {
+  const loadJobs = async () => {
     setLoading(true);
     setError("");
     try {
@@ -38,17 +38,7 @@ function JobList({ user, onNavigate }) {
       params.append("page", page.toString());
       params.append("limit", limit.toString());
 
-      const userId = user?.uid || "";
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": userId,
-      };
-      const res = await fetch(
-        `https://workpro-api.onrender.com/api/jobs?${params.toString()}`,
-        { headers }
-      );
-      if (!res.ok) throw new Error("Failed to fetch jobs");
-      const data = await res.json();
+      const data = await fetchJobs(params.toString());
       const fetched = data.jobs || data || [];
       if (page === 1) {
         setJobs(fetched);
@@ -66,7 +56,7 @@ function JobList({ user, onNavigate }) {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchJobs();
+    loadJobs();
   };
 
   return (
@@ -118,7 +108,7 @@ function JobList({ user, onNavigate }) {
       {error && (
         <div className="error-message">
           {error}
-          <button className="btn btn-primary" onClick={fetchJobs}>Retry</button>
+          <button className="btn btn-primary" onClick={loadJobs}>Retry</button>
         </div>
       )}
 
