@@ -144,6 +144,11 @@ function JobDetail({ user, jobId, onNavigate }) {
         },
       };
 
+      if (typeof Pi === 'undefined' || !Pi.initialized) {
+        alert("Pi SDK not loaded. Please open in Pi Browser.");
+        setHiringId(null);
+        return;
+      }
       await Pi.createPayment(paymentData, {
         onReadyForServerApproval: async (paymentId) => {
           // Approve on backend
