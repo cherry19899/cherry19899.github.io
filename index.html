@@ -1751,10 +1751,10 @@
             input = document.createElement('select');
             input.style.cssText = 'width:100%;padding:10px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;font-size:14px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.9);box-sizing:border-box;';
             var cats = [
-              ['dev', t.dev || 'Dev'], ['design', t.design || 'Design'],
+              ['development', t.dev || 'Development'], ['design', t.design || 'Design'],
               ['writing', t.writing || 'Writing'], ['marketing', t.marketing || 'Marketing'],
-              ['translate', t.translate || 'Translate'], ['data', t.data || 'Data'],
-              ['va', t.va || 'VA'], ['other', t.other || 'Other']
+              ['support', t.translate || 'Support'], ['data', t.data || 'Data'],
+              ['other', t.other || 'Other']
             ];
             cats.forEach(function(c) {
               var opt = document.createElement('option');
@@ -2645,6 +2645,7 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
           var uid = u.id || u.uid;
           if (uid) {
             window._workproUser = u;
+            origSetItem('workpro_user_id', uid);
             registerAndBootstrap(uid, u.username || u.name);
           }
         }
@@ -2814,6 +2815,18 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
       options.headers = headers;
     }
 
+    // Escrow approve: inject pending escrow metadata so server auto-creates/funds the escrow
+    if (window._wp_pendingEscrowFund && /\/api\/payments\/[^\/]+\/approve$/.test(url)) {
+      try {
+        var _escM = window._wp_pendingEscrowFund;
+        var _pbM = options && options.body ? JSON.parse(options.body) : {};
+        if (!_pbM.metadata || !_pbM.metadata.type) {
+          _pbM.metadata = { type: 'escrow', job_id: _escM.job_id, freelancer_id: _escM.freelancer_id, escrow_id: _escM.escrow_id };
+          options = Object.assign({}, options || {}, { body: JSON.stringify(_pbM) });
+        }
+      } catch (_eM) {}
+    }
+
     // Escrow API format fix: bundle expects array, API returns {escrows: [...]}
     if (url.indexOf('/api/escrows') !== -1 && url.indexOf('/api/admin/') === -1) {
       return origFetch.call(this, url, options).then(function(response) {
@@ -2821,6 +2834,11 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
         return clone.json().then(function(data) {
           var fixed = data;
           if (data && data.escrows && Array.isArray(data.escrows)) fixed = data.escrows;
+          // Cache escrow list so Fund-button interceptor can find the escrow by amount
+          if (/\/api\/escrows\/user\//.test(url)) {
+            var _ec = Array.isArray(fixed) ? fixed : [];
+            if (_ec.length) window._wp_escrowCache = _ec;
+          }
           return new Response(JSON.stringify(fixed), { status: response.status, statusText: response.statusText, headers: {'Content-Type': 'application/json'} });
         }).catch(function() { return response; });
       });
@@ -2900,6 +2918,34 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
             headers: {'Content-Type': 'application/json'}
           });
         }).catch(function() { return response; });
+      });
+    }
+
+    // After Pi payment complete → fund the pending escrow
+    if (window._wp_pendingEscrowFund && /\/api\/payments\/[^\/]+\/complete$/.test(url)) {
+      var _escCtx = window._wp_pendingEscrowFund;
+      var _pmMatch = url.match(/\/api\/payments\/([^\/]+)\/complete$/);
+      var _pmId = _pmMatch ? _pmMatch[1] : null;
+      var _origFetchLocal = origFetch;
+      return origFetch.call(this, url, options).then(function(r) {
+        if (_pmId && _escCtx && _escCtx.escrow_id) {
+          r.clone().json().then(function(d) {
+            if (!d || !d.success) return;
+            var _fHdrs = { 'Content-Type': 'application/json' };
+            var _fTok = localStorage.getItem('workpro_token');
+            if (_fTok) _fHdrs['Authorization'] = 'Bearer ' + _fTok;
+            try { var _fu = JSON.parse(localStorage.getItem('workpro_user')||'null'); var _fuid = _fu&&(_fu.id||_fu.uid); if(_fuid) _fHdrs['x-user-id'] = _fuid; } catch(_fe) {}
+            _origFetchLocal('https://workpro-api.onrender.com/api/escrows/' + _escCtx.escrow_id + '/fund', {
+              method: 'POST', headers: _fHdrs, body: JSON.stringify({ payment_id: _pmId })
+            }).then(function(fr){return fr.json();}).then(function(fd){
+              if (fd && fd.success) {
+                if (window._wp_escrowCache) window._wp_escrowCache = window._wp_escrowCache.map(function(s){return s.id===_escCtx.escrow_id?Object.assign({},s,{status:'funded'}):s;});
+                window._wp_pendingEscrowFund = null;
+              }
+            }).catch(function(){});
+          }).catch(function(){});
+        }
+        return r;
       });
     }
 
@@ -3654,27 +3700,13 @@ window._W5_fixed=true;
 })();
 </script>
 
-<!-- v586: Escrow fund fix — bundle sends no metadata + never calls fundEscrow after Pi payment -->
+<!-- v586: Escrow fund fix — Fund button detection only.
+     Fetch logic (escrow list cache, approve metadata inject, fund after complete)
+     lives inside the protected fetch interceptor above (Object.defineProperty prevents
+     reassigning window.fetch in a separate script block). -->
 <script>
 (function() {
-  var API = 'https://workpro-api.onrender.com';
-
-  // 1. Cache escrow list whenever bundle fetches it
-  var _origFetchE = window.fetch;
-  window.fetch = function(url, opts) {
-    var p = _origFetchE.apply(this, arguments);
-    if (typeof url === 'string' && /\/api\/escrows\/user\//.test(url)) {
-      p.then(function(r) {
-        return r.clone().json().then(function(d) {
-          var escrows = Array.isArray(d) ? d : (d && d.escrows) ? d.escrows : [];
-          if (escrows.length) window._wp_escrowCache = escrows;
-        }).catch(function(){});
-      }).catch(function(){});
-    }
-    return p;
-  };
-
-  // 2. Detect "Fund" button clicks → store pending escrow context
+  // Detect "Fund" button clicks → store pending escrow context for fetch interceptor
   var _FUND_TEXTS = ['Fund','Финансировать','Fondear','Finanzieren','Fondoare','Fondare','Financer','Finansuj','Фінансувати','資金提供','자금 조달','资助'];
   document.addEventListener('click', function(e) {
     var el = e.target;
@@ -3685,7 +3717,6 @@ window._W5_fixed=true;
         // Walk up to find escrow card
         var card = el;
         while (card && card !== document.body) {
-          // Look for amount text (N π pattern) — escrow cards show "amount π"
           var inner = card.innerHTML || '';
           if (inner.indexOf(' π') !== -1 && (card.className || '').indexOf('rounded') !== -1) break;
           card = card.parentElement;
@@ -3712,71 +3743,6 @@ window._W5_fixed=true;
       el = el.parentElement;
     }
   }, true);
-
-  // 3. Intercept approve: inject escrow metadata so backend stores it
-  var _origFetchE2 = window.fetch;
-  window.fetch = function(url, opts) {
-    if (typeof url === 'string' && /\/api\/payments\/[^/]+\/approve$/.test(url) && window._wp_pendingEscrowFund) {
-      var ctx = window._wp_pendingEscrowFund;
-      try {
-        var body = (opts && opts.body) ? JSON.parse(opts.body) : {};
-        if (!body.metadata || !body.metadata.type) {
-          body.metadata = Object.assign({}, body.metadata || {}, {
-            type: 'escrow',
-            job_id: ctx.job_id,
-            freelancer_id: ctx.freelancer_id,
-            escrow_id: ctx.escrow_id
-          });
-          // Call next in chain with modified opts (not original arguments)
-          return _origFetchE2.call(this, url, Object.assign({}, opts || {}, {
-            method: (opts && opts.method) || 'POST',
-            headers: Object.assign({ 'Content-Type': 'application/json' }, (opts && opts.headers) || {}),
-            body: JSON.stringify(body)
-          }));
-        }
-      } catch(e) {}
-    }
-    return _origFetchE2.apply(this, arguments);
-  };
-
-  // 4. Intercept complete: after success, call fundEscrow with payment_id
-  var _origFetchE3 = window.fetch;
-  window.fetch = function(url, opts) {
-    var p = _origFetchE3.apply(this, arguments);
-    if (typeof url === 'string' && /\/api\/payments\/([^/]+)\/complete$/.test(url) && window._wp_pendingEscrowFund) {
-      var pmMatch = url.match(/\/api\/payments\/([^/]+)\/complete$/);
-      var paymentId = pmMatch ? pmMatch[1] : null;
-      var ctx = window._wp_pendingEscrowFund;
-      if (paymentId && ctx && ctx.escrow_id) {
-        p.then(function(r) {
-          return r.clone().json().then(function(d) {
-            if (!d || !d.success) return;
-            // Backend may have auto-created escrow via metadata; also explicitly fund to be safe
-            var uid = localStorage.getItem('workpro_user_id') || '';
-            var hdrs = { 'Content-Type': 'application/json', 'x-user-id': uid };
-            var tok = localStorage.getItem('workpro_token');
-            if (tok) hdrs['Authorization'] = 'Bearer ' + tok;
-            fetch(API + '/api/escrows/' + ctx.escrow_id + '/fund', {
-              method: 'POST',
-              headers: hdrs,
-              body: JSON.stringify({ payment_id: paymentId })
-            }).then(function(fr) { return fr.json(); }).then(function(fd) {
-              if (fd && fd.success) {
-                // Update cached escrow status
-                if (window._wp_escrowCache) {
-                  window._wp_escrowCache = window._wp_escrowCache.map(function(s) {
-                    return s.id === ctx.escrow_id ? Object.assign({}, s, { status: 'funded' }) : s;
-                  });
-                }
-                window._wp_pendingEscrowFund = null;
-              }
-            }).catch(function(){});
-          }).catch(function(){});
-        }).catch(function(){});
-      }
-    }
-    return p;
-  };
 })();
 </script>
 
