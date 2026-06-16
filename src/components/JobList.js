@@ -69,8 +69,6 @@ function JobList({ user, onNavigate }) {
     fetchJobs();
   };
 
-  const filteredJobs = jobs;
-
   return (
     <div className="page-container">
       <div className="page-header">
@@ -129,7 +127,7 @@ function JobList({ user, onNavigate }) {
           <span className="spinner large"></span>
           <p>Loading jobs...</p>
         </div>
-      ) : filteredJobs.length === 0 ? (
+      ) : jobs.length === 0 ? (
         <div className="empty-state">
           <p>No jobs found.</p>
           <button className="btn btn-primary" onClick={() => onNavigate("/create-job")}>
@@ -139,7 +137,7 @@ function JobList({ user, onNavigate }) {
       ) : (
         <>
           <div className="jobs-grid">
-            {filteredJobs.map((job) => (
+            {jobs.map((job) => (
               <div
                 key={job.id || job._id}
                 className="job-card"
