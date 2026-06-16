@@ -55,25 +55,8 @@ function Applications({ user, onNavigate }) {
 
   const startChat = async (freelancerId, jobId) => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/chat/conversations",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            participant_uid: freelancerId,
-            job_id: jobId,
-          }),
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        onNavigate(`/chat/${data.id || data.conversation_id}`);
-      }
+      const data = await createConversation({ participant_uid: freelancerId, job_id: jobId });
+      onNavigate(`/chat/${data.id || data.conversation_id || data.room_id}`);
     } catch (e) {
       console.error("Failed to start chat:", e);
     }

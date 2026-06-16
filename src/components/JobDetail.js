@@ -113,11 +113,9 @@ function JobDetail({ user, jobId, onNavigate }) {
       }
       await Pi.createPayment(paymentData, {
         onReadyForServerApproval: async (paymentId) => {
-          // Approve on backend
           try {
-            await fetch("https://workpro-api.onrender.com/api/payments/approve", {
+            await apiFetch("/api/payments/approve", {
               method: "POST",
-              headers: { "Content-Type": "application/json", "x-user-id": user.uid },
               body: JSON.stringify({ payment_id: paymentId, metadata: paymentData.metadata }),
             });
           } catch (e) {
@@ -126,27 +124,18 @@ function JobDetail({ user, jobId, onNavigate }) {
         },
         onReadyForServerCompletion: async (paymentId, txid) => {
           try {
-            // Complete payment + create escrow
-            await fetch("https://workpro-api.onrender.com/api/payments/complete", {
+            await apiFetch("/api/payments/complete", {
               method: "POST",
-              headers: { "Content-Type": "application/json", "x-user-id": user.uid },
               body: JSON.stringify({ payment_id: paymentId, txid, metadata: paymentData.metadata }),
             });
 
-            // Create hire record (accept app + create escrow)
-            const hireRes = await fetch(
-              `https://workpro-api.onrender.com/api/applications/${app.id}/hire`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "x-user-id": user.uid },
-                body: JSON.stringify({ payment_id: paymentId, txid, amount }),
-              }
-            );
-            if (hireRes.ok) {
-              alert(`${freelancerName} hired! π${amount} locked in escrow.`);
-              fetchJobDetail();
-              loadApplications();
-            }
+            await apiFetch(`/api/applications/${app.id}/hire`, {
+              method: "POST",
+              body: JSON.stringify({ payment_id: paymentId, txid, amount }),
+            });
+            alert(`${freelancerName} hired! π${amount} locked in escrow.`);
+            fetchJobDetail();
+            loadApplications();
           } catch (e) {
             console.error("Hire completion error:", e);
             alert("Payment sent but escrow creation failed. Contact support.");
@@ -193,14 +182,7 @@ function JobDetail({ user, jobId, onNavigate }) {
         alert("No active escrow found for this job.");
         return;
       }
-      const releaseRes = await fetch(
-        `https://workpro-api.onrender.com/api/escrow/${escrow.id}/release`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-user-id": user.uid },
-        }
-      );
-      if (!releaseRes.ok) throw new Error("Release failed");
+      await releaseEscrow(escrow.id);
       alert("Funds released! Job marked as complete.");
       setShowReviewForm(true);
       fetchJobDetail();
@@ -222,20 +204,12 @@ function JobDetail({ user, jobId, onNavigate }) {
         alert("Could not determine freelancer to review.");
         return;
       }
-      const res = await fetch("https://workpro-api.onrender.com/api/ratings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": user.uid },
-        body: JSON.stringify({
-          to_user_id: toUserId,
-          job_id: parseInt(jobId),
-          rating: reviewData.rating,
-          comment: reviewData.comment,
-        }),
+      await submitReview({
+        to_user_id: toUserId,
+        job_id: parseInt(jobId),
+        rating: reviewData.rating,
+        comment: reviewData.comment,
       });
-      if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Review failed");
-      }
       alert("Review submitted! Thank you.");
       setShowReviewForm(false);
     } catch (err) {
@@ -247,25 +221,11 @@ function JobDetail({ user, jobId, onNavigate }) {
 
   const startChat = async (freelancerId) => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        "x-user-id": user.uid,
-      };
-      const res = await fetch(
-        "https://workpro-api.onrender.com/api/chat/start",
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            user_id: user.uid,
-            other_user_id: freelancerId,
-          }),
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        onNavigate(`/chat/${data.room_id || data.id}`);
-      }
+      const data = await createConversation({
+        participant_uid: freelancerId,
+        job_id: jobId,
+      });
+      onNavigate(`/chat/${data.room_id || data.id || data.conversation_id}`);
     } catch (e) {
       console.error("Failed to start chat:", e);
     }
