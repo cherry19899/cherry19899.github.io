@@ -206,7 +206,7 @@ function Applications({ user, onNavigate }) {
                 )}
                 <p>
                   <strong>Proposed Budget:</strong>{" "}
-                  {formatBudget(app.proposed_budget)}
+                  {formatBudget(app.bid_amount)}
                 </p>
                 {app.cover_letter && (
                   <div className="application-cover">

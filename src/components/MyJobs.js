@@ -197,7 +197,7 @@ function MyJobs({ user, onNavigate }) {
                       {app.status || "Pending"}
                     </span>
                     <span>
-                      Proposed: {formatBudget(app.proposed_budget)}
+                      Proposed: {formatBudget(app.bid_amount)}
                     </span>
                     <span>{timeAgo(app.created_at)}</span>
                   </div>
