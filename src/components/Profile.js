@@ -31,7 +31,7 @@ function Profile({ user, onUpdateUser }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/me`,
+        `https://workpro-api.onrender.com/api/users/me`,
         { headers }
       );
       if (!res.ok) throw new Error("Failed to fetch profile");
@@ -64,7 +64,7 @@ function Profile({ user, onUpdateUser }) {
         "x-user-id": user.uid,
       };
       const res = await fetch(
-        `https://workpro-api.onrender.com/api/me`,
+        `https://workpro-api.onrender.com/api/users/me`,
         {
           method: "PUT",
           headers,
@@ -72,6 +72,10 @@ function Profile({ user, onUpdateUser }) {
             username: formData.display_name,
             bio: formData.bio,
             skills: formData.skills.split(",").map((s) => s.trim()).filter(Boolean),
+            title: formData.title,
+            hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+            location: formData.location,
+            website: formData.website,
           }),
         }
       );
