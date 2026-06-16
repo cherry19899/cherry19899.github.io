@@ -64,6 +64,10 @@ function Connects({ user, onUpdateUser }) {
             const newBalance = data.balance ?? data.balance_connects ?? (balance + quantity);
             setBalance(newBalance);
 
+            // Must set workpro_connects BEFORE workpro_user — the localStorage interceptor
+            // in index.html reverts workpro_user.balance_connects to the stored workpro_connects
+            // value if they differ. Setting it first prevents that revert.
+            localStorage.setItem("workpro_connects", String(newBalance));
             const stored = JSON.parse(localStorage.getItem("workpro_user") || "{}");
             stored.balance_connects = newBalance;
             localStorage.setItem("workpro_user", JSON.stringify(stored));
