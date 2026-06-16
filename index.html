@@ -2608,15 +2608,9 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
           body: JSON.stringify({ uid: uid, username: username || uid.replace(/^pi_/, '') })
         }).catch(function(){});
 
-        // Step 2: Check balance and grant connects if < 10
-        fetch(API + '/api/connects/balance', {
-          headers: { 'x-user-id': uid }
-        }).then(function(r){ return r.json(); }).then(function(d){
-          var bal = d.balance != null ? d.balance : (d.balance_connects != null ? d.balance_connects : 0);
-          // New users receive initial connects at server-side registration (auth/login).
-          // No additional bootstrap grant needed here.
-          localStorage.setItem(bootstrapKey, '1');
-        }).catch(function(){});
+        // Mark bootstrap done so this runs only once per uid.
+        // (Connect balance is handled server-side on first registration.)
+        localStorage.setItem(bootstrapKey, '1');
       }
 
       // Watch for user login via localStorage.setItem
