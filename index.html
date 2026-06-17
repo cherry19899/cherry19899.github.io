@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v593';
+        var KEY = '_wp_loaded_v594';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=593&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=594&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v593';</script>
+    <script>window.WORKPRO_VERSION='v594';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -91,10 +91,15 @@
         try {
           var norm = _normUid(postedBy || '');
           if (!norm) return false;
-          if (norm === _CANON_NORM) return true;
           var u = JSON.parse(localStorage.getItem('workpro_user') || 'null');
-          var uid = u && (u.uid || u.id) || '';
-          return !!(uid && norm === _normUid(uid));
+          if (!u) return false;
+          var uid = u.uid || u.id || '';
+          var uname = u.username || '';
+          // posted_by can arrive as a raw uid (detail endpoint) or as a username (list endpoint).
+          // Match against both so own-job detection is consistent across the two.
+          if (uid && norm === _normUid(uid)) return true;
+          if (uname && norm.toLowerCase() === _normUid(uname).toLowerCase()) return true;
+          return false;
         } catch(e) { return false; }
       }
 
@@ -182,7 +187,11 @@
                 var jobObj = (d && d.job && d.job.id) ? d.job : (d && d.id ? d : null);
                 if (jobObj && jobObj.id) {
                   window._wp_currentJobDetail = jobObj;
-                  if (jobObj._open || jobObj.status === 'open') window._wp_openJobs[jobObj.id] = jobObj;
+                  if (jobObj._open || jobObj.status === 'open') {
+                    window._wp_openJobs[jobObj.id] = jobObj;
+                    // Deterministic Apply-overlay trigger: the SPA just loaded this open job's detail.
+                    if (typeof _checkApplyButtons === 'function') { setTimeout(_checkApplyButtons, 250); setTimeout(_checkApplyButtons, 900); setTimeout(_checkApplyButtons, 1800); }
+                  }
                 }
                 return resp;
               }).catch(function() { return resp; });
@@ -231,7 +240,10 @@
               var jobObj = (d && d.job && d.job.id) ? d.job : (d && d.id ? d : null);
               if (jobObj && jobObj.id) {
                 window._wp_currentJobDetail = jobObj;
-                if (jobObj._open || jobObj.status === 'open') window._wp_openJobs[jobObj.id] = jobObj;
+                if (jobObj._open || jobObj.status === 'open') {
+                  window._wp_openJobs[jobObj.id] = jobObj;
+                  if (typeof _checkApplyButtons === 'function') { setTimeout(_checkApplyButtons, 250); setTimeout(_checkApplyButtons, 900); setTimeout(_checkApplyButtons, 1800); }
+                }
               }
             } catch(e) {}
           });
@@ -588,7 +600,7 @@
               if (bt.getAttribute('data-wp-apply-fixed') || bt.id === 'wp-apply-overlay') continue;
               var btxt = (bt.textContent || '').toLowerCase();
               if (btxt.indexOf('job filled') !== -1 || btxt.indexOf('freelancer hired') !== -1 ||
-                  btxt.indexOf('работа занята') !== -1 || btxt === 'open') {
+                  btxt.indexOf('работа занята') !== -1 || btxt === 'open' || btxt === 'открыто' || btxt === 'відкрито') {
                 bt.setAttribute('data-wp-hidden', '1');
                 bt.style.display = 'none';
               }
@@ -687,7 +699,7 @@
             var allBtnsChk = document.querySelectorAll ? document.querySelectorAll('button, [role="button"]') : [];
             for (var bci = 0; bci < allBtnsChk.length; bci++) {
               var btxtChk = (allBtnsChk[bci].textContent || '').trim().toLowerCase();
-              if (btxtChk === 'open' && allBtnsChk[bci].id !== 'wp-apply-overlay' && !allBtnsChk[bci].getAttribute('data-wp-apply-fixed')) {
+              if ((btxtChk === 'open' || btxtChk === 'открыто' || btxtChk === 'відкрито') && allBtnsChk[bci].id !== 'wp-apply-overlay' && !allBtnsChk[bci].getAttribute('data-wp-apply-fixed')) {
                 foundJobFilled = true; break;
               }
             }
