@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v594';
+        var KEY = '_wp_loaded_v595';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=594&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=595&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v594';</script>
+    <script>window.WORKPRO_VERSION='v595';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3897,13 +3897,24 @@ window._W5_fixed=true;
   // The overlay is position:fixed and persists when the bundle opens its Create Job
   // form as a drawer/modal over the job detail page.
   function _isCreateJobVisible() {
-    // v592: scan all text in body — bundle may render heading as arbitrary div
-    var pageText = document.body ? (document.body.textContent || '') : '';
-    var hasKeyword = /новая работа|create job|post a job|new job|разместить вакансию/i.test(pageText);
-    if (!hasKeyword) return false;
-    // Also require form inputs to be present (avoids false positives on pages that mention "new job" in text)
-    var inputs = document.querySelectorAll('input[type="text"],input:not([type]),textarea');
-    return inputs.length > 0;
+    // v595: the SPA keeps routes mounted in the DOM (even when off-screen), so
+    // scanning document.textContent + querySelectorAll gave false positives on the
+    // job-detail and list screens — which then suppressed the Apply overlay for
+    // EVERYONE. Only treat Create Job as visible if its heading is actually rendered
+    // on screen (non-zero box, inside the viewport).
+    var re = /новая работа|create job|post a job|new job|разместить вакансию/i;
+    var nodes = document.querySelectorAll('h1,h2,h3,h4,[class*="title"],[class*="Title"],[class*="head"],[class*="Head"],label,button,span,div');
+    var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var t = (el.textContent || '').trim();
+      if (!t || t.length > 40) continue;   // headings/labels are short
+      if (!re.test(t)) continue;
+      if (el.offsetParent === null) continue; // display:none / detached
+      var r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < vh) return true;
+    }
+    return false;
   }
 
   // ── 2. Russian text patches for bundle's English strings ──────────────────
