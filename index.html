@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v597';
+        var KEY = '_wp_loaded_v598';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=597&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=598&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v597';</script>
+    <script>window.WORKPRO_VERSION='v598';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -681,6 +681,13 @@
       var _hideOverlayTimer = null;
       function _checkApplyButtons() {
         var pageText = (document.body ? document.body.innerText || document.body.textContent : '').toLowerCase();
+        // v598: the Apply overlay must appear ONLY on a single job's detail page — never on the
+        // Find Work list / other tabs (where it floated over cards and churned check-applied = lag).
+        // Detail pages render the "Platform fee / Комиссия" and "Client / Заказчик" labels; the
+        // list and other tab screens do not.
+        var _onDetail = (pageText.indexOf('platform fee') !== -1 || pageText.indexOf('комиссия') !== -1 || pageText.indexOf('комісія') !== -1)
+                     && (pageText.indexOf('client') !== -1 || pageText.indexOf('заказчик') !== -1 || pageText.indexOf('замовник') !== -1);
+        if (!_onDetail) { if (_applyOverlay && _applyOverlay.parentNode) _hideApplyOverlay(); return; }
         var foundJobFilled = pageText.indexOf('job filled') !== -1 || pageText.indexOf('freelancer hired') !== -1 ||
           pageText.indexOf('работа занята') !== -1 || pageText.indexOf('фрилансер нанят') !== -1;
         // Also trigger on detail page for open jobs. Two detection paths:
