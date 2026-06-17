@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v595';
+        var KEY = '_wp_loaded_v596';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=595&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=596&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v595';</script>
+    <script>window.WORKPRO_VERSION='v596';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -720,10 +720,19 @@
         if (foundJobFilled) {
           _jobFilledLastSeen = Date.now();
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
-          if (_applyOverlay && _applyOverlay.parentNode) return;
-          // FAST PATH 1: use cached job detail from API interceptor
+          // v596: only keep an existing overlay if it belongs to the job currently ON SCREEN.
+          // Otherwise it's stale (e.g. _wp_currentJobDetail didn't update when the SPA rendered
+          // a new job from cache) and would show a previous job's state — including an "Applied ✓"
+          // button — on a different job, looking like the button "pressed itself".
+          if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId) {
+            var _shownJob = window._wp_openJobs[_applyOverlayJobId] || (det && det.id === _applyOverlayJobId ? det : null);
+            var _shownTitle = _shownJob && _shownJob.title ? String(_shownJob.title).toLowerCase() : null;
+            if (_shownTitle && pageText.indexOf(_shownTitle) !== -1) return; // same job still on screen — keep it
+            _hideApplyOverlay(); // stale — rebuild for the current job below
+          }
+          // FAST PATH 1: use cached job detail from API interceptor — but only if it's the job on screen
           var openJob = null;
-          if (det && det.id && !_isOwnJob(det.posted_by)) {
+          if (det && det.id && !_isOwnJob(det.posted_by) && det.title && pageText.indexOf(String(det.title).toLowerCase()) !== -1) {
             var isOpen = !!(window._wp_openJobs[det.id] || det.status === 'open' || det._real_status === 'open');
             if (isOpen) openJob = det;
           }
@@ -755,7 +764,7 @@
               // Re-run all fast paths now that cache is populated
               var det2 = window._wp_currentJobDetail;
               var j2 = null;
-              if (det2 && det2.id && !_isOwnJob(det2.posted_by)) {
+              if (det2 && det2.id && !_isOwnJob(det2.posted_by) && det2.title && pageText.indexOf(String(det2.title).toLowerCase()) !== -1) {
                 if (window._wp_openJobs[det2.id] || det2.status === 'open') j2 = det2;
               }
               if (!j2 && window._currentJobId && window._wp_openJobs[window._currentJobId]) {
