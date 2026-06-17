@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v588';
+        var KEY = '_wp_loaded_v589';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=588&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=589&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v588';</script>
+    <script>window.WORKPRO_VERSION='v589';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3930,13 +3930,20 @@ window._W5_fixed=true;
   }
 
   function _patchAll() {
-    // 1. Text nodes
+    // 1. Text nodes — use trim() for exact map matches; also loose-match standalone "About"
     try {
       var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
       var node;
       while ((node = walker.nextNode())) {
         var v = node.nodeValue;
-        if (v && _textMap[v.trim()]) node.nodeValue = _textMap[v.trim()];
+        if (!v) continue;
+        var vt = v.trim();
+        if (_textMap[vt]) {
+          node.nodeValue = _textMap[vt];
+        } else if (/^\s*About\s*$/.test(v) && v.indexOf('О себе') === -1) {
+          // Catch "About" with any surrounding whitespace not caught by exact map
+          node.nodeValue = v.replace('About', 'О себе');
+        }
       }
     } catch(e) {}
     // 2. Placeholders
