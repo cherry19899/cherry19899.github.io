@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v592';
+        var KEY = '_wp_loaded_v593';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=592&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=593&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v592';</script>
+    <script>window.WORKPRO_VERSION='v593';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3948,14 +3948,27 @@ window._W5_fixed=true;
     } catch(e) {}
     // 3. "About" headings
     try { _patchAboutHeadings(); } catch(e) {}
-    // 4. Ghost Apply overlay: remove when Create Job form is open
+    // 4. Ghost Apply overlay: hide (not remove) when Create Job form is open
+    // Hiding keeps the element in DOM so _checkApplyButtons() won't recreate it
     try {
       if (_isCreateJobVisible()) {
         var ov = document.getElementById('wp-apply-overlay');
-        if (ov) ov.remove();
+        if (ov) { ov.style.display = 'none'; ov.style.visibility = 'hidden'; ov.style.pointerEvents = 'none'; }
       }
     } catch(e) {}
   }
+
+  // Fast interval (500ms) to suppress overlay while Create Job form is open.
+  // _checkApplyButtons() runs every 3s and re-shows the overlay — we counter it faster.
+  setInterval(function() {
+    try {
+      if (!_isCreateJobVisible()) return;
+      var ov = document.getElementById('wp-apply-overlay');
+      if (ov && ov.style.display !== 'none') {
+        ov.style.display = 'none'; ov.style.visibility = 'hidden'; ov.style.pointerEvents = 'none';
+      }
+    } catch(e) {}
+  }, 500);
 
   var _t586 = null;
   var _obs586 = new MutationObserver(function(mutations) {
