@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v596';
+        var KEY = '_wp_loaded_v597';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=596&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=597&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v596';</script>
+    <script>window.WORKPRO_VERSION='v597';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -541,7 +541,12 @@
             .catch(function(){});
         })();
 
+        // v596: guard against the synthetic "ghost click" mobile browsers fire ~300ms after a
+        // touch — when the user taps a job card near the bottom and this overlay appears at the
+        // same spot, that ghost click would auto-open the apply modal ("button pressed itself").
+        var _btnBornAt = Date.now();
         btn.onclick = function() {
+          if (Date.now() - _btnBornAt < 600) return; // ignore ghost/passthrough clicks right after appearing
           _wpCoverLetterModal(function(msg) {
             if (msg === null) return;
             btn.disabled = true;
