@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v599';
+        var KEY = '_wp_loaded_v600';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=599&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=600&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v599';</script>
+    <script>window.WORKPRO_VERSION='v600';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -686,6 +686,14 @@
       function _detailJob() {
         var openJobs = window._wp_openJobs || {};
         var det = window._wp_currentJobDetail;
+        // 1) AUTHORITATIVE: job id from URL navigation (window._currentJobId). Job titles are NOT
+        //    unique in this app (e.g. three different jobs all titled "Мит"), so id is the only
+        //    reliable way to know which one is on screen.
+        var cjid = window._currentJobId ? String(window._currentJobId) : null;
+        if (cjid) {
+          if (det && String(det.id) === cjid && !_isOwnJob(det.posted_by)) return det;
+          if (openJobs[cjid] && !_isOwnJob(openJobs[cjid].posted_by)) return openJobs[cjid];
+        }
         // Short, prominent text candidates in DOM order — the title heading sits near the top.
         var cands = [];
         var els = document.querySelectorAll('h1,h2,h3,h4,h5,h6,[class*="title"],[class*="Title"],[class*="head"],[class*="Head"],[class*="name"],[class*="Name"]');
@@ -693,18 +701,20 @@
           var t = (els[i].textContent || '').trim();
           if (t && t.length <= 80) cands.push(t);
         }
-        // 1) Prefer the API-fetched detail IF its title is shown as a heading (confirms it's on screen)
+        // 2) Prefer the API-fetched detail IF its title is shown as a heading (confirms it's on screen)
         if (det && det.title && !_isOwnJob(det.posted_by)) {
           var dt = String(det.title).trim();
           for (var c = 0; c < cands.length; c++) if (cands[c] === dt) return det;
         }
-        // 2) First (top-most) heading that exactly equals an open, non-own job title
+        // 3) Exact heading title match — but ONLY when that title is UNIQUE among open jobs.
+        //    With duplicate titles we cannot tell which job is shown, so show nothing (safer than wrong).
         var jobList = Object.values(openJobs);
         for (var k = 0; k < cands.length; k++) {
-          for (var j = 0; j < jobList.length; j++) {
-            var jb = jobList[j];
-            if (jb && jb.title && !_isOwnJob(jb.posted_by) && String(jb.title).trim() === cands[k]) return jb;
-          }
+          var matches = jobList.filter(function (jb) {
+            return jb && jb.title && !_isOwnJob(jb.posted_by) && String(jb.title).trim() === cands[k];
+          });
+          if (matches.length === 1) return matches[0];
+          if (matches.length > 1) return null; // ambiguous duplicate title — don't guess
         }
         return null;
       }
