@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v591';
+        var KEY = '_wp_loaded_v592';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=591&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=592&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v591';</script>
+    <script>window.WORKPRO_VERSION='v592';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3885,22 +3885,13 @@ window._W5_fixed=true;
   // The overlay is position:fixed and persists when the bundle opens its Create Job
   // form as a drawer/modal over the job detail page.
   function _isCreateJobVisible() {
-    // Detect by heading: bundle renders "Новая работа" (Russian) or English variants
-    var hdrs = document.querySelectorAll('h1,h2,h3,[class*="title"],[class*="header"],[class*="Title"],[class*="Header"]');
-    for (var j = 0; j < hdrs.length; j++) {
-      var t = (hdrs[j].textContent || '').trim();
-      if (/^(create job|post a job|new job|post job|create a job|новая работа|разместить вакансию)$/i.test(t)) return true;
-    }
-    // Detect by placeholder (original English or patched Russian)
-    var inputs = document.querySelectorAll('input[placeholder],textarea[placeholder]');
-    for (var i = 0; i < inputs.length; i++) {
-      var ph = inputs[i].getAttribute('placeholder') || '';
-      if (ph.indexOf('React Developer Needed') !== -1 ||
-          ph.indexOf('project requirements') !== -1 ||
-          ph.indexOf('Нужен React') !== -1 ||
-          ph.indexOf('требования к проекту') !== -1) return true;
-    }
-    return false;
+    // v592: scan all text in body — bundle may render heading as arbitrary div
+    var pageText = document.body ? (document.body.textContent || '') : '';
+    var hasKeyword = /новая работа|create job|post a job|new job|разместить вакансию/i.test(pageText);
+    if (!hasKeyword) return false;
+    // Also require form inputs to be present (avoids false positives on pages that mention "new job" in text)
+    var inputs = document.querySelectorAll('input[type="text"],input:not([type]),textarea');
+    return inputs.length > 0;
   }
 
   // ── 2. Russian text patches for bundle's English strings ──────────────────
