@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v589';
+        var KEY = '_wp_loaded_v590';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=589&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=590&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v589';</script>
+    <script>window.WORKPRO_VERSION='v590';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3966,21 +3966,34 @@ window._W5_fixed=true;
   }
 
   var _t586 = null;
-  var _obs586 = new MutationObserver(function() {
+  var _obs586 = new MutationObserver(function(mutations) {
+    // characterData: catch the exact moment React resets "About" back and re-patch immediately
+    mutations.forEach(function(m) {
+      if (m.type === 'characterData' && m.target) {
+        var cv = m.target.nodeValue || '';
+        if (/^\s*About\s*$/.test(cv)) {
+          m.target.nodeValue = cv.replace('About', 'О себе');
+        } else if (_textMap[cv.trim()]) {
+          m.target.nodeValue = _textMap[cv.trim()];
+        }
+      }
+    });
+    // Also run full patch for childList/attribute mutations
     if (_t586) return;
     _t586 = setTimeout(function() { _t586 = null; _patchAll(); }, 150);
   });
+  var _obsOpts = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder'] };
   if (document.body) {
-    _obs586.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['placeholder'] });
+    _obs586.observe(document.body, _obsOpts);
     _patchAll();
   } else {
     document.addEventListener('DOMContentLoaded', function() {
-      _obs586.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['placeholder'] });
+      _obs586.observe(document.body, _obsOpts);
       _patchAll();
     });
   }
-  // Interval fallback: React re-renders can revert patches — re-apply every 1.5s
-  setInterval(_patchAll, 1500);
+  // Interval fallback: re-apply every 2s in case MO misses something
+  setInterval(_patchAll, 2000);
 })();
 </script>
 </body>
