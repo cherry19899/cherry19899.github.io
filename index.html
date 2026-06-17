@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v585';
+        var KEY = '_wp_loaded_v586';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=585&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=586&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v585';</script>
+    <script>window.WORKPRO_VERSION='v586';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3875,6 +3875,101 @@ window._W5_fixed=true;
       }, 300);
       setTimeout(function() { clearInterval(adminTimer); }, 8000);
     }, 3000); // wait 3s for bundle to initialize
+  }
+})();
+</script>
+<!-- v586: i18n text patches + ghost Apply-Now button fix on Create Job screen -->
+<script>
+(function(){
+  // ── 1. Remove #wp-apply-overlay when Create Job form is in the foreground ──
+  // The overlay is position:fixed and persists when the bundle opens its Create Job
+  // form as a drawer/modal over the job detail page.
+  function _isCreateJobVisible() {
+    // Detect by the bundle's native Create Job form placeholder text
+    var inputs = document.querySelectorAll('input[placeholder],textarea[placeholder]');
+    for (var i = 0; i < inputs.length; i++) {
+      var ph = inputs[i].getAttribute('placeholder') || '';
+      if (ph.indexOf('React Developer Needed') !== -1 ||
+          ph.indexOf('project requirements') !== -1 ||
+          ph.indexOf('Describe the') !== -1) return true;
+    }
+    // Detect by heading text
+    var hdrs = document.querySelectorAll('h1,h2,h3,[class*="title"],[class*="header"],[class*="Title"],[class*="Header"]');
+    for (var j = 0; j < hdrs.length; j++) {
+      var t = (hdrs[j].textContent || '').trim();
+      if (/^(create job|post a job|new job|post job|create a job)$/i.test(t)) return true;
+    }
+    return false;
+  }
+
+  // ── 2. Russian text patches for bundle's English strings ──────────────────
+  // Exact-match replacements — specific enough to avoid false positives.
+  var _textMap = {
+    'No bio yet. Tap Edit to add one.': 'Биография не заполнена. Нажмите «Редакт.», чтобы добавить.',
+    'No bio yet. Add one in your profile settings.': 'Биография не заполнена.',
+    'e.g. React Developer Needed': 'напр. Нужен React разработчик',
+    'Describe the project requirements...': 'Опишите требования к проекту...',
+  };
+  // Attribute placeholders to patch
+  var _phMap = {
+    'e.g. React Developer Needed': 'напр. Нужен React разработчик',
+    'Describe the project requirements...': 'Опишите требования к проекту...',
+    'React, Node.js': 'React, Node.js, Дизайн',
+  };
+  // Heading-only "About" → "О себе" (only when element has ≤ 8 chars — avoids "About the app" etc.)
+  function _patchAboutHeadings() {
+    var hdrs = document.querySelectorAll('h2,h3,h4,[class*="section"],[class*="Section"]');
+    for (var i = 0; i < hdrs.length; i++) {
+      if ((hdrs[i].textContent || '').trim() === 'About') {
+        hdrs[i].childNodes.forEach(function(n) {
+          if (n.nodeType === 3 && n.nodeValue.trim() === 'About') n.nodeValue = 'О себе';
+        });
+      }
+    }
+  }
+
+  function _patchAll() {
+    // 1. Text nodes
+    try {
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+      var node;
+      while ((node = walker.nextNode())) {
+        var v = node.nodeValue;
+        if (v && _textMap[v.trim()]) node.nodeValue = _textMap[v.trim()];
+      }
+    } catch(e) {}
+    // 2. Placeholders
+    try {
+      var inputs = document.querySelectorAll('input[placeholder],textarea[placeholder]');
+      for (var i = 0; i < inputs.length; i++) {
+        var ph = inputs[i].getAttribute('placeholder');
+        if (ph && _phMap[ph]) inputs[i].setAttribute('placeholder', _phMap[ph]);
+      }
+    } catch(e) {}
+    // 3. "About" headings
+    try { _patchAboutHeadings(); } catch(e) {}
+    // 4. Ghost Apply overlay: remove when Create Job form is open
+    try {
+      if (_isCreateJobVisible()) {
+        var ov = document.getElementById('wp-apply-overlay');
+        if (ov) ov.remove();
+      }
+    } catch(e) {}
+  }
+
+  var _t586 = null;
+  var _obs586 = new MutationObserver(function() {
+    if (_t586) return;
+    _t586 = setTimeout(function() { _t586 = null; _patchAll(); }, 250);
+  });
+  if (document.body) {
+    _obs586.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['placeholder'] });
+    _patchAll();
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      _obs586.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['placeholder'] });
+      _patchAll();
+    });
   }
 })();
 </script>
