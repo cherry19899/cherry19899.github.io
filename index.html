@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v601';
+        var KEY = '_wp_loaded_v602';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v601';</script>
+    <script>window.WORKPRO_VERSION='v602';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -528,18 +528,9 @@
         // v567: exempt from _hideObs "own-job" hiding — this overlay is for OTHER users' open jobs
         btn.setAttribute('data-wp-apply-fixed', '1');
 
-        // Check if user already applied — show "Applied ✓" immediately on load
-        (function() {
-          var _chkUser = (function(){ try{ return JSON.parse(localStorage.getItem('workpro_user')||'null'); }catch(e){return null;} })();
-          var _chkUid = _chkUser && (_chkUser.uid || _chkUser.id);
-          var _chkTok = localStorage.getItem('workpro_token');
-          if (!_chkUid || !_chkTok) return;
-          var _chkHdrs = { 'Content-Type': 'application/json', 'x-user-id': _chkUid, 'Authorization': 'Bearer ' + _chkTok };
-          fetch(API + '/api/jobs/' + openJob.id + '/check-applied', { headers: _chkHdrs })
-            .then(function(r){ return r.ok ? r.json() : null; })
-            .then(function(d){ if (d && d.applied) { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; } })
-            .catch(function(){});
-        })();
+        // v602: removed pre-check (check-applied) — was showing gray "Applied ✓" as false positive
+        // (all DB queries confirm applied=false, but Pi Browser was getting applied=true from it).
+        // Button stays green; turns gray only on actual 409 from POST /apply.
 
         // v596: guard against the synthetic "ghost click" mobile browsers fire ~300ms after a
         // touch — when the user taps a job card near the bottom and this overlay appears at the
