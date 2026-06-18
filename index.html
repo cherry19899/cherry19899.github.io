@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v602';
+        var KEY = '_wp_loaded_v603';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -46,7 +46,7 @@
     <link rel="apple-touch-icon" href="/vite.svg?v=49" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v602';</script>
+    <script>window.WORKPRO_VERSION='v603';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -528,7 +528,7 @@
         // v567: exempt from _hideObs "own-job" hiding — this overlay is for OTHER users' open jobs
         btn.setAttribute('data-wp-apply-fixed', '1');
 
-        // v602: removed pre-check (check-applied) — was showing gray "Applied ✓" as false positive
+        // v603: removed pre-check (check-applied) — was showing gray "Applied ✓" as false positive
         // (all DB queries confirm applied=false, but Pi Browser was getting applied=true from it).
         // Button stays green; turns gray only on actual 409 from POST /apply.
 
@@ -563,11 +563,12 @@
                 .then(function(r) { var s = r.status; return r.text().then(function(t){ return {s:s,t:t}; }); })
                 .then(function(rt) {
                   clearTimeout(_abortTimer);
-                  var d; try { d = JSON.parse(rt.t); } catch(e) { d = {}; }
-                  if (d.alreadyApplied || rt.s === 409) {
+                  var d; try { d = JSON.parse(rt.t); } catch(e) { d = null; }
+                  if (d && (d.alreadyApplied || rt.s === 409)) {
                     btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default';
-                  } else if (d.error) { alert('Error: ' + d.error); _resetBtn(); }
-                  else { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; }
+                  } else if (!d || d.error || rt.s >= 400) {
+                    alert('Error: ' + (d && d.error ? d.error : 'Server error (HTTP ' + rt.s + ')')); _resetBtn();
+                  } else { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; }
                 })
                 .catch(function(e) {
                   clearTimeout(_abortTimer);
