@@ -518,7 +518,11 @@
         if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId === openJob.id) return; // same job, already shown
         if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId !== openJob.id) _hideApplyOverlay();
         var cost = _applyCostOf(openJob);
-        var label = 'Apply Now (' + cost + ' connect' + (cost === 1 ? '' : 's') + ')';
+        var _lang = (function(){ try { return localStorage.getItem('lang') || 'en'; } catch(e){ return 'en'; } })();
+        var _ruConn = cost === 1 ? ' Коннект' : (cost >= 2 && cost <= 4 ? ' Коннекта' : ' Коннектов');
+        var label = _lang === 'ru'
+          ? ('Откликнуться (' + cost + _ruConn + ')')
+          : ('Apply Now (' + cost + ' connect' + (cost === 1 ? '' : 's') + ')');
         var overlay = document.createElement('div');
         overlay.id = 'wp-apply-overlay';
         overlay.style.cssText = 'position:fixed;bottom:170px;left:0;right:0;z-index:99999;display:flex;justify-content:center;padding:0 16px;';
@@ -541,19 +545,19 @@
           _wpCoverLetterModal(function(msg) {
             if (msg === null) return;
             btn.disabled = true;
-            btn.textContent = 'Submitting...';
+            btn.textContent = _lang === 'ru' ? 'Отправка...' : 'Submitting...';
             var _resetBtn = function() { btn.disabled = false; btn.textContent = label; };
             // 30-second timeout guard — prevents infinite "Submitting..." on any failure
             var _abortCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
             var _abortTimer = setTimeout(function() {
               if (_abortCtrl) _abortCtrl.abort();
               _resetBtn();
-              alert('Request timed out. Please try again.');
+              alert(_lang === 'ru' ? 'Превышено время ожидания. Попробуйте ещё раз.' : 'Request timed out. Please try again.');
             }, 30000);
             try {
               var applyUser = (function(){ try { return JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) { return null; } })();
               var applyUid = applyUser && (applyUser.uid || applyUser.id);
-              if (!applyUid) { clearTimeout(_abortTimer); alert('Please log in to apply.'); _resetBtn(); return; }
+              if (!applyUid) { clearTimeout(_abortTimer); alert(_lang === 'ru' ? 'Пожалуйста, войдите в систему.' : 'Please log in to apply.'); _resetBtn(); return; }
               var applyHdrs = { 'Content-Type': 'application/json', 'x-user-id': applyUid };
               var applyTok = localStorage.getItem('workpro_token');
               if (applyTok) applyHdrs['Authorization'] = 'Bearer ' + applyTok;
@@ -564,11 +568,12 @@
                 .then(function(rt) {
                   clearTimeout(_abortTimer);
                   var d; try { d = JSON.parse(rt.t); } catch(e) { d = null; }
+                  var _appliedLabel = _lang === 'ru' ? 'Отклик отправлен ✓' : 'Applied ✓';
                   if (d && (d.alreadyApplied || rt.s === 409)) {
-                    btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default';
+                    btn.textContent = _appliedLabel; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default';
                   } else if (!d || d.error || rt.s >= 400) {
-                    alert('Error: ' + (d && d.error ? d.error : 'Server error (HTTP ' + rt.s + ')')); _resetBtn();
-                  } else { btn.textContent = 'Applied ✓'; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; }
+                    alert((_lang === 'ru' ? 'Ошибка: ' : 'Error: ') + (d && d.error ? d.error : 'Server error (HTTP ' + rt.s + ')')); _resetBtn();
+                  } else { btn.textContent = _appliedLabel; btn.disabled = true; btn.style.background = '#6b7280'; btn.style.cursor = 'default'; }
                 })
                 .catch(function(e) {
                   clearTimeout(_abortTimer);
