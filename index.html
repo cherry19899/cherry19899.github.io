@@ -475,7 +475,7 @@
       }
       // Styled cover-letter modal (replaces native prompt). Calls cb(text) on OK, cb(null) on cancel.
       function _wpCoverLetterModal(cb) {
-        var isRu = (navigator.language || 'en').slice(0,2) === 'ru';
+        var isRu = ((function(){ try { return localStorage.getItem('lang'); } catch(e){ return null; } })() || navigator.language || 'en').slice(0,2) === 'ru';
         var back = document.createElement('div');
         back.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;padding:24px;';
         var card = document.createElement('div');
