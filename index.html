@@ -3769,9 +3769,23 @@ window._W5_fixed=true;
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
   <p>Work Pro v585 — Freelance Marketplace</p>
   <p style="margin-top: 8px;">
-    <a href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
+    <a id="_footer_pp_link" href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
 </div>
+<script>
+(function() {
+  var _ppFooterTitles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
+  function _updateFooterPP() {
+    var el = document.getElementById('_footer_pp_link');
+    if (!el) return;
+    var lang = localStorage.getItem('workpro_lang') || 'en';
+    el.textContent = '🔒 ' + (_ppFooterTitles[lang] || 'Privacy Policy');
+  }
+  document.addEventListener('DOMContentLoaded', _updateFooterPP);
+  window.addEventListener('workpro_lang_change', _updateFooterPP);
+  setTimeout(_updateFooterPP, 500);
+})();
+</script>
 <script>
 // v513: Add Admin button to profile — ONLY for developer cherry19899
 (function() {
