@@ -1731,7 +1731,12 @@
 
       // Helper: get current language from any known key
       function _getLang() {
-        return localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang') || 'en';
+        var stored = localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang');
+        if (stored) return stored;
+        // Fallback: detect from browser language
+        var nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase().split('-')[0];
+        var supported = ['en','ru','es','de','fr','it','pt','pl','uk','ja','ko','zh'];
+        return supported.indexOf(nav) !== -1 ? nav : 'en';
       }
 
       window._showPostJob = function() {
