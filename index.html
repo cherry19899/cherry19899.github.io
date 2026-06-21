@@ -252,41 +252,47 @@
         return _origXHRSend.apply(this, arguments);
       };
 
-      // ── 1c. JWT bootstrap via real Pi auth ─────────────────────────────────
-      // POST /api/me now REQUIRES a Pi accessToken (account-takeover fix), so a
-      // tokenless bootstrap can no longer mint a JWT. For returning users whose
-      // cached session has no workpro_token, silently re-authenticate with Pi to
-      // obtain a fresh accessToken, then exchange it for the 30-day JWT.
+      // ── 1c. JWT bootstrap ──────────────────────────────────────────────────
+      // Mints the 30-day JWT for returning users whose cached session has no token.
+      // Testnet/Sandbox: the backend (SANDBOX_MODE) issues a JWT without an accessToken.
+      // Mainnet: it requires a real Pi accessToken, so we attach one when Pi.authenticate
+      // provides it. We always send the request (tokenless fallback works in Sandbox).
       (function() {
         function _haveValidTok() {
           var t = localStorage.getItem('workpro_token');
           return !!(t && t.length >= 20 && t.indexOf('pi_') !== 0);
         }
         if (_haveValidTok()) return;
-        // Only attempt for users who already have a cached session
         var _bu = null;
         try { _bu = JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) {}
-        if (!_bu || !(_bu.id || _bu.uid)) return;
-        var _tries = 0;
-        (function _mint() {
+        var _uid = _bu && (_bu.id || _bu.uid);
+        if (!_uid) return;
+        function _mint(accessToken, username) {
           if (_haveValidTok()) return;
-          if (!window._piSdkReady || !window.Pi || typeof window.Pi.authenticate !== 'function') {
-            if (_tries++ < 100) setTimeout(_mint, 200);
-            return;
+          var _body = { uid: _uid, username: username || (_bu.username || '') };
+          if (accessToken) _body.accessToken = accessToken;
+          fetch(API + '/api/me', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(_body)
+          }).then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(d) { if (d && d.token) { localStorage.setItem('workpro_token', d.token); } })
+            .catch(function() {});
+        }
+        var _tries = 0;
+        (function _go() {
+          if (_haveValidTok()) return;
+          if (window._piSdkReady && window.Pi && typeof window.Pi.authenticate === 'function') {
+            try {
+              window.Pi.authenticate(['username', 'payments'], function() { return Promise.resolve(); })
+                .then(function(auth) { _mint(auth && auth.accessToken, auth && auth.user && auth.user.username); })
+                .catch(function() { _mint(null); });
+            } catch(e) { _mint(null); }
+          } else if (_tries++ < 25) {
+            setTimeout(_go, 200);
+          } else {
+            _mint(null); // SDK not ready — tokenless fallback (works in Sandbox)
           }
-          try {
-            window.Pi.authenticate(['username', 'payments'], function() { return Promise.resolve(); })
-              .then(function(auth) {
-                if (!auth || !auth.user || !auth.accessToken) return null;
-                var _uid = String(auth.user.uid).indexOf('pi_') === 0 ? auth.user.uid : 'pi_' + auth.user.uid;
-                return fetch(API + '/api/me', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ uid: _uid, username: auth.user.username || '', accessToken: auth.accessToken })
-                }).then(function(r) { return r.ok ? r.json() : null; })
-                  .then(function(d) { if (d && d.token) { localStorage.setItem('workpro_token', d.token); } });
-              }).catch(function() {});
-          } catch(e) {}
         })();
       })();
 
@@ -1519,7 +1525,8 @@
         }
         if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
         try {
-          var isSandbox = /localhost|127\.0\.0\.1/.test(location.hostname);
+          // App runs in Pi Testnet/Sandbox — sandbox=true on the live github.io domain too
+          var isSandbox = /github\.io|localhost|127\.0\.0\.1/.test(location.hostname);
           window.Pi.init({ 
             version: "2.0", 
             sandbox: isSandbox,
