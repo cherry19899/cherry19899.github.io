@@ -275,23 +275,18 @@
             return;
           }
           try {
-            alert('DBG1: calling Pi.authenticate');
             window.Pi.authenticate(['username', 'payments'], function() { return Promise.resolve(); })
               .then(function(auth) {
-                alert('DBG2 keys=' + (auth ? Object.keys(auth).join(',') : 'null') + ' | tokLen=' + (auth && auth.accessToken ? auth.accessToken.length : 0) + ' | tok=' + (auth && auth.accessToken ? String(auth.accessToken).slice(0,30) : 'NONE'));
                 if (!auth || !auth.user || !auth.accessToken) return null;
                 var _uid = String(auth.user.uid).indexOf('pi_') === 0 ? auth.user.uid : 'pi_' + auth.user.uid;
                 return fetch(API + '/api/me', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ uid: _uid, username: auth.user.username || '', accessToken: auth.accessToken })
-                }).then(function(r) { return r.text().then(function(t){ return {ok:r.ok, status:r.status, body:t}; }); })
-                  .then(function(d) {
-                    alert('DBG3: /api/me status=' + d.status + ' body=' + (d.body||'').slice(0,120));
-                    if (d.ok) { try { var j = JSON.parse(d.body); if (j && j.token) { localStorage.setItem('workpro_token', j.token); alert('DBG4: token saved'); } } catch(e){} }
-                  });
-              }).catch(function(e) { alert('DBG-ERR: ' + (e && e.message)); });
-          } catch(e) { alert('DBG-CATCH: ' + (e && e.message)); }
+                }).then(function(r) { return r.ok ? r.json() : null; })
+                  .then(function(d) { if (d && d.token) { localStorage.setItem('workpro_token', d.token); } });
+              }).catch(function() {});
+          } catch(e) {}
         })();
       })();
 
