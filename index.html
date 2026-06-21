@@ -252,31 +252,42 @@
         return _origXHRSend.apply(this, arguments);
       };
 
-      // ── 1c. JWT bootstrap: get real JWT for any logged-in user ─────────────
-      // Bundle's authPi() stores fake token ("pi_" + 8 chars) and never writes
-      // workpro_token. POST /api/me without accessToken issues real 30-day JWT
-      // for any existing account. Run for every user on page load.
+      // ── 1c. JWT bootstrap via real Pi auth ─────────────────────────────────
+      // POST /api/me now REQUIRES a Pi accessToken (account-takeover fix), so a
+      // tokenless bootstrap can no longer mint a JWT. For returning users whose
+      // cached session has no workpro_token, silently re-authenticate with Pi to
+      // obtain a fresh accessToken, then exchange it for the 30-day JWT.
       (function() {
-        try {
-          var _bu = JSON.parse(localStorage.getItem('workpro_user') || 'null');
-          var _uid = _bu && (_bu.id || _bu.uid);
-          if (_uid) {
-            var _existTok = localStorage.getItem('workpro_token');
-            // Refresh if missing or still the fake "pi_XXXXXXXX" token
-            if (!_existTok || _existTok.length < 20 || _existTok.startsWith('pi_')) {
-              fetch(API + '/api/me', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ uid: _uid, username: _bu.username || '' })
-              }).then(function(r) { return r.ok ? r.json() : null; })
-                .then(function(d) {
-                  if (d && d.token) {
-                    localStorage.setItem('workpro_token', d.token);
-                  }
-                }).catch(function() {});
-            }
+        function _haveValidTok() {
+          var t = localStorage.getItem('workpro_token');
+          return !!(t && t.length >= 20 && t.indexOf('pi_') !== 0);
+        }
+        if (_haveValidTok()) return;
+        // Only attempt for users who already have a cached session
+        var _bu = null;
+        try { _bu = JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch(e) {}
+        if (!_bu || !(_bu.id || _bu.uid)) return;
+        var _tries = 0;
+        (function _mint() {
+          if (_haveValidTok()) return;
+          if (!window._piSdkReady || !window.Pi || typeof window.Pi.authenticate !== 'function') {
+            if (_tries++ < 100) setTimeout(_mint, 200);
+            return;
           }
-        } catch(e) {}
+          try {
+            window.Pi.authenticate(['username', 'payments'], function() { return Promise.resolve(); })
+              .then(function(auth) {
+                if (!auth || !auth.user || !auth.accessToken) return null;
+                var _uid = String(auth.user.uid).indexOf('pi_') === 0 ? auth.user.uid : 'pi_' + auth.user.uid;
+                return fetch(API + '/api/me', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ uid: _uid, username: auth.user.username || '', accessToken: auth.accessToken })
+                }).then(function(r) { return r.ok ? r.json() : null; })
+                  .then(function(d) { if (d && d.token) { localStorage.setItem('workpro_token', d.token); } });
+              }).catch(function() {});
+          } catch(e) {}
+        })();
       })();
 
       // ── 1d. localStorage.setItem interceptor: get JWT + fix stale connects on user switch ──
