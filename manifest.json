@@ -1,7 +1,7 @@
 {
   "name": "Work Pro",
   "short_name": "WorkPro",
-  "description": "Freelance marketplace — hire talent and get paid in cryptocurrency",
+  "description": "Freelance marketplace — hire talent and get paid in Pi",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -10,10 +10,28 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/icon-192.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/workpro-icon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "categories": ["business", "productivity"],
