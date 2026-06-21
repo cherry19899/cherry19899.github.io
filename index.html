@@ -278,7 +278,7 @@
             alert('DBG1: calling Pi.authenticate');
             window.Pi.authenticate(['username', 'payments'], function() { return Promise.resolve(); })
               .then(function(auth) {
-                alert('DBG2: auth resolved uid=' + (auth && auth.user && auth.user.uid) + ' hasTok=' + !!(auth && auth.accessToken));
+                alert('DBG2 keys=' + (auth ? Object.keys(auth).join(',') : 'null') + ' | tokLen=' + (auth && auth.accessToken ? auth.accessToken.length : 0) + ' | tok=' + (auth && auth.accessToken ? String(auth.accessToken).slice(0,30) : 'NONE'));
                 if (!auth || !auth.user || !auth.accessToken) return null;
                 var _uid = String(auth.user.uid).indexOf('pi_') === 0 ? auth.user.uid : 'pi_' + auth.user.uid;
                 return fetch(API + '/api/me', {
