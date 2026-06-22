@@ -3833,10 +3833,79 @@ window._W5_fixed=true;
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
   <p>Work Pro — Freelance Marketplace</p>
+  <p id="_wp_version_line" style="margin-top: 4px; font-size: 11px; color: #CBD5E1;">build <span id="_wp_ver_fe">v606</span> · 2026-06-22</p>
   <p style="margin-top: 8px;">
     <a id="_footer_pp_link" href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
 </div>
+
+<!-- Splash screen shown once per build version -->
+<div id="_wp_splash" style="display:none;position:fixed;inset:0;z-index:999999;background:#0f1713;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="28" fill="#10b981"/><text x="28" y="35" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui">W</text></svg>
+  <div style="color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">Work Pro</div>
+  <div id="_wp_splash_ver" style="color:rgba(255,255,255,0.45);font-size:12px;">build v606 · 2026-06-22</div>
+</div>
+<script>
+(function(){
+  var VER = window.WORKPRO_VERSION || 'v606';
+  var DATE = '2026-06-22';
+  // Update footer version
+  var fe = document.getElementById('_wp_ver_fe');
+  if (fe) fe.textContent = VER;
+  var sv = document.getElementById('_wp_splash_ver');
+  if (sv) sv.textContent = 'build ' + VER + ' · ' + DATE;
+
+  // Show splash only once per version
+  var splashKey = '_wp_splash_' + VER;
+  var splash = document.getElementById('_wp_splash');
+  if (splash && !sessionStorage.getItem(splashKey)) {
+    sessionStorage.setItem(splashKey, '1');
+    splash.style.display = 'flex';
+    setTimeout(function() {
+      splash.style.transition = 'opacity 0.4s';
+      splash.style.opacity = '0';
+      setTimeout(function() { splash.style.display = 'none'; }, 400);
+    }, 1000);
+  }
+
+  // Fetch backend version and inject into footer + About section
+  fetch('https://workpro-api.onrender.com/api/health', { cache: 'no-store' })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (!d) return;
+      var beVer = d.version || '?';
+      var line = document.getElementById('_wp_version_line');
+      if (line) line.innerHTML = 'frontend ' + VER + ' &middot; backend v' + beVer + ' &middot; ' + DATE;
+      window._wp_backend_version = beVer;
+    }).catch(function(){});
+
+  // Inject About section in Profile when it appears
+  var _aboutInjected = false;
+  function _injectAbout() {
+    if (_aboutInjected) return;
+    var beVer = window._wp_backend_version || '...';
+    var VER2 = window.WORKPRO_VERSION || 'v606';
+    // Find profile page "About" heading or bio section
+    var els = document.querySelectorAll('h2,h3,h4,label,[class*="section"],[class*="Section"]');
+    for (var i = 0; i < els.length; i++) {
+      var t = (els[i].textContent || '').trim();
+      if (/^(О\s+себе|About me|Bio|Биография)$/i.test(t) && !document.getElementById('_wp_about_ver')) {
+        var box = document.createElement('div');
+        box.id = '_wp_about_ver';
+        box.style.cssText = 'margin:12px 0 0;padding:10px 14px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0;font-size:12px;color:#065f46;line-height:1.6;';
+        box.innerHTML = '<b>WorkPro</b><br>Frontend: ' + VER2 + '<br>Backend: v' + beVer + '<br>Build: ' + DATE;
+        var parent = els[i].closest('section,div,[class*="card"],[class*="Card"]') || els[i].parentElement;
+        if (parent) { parent.appendChild(box); _aboutInjected = true; break; }
+      }
+    }
+  }
+  var _aboutObs = new MutationObserver(function() {
+    if (location.hash === '#/profile' || location.pathname.indexOf('profile') !== -1) _injectAbout();
+    else { _aboutInjected = false; var old = document.getElementById('_wp_about_ver'); if(old) old.remove(); }
+  });
+  _aboutObs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+})();
+</script>
 <script>
 (function() {
   var _ppFooterTitles = { en:'Privacy Policy', ru:'Политика конфиденциальности', es:'Privacidad', de:'Datenschutz', fr:'Confidentialité', it:'Privacy', pt:'Privacidade', pl:'Prywatność', uk:'Конфіденційність', ja:'プライバシー', ko:'개인정보', zh:'隐私' };
