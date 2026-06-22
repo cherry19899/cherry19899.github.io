@@ -4063,6 +4063,30 @@ window._W5_fixed=true;
   setInterval(_patchAll, 2000);
 })();
 </script>
+<!-- v604: offline mode banner -->
+<script>
+(function(){
+  var _lang = (navigator.language || 'en').slice(0, 2);
+  var _msg = _lang === 'ru' ? 'Нет интернета — работаем в оффлайн-режиме'
+           : _lang === 'uk' ? 'Немає інтернету — офлайн-режим'
+           : 'No internet connection — offline mode';
+  var _banner = null;
+  function showBanner() {
+    if (_banner) return;
+    _banner = document.createElement('div');
+    _banner.id = '_wp_offline_banner';
+    _banner.textContent = _msg;
+    _banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:200000;background:#b45309;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;letter-spacing:0.01em;';
+    document.body.appendChild(_banner);
+  }
+  function hideBanner() {
+    if (_banner && _banner.parentNode) { _banner.parentNode.removeChild(_banner); _banner = null; }
+  }
+  if (!navigator.onLine) showBanner();
+  window.addEventListener('offline', showBanner);
+  window.addEventListener('online', hideBanner);
+})();
+</script>
 </body>
 </html>
 <!-- v484: Admin toolbar — Users tab detection, removed old cache-bust conflict -->

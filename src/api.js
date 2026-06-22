@@ -1,17 +1,48 @@
 // API helper functions
-const API_BASE = "https://workpro-api.onrender.com";
+const API_BASE = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE)
+  ? import.meta.env.VITE_API_BASE
+  : "https://workpro-api.onrender.com";
 
 function getHeaders() {
   const token = localStorage.getItem("workpro_token") || "";
-  const raw = localStorage.getItem("workpro_user");
-  const uid = raw ? (JSON.parse(raw).uid || "") : "";
   const headers = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = "Bearer " + token;
-  else if (uid) headers["x-user-id"] = uid;
+  // x-user-id fallback removed: JWT covers auth; sending uid without token is a security risk
   return headers;
 }
 
-async function apiFetch(path, options = {}) {
+// Queue for in-flight refresh so multiple 401s only trigger one refresh
+let _refreshPromise = null;
+
+async function _refreshToken() {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const raw = localStorage.getItem("workpro_user");
+      const u = raw ? JSON.parse(raw) : null;
+      const uid = u && (u.uid || u.id);
+      if (!uid) return false;
+      const body = { uid, username: u.username || "" };
+      const piTok = window._wp_pendingAccessToken || null;
+      if (piTok) body.accessToken = piTok;
+      const r = await fetch(`${API_BASE}/api/me`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) return false;
+      const d = await r.json();
+      if (d && d.token) {
+        localStorage.setItem("workpro_token", d.token);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  })().finally(() => { _refreshPromise = null; });
+  return _refreshPromise;
+}
+
+async function apiFetch(path, options = {}, _retry = true) {
   const url = `${API_BASE}${path}`;
   const headers = getHeaders();
   const response = await fetch(url, {
@@ -21,6 +52,10 @@ async function apiFetch(path, options = {}) {
       ...(options.headers || {}),
     },
   });
+  if (response.status === 401 && _retry) {
+    const refreshed = await _refreshToken();
+    if (refreshed) return apiFetch(path, options, false);
+  }
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(errorText || `HTTP ${response.status}`);
