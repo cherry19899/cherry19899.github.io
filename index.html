@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v606';
+        var KEY = '_wp_loaded_v607';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=606&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=607&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -47,7 +47,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v606';</script>
+    <script>window.WORKPRO_VERSION='v607';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -3833,41 +3833,19 @@ window._W5_fixed=true;
 <!-- FOOTER -->
 <div id="_workpro_footer" style="padding: 20px 16px 100px; text-align: center; color: #9CA3AF; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
   <p>Work Pro — Freelance Marketplace</p>
-  <p id="_wp_version_line" style="margin-top: 4px; font-size: 11px; color: #CBD5E1;">build <span id="_wp_ver_fe">v606</span> · 2026-06-22</p>
+  <p id="_wp_version_line" style="margin-top: 4px; font-size: 11px; color: #CBD5E1;">build <span id="_wp_ver_fe">v607</span> · 2026-06-22</p>
   <p style="margin-top: 8px;">
     <a id="_footer_pp_link" href="javascript:void(0)" onclick="if(window._showPrivacyPolicy)window._showPrivacyPolicy();return false;" style="color: #10b981; text-decoration: none; cursor: pointer; font-size: 13px;">🔒 Privacy Policy</a>
   </p>
 </div>
 
-<!-- Splash screen shown once per build version -->
-<div id="_wp_splash" style="display:none;position:fixed;inset:0;z-index:999999;background:#0f1713;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-  <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="28" fill="#10b981"/><text x="28" y="35" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui">W</text></svg>
-  <div style="color:#fff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">Work Pro</div>
-  <div id="_wp_splash_ver" style="color:rgba(255,255,255,0.45);font-size:12px;">build v606 · 2026-06-22</div>
-</div>
 <script>
 (function(){
-  var VER = window.WORKPRO_VERSION || 'v606';
+  var VER = window.WORKPRO_VERSION || 'v607';
   var DATE = '2026-06-22';
   // Update footer version
   var fe = document.getElementById('_wp_ver_fe');
   if (fe) fe.textContent = VER;
-  var sv = document.getElementById('_wp_splash_ver');
-  if (sv) sv.textContent = 'build ' + VER + ' · ' + DATE;
-
-  // Show splash only once per version
-  var splashKey = '_wp_splash_' + VER;
-  var splash = document.getElementById('_wp_splash');
-  if (splash && !sessionStorage.getItem(splashKey)) {
-    sessionStorage.setItem(splashKey, '1');
-    splash.style.display = 'flex';
-    setTimeout(function() {
-      splash.style.transition = 'opacity 0.4s';
-      splash.style.opacity = '0';
-      setTimeout(function() { splash.style.display = 'none'; }, 400);
-    }, 1000);
-  }
-
   // Fetch backend version and inject into footer + About section
   fetch('https://workpro-api.onrender.com/api/health', { cache: 'no-store' })
     .then(function(r) { return r.ok ? r.json() : null; })
@@ -3884,7 +3862,7 @@ window._W5_fixed=true;
   function _injectAbout() {
     if (_aboutInjected) return;
     var beVer = window._wp_backend_version || '...';
-    var VER2 = window.WORKPRO_VERSION || 'v606';
+    var VER2 = window.WORKPRO_VERSION || 'v607';
     // Find profile page "About" heading or bio section
     var els = document.querySelectorAll('h2,h3,h4,label,[class*="section"],[class*="Section"]');
     for (var i = 0; i < els.length; i++) {
