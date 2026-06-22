@@ -1251,7 +1251,7 @@
         }, 3000);
       };
       var toastStyle = document.createElement('style');
-      toastStyle.textContent = '@keyframes slideDownToast{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+      toastStyle.textContent = '@keyframes slideDownToast{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}';
       document.head.appendChild(toastStyle);
 
       // PERSISTENT fetch interceptor for /apply
@@ -2478,7 +2478,7 @@ function pi(v){return(!v&&v!==0)?"N/A":v+" π";}
 function ago(d){if(!d)return"";var s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return Math.floor(s/86400)+"d";}
 function AdminPanel(props){
 var user=props.user,onNavigate=props.onNavigate;
-var usersS=useState([]),jobs_S=useState([]),statsS=useState(null),loadS=useState(true),errS=useState(""),tabS=useState("stats"),filterS=useState([]),searchS=useState(""),blockS=useState(null),escrowS=useState([]),earnS=useState(null);
+var usersS=useState([]),jobs_S=useState([]),statsS=useState(null),loadS=useState(true),errS=useState(""),tabS=useState("stats"),filterS=useState([]),searchS=useState(""),blockS=useState(null),escrowS=useState([]),earnS=useState(null),warmS=useState(false);
 var users=usersS[0],setUsers=usersS[1];
 var jobs=jobs_S[0],setJobs=jobs_S[1];
 var stats=statsS[0],setStats=statsS[1];
@@ -2490,6 +2490,7 @@ var search=searchS[0],setSearch=searchS[1];
 var blockingUser=blockS[0],setBlockingUser=blockS[1];
 var escrows=escrowS[0],setEscrows=escrowS[1];
 var earnings=earnS[0],setEarnings=earnS[1];
+var warming=warmS[0],setWarming=warmS[1];
 useEffect(function(){
   loadData();
 },[]);
@@ -2521,12 +2522,13 @@ function loadData(){
   }
   function applyData(u,s,j,e,earn){
     if(u&&u.users){setUsers(u.users);setFilteredUsers(u.users);}
-    // If server is still warming up — show cached/stale and auto-retry
+    if(u&&u._timeout){setWarming(true);}
     if(s&&s.status==='loading'){
-      setStats({});
-      setTimeout(loadData, (s.retry_after||5)*1000);
+      setWarming(true);setStats(null);
+      setTimeout(loadData,(s.retry_after||5)*1000);
       return;
     }
+    setWarming(false);
     setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
   }
   refreshToken().then(function(){
@@ -2577,7 +2579,23 @@ function deleteJob(id){
     else alert("Failed: "+r.status);
   }).catch(function(e){alert("Error: "+e.message);});
 }
-if(loading)return ce("div",{className:"loading-container"},ce("span",{className:"spinner large"}),ce("p",null,"Loading admin data..."));
+if(loading)return ce("div",{style:{padding:"32px 16px",textAlign:"center",color:"#6b7280"}},
+  ce("div",{style:{display:"flex",flexDirection:"column",gap:"12px",maxWidth:"360px",margin:"0 auto"}},
+    ce("p",{style:{fontSize:"15px",fontWeight:"600",color:"#374151"}},"Загрузка..."),
+    ce("div",{style:{height:"48px",background:"#f3f4f6",borderRadius:"10px",animation:"pulse 1.5s infinite"}}),
+    ce("div",{style:{height:"48px",background:"#f3f4f6",borderRadius:"10px",animation:"pulse 1.5s infinite",animationDelay:"0.2s"}}),
+    ce("div",{style:{height:"48px",background:"#f3f4f6",borderRadius:"10px",animation:"pulse 1.5s infinite",animationDelay:"0.4s"}}),
+    ce("p",{style:{fontSize:"12px",color:"#9ca3af",marginTop:"8px"}},"Данные загружаются, подождите...")
+  )
+);
+if(warming)return ce("div",{style:{padding:"32px 16px",textAlign:"center",color:"#6b7280"}},
+  ce("div",{style:{display:"flex",flexDirection:"column",gap:"12px",maxWidth:"360px",margin:"0 auto"}},
+    ce("p",{style:{fontSize:"15px",fontWeight:"600",color:"#374151"}},"Сервер прогревается..."),
+    ce("div",{style:{height:"48px",background:"#f3f4f6",borderRadius:"10px",animation:"pulse 1.5s infinite"}}),
+    ce("div",{style:{height:"48px",background:"#f3f4f6",borderRadius:"10px",animation:"pulse 1.5s infinite",animationDelay:"0.2s"}}),
+    ce("p",{style:{fontSize:"12px",color:"#9ca3af",marginTop:"8px"}},"Повтор через 5 сек...")
+  )
+);
 if(error)return ce("div",{className:"error-container",style:{color:"#dc2626",background:"#fff",padding:"20px"}},ce("h2",null,"Admin Error"),ce("p",{style:{color:"#dc2626",fontSize:"13px",wordBreak:"break-all"}},error),ce("button",{className:"btn btn-primary",onClick:loadData},"Retry"));
 var su=stats?(stats.total_users!=null?stats.total_users:users.length):users.length;
 var sj=stats?(stats.total_jobs!=null?stats.total_jobs:jobs.length):jobs.length;
