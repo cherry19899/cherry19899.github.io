@@ -2519,28 +2519,39 @@ function loadData(){
       .then(function(r){return r.ok?r.json():fallback;})
       .catch(function(e){console.warn("[Admin] fetch error",url,e.message);return fallback;});
   }
+  function applyData(u,s,j,e,earn){
+    if(u&&u.users){setUsers(u.users);setFilteredUsers(u.users);}
+    // If server is still warming up — show cached/stale and auto-retry
+    if(s&&s.status==='loading'){
+      setStats({});
+      setTimeout(loadData, (s.retry_after||5)*1000);
+      return;
+    }
+    setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
+  }
   refreshToken().then(function(){
-    // Verify admin status via API (don't rely on stale localStorage is_admin)
     return fetch(API+"/api/admin/verify",{headers:h()})
       .then(function(r){return r.ok?r.json():{valid:false};})
       .catch(function(){return {valid:false};})
       .then(function(v){
         if(!v||!v.valid){setError("Access denied: not an admin account.");setLoading(false);return;}
-        return Promise.all([
-          safeFetch(API+"/api/admin/users",{}),
-          safeFetch(API+"/api/admin/stats",{}),
-          safeFetch(API+"/api/admin/jobs",[]).then(function(d){return Array.isArray(d)?d:(d&&d.jobs)||[];}),
-          safeFetch(API+"/api/admin/escrows",[]).then(function(d){return Array.isArray(d)?d:(d&&d.escrows)||[];}),
-          safeFetch(API+"/api/admin/earnings",null)
-        ]).then(function(data){
-          var u=data[0],s=data[1],j=data[2],e=data[3],earn=data[4];
-          if(u&&u.users){setUsers(u.users);setFilteredUsers(u.users);}
-          setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
+        // Progressive: load stats first (fast, cached), then rest in parallel
+        return safeFetch(API+"/api/admin/stats",{}).then(function(s){
+          // Show immediately with cached stats so screen isn't blank
+          if(s&&s.status!=='loading'){setStats(s);}
+          return Promise.all([
+            safeFetch(API+"/api/admin/users",{}),
+            safeFetch(API+"/api/admin/jobs",[]).then(function(d){return Array.isArray(d)?d:(d&&d.jobs)||[];}),
+            safeFetch(API+"/api/admin/escrows",[]).then(function(d){return Array.isArray(d)?d:(d&&d.escrows)||[];}),
+            safeFetch(API+"/api/admin/earnings",null),
+          ]).then(function(data){
+            applyData(data[0],s,data[1],data[2],data[3]);
+          }).catch(function(e){console.error("[Admin]",e);});
         }).catch(function(e){
-          console.error("[Admin] error:",e);setError(e.message||"Failed to load");
+          console.error("[Admin] stats error:",e);
         }).finally(function(){setLoading(false);});
       });
-  });
+  }).catch(function(e){console.error("[Admin] init error:",e);setLoading(false);});
 }
 function blockUser(u){
   var uid=u.id||u.username||u.name;
