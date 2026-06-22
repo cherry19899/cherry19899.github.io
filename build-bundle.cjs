@@ -41,7 +41,18 @@ const babelOpts = {
   plugins: [],
 };
 
+// Embed React + ReactDOM UMD so bundle is self-contained (no CDN dependency)
+const reactCode = fs.readFileSync(path.join(__dirname, 'node_modules/react/umd/react.production.min.js'), 'utf8');
+const reactDomCode = fs.readFileSync(path.join(__dirname, 'node_modules/react-dom/umd/react-dom.production.min.js'), 'utf8');
+
 let combined = '/* WorkPro App Bundle — built by build-bundle.js */\n';
+// Inline React so Pi Browser doesn't need CDN access
+combined += '(function(){\n';
+combined += '/* === React 18 UMD === */\n';
+combined += reactCode + '\n';
+combined += '/* === ReactDOM 18 UMD === */\n';
+combined += reactDomCode + '\n';
+combined += '})();\n';
 combined += '(function(React, ReactDOM) {\n';
 combined += '"use strict";\n';
 combined += 'var useState=React.useState,useEffect=React.useEffect,useCallback=React.useCallback,useRef=React.useRef,useMemo=React.useMemo;\n';
