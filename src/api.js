@@ -1,7 +1,11 @@
 // API helper functions
-const API_BASE = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE)
-  ? import.meta.env.VITE_API_BASE
-  : "https://workpro-api.onrender.com";
+// API_BASE is declared by the bundle preamble (window.__WP_API_BASE__ || hardcoded fallback).
+// When used in a Vite build (no preamble), declare it here from the env var.
+if (typeof API_BASE === 'undefined') {
+  var API_BASE = (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE)
+    ? import.meta.env.VITE_API_BASE
+    : "https://workpro-api.onrender.com";
+}
 
 function getHeaders() {
   const token = localStorage.getItem("workpro_token") || "";

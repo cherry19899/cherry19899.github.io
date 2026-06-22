@@ -1,4 +1,4 @@
-// ChatRoom.js - Single Chat Room
+// ChatRoom.js - Single Chat Room (with Socket.io real-time support + polling fallback)
 const { useState, useEffect, useRef } = React;
 
 function ChatRoom({ user, conversationId, onNavigate }) {
@@ -8,10 +8,41 @@ function ChatRoom({ user, conversationId, onNavigate }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [conversation, setConversation] = useState(null);
+  const [typing, setTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const socketRef = useRef(null);
+  const typingTimerRef = useRef(null);
 
   useEffect(() => {
     loadConversationData();
+
+    // Try to connect via Socket.io if available (set up by server)
+    const token = localStorage.getItem('workpro_token');
+    if (typeof io !== 'undefined' && token) {
+      try {
+        const sock = io(API_BASE, { auth: { token }, transports: ['websocket', 'polling'] });
+        socketRef.current = sock;
+        sock.on('connect', () => {
+          sock.emit('join_room', conversationId);
+        });
+        sock.on('new_message', (msg) => {
+          setMessages(prev => {
+            // Avoid duplicate if our own message already arrived via sendMessage response
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
+        });
+        sock.on('typing', ({ userId }) => {
+          if (userId !== user?.uid) setTyping(true);
+        });
+        sock.on('stop_typing', ({ userId }) => {
+          if (userId !== user?.uid) setTyping(false);
+        });
+        return () => { sock.disconnect(); };
+      } catch (e) { /* Socket.io not available — fall through to polling */ }
+    }
+
+    // Polling fallback when Socket.io unavailable
     const interval = setInterval(loadMessages, 5000);
     return () => clearInterval(interval);
   }, [conversationId]);
@@ -93,9 +124,11 @@ function ChatRoom({ user, conversationId, onNavigate }) {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <span className="spinner large"></span>
-        <p>Loading messages...</p>
+      <div className="chat-room">
+        <div className="chat-header">
+          <button className="btn-back" onClick={() => onNavigate("/chat")}>&#8592; Back</button>
+        </div>
+        <SkeletonMessages count={5} />
       </div>
     );
   }
@@ -158,11 +191,25 @@ function ChatRoom({ user, conversationId, onNavigate }) {
         <div ref={messagesEndRef} />
       </div>
 
+      {typing && (
+        <div style={{ padding: '4px 16px', color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontStyle: 'italic' }}>
+          typing...
+        </div>
+      )}
       <form className="chat-input-form" onSubmit={handleSendMessage}>
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            if (socketRef.current) {
+              socketRef.current.emit('typing', { roomId: conversationId, userId: user?.uid });
+              clearTimeout(typingTimerRef.current);
+              typingTimerRef.current = setTimeout(() => {
+                socketRef.current && socketRef.current.emit('stop_typing', { roomId: conversationId, userId: user?.uid });
+              }, 1500);
+            }
+          }}
           placeholder="Type a message..."
           className="chat-input"
           disabled={sending}

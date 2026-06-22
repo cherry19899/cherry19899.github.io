@@ -77,12 +77,7 @@ function Profile({ user, onUpdateUser }) {
   };
 
   if (loading) {
-    return (
-      <div className="loading-container">
-        <span className="spinner large"></span>
-        <p>Loading profile...</p>
-      </div>
-    );
+    return <SkeletonProfile />;
   }
 
   return (

@@ -2442,14 +2442,24 @@
     <!-- v542: React CDN with fallback + timing logs -->
     <script>
     window.__reactLoadStart = Date.now();
+    // v605: API_BASE override hook — set this before the bundle loads to point to a different backend
+    // window.__WP_API_BASE__ = 'https://my-staging-api.onrender.com';
     </script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin
       onerror="(function(){console.error('[React] unpkg failed, trying jsdelivr');var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js';document.head.appendChild(s);})()"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin
       onerror="(function(){console.error('[ReactDOM] unpkg failed, trying jsdelivr');var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js';document.head.appendChild(s);})()"></script>
+    <!-- v605: Socket.io client for real-time chat (gracefully skipped if backend doesn't have socket.io) -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin async></script>
     <script>
     if(!window.React) console.error('[React] CDN FAILED — React not defined after load');
     </script>
+    <!-- v605: skeleton loader CSS -->
+    <style>
+    @keyframes skeleton-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .skeleton-box { background:rgba(255,255,255,0.08); animation:skeleton-pulse 1.5s ease-in-out infinite; }
+    .skeleton-card { pointer-events:none; }
+    </style>
     <!-- v512: Inline admin-v8 (no credentials, fixed stats, Earnings tab) -->
     <script>
 var AdminPanel=(function(){

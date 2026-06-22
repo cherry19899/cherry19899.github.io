@@ -13,6 +13,7 @@ const ASSETS = path.join(__dirname, 'assets');
 const FILES = [
   'utils.js',
   'api.js',
+  'components/Skeleton.js',
   'components/Auth.js',
   'components/Navbar.js',
   'components/Home.js',
@@ -43,7 +44,9 @@ const babelOpts = {
 let combined = '/* WorkPro App Bundle — built by build-bundle.js */\n';
 combined += '(function(React, ReactDOM) {\n';
 combined += '"use strict";\n';
-combined += 'var useState=React.useState,useEffect=React.useEffect,useCallback=React.useCallback,useRef=React.useRef,useMemo=React.useMemo;\n\n';
+combined += 'var useState=React.useState,useEffect=React.useEffect,useCallback=React.useCallback,useRef=React.useRef,useMemo=React.useMemo;\n';
+// API_BASE: read from a window-level override (set by index.html) or fallback to production
+combined += 'var API_BASE = (window.__WP_API_BASE__ || "https://workpro-api.onrender.com");\n\n';
 
 for (const file of FILES) {
   const filePath = path.join(SRC, file);
@@ -95,6 +98,6 @@ try {
 
 combined += '\n})(window.React, window.ReactDOM);\n';
 
-const outFile = path.join(ASSETS, 'app-v183.js');
+const outFile = path.join(ASSETS, 'app-v200.js');
 fs.writeFileSync(outFile, combined);
 console.log(`\n✅ Bundle written: ${outFile} (${(combined.length / 1024).toFixed(1)} KB)`);

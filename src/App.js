@@ -2,6 +2,34 @@
 // Portfolio component inlined to avoid separate file caching issues
 const { useState, useEffect, useCallback } = React;
 
+// ─── Error Boundary ──────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('[ErrorBoundary]', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return React.createElement('div', { style: { padding: '32px', textAlign: 'center', color: '#e5e5e5' } },
+        React.createElement('h2', null, 'Something went wrong'),
+        React.createElement('p', { style: { color: 'rgba(255,255,255,0.5)', marginBottom: '16px' } },
+          this.state.error && this.state.error.message),
+        React.createElement('button', {
+          style: { background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: 'pointer' },
+          onClick: () => { this.setState({ hasError: false, error: null }); window.location.hash = '#/'; }
+        }, 'Go Home')
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function Portfolio({ user, onNavigate }) {
   const [isOwn, setIsOwn] = useState(true);
   const [targetUserId, setTargetUserId] = useState('');
@@ -53,9 +81,8 @@ function Portfolio({ user, onNavigate }) {
     setError('');
     try {
       const headers = { 'Content-Type': 'application/json' };
-      if (user?.uid) headers['x-user-id'] = user.uid;
       const res = await fetch(
-        'https://workpro-api.onrender.com/api/users/' + targetUserId + '/portfolio',
+        API_BASE + '/api/users/' + targetUserId + '/portfolio',
         { headers }
       );
       if (!res.ok) throw new Error('Failed to fetch portfolio');
@@ -90,19 +117,10 @@ function Portfolio({ user, onNavigate }) {
     if (!user?.uid) return;
     setSaving(true);
     try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-user-id': user.uid
-      };
-      const res = await fetch(
-        'https://workpro-api.onrender.com/api/users/me/portfolio',
-        {
-          method: 'PUT',
-          headers,
-          body: JSON.stringify(formData)
-        }
-      );
-      if (!res.ok) throw new Error('Failed to save');
+      await apiFetch('/api/users/me/portfolio', {
+        method: 'PUT',
+        body: JSON.stringify(formData)
+      });
       setEditing(false);
       fetchPortfolio();
     } catch (err) {
@@ -117,26 +135,17 @@ function Portfolio({ user, onNavigate }) {
     if (!user?.uid) return;
     setSaving(true);
     try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-user-id': user.uid
-      };
       const tagsArray = itemForm.tags.split(',').map(t => t.trim()).filter(Boolean);
-      const res = await fetch(
-        'https://workpro-api.onrender.com/api/users/me/portfolio/items',
-        {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            title: itemForm.title,
-            description: itemForm.description,
-            image_url: itemForm.image_url,
-            category: itemForm.category,
-            tags: tagsArray
-          })
-        }
-      );
-      if (!res.ok) throw new Error('Failed to add item');
+      await apiFetch('/api/users/me/portfolio/items', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: itemForm.title,
+          description: itemForm.description,
+          image_url: itemForm.image_url,
+          category: itemForm.category,
+          tags: tagsArray
+        })
+      });
       setShowAddItem(false);
       setItemForm({ title: '', description: '', image_url: '', category: 'Development', tags: '' });
       fetchPortfolio();
@@ -150,15 +159,7 @@ function Portfolio({ user, onNavigate }) {
   const handleDeleteItem = async (itemId) => {
     if (!confirm('Remove this item from portfolio?')) return;
     try {
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-user-id': user.uid
-      };
-      const res = await fetch(
-        'https://workpro-api.onrender.com/api/users/me/portfolio/items/' + itemId,
-        { method: 'DELETE', headers }
-      );
-      if (!res.ok) throw new Error('Failed to delete');
+      await apiFetch('/api/users/me/portfolio/items/' + itemId, { method: 'DELETE' });
       fetchPortfolio();
     } catch (err) {
       alert(err.message);
@@ -623,7 +624,9 @@ function App() {
           currentPath={currentPath}
         />
       )}
-      <main className="main-content">{renderRoute()}</main>
+      <main className="main-content">
+        <ErrorBoundary>{renderRoute()}</ErrorBoundary>
+      </main>
     </div>
   );
 }

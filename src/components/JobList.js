@@ -113,10 +113,7 @@ function JobList({ user, onNavigate }) {
       )}
 
       {loading && page === 1 ? (
-        <div className="loading-container">
-          <span className="spinner large"></span>
-          <p>Loading jobs...</p>
-        </div>
+        <SkeletonJobGrid count={6} />
       ) : jobs.length === 0 ? (
         <div className="empty-state">
           <p>No jobs found.</p>
