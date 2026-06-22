@@ -106,22 +106,23 @@ async function checkApplication(jobId) {
 }
 
 async function applyToJob(data) {
-  const response = await fetch(`${API_BASE}/api/applications`, {
-    method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify(data),
-  });
-  if (response.status === 409) {
-    const d = await response.json().catch(() => ({}));
-    const err = new Error(d.error || "Already applied");
-    err.alreadyApplied = true;
-    throw err;
+  try {
+    return await apiFetch("/api/applications", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    // apiFetch throws with the raw response text; check if it signals a duplicate
+    const msg = e.message || "";
+    const isAlreadyApplied = msg.toLowerCase().includes("already applied") ||
+      (() => { try { return JSON.parse(msg)?.error?.toLowerCase().includes("already"); } catch(_){} return false; })();
+    if (isAlreadyApplied) {
+      const err = new Error("Already applied");
+      err.alreadyApplied = true;
+      throw err;
+    }
+    throw e;
   }
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `HTTP ${response.status}`);
-  }
-  return response.json();
 }
 
 function fetchApplications(jobId) {

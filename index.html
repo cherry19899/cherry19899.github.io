@@ -753,15 +753,17 @@
           if (_hideOverlayTimer) { clearTimeout(_hideOverlayTimer); _hideOverlayTimer = null; }
           // v599: identify the shown job by exact title (heading) / API detail — not fuzzy substring.
           var openJob = _detailJob();
-          if (!openJob || _isOwnJob(openJob.posted_by)) {
+          if (openJob && _isOwnJob(openJob.posted_by)) {
             if (_applyOverlay && _applyOverlay.parentNode) _hideApplyOverlay();
             return;
           }
-          if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId === openJob.id) return; // already shown for this job
-          if (_applyOverlay && _applyOverlay.parentNode) _hideApplyOverlay(); // different/stale job — rebuild
-          _showApplyOverlay(openJob);
-          return;
-          // Need to fetch — trigger immediately, don't wait for next tick
+          if (openJob) {
+            if (_applyOverlay && _applyOverlay.parentNode && _applyOverlayJobId === openJob.id) return; // already shown for this job
+            if (_applyOverlay && _applyOverlay.parentNode) _hideApplyOverlay(); // different/stale job — rebuild
+            _showApplyOverlay(openJob);
+            return;
+          }
+          // openJob not found in cache — fetch from API and retry
           if (window._wp_fetchPending) { return; }
           window._wp_fetchPending = true;
           fetch(API + '/api/jobs?limit=50')
