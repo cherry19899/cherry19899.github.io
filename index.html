@@ -915,6 +915,7 @@
         return item;
       }
       function injectNotifDOM(d) {
+        return; // DISABLED: this overlay had no click handler and blocked the working React notifications screen
         if (document.getElementById('_wp_notif_overlay')) return;
         var notifs = d.notifications || [];
         if (!notifs.length) return;
