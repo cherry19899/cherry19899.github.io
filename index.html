@@ -2795,17 +2795,34 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
       function ensure(){ if(!b.parentNode && document.body) document.body.appendChild(b); }
       document.addEventListener('DOMContentLoaded',ensure); ensure();
       var n=0;
+      function chain(el){
+        var out=[],i=0;
+        while(el&&el.tagName&&i<8){
+          var s=el.tagName;
+          if(el.dataset&&el.dataset.notifId)s+='[notif='+el.dataset.notifId+']';
+          var pe=el.style&&el.style.pointerEvents; if(pe)s+='{pe='+pe+'}';
+          out.push(s); el=el.parentElement; i++;
+        }
+        return out.join('>');
+      }
       function log(type,e){
         n++;
         var t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0])||e;
         var x=Math.round(t.clientX||0), y=Math.round(t.clientY||0);
-        var tgt=(e.target&&(e.target.tagName||'')+(e.target.dataset&&e.target.dataset.notifId?'#'+e.target.dataset.notifId:''))||'?';
+        var a=e.target&&e.target.closest?e.target.closest('a'):null;
+        var ni=e.target&&e.target.closest?e.target.closest('[data-notif-id]'):null;
         ensure();
-        if(b) b.textContent='#'+n+' '+type+' @'+x+','+y+' tgt='+tgt;
+        if(b) b.textContent='#'+n+' '+type+' @'+x+','+y+' A='+(a?'Y':'N')+' NI='+(ni?ni.dataset.notifId:'N')+' | '+chain(e.target);
       }
       ['pointerdown','touchstart','click'].forEach(function(ev){
         window.addEventListener(ev,function(e){log(ev,e);},true); // capture phase, window-level
       });
+      // also bubble-phase to confirm event survives to window after React root
+      window.addEventListener('click',function(e){
+        var bb=document.getElementById('_touchdbg2');
+        if(!bb){bb=document.createElement('div');bb.id='_touchdbg2';bb.style.cssText='position:fixed;top:18px;left:0;right:0;z-index:2147483647;background:#001;color:#ff0;font:11px monospace;padding:3px 6px;pointer-events:none;white-space:nowrap;overflow:hidden';document.body.appendChild(bb);}
+        bb.textContent='BUBBLE click reached window @'+Math.round((e.clientX||0))+','+Math.round((e.clientY||0));
+      },false);
     })();
     </script>
     <!-- v494: Admin loaded inline above -->
