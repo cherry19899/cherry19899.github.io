@@ -2785,6 +2785,29 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
     </script>
     <link rel="stylesheet" href="/assets/app-v173.css">
     <style>@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}</style>
+    <script>
+    (function(){
+      // TOUCH-DEBUG: decisive test for Pi Browser native overlay hypothesis.
+      var b=document.createElement('div');
+      b.id='_touchdbg';
+      b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#000;color:#0f0;font:11px monospace;padding:3px 6px;pointer-events:none;white-space:nowrap;overflow:hidden';
+      b.textContent='touchdbg: (no events yet)';
+      function ensure(){ if(!b.parentNode && document.body) document.body.appendChild(b); }
+      document.addEventListener('DOMContentLoaded',ensure); ensure();
+      var n=0;
+      function log(type,e){
+        n++;
+        var t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0])||e;
+        var x=Math.round(t.clientX||0), y=Math.round(t.clientY||0);
+        var tgt=(e.target&&(e.target.tagName||'')+(e.target.dataset&&e.target.dataset.notifId?'#'+e.target.dataset.notifId:''))||'?';
+        ensure();
+        if(b) b.textContent='#'+n+' '+type+' @'+x+','+y+' tgt='+tgt;
+      }
+      ['pointerdown','touchstart','click'].forEach(function(ev){
+        window.addEventListener(ev,function(e){log(ev,e);},true); // capture phase, window-level
+      });
+    })();
+    </script>
     <!-- v494: Admin loaded inline above -->
   <script>
 // ===== WORK PRO PATCH v53 =====
