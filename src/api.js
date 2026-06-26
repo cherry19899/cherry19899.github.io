@@ -222,3 +222,15 @@ function updateUserProfile(data) {
 function getUnreadCount() {
   return apiFetch("/api/chat/unread");
 }
+
+// Admin Settings
+function fetchAdminSettings() {
+  return apiFetch("/api/admin/settings");
+}
+
+function updateAdminSetting(key, value) {
+  return apiFetch("/api/admin/settings", {
+    method: "PATCH",
+    body: JSON.stringify({ key, value }),
+  });
+}
