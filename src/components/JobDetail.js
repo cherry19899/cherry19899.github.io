@@ -37,8 +37,9 @@ function JobDetail({ user, jobId, onNavigate }) {
     setError("");
     try {
       const data = await fetchJob(jobId);
-      setJob(data);
-      setIsOwner(data.client_id === user?.uid || data.client_uid === user?.uid || data.posted_by === user?.uid);
+      const jobData = data.job || data;
+      setJob(jobData);
+      setIsOwner(jobData.client_id === user?.uid || jobData.client_uid === user?.uid || jobData.posted_by === user?.uid);
     } catch (err) {
       setError(err.message);
     } finally {
