@@ -29,6 +29,7 @@ const FILES = [
   'components/Connects.js',
   'components/Applications.js',
   'components/Reviews.js',
+  'components/Admin.js',
   'App.js',
 ];
 
