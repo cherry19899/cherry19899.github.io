@@ -9,12 +9,19 @@ function Admin({ user, onNavigate }) {
   const [error, setError] = useState("");
   const [tab, setTab] = useState("jobs");
 
+  // Settings state
+  const [settings, setSettings] = useState(null);
+  const [feeValue, setFeeValue] = useState("");
+  const [feeLoading, setFeeLoading] = useState(false);
+  const [feeMsg, setFeeMsg] = useState("");
+
   useEffect(() => {
     if (!user?.is_admin && user?.username !== 'cherry19899') {
       onNavigate("/");
       return;
     }
     fetchData();
+    fetchSettingsData();
   }, []);
 
   const fetchData = async () => {
@@ -36,6 +43,37 @@ function Admin({ user, onNavigate }) {
     }
   };
 
+  const fetchSettingsData = async () => {
+    try {
+      const data = await fetchAdminSettings();
+      setSettings(data);
+      if (data.effective?.platform_fee_percent !== undefined) {
+        setFeeValue(String(data.effective.platform_fee_percent));
+      }
+    } catch (e) {
+      console.error("Failed to load settings:", e);
+    }
+  };
+
+  const handleSaveFee = async () => {
+    setFeeLoading(true);
+    setFeeMsg("");
+    try {
+      const val = parseFloat(feeValue);
+      if (isNaN(val) || val < 0 || val > 10) {
+        setFeeMsg("Fee must be 0-10%");
+        return;
+      }
+      await updateAdminSetting("platform_fee_percent", val);
+      setFeeMsg("Saved!");
+      fetchSettingsData();
+    } catch (e) {
+      setFeeMsg("Error: " + (e.message || "Failed to save"));
+    } finally {
+      setFeeLoading(false);
+    }
+  };
+
   const handleDeleteJob = async (jobId) => {
     if (!confirm("Delete this job?")) return;
     try {
@@ -49,7 +87,6 @@ function Admin({ user, onNavigate }) {
 
   const handleDeleteUser = async (userId) => {
     if (!confirm("Delete user " + userId + "? This is irreversible.")) return;
-    // No user delete endpoint yet
     alert("User delete not implemented yet");
   };
 
@@ -114,6 +151,12 @@ function Admin({ user, onNavigate }) {
         >
           Users ({users.length})
         </button>
+        <button
+          className={`tab-btn ${tab === "settings" ? "active" : ""}`}
+          onClick={() => setTab("settings")}
+        >
+          Settings
+        </button>
       </div>
 
       {tab === "jobs" && (
@@ -132,20 +175,12 @@ function Admin({ user, onNavigate }) {
                     <span>{timeAgo(job.created_at)}</span>
                   </div>
                 </div>
-                <div className="admin-list-actions">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => onNavigate(`/jobs/${job.id || job._id}`)}
-                  >
-                    View
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => handleDeleteJob(job.id || job._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDeleteJob(job.id || job._id)}
+                >
+                  Delete
+                </button>
               </div>
             ))
           )}
@@ -158,25 +193,66 @@ function Admin({ user, onNavigate }) {
             <p>No users found.</p>
           ) : (
             users.map((u) => (
-              <div key={u.id || u._id} className="admin-list-item">
+              <div key={u.id || u._id || u.uid} className="admin-list-item">
                 <div className="admin-list-info">
-                  <h4>{u.username || u.id}</h4>
+                  <h4>{u.username || u.name || u.id}</h4>
                   <div className="job-list-meta">
-                    <span>{u.role || "user"}</span>
-                    <span>{u.kyc_verified ? "KYC" : "No KYC"}</span>
-                    <span>Balance: {u.balance_pi || 0} Pi</span>
+                    <span>{u.email || "No email"}</span>
+                    <span>Jobs: {u.total_jobs_posted || 0}</span>
+                    <span>Balance: {u.balance_connects || 0} connects</span>
                   </div>
                 </div>
-                <div className="admin-list-actions">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => onNavigate(`/portfolio/${u.id}`)}
-                  >
-                    Portfolio
-                  </button>
-                </div>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDeleteUser(u.id || u.uid)}
+                >
+                  Delete
+                </button>
               </div>
             ))
+          )}
+        </div>
+      )}
+
+      {tab === "settings" && (
+        <div className="form-card">
+          <h3>Platform Settings</h3>
+
+          <div className="form-group">
+            <label>Platform Fee (%)</label>
+            <div className="form-row" style={{ gap: '12px', alignItems: 'center' }}>
+              <input
+                type="number"
+                min="0"
+                max="10"
+                step="0.1"
+                value={feeValue}
+                onChange={(e) => setFeeValue(e.target.value)}
+                style={{ width: '100px' }}
+              />
+              <button
+                className="btn btn-primary"
+                onClick={handleSaveFee}
+                disabled={feeLoading}
+              >
+                {feeLoading ? "Saving..." : "Save"}
+              </button>
+            </div>
+            {feeMsg && (
+              <p style={{ marginTop: '8px', color: feeMsg.includes("Error") ? '#e74c3c' : '#27ae60' }}>
+                {feeMsg}
+              </p>
+            )}
+          </div>
+
+          {settings?.effective && (
+            <div style={{ marginTop: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
+              <p><strong>Current fee:</strong> {settings.effective.platform_fee_percent}%</p>
+              <p><strong>Upwork fee:</strong> 20% (first $500), 10% ($500-10K), 5% ($10K+)</p>
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>
+                We are cheaper than Upwork! Current fee is capped at 10% max.
+              </p>
+            </div>
           )}
         </div>
       )}
