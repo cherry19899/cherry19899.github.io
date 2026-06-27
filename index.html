@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v608';
+        var KEY = '_wp_loaded_v609';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=608&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=609&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -47,7 +47,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v608';</script>
+    <script>window.WORKPRO_VERSION='v609';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -56,6 +56,7 @@
     <!-- v575: Bug#11 Fix Apply Now on own jobs — normalize pi_ prefix in posted_by comparison -->
     <!-- v576: Bug#12 Fix My Jobs empty — rewrite /api/jobs/user/username → /api/jobs/user/pi_username -->
     <!-- v577: Bug#13 Fix Notifications back — suppress re-injection + navigate React back after close -->
+    <!-- v609: Bug#14 Fix Escrow "Leave a Review" — normalize client_id/freelancer_id pi_ prefix so reviewer target is correct -->
     <script>
     // console.log/info/debug suppression removed — Pi Browser users need to see all logs for debugging
     </script>
@@ -139,6 +140,14 @@
               var uname = userJobMatch[1];
               if (uname.indexOf('pi_') !== 0) {
                 input = urlStr.replace('/api/jobs/user/' + uname, '/api/jobs/user/pi_' + uname);
+              }
+            }
+            // Bug#14: rewrite /api/escrows/user/:username — same pi_ prefix issue as Bug#12
+            var userEscrowMatch = urlStr.match(/\/api\/escrows\/user\/([^/?#]+)/);
+            if (userEscrowMatch) {
+              var euname = userEscrowMatch[1];
+              if (euname.indexOf('pi_') !== 0) {
+                input = urlStr.replace('/api/escrows/user/' + euname, '/api/escrows/user/pi_' + euname);
               }
             }
           }
@@ -2924,6 +2933,18 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
           if (/\/api\/escrows\/user\//.test(url)) {
             var _ec = Array.isArray(fixed) ? fixed : [];
             if (_ec.length) window._wp_escrowCache = _ec;
+            // Bug#14: normalize client_id/freelancer_id to use pi_ prefix for our canonical user
+            // The EscrowScreen component compares j.client_id === oe (oe='pi_cherry19899'),
+            // but API returns client_id='cherry19899' (no pi_ prefix) → comparison fails →
+            // wrong target_id selected → backend: "Cannot rate yourself"
+            if (_ec.length && typeof _normUid === 'function') {
+              fixed = _ec.map(function(e) {
+                var e2 = Object.assign({}, e);
+                if (e2.client_id && _normUid(e2.client_id) === _CANON_NORM) e2.client_id = CANONICAL_UID;
+                if (e2.freelancer_id && _normUid(e2.freelancer_id) === _CANON_NORM) e2.freelancer_id = CANONICAL_UID;
+                return e2;
+              });
+            }
           }
           return new Response(JSON.stringify(fixed), { status: response.status, statusText: response.statusText, headers: {'Content-Type': 'application/json'} });
         }).catch(function() { return response; });
