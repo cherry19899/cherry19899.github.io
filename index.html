@@ -530,7 +530,11 @@
         ok.style.cssText = 'flex:1;padding:12px;background:#10b981;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;';
         function close(){ if (back.parentNode) back.parentNode.removeChild(back); }
         cancel.onclick = function(){ close(); cb(null); };
-        ok.onclick = function(){ close(); cb(ta.value.trim()); };
+        ok.onclick = function(){
+          if (!ta.value.trim()) { err.style.display = 'block'; ta.focus(); return; }
+          close(); cb(ta.value.trim());
+        };
+        ta.oninput = function(){ if (ta.value.trim()) err.style.display = 'none'; };
         back.onclick = function(e){ if (e.target === back) { close(); cb(null); } };
         row.appendChild(cancel); row.appendChild(ok);
         card.appendChild(title); card.appendChild(sub); card.appendChild(ta); card.appendChild(err); card.appendChild(row);
@@ -2541,12 +2545,24 @@ function loadData(){
     setWarming(false);
     setStats(s||{});setJobs(j||[]);setEscrows(e||[]);setEarnings(earn);
   }
+  // Bug#23: safety valve — if server takes >25s (Render cold start), release loading state with a message
+  var _loadAbort = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var _loadTimer = setTimeout(function(){
+    if (_loadAbort) _loadAbort.abort();
+    setLoading(false);
+    setError('Сервер не отвечает (Render cold start). Нажмите Retry через 30 сек.');
+  }, 25000);
+  function fetchWithTimeout(url, opts) {
+    var o = Object.assign({}, opts || {});
+    if (_loadAbort) o.signal = _loadAbort.signal;
+    return fetch(url, o);
+  }
   refreshToken().then(function(){
-    return fetch(API+"/api/admin/verify",{headers:h()})
+    return fetchWithTimeout(API+"/api/admin/verify",{headers:h()})
       .then(function(r){return r.ok?r.json():{valid:false};})
       .catch(function(){return {valid:false};})
       .then(function(v){
-        if(!v||!v.valid){setError("Access denied: not an admin account.");setLoading(false);return;}
+        if(!v||!v.valid){setError("Access denied: not an admin account.");setLoading(false);clearTimeout(_loadTimer);return;}
         // Progressive: load stats first (fast, cached), then rest in parallel
         return safeFetch(API+"/api/admin/stats",{}).then(function(s){
           // Show immediately with cached stats so screen isn't blank
@@ -2561,9 +2577,9 @@ function loadData(){
           }).catch(function(e){console.error("[Admin]",e);});
         }).catch(function(e){
           console.error("[Admin] stats error:",e);
-        }).finally(function(){setLoading(false);});
+        }).finally(function(){clearTimeout(_loadTimer);setLoading(false);});
       });
-  }).catch(function(e){console.error("[Admin] init error:",e);setLoading(false);});
+  }).catch(function(e){console.error("[Admin] init error:",e);clearTimeout(_loadTimer);setLoading(false);});
 }
 function blockUser(u){
   var uid=u.id||u.username||u.name;
