@@ -195,6 +195,7 @@
               return resp.clone().json().then(function(d) {
                 // API returns {job:{...},applications:[]} — unwrap the job object
                 var jobObj = (d && d.job && d.job.id) ? d.job : (d && d.id ? d : null);
+                if (d && Array.isArray(d.applications)) window._wp_currentJobApplications = d.applications;
                 if (jobObj && jobObj.id) {
                   window._wp_currentJobDetail = jobObj;
                   if (jobObj._open || jobObj.status === 'open') {
@@ -248,6 +249,7 @@
               var d = JSON.parse(xhr.responseText);
               // API returns {job:{...},applications:[]} — unwrap
               var jobObj = (d && d.job && d.job.id) ? d.job : (d && d.id ? d : null);
+              if (d && Array.isArray(d.applications)) window._wp_currentJobApplications = d.applications;
               if (jobObj && jobObj.id) {
                 window._wp_currentJobDetail = jobObj;
                 if (jobObj._open || jobObj.status === 'open') {
