@@ -47,7 +47,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v620';</script>
+    <script>window.WORKPRO_VERSION='v621';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -418,11 +418,15 @@
           return u ? (u.username || '') : '';
         } catch(e) { return ''; }
       }
+      var _hideObsTimer = null;
       var _hideObs = new MutationObserver(function() {
-        var me = getMyUsername();
-        if (!me) return;
-        // Find job cards/panels showing owner = me, then hide Apply button inside them
-        document.querySelectorAll('button, div[role="button"], [class*="btn"], [class*="button"]').forEach(function(btn) {
+        if (_hideObsTimer) return;
+        _hideObsTimer = setTimeout(function() {
+          _hideObsTimer = null;
+          var me = getMyUsername();
+          if (!me) return;
+          // Find job cards/panels showing owner = me, then hide Apply button inside them
+          document.querySelectorAll('button').forEach(function(btn) {
           // Never hide Apply Now buttons we injected (those are for other users' open jobs)
           if (btn.getAttribute('data-wp-apply-fixed')) return;
           var txt = (btn.textContent || '').toLowerCase().trim();
@@ -445,7 +449,8 @@
               }
             }
           }
-        });
+          });
+        }, 100); // debounce 100ms
       });
       if (document.body) {
         _hideObs.observe(document.body, { childList: true, subtree: true });
@@ -1152,10 +1157,16 @@
       }
 
       // MutationObserver: patch apply hint text and show real cost
+      var _obsDebTimer = null;
       var _obs = new MutationObserver(function() {
-        // Find apply hint texts like "This will cost 1 connect" / "Это стоит 1 коннект"
-        var hints = document.querySelectorAll('[class*="hint"], [class*="muted"], [class*="text-xs"], [class*="text-sm"]');
-        hints.forEach(function(el) {
+        if (_obsDebTimer) return; // debounce: skip if already scheduled
+        _obsDebTimer = setTimeout(function() {
+          _obsDebTimer = null;
+          // Skip if no modal is open (cost hint only appears in job detail modal)
+          if (!document.querySelector('.fixed.inset-0')) return;
+          // Find apply hint texts like "This will cost 1 connect" / "Это стоит 1 коннект"
+          var hints = document.querySelectorAll('[class*="hint"], [class*="muted"], [class*="text-xs"], [class*="text-sm"]');
+          hints.forEach(function(el) {
           var txt = el.textContent || '';
           if (/cost.*1 connect|стоит 1 коннект|will cost 1|kostet 1|coûte 1|costa 1|custa 1|kosztuje 1|коштує 1|1 コネクト|1 크레딧|花费 1/.test(txt)) {
             // Try to find current job id from URL hash or data
@@ -1170,7 +1181,8 @@
                                 .replace(/\d+ コネクト/i, cost + ' コネクト');
             el.style.color = canApply ? 'rgba(255,255,255,0.5)' : '#ef4444';
           }
-        });
+          });
+        }, 150); // debounce 150ms
       });
       _obs.observe(document.body || document.documentElement, { childList: true, subtree: true });
 
