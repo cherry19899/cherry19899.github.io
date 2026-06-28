@@ -631,9 +631,9 @@
             for (var bi = 0; bi < allBtns.length; bi++) {
               var bt = allBtns[bi];
               if (bt.getAttribute('data-wp-apply-fixed') || bt.id === 'wp-apply-overlay') continue;
-              var btxt = (bt.textContent || '').toLowerCase();
+              var btxt = (bt.textContent || '').trim().toLowerCase();
               if (btxt.indexOf('job filled') !== -1 || btxt.indexOf('freelancer hired') !== -1 ||
-                  btxt.indexOf('работа занята') !== -1 || btxt === 'open' || btxt === 'открыто' || btxt === 'відкрито') {
+                  btxt.indexOf('работа занята') !== -1 || btxt === 'open' || btxt === 'открыто' || btxt === 'відкрито' || btxt === 'відкрита') {
                 bt.setAttribute('data-wp-hidden', '1');
                 bt.style.display = 'none';
               }
@@ -4214,6 +4214,72 @@ window._W5_fixed=true;
   if (!navigator.onLine) showBanner();
   window.addEventListener('offline', showBanner);
   window.addEventListener('online', hideBanner);
+})();
+</script>
+<!-- v611: Bug#26 Chat — right-align own messages -->
+<script>
+(function(){
+  function _getMyName() {
+    try {
+      var u = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+      if (!u) return null;
+      return (u.username || u.id || '').replace(/^pi_/i, '').toLowerCase();
+    } catch(e) { return null; }
+  }
+  var _chatPatchTimer = null;
+  function _patchChatMessages() {
+    var myName = _getMyName();
+    if (!myName) return;
+    // Find all small-text nodes that exactly match our username (the sender label under each bubble)
+    var candidates = document.querySelectorAll('span,div,p');
+    for (var i = 0; i < candidates.length; i++) {
+      var el = candidates[i];
+      var t = (el.textContent || '').trim().toLowerCase();
+      if (t !== myName && t !== 'pi_' + myName) continue;
+      if (el.getAttribute('data-wp-chat-patched')) continue;
+      // Make sure this looks like a sender label (short text, no children with more text)
+      if (el.children.length > 1) continue;
+      // Walk up to find the message row container (up to 5 levels)
+      var container = el;
+      for (var j = 0; j < 5; j++) {
+        var p = container.parentElement;
+        if (!p || p === document.body) break;
+        // Stop if parent appears to be the full message list (many siblings)
+        if (p.children.length > 8) break;
+        container = p;
+      }
+      if (container === el) continue;
+      // Apply right-alignment to the container
+      container.style.alignItems = 'flex-end';
+      container.style.alignSelf = 'flex-end';
+      // Find the bubble (the sibling/child that is NOT our username label)
+      var bubble = null;
+      var allInner = container.querySelectorAll('div,span,p');
+      for (var k = 0; k < allInner.length; k++) {
+        var inner = allInner[k];
+        var innerT = (inner.textContent || '').trim().toLowerCase();
+        if (innerT && innerT !== myName && innerT !== 'pi_' + myName && inner.children.length <= 2) {
+          bubble = inner; break;
+        }
+      }
+      if (bubble) {
+        bubble.style.background = '#10b981';
+        bubble.style.color = '#fff';
+      }
+      el.setAttribute('data-wp-chat-patched', '1');
+    }
+  }
+  var _chatObs = new MutationObserver(function() {
+    if (_chatPatchTimer) return;
+    _chatPatchTimer = setTimeout(function() {
+      _chatPatchTimer = null;
+      _patchChatMessages();
+    }, 300);
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    _chatObs.observe(document.body, { childList: true, subtree: true });
+  });
+  if (document.body) _chatObs.observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 <script>if(typeof Pi!=='undefined'){Pi.init({version:"2.0",sandbox:true});}</script>
