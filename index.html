@@ -759,6 +759,12 @@
         var _onDetail = (pageText.indexOf('platform fee') !== -1 || pageText.indexOf('комиссия') !== -1 || pageText.indexOf('комісія') !== -1)
                      && (pageText.indexOf('client') !== -1 || pageText.indexOf('заказчик') !== -1 || pageText.indexOf('замовник') !== -1);
         if (!_onDetail) { if (_applyOverlay && _applyOverlay.parentNode) _hideApplyOverlay(); return; }
+        // If the Applications section header is visible, the current user is the job owner — no overlay.
+        var _hasAppSection = Array.from(document.querySelectorAll('h3,h2')).some(function(h) {
+          var t = (h.textContent || '').trim();
+          return /^Applications\s*\(|^Заявки\s*\(|^Відгуки\s*\(|^Applicants\s*\(/.test(t);
+        });
+        if (_hasAppSection) { if (_applyOverlay && _applyOverlay.parentNode) _hideApplyOverlay(); return; }
         // v599: page already gated to a job-detail view above; identify the exact job via _detailJob().
         var foundJobFilled = true;
         var det = window._wp_currentJobDetail;
