@@ -5,7 +5,7 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v609';
+        var KEY = '_wp_loaded_v612';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
@@ -47,7 +47,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v609';</script>
+    <script>window.WORKPRO_VERSION='v612';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -1766,7 +1766,7 @@
 
       // Helper: get current language from any known key
       function _getLang() {
-        var stored = localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang');
+        var stored = localStorage.getItem('lang') || localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang');
         if (stored) return stored;
         // Fallback: detect from browser language
         var nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase().split('-')[0];
@@ -1869,7 +1869,7 @@
         function updateCostNote() {
           var b = parseFloat(budgetField.input.value) || 1;
           var c = Math.ceil(b / 50);
-          var isRu = (navigator.language || 'en').startsWith('ru');
+          var isRu = _getLang() === 'ru';
           var suffix = isRu ? (c===1?' коннект':c<5?' коннекта':' коннектов') : (' connect'+(c===1?'':'s'));
           costNote.textContent = (isRu ? 'Стоимость отклика: ' : 'Apply cost: ') + c + suffix + '  (1–50π=1 · 51–100π=2 · 101–150π=3…)';
         }
@@ -4086,6 +4086,13 @@ window._W5_fixed=true;
   }
 
   // ── 2. Russian text patches for bundle's English strings ──────────────────
+  function _getActiveLang() {
+    try {
+      var s = localStorage.getItem('lang') || localStorage.getItem('workpro_lang') || localStorage.getItem('i18nextLng') || localStorage.getItem('selectedLang') || '';
+      if (s) return s.slice(0, 2).toLowerCase();
+    } catch(e) {}
+    return (navigator.language || 'en').slice(0, 2).toLowerCase();
+  }
   // Exact-match replacements — specific enough to avoid false positives.
   var _textMap = {
     'About': 'О себе',
@@ -4112,35 +4119,64 @@ window._W5_fixed=true;
     }
   }
 
+  // Bug#35/#36: reverse map — Russian→English for when EN mode is active
+  var _revTextMap = { 'Стоимость отклика': 'Apply cost', 'О себе': 'About' };
+  var _revPhMap = {
+    'напр. Нужен React разработчик': 'e.g. React Developer Needed',
+    'Опишите требования к проекту...': 'Describe the project requirements...',
+    'React, Node.js, Дизайн': 'React, Node.js'
+  };
+
   function _patchAll() {
-    // 1. Text nodes — use trim() for exact map matches; also loose-match standalone "About"
-    try {
-      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-      var node;
-      while ((node = walker.nextNode())) {
-        var v = node.nodeValue;
-        if (!v) continue;
-        var vt = v.trim();
-        if (_textMap[vt]) {
-          node.nodeValue = _textMap[vt];
-        } else if (/^\s*About\s*$/.test(v) && v.indexOf('О себе') === -1) {
-          // Catch "About" with any surrounding whitespace not caught by exact map
-          node.nodeValue = v.replace('About', 'О себе');
+    var _lang = _getActiveLang();
+    if (_lang === 'ru') {
+      // 1. Text nodes — use trim() for exact map matches; also loose-match standalone "About"
+      try {
+        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        var node;
+        while ((node = walker.nextNode())) {
+          var v = node.nodeValue;
+          if (!v) continue;
+          var vt = v.trim();
+          if (_textMap[vt]) {
+            node.nodeValue = _textMap[vt];
+          } else if (/^\s*About\s*$/.test(v) && v.indexOf('О себе') === -1) {
+            node.nodeValue = v.replace('About', 'О себе');
+          }
         }
-      }
-    } catch(e) {}
-    // 2. Placeholders
-    try {
-      var inputs = document.querySelectorAll('input[placeholder],textarea[placeholder]');
-      for (var i = 0; i < inputs.length; i++) {
-        var ph = inputs[i].getAttribute('placeholder');
-        if (ph && _phMap[ph]) inputs[i].setAttribute('placeholder', _phMap[ph]);
-      }
-    } catch(e) {}
-    // 3. "About" headings
-    try { _patchAboutHeadings(); } catch(e) {}
+      } catch(e) {}
+      // 2. Placeholders
+      try {
+        var inputs = document.querySelectorAll('input[placeholder],textarea[placeholder]');
+        for (var i = 0; i < inputs.length; i++) {
+          var ph = inputs[i].getAttribute('placeholder');
+          if (ph && _phMap[ph]) inputs[i].setAttribute('placeholder', _phMap[ph]);
+        }
+      } catch(e) {}
+      // 3. "About" headings
+      try { _patchAboutHeadings(); } catch(e) {}
+    } else {
+      // Bug#35/#36: reverse-patch any Russian strings still showing in non-Russian mode
+      try {
+        var walker2 = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        var node2;
+        while ((node2 = walker2.nextNode())) {
+          var v2 = node2.nodeValue;
+          if (!v2) continue;
+          for (var rk in _revTextMap) {
+            if (v2.indexOf(rk) !== -1) { node2.nodeValue = v2.replace(rk, _revTextMap[rk]); break; }
+          }
+        }
+      } catch(e) {}
+      try {
+        var inputs2 = document.querySelectorAll('input[placeholder],textarea[placeholder]');
+        for (var j = 0; j < inputs2.length; j++) {
+          var ph2 = inputs2[j].getAttribute('placeholder');
+          if (ph2 && _revPhMap[ph2]) inputs2[j].setAttribute('placeholder', _revPhMap[ph2]);
+        }
+      } catch(e) {}
+    }
     // 4. Ghost Apply overlay: hide (not remove) when Create Job form is open
-    // Hiding keeps the element in DOM so _checkApplyButtons() won't recreate it
     try {
       if (_isCreateJobVisible()) {
         var ov = document.getElementById('wp-apply-overlay');
@@ -4163,17 +4199,20 @@ window._W5_fixed=true;
 
   var _t586 = null;
   var _obs586 = new MutationObserver(function(mutations) {
-    // characterData: catch the exact moment React resets "About" back and re-patch immediately
-    mutations.forEach(function(m) {
-      if (m.type === 'characterData' && m.target) {
-        var cv = m.target.nodeValue || '';
-        if (/^\s*About\s*$/.test(cv)) {
-          m.target.nodeValue = cv.replace('About', 'О себе');
-        } else if (_textMap[cv.trim()]) {
-          m.target.nodeValue = _textMap[cv.trim()];
+    var _lang = _getActiveLang();
+    if (_lang === 'ru') {
+      // characterData: catch the exact moment React resets "About" back and re-patch immediately
+      mutations.forEach(function(m) {
+        if (m.type === 'characterData' && m.target) {
+          var cv = m.target.nodeValue || '';
+          if (/^\s*About\s*$/.test(cv)) {
+            m.target.nodeValue = cv.replace('About', 'О себе');
+          } else if (_textMap[cv.trim()]) {
+            m.target.nodeValue = _textMap[cv.trim()];
+          }
         }
-      }
-    });
+      });
+    }
     // Also run full patch for childList/attribute mutations
     if (_t586) return;
     _t586 = setTimeout(function() { _t586 = null; _patchAll(); }, 150);
@@ -4280,6 +4319,66 @@ window._W5_fixed=true;
     _chatObs.observe(document.body, { childList: true, subtree: true });
   });
   if (document.body) _chatObs.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+<!-- v612: Bug#33 Review modal — validate non-empty text before submit -->
+<script>
+(function(){
+  var _reviewValidTimer = null;
+  function _patchReviewModal() {
+    // Find any open review modal — look for a textarea near a star-rating area
+    var modals = document.querySelectorAll('[role="dialog"],[class*="modal"],[class*="Modal"],[class*="overlay"],[class*="Overlay"]');
+    modals.forEach(function(modal) {
+      if (modal.getAttribute('data-wp-review-patched')) return;
+      // Must contain a textarea AND stars (buttons or SVGs near the textarea)
+      var ta = modal.querySelector('textarea');
+      if (!ta) return;
+      var hasStars = modal.querySelector('[class*="star"],[class*="Star"],svg') !== null;
+      if (!hasStars) return;
+      modal.setAttribute('data-wp-review-patched', '1');
+      // Find the submit/confirm button (not cancel)
+      var btns = modal.querySelectorAll('button');
+      btns.forEach(function(btn) {
+        var txt = (btn.textContent || '').trim().toLowerCase();
+        // Submit buttons: "submit", "send", "отправить", "confirm", "save review"
+        if (txt === 'cancel' || txt === 'close' || txt === 'отмена' || txt === 'закрыть') return;
+        if (btn.getAttribute('data-wp-review-submit-patched')) return;
+        btn.setAttribute('data-wp-review-submit-patched', '1');
+        btn.addEventListener('click', function(e) {
+          if (!ta.value.trim()) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            ta.style.borderColor = '#ef4444';
+            ta.style.outline = '2px solid #ef4444';
+            ta.focus();
+            // Show error
+            var errId = '_wp_review_err';
+            if (!document.getElementById(errId)) {
+              var err = document.createElement('div');
+              err.id = errId;
+              err.style.cssText = 'color:#ef4444;font-size:12px;margin-top:4px;';
+              err.textContent = 'Please write a review before submitting.';
+              ta.parentNode && ta.parentNode.insertBefore(err, ta.nextSibling);
+            }
+            ta.oninput = function() {
+              if (ta.value.trim()) {
+                ta.style.borderColor = '';
+                ta.style.outline = '';
+                var e2 = document.getElementById(errId);
+                if (e2) e2.remove();
+              }
+            };
+          }
+        }, true);
+      });
+    });
+  }
+  var _revObs = new MutationObserver(function() {
+    if (_reviewValidTimer) return;
+    _reviewValidTimer = setTimeout(function() { _reviewValidTimer = null; _patchReviewModal(); }, 200);
+  });
+  if (document.body) _revObs.observe(document.body, { childList: true, subtree: true });
+  else document.addEventListener('DOMContentLoaded', function() { _revObs.observe(document.body, { childList: true, subtree: true }); });
 })();
 </script>
 <script>if(typeof Pi!=='undefined'){Pi.init({version:"2.0",sandbox:true});}</script>
