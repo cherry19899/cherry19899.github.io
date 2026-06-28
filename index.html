@@ -5,13 +5,13 @@
     <script>
       (function(){
         // Use sessionStorage to redirect once per session
-        var KEY = '_wp_loaded_v623';
+        var KEY = '_wp_loaded_v624';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
             var _jj = new URLSearchParams(location.search).get('job');
-            var url = location.protocol + '//' + location.host + '/?nocache=623&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
+            var url = location.protocol + '//' + location.host + '/?nocache=624&_=' + Date.now() + (_jj ? '&job=' + encodeURIComponent(_jj) : '');
             location.replace(url);
             return;
           }
@@ -47,7 +47,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v623';</script>
+    <script>window.WORKPRO_VERSION='v624';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -2796,14 +2796,14 @@ if(typeof window!=="undefined"){window.Admin=window.AdminPanel=AdminPanel;window
       var start=Date.now();
       var attempt=0;
       var maxAttempts=3;
-      var timeoutMs=10000; // 10 seconds timeout for slow LTE
+      var timeoutMs=30000; // 30 seconds timeout
       function loadBundle() {
         attempt++;
         
         var controller=new AbortController();
         var timer=setTimeout(function(){controller.abort();},timeoutMs);
         var _ls=document.getElementById('_lstatus');if(_ls)_ls.textContent='Fetching bundle... ('+attempt+')';
-        fetch('/assets/app-v200.js?v='+window.WORKPRO_VERSION+'&_='+Date.now(),{signal:controller.signal})
+        fetch('/assets/app-v200.js?v='+window.WORKPRO_VERSION,{signal:controller.signal})
           .then(function(r){clearTimeout(timer);if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
           .then(function(code){
             
