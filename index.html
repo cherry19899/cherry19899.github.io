@@ -4336,6 +4336,44 @@ window._W5_fixed=true;
       var hasStars = modal.querySelector('[class*="star"],[class*="Star"],svg') !== null;
       if (!hasStars) return;
       modal.setAttribute('data-wp-review-patched', '1');
+      // Bug#32: fix subtitle — replace current user's name with the reviewee's name
+      try {
+        var subtitleEl = null;
+        var allEls = modal.querySelectorAll('p,span,div,h2,h3,h4');
+        for (var si = 0; si < allEls.length; si++) {
+          var stTxt = (allEls[si].textContent || '').trim();
+          if (stTxt.indexOf(' · ') !== -1 && allEls[si].children.length === 0) {
+            subtitleEl = allEls[si]; break;
+          }
+        }
+        if (subtitleEl) {
+          var parts = subtitleEl.textContent.trim().split(' · ');
+          if (parts.length >= 2) {
+            var reviewerShown = parts[0].trim();
+            var jobName = parts.slice(1).join(' · ');
+            var me2 = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+            var myN = me2 ? (me2.username || me2.id || '').replace(/^pi_/i,'').toLowerCase() : '';
+            if (myN && reviewerShown.toLowerCase() === myN) {
+              // Look for an escrow card containing this job name and a Freelancer/Client field
+              var revieweeName = '';
+              var cards = document.querySelectorAll('div,li,article,section');
+              for (var ci2 = 0; ci2 < cards.length; ci2++) {
+                var ct = cards[ci2].textContent || '';
+                if (ct.indexOf(jobName) === -1) continue;
+                var fM = ct.match(/Freelancer:\s*([\w.-]+)/i);
+                if (fM && fM[1] && fM[1].replace(/^pi_/i,'').toLowerCase() !== myN) {
+                  revieweeName = fM[1].replace(/^pi_/i,''); break;
+                }
+                var clM = ct.match(/Client:\s*([\w.-]+)/i);
+                if (clM && clM[1] && clM[1].replace(/^pi_/i,'').toLowerCase() !== myN) {
+                  revieweeName = clM[1].replace(/^pi_/i,''); break;
+                }
+              }
+              if (revieweeName) subtitleEl.textContent = revieweeName + ' · ' + jobName;
+            }
+          }
+        }
+      } catch(e) {}
       // Find the submit/confirm button (not cancel)
       var btns = modal.querySelectorAll('button');
       btns.forEach(function(btn) {
