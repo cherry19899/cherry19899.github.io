@@ -1,16 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [tailwindcss(), react()],
+  resolve: {
+    extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+  },
   build: {
     outDir: 'dist-build',
     rollupOptions: {
-      input: 'src/main.jsx',
+      input: 'src/main.tsx',
       output: {
         format: 'iife',
         name: 'WorkProApp',
-        entryFileNames: 'app-v183.js',
+        entryFileNames: 'app-v200.js',
       }
     },
     minify: true,
