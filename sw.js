@@ -1,5 +1,5 @@
-/* Work Pro Service Worker v614 */
-const CACHE_NAME = 'workpro-v614';
+/* Work Pro Service Worker v615 */
+const CACHE_NAME = 'workpro-v615';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
