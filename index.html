@@ -47,7 +47,7 @@
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
     <!-- v484: Removed old v411 cache-bust — now handled by HEAD script -->
-    <script>window.WORKPRO_VERSION='v619';</script>
+    <script>window.WORKPRO_VERSION='v620';</script>
     <!-- v572: Bug#8 FAB position fix (z-index removed — FAB physically moved up, nav z-index untouched) -->
     <!-- v572: Bug#9 Review modal — raise z-index above bottom nav (z-50=50) -->
     <!-- v573: Removed tap diagnostic + debug bar (testing complete) -->
@@ -428,8 +428,9 @@
           var txt = (btn.textContent || '').toLowerCase().trim();
           if (!/apply now|откликнуться|apply$/.test(txt)) return;
           // Walk up to find the job container and check author username
+          // Limit to 5 levels: don't go past modal div into BODY where logged-in username also appears
           var container = btn;
-          for (var i = 0; i < 15; i++) {
+          for (var i = 0; i < 5; i++) {
             container = container && container.parentElement;
             if (!container) break;
             var html = container.innerHTML || '';
