@@ -1,0 +1,247 @@
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useJob, useApplyJob } from '../hooks/useJobs';
+import { useAuthStore } from '../store/authStore';
+import { 
+  ArrowLeft, 
+  MapPin, 
+  DollarSign, 
+  Clock, 
+  Briefcase,
+  MessageCircle,
+  User,
+  Loader2,
+  CheckCircle
+} from 'lucide-react';
+
+export default function JobDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const { data: job, isLoading } = useJob(id!);
+  const applyMutation = useApplyJob();
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyMessage, setApplyMessage] = useState('');
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 size={32} className="text-emerald-400 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-slate-400">Job not found</p>
+        <button onClick={() => navigate('/')} className="btn-primary mt-4">Go Home</button>
+      </div>
+    );
+  }
+
+  const isOwner = user?.id === job.clientId;
+  const hasApplied = job.applicants?.some(a => a.freelancerId === user?.id);
+
+  const handleApply = async () => {
+    if (!applyMessage.trim()) return;
+    await applyMutation.mutateAsync({ jobId: id!, message: applyMessage });
+    setShowApplyModal(false);
+    setApplyMessage('');
+  };
+
+  return (
+    <div className="pb-4">
+      {/* Header Image / Gradient */}
+      <div className="h-32 bg-gradient-to-br from-emerald-600 to-emerald-900 relative">
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 p-2 rounded-full bg-black/30 backdrop-blur text-white"
+        >
+          <ArrowLeft size={20} />
+        </button>
+      </div>
+
+      <div className="px-4 -mt-8 relative z-10">
+        {/* Status Badge */}
+        <div className="flex justify-between items-start mb-4">
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+            job.status === 'open' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+            job.status === 'in_progress' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+            job.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+            'bg-red-500/20 text-red-400 border-red-500/30'
+          }`}>
+            {job.status.replace('_', ' ')}
+          </span>
+          <span className="text-emerald-400 font-bold text-lg">{job.budget} Pi</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="text-2xl font-bold text-white mb-2">{job.title}</h1>
+
+        {/* Client Info */}
+        <div className="flex items-center gap-3 mb-6 p-3 rounded-xl bg-slate-800/50 border border-slate-700">
+          <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <User size={18} className="text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-white">{job.client?.name || job.client?.username || 'Anonymous'}</p>
+            <p className="text-xs text-slate-400">Client</p>
+          </div>
+        </div>
+
+        {/* Meta Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="card p-3">
+            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+              <Briefcase size={14} />
+              Category
+            </div>
+            <p className="text-white font-medium">{job.category}</p>
+          </div>
+          {job.location && (
+            <div className="card p-3">
+              <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <MapPin size={14} />
+                Location
+              </div>
+              <p className="text-white font-medium">{job.location}</p>
+            </div>
+          )}
+          {job.deadline && (
+            <div className="card p-3">
+              <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <Clock size={14} />
+                Deadline
+              </div>
+              <p className="text-white font-medium">{new Date(job.deadline).toLocaleDateString()}</p>
+            </div>
+          )}
+          <div className="card p-3">
+            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+              <DollarSign size={14} />
+              Budget
+            </div>
+            <p className="text-white font-medium">{job.budget} Pi</p>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="card mb-6">
+          <h3 className="font-semibold text-white mb-3">Description</h3>
+          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+        </div>
+
+        {/* Images */}
+        {job.images && job.images.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-semibold text-white mb-3">Attachments</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {job.images.map((img, i) => (
+                <img 
+                  key={i} 
+                  src={img} 
+                  alt={`Attachment ${i + 1}`}
+                  className="w-full aspect-square rounded-xl object-cover bg-slate-700"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Applicants */}
+        {job.applicants && job.applicants.length > 0 && (
+          <div className="card mb-6">
+            <h3 className="font-semibold text-white mb-3">
+              Applicants ({job.applicants.length})
+            </h3>
+            <div className="space-y-2">
+              {job.applicants.map(app => (
+                <div key={app.id} className="flex items-center gap-3 p-2 rounded-lg bg-slate-700/50">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <User size={14} className="text-emerald-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white truncate">
+                      {app.freelancer?.name || app.freelancer?.username || 'Anonymous'}
+                    </p>
+                    <p className="text-xs text-slate-400 truncate">{app.message}</p>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-xs ${
+                    app.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-400' :
+                    app.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                    'bg-slate-600 text-slate-300'
+                  }`}>
+                    {app.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          {!isOwner && job.status === 'open' && !hasApplied && (
+            <button 
+              onClick={() => setShowApplyModal(true)}
+              className="flex-1 btn-primary flex items-center justify-center gap-2"
+            >
+              <CheckCircle size={18} />
+              Apply Now
+            </button>
+          )}
+          {!isOwner && hasApplied && (
+            <button disabled className="flex-1 btn-secondary opacity-50 cursor-not-allowed">
+              Already Applied
+            </button>
+          )}
+          <button 
+            onClick={() => navigate(`/chat?jobId=${id}`)}
+            className="p-3 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400"
+          >
+            <MessageCircle size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* Apply Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-800 rounded-2xl w-full max-w-sm p-5 border border-slate-700">
+            <h3 className="text-lg font-bold text-white mb-2">Apply for Job</h3>
+            <p className="text-sm text-slate-400 mb-4">
+              This will cost 1 connect. You have {user?.connects || 0} connects.
+            </p>
+            <textarea
+              value={applyMessage}
+              onChange={(e) => setApplyMessage(e.target.value)}
+              placeholder="Tell the client why you're perfect for this job..."
+              className="input h-32 resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowApplyModal(false)}
+                className="flex-1 btn-secondary"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleApply}
+                disabled={!applyMessage.trim() || applyMutation.isPending}
+                className="flex-1 btn-primary flex items-center justify-center gap-2"
+              >
+                {applyMutation.isPending ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  'Submit'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
