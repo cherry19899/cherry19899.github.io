@@ -139,7 +139,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-emerald-500 text-white">
+      <header className="sticky top-0 z-40 bg-[#4CAF7A] text-white">
         <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
           <h1 className="font-black text-lg tracking-tight">Work Pro</h1>
 
@@ -177,7 +177,7 @@ export default function App() {
                     <button
                       key={l.code}
                       onClick={() => { setLang(l.code); setShowLangMenu(false); }}
-                      className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-muted transition-colors ${lang === l.code ? 'text-emerald-500 font-semibold' : ''}`}
+                      className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-2 hover:bg-muted transition-colors ${lang === l.code ? 'text-[#4CAF7A] font-semibold' : ''}`}
                     >
                       <span>{l.flag}</span>
                       <span>{l.label}</span>

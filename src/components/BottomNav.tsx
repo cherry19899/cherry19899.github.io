@@ -52,7 +52,7 @@ const TABS = [
 
 export default function BottomNav({ t, active, onNav, chatUnread = 0, notifUnread = 0 }: BottomNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 safe-area-pb">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {TABS.map(({ key, labelKey, Icon }) => {
           const isActive = active === key;
@@ -62,7 +62,7 @@ export default function BottomNav({ t, active, onNav, chatUnread = 0, notifUnrea
               key={key}
               onClick={() => onNav(key)}
               className={`flex flex-col items-center justify-center gap-0.5 w-16 h-full transition-colors relative ${
-                isActive ? 'text-emerald-500' : 'text-muted-foreground'
+                isActive ? 'text-[#4CAF7A]' : 'text-muted-foreground'
               }`}
             >
               <Icon className="w-5 h-5" />
