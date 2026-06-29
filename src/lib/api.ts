@@ -87,8 +87,8 @@ export const myApplications = () => apiFetch('/api/jobs/as-freelancer');
 export const updateApplicationStatus = (appId: string | number, status: string) =>
   apiFetch(`/api/applications/${appId}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
 
-export const hireApplication = (appId: string | number, data: any) =>
-  apiFetch(`/api/applications/${appId}/hire`, { method: 'POST', body: JSON.stringify(data) });
+export const hireApplication = (jobId: string | number, data: any) =>
+  apiFetch(`/api/jobs/${jobId}/hire`, { method: 'POST', body: JSON.stringify(data) });
 
 // ── Escrow ────────────────────────────────────────────────────────────────────
 export const createEscrow = (data: any) =>

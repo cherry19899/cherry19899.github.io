@@ -97,7 +97,7 @@ export default function JobDetailModal({ t, jobId, user, onClose, onNavigate, on
           onReadyForServerApproval: async (paymentId: string) => { await approvePayment({ payment_id: paymentId, metadata }); },
           onReadyForServerCompletion: async (paymentId: string, txid: string) => {
             await completePayment({ payment_id: paymentId, txid, metadata });
-            await hireApplication(app.id, { payment_id: paymentId, txid, amount });
+            await hireApplication(jobId, { application_id: app.id, payment_id: paymentId, txid, amount });
             alert(`${app.freelancer_username || 'Freelancer'} hired! π${amount} locked in escrow.`);
             load(); loadApps();
           },
