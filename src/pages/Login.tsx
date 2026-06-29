@@ -1,14 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { authenticatePi, isPiBrowser } from '../lib/pi';
-import { LogIn, Smartphone, AlertCircle } from 'lucide-react';
+import { LogIn, Smartphone, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [piReady, setPiReady] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+
+  // Wait for Pi SDK to load (script is async)
+  useEffect(() => {
+    let attempts = 0;
+    const checkPi = setInterval(() => {
+      attempts++;
+      if (isPiBrowser()) {
+        setPiReady(true);
+        clearInterval(checkPi);
+      } else if (attempts > 30) {
+        clearInterval(checkPi);
+        // Not in Pi Browser — still show UI
+      }
+    }, 200);
+    return () => clearInterval(checkPi);
+  }, []);
 
   const handlePiLogin = async () => {
     setLoading(true);
@@ -25,7 +42,9 @@ export default function Login() {
       setUser(user);
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      console.error('[Login] Auth error:', err);
+      const msg = err?.response?.data?.error || err?.message || 'Authentication failed';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -51,7 +70,7 @@ export default function Login() {
           className="w-full btn-primary flex items-center justify-center gap-3 text-lg py-4"
         >
           {loading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <Loader2 size={20} className="animate-spin" />
           ) : (
             <>
               <LogIn size={20} />
@@ -64,7 +83,9 @@ export default function Login() {
         <div className="mt-6 flex items-start gap-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
           <Smartphone size={18} className="text-emerald-400 mt-0.5 shrink-0" />
           <p className="text-sm text-slate-400">
-            This app works inside Pi Browser. Open pi://cherry19899.github.io or use the Pi app.
+            {piReady 
+              ? 'Pi SDK ready. Click Login to authenticate.'
+              : 'This app works inside Pi Browser. Open pi://cherry19899.github.io or use the Pi app.'}
           </p>
         </div>
 
