@@ -1,126 +1,101 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#10b981">
-  <title>Work Pro</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/favicon.ico">
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      min-height: 100vh;
-    }
-    #root { min-height: 100vh; }
-    #loader {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: #0f172a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.5s;
-    }
-    #loader h1 {
-      font-size: 32px;
-      font-weight: 700;
-      color: #10b981;
-      margin-bottom: 16px;
-    }
-    #loader p {
-      color: #94a3b8;
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #1e293b;
-      border-top-color: #10b981;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #error-box {
-      display: none;
-      margin-top: 20px;
-      padding: 16px;
-      background: #1e293b;
-      border-radius: 8px;
-      max-width: 320px;
-      text-align: center;
-      color: #f87171;
-    }
-    #error-box button {
-      margin-top: 12px;
-      padding: 8px 20px;
-      background: #10b981;
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-
-  <div id="loader">
-    <h1>Work Pro</h1>
-    <p id="status-text">Loading application...</p>
-    <div class="spinner"></div>
-    <div id="error-box">
-      <p id="error-text">Failed to load</p>
-      <button onclick="location.reload()">Reload</button>
-    </div>
-  </div>
-
-  <script>
-    // Wait for Pi SDK
-    window._piSdkReady = false;
-    function waitForPi() {
-      if (window.Pi && typeof window.Pi.init === 'function') {
-        window._piSdkReady = true;
-        return;
-      }
-      setTimeout(waitForPi, 100);
-    }
-    waitForPi();
-
-    // Loader hide logic
-    var startTime = Date.now();
-    var checkInterval = setInterval(function() {
-      var root = document.getElementById('root');
-      var loader = document.getElementById('loader');
-
-      // If app rendered something
-      if (root && root.children.length > 0) {
-        loader.style.opacity = '0';
-        setTimeout(function() { loader.style.display = 'none'; }, 500);
-        clearInterval(checkInterval);
-        return;
-      }
-
-      // Timeout after 30 seconds
-      if (Date.now() - startTime > 30000) {
-        clearInterval(checkInterval);
-        document.querySelector('.spinner').style.display = 'none';
-        document.getElementById('error-box').style.display = 'block';
-        document.getElementById('error-text').textContent = 'App failed to load. Please reload.';
-      }
-    }, 500);
-  </script>
-
-  <script src="assets/app-v200.js?v=644"
-          onload="console.log('Bundle loaded');"
-          onerror="document.getElementById('status-text').style.display='none';document.querySelector('.spinner').style.display='none';document.getElementById('error-box').style.display='block';document.getElementById('error-text').textContent='Failed to load app. Check connection.';">
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#10b981" />
+    <meta name="description" content="Hire and work in Pi cryptocurrency. Find freelance jobs, pay and get paid in Pi." />
+    <meta name="keywords" content="Pi Network, freelance, jobs, cryptocurrency, hire, work" />
+    <meta name="author" content="Work Pro" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Work Pro" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Work Pro - Freelance on Pi" />
+    <meta property="og:description" content="Hire and work in Pi cryptocurrency." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://workpro.onrender.com" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Work Pro - Freelance on Pi" />
+    <meta name="twitter:description" content="Hire and work in Pi cryptocurrency." />
+    
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./vite.svg" />
+    <title>Work Pro - Freelance on Pi</title>
+    <script>window.WORKPRO_VERSION='v20';</script>
+    <script>
+      // One-time cache clear for v20 upgrade
+      (function() {
+        try {
+          var cleared = localStorage.getItem('workpro_v20_cleared');
+          if (!cleared) {
+            localStorage.setItem('workpro_v20_cleared', '1');
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                return Promise.all(names.map(function(n) { return caches.delete(n); }));
+              });
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                for (var reg of regs) reg.unregister();
+              });
+            }
+            localStorage.removeItem('workpro_user');
+            localStorage.removeItem('workpro_connects');
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      // Pi SDK init with Promise — guarantees initialization before any other method
+      window._piInitPromise = new Promise(function(resolve, reject) {
+        var attempts = 0;
+        var maxAttempts = 25;
+        var interval = 300;
+        
+        function tryInit() {
+          attempts++;
+          if (typeof window.Pi !== 'undefined' && typeof window.Pi.init === 'function') {
+            try {
+              // Check if already initialized
+              if (window.Pi.initialized) {
+                resolve(true);
+                return;
+              }
+              window.Pi.init({ version: "2.0" });
+              resolve(true);
+            } catch (e) {
+              reject(e);
+            }
+            return;
+          }
+          if (attempts < maxAttempts) {
+            setTimeout(tryInit, interval);
+          } else {
+            resolve(false); // Resolve false, not reject — app continues without Pi
+          }
+        }
+        
+        // Wait for DOM ready
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          tryInit();
+        } else {
+          document.addEventListener('DOMContentLoaded', tryInit);
+        }
+      });
+    </script>
+    <script type="module" crossorigin src="./assets/index-CcwACLUL.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Dwz60DSC.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
