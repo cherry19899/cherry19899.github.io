@@ -1,2 +1,4 @@
 node_modules/
 handoff.md
+dist/
+dist-build/

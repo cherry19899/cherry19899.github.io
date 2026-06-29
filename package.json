@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node build-dist.cjs",
     "deploy": "vite build && cp dist-build/app-v200.js assets/app-v200.js",
     "dev": "vite"
   },
