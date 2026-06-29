@@ -132,6 +132,26 @@
     })();
     </script>
 
+    <!-- Global error trap — shows JS errors on screen (debug helper) -->
+    <script>
+    window.onerror = function(msg, src, line, col, err) {
+      var el = document.getElementById('_loader');
+      if (el) {
+        el.style.display = 'flex';
+        el.style.opacity = '1';
+        var sp = document.querySelector('.sp'); if (sp) sp.style.display = 'none';
+        var ls = document.getElementById('_lstatus'); if (ls) ls.textContent = 'JS Error:';
+        var er = document.getElementById('_err'); if (er) { er.style.display = 'block'; }
+        var et = document.getElementById('_errtext');
+        if (et) et.textContent = (msg || 'Unknown error') + ' [' + (src||'').split('/').pop() + ':' + line + ']';
+      }
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      var msg = (e.reason && (e.reason.message || String(e.reason))) || 'Unhandled promise rejection';
+      window.onerror(msg, '', 0, 0, e.reason);
+    });
+    </script>
+
     <!-- Broken-image fallback -->
     <script>
     document.addEventListener('error', function (e) {
