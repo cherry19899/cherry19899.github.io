@@ -1,193 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- v625: Clean index — monkey-patches removed, TSX bundle handles all logic -->
-    <script>
-      (function(){
-        var KEY = '_wp_loaded_v626';
-        var alreadyLoaded = sessionStorage.getItem(KEY);
-        if (!alreadyLoaded) {
-          sessionStorage.setItem(KEY, '1');
-          if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=626';
-            location.replace(url);
-            return;
-          }
-        }
-      })();
-    </script>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/workpro-icon.svg?v=51" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=51" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#10b981" />
-    <meta name="description" content="Hire freelancers and find jobs. Pay and get paid in Pi." />
-    <link rel="manifest" href="/manifest.json?v=555" />
-    <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
-    <title>Work Pro — Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v626';</script>
-
-    <!-- Pi SDK: use native in Pi Browser, load from CDN otherwise -->
-    <script>
-      if (!window.Pi) {
-        document.write('<script src="https://sdk.minepi.com/pi-sdk.js"><\/script>');
-      }
-    </script>
-
-    <!-- Pi SDK init — must run BEFORE bundle -->
-    <script>
-    (function() {
-      var _initAttempts = 0;
-      window._piSdkReady = false;
-      function tryInit() {
-        _initAttempts++;
-        if (!window.Pi || typeof window.Pi.init !== 'function') {
-          if (_initAttempts < 100) setTimeout(tryInit, 100);
-          return;
-        }
-        if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
-        try {
-          var isSandbox = /github\.io|localhost|127\.0\.0\.1/.test(location.hostname);
-          window.Pi.init({
-            version: '2.0',
-            sandbox: isSandbox,
-            onIncompletePayment: function(payment) {
-              var paymentId = payment && (payment.identifier || payment.paymentId || payment.id);
-              if (!paymentId) return Promise.resolve();
-              var st = payment && payment.status;
-              var isCompleted = typeof st === 'string'
-                ? (st === 'developer_completed' || st === 'completed')
-                : !!(st && (st.developer_completed || st.transaction_verified));
-              var endpoint = isCompleted ? '/resolve-complete' : '/cancelled';
-              var tok = localStorage.getItem('workpro_token') || '';
-              var hdrs = { 'Content-Type': 'application/json' };
-              if (tok) hdrs['Authorization'] = 'Bearer ' + tok;
-              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + endpoint, {
-                method: 'POST', headers: hdrs
-              }).then(function(r) { return r.json().catch(function(){return{};}); })
-              .then(function() {
-                return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
-                  method: 'POST', headers: hdrs
-                }).catch(function(){});
-              })
-              .then(function() {
-                return new Promise(function(resolve){ setTimeout(resolve, 3000); });
-              })
-              .catch(function(err) { console.error('[Pi] onIncompletePayment error:', err); });
-            }
-          });
-          window.Pi._workpro_inited = true;
-          window._piSdkReady = true;
-        } catch(e) {
-          console.error('[Pi] init error:', e.message);
-          if (_initAttempts < 100) setTimeout(tryInit, 500);
-        }
-      }
-      tryInit();
-    })();
-    </script>
-  </head>
-  <body>
-    <!-- LOADER -->
-    <div id="_loader" style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:oklch(0.145 0 0);z-index:99999;font-family:sans-serif;">
-      <h1 style="color:#10b981;font-size:36px;font-weight:900;margin-bottom:8px;">Work Pro</h1>
-      <p id="_lstatus" style="color:#6b7280;font-size:14px;margin-bottom:20px;">Loading...</p>
-      <div style="width:40px;height:40px;border:3px solid #374151;border-top-color:#10b981;border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <div id="_error" style="display:none;color:#ef4444;font-size:13px;text-align:center;margin-top:20px;max-width:280px;padding:0 20px;"></div>
-      <button id="_reload" style="display:none;margin-top:12px;padding:10px 24px;background:#10b981;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;" onclick="location.reload()">Reload</button>
-      <a href="https://workpro-api.onrender.com/" style="color:#10b981;font-size:12px;margin-top:8px;text-decoration:underline;">Alternative link</a>
-    </div>
-    <style>
-      @keyframes spin { to { transform: rotate(360deg); } }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: oklch(0.145 0 0); }
-    </style>
-
-    <!-- Loader hide: wait for React to mount -->
-    <script>
-    (function(){
-      var start = Date.now();
-      var check = setInterval(function(){
-        var root = document.getElementById('root');
-        var hasReact = root && root.children.length > 0;
-        var loader = document.getElementById('_loader');
-        var elapsed = Date.now() - start;
-        if (hasReact && loader) {
-          loader.style.opacity = '0';
-          loader.style.transition = 'opacity 0.4s';
-          setTimeout(function(){ loader.style.display = 'none'; }, 400);
-          clearInterval(check);
-        } else if (elapsed > 300000 && !hasReact) {
-          clearInterval(check);
-          var el = document.getElementById('_error');
-          var rl = document.getElementById('_reload');
-          if (el) { el.textContent = 'Loading timed out (5min). Check connection.'; el.style.display = 'block'; }
-          if (rl) rl.style.display = 'inline-block';
-        }
-      }, 500);
-    })();
-    </script>
-
-    <div id="root"></div>
-
-    <!-- Image broken-src fallback -->
-    <script>
-    document.addEventListener('error', function(e) {
-      var t = e.target;
-      if (t && t.tagName === 'IMG' && !t.dataset.fallback) {
-        t.dataset.fallback = '1';
-        t.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Ccircle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23374151%22/%3E%3C/svg%3E';
-      }
-    }, true);
-    </script>
-
-    <!-- Bundle loader -->
-    <script>
-    (function(){
-      var start = Date.now();
-      var attempt = 0;
-      var maxAttempts = 3;
-      var timeoutMs = 90000;
-      function loadBundle() {
-        attempt++;
-        var el = document.getElementById('_lstatus');
-        if (el) el.textContent = 'Fetching bundle... (' + attempt + ')';
-        var controller = new AbortController();
-        var timer = setTimeout(function(){ controller.abort(); }, timeoutMs);
-        fetch('/assets/app-v200.js?v=' + window.WORKPRO_VERSION, { signal: controller.signal })
-          .then(function(r) {
-            clearTimeout(timer);
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.text();
-          })
-          .then(function(code) {
-            try {
-              var s = document.createElement('script');
-              s.type = 'text/javascript';
-              s.textContent = code;
-              document.head.appendChild(s);
-              window.__jsLoaded = true;
-            } catch(e) {
-              console.error('[Loader] exec error:', e.message);
-              var er = document.getElementById('_error');
-              if (er) { er.textContent = 'Error: ' + e.message; er.style.display = 'block'; }
-            }
-          })
-          .catch(function(e) {
-            clearTimeout(timer);
-            console.error('[Loader] Attempt ' + attempt + ' failed:', e.message);
-            if (attempt < maxAttempts) {
-              setTimeout(loadBundle, 2000);
-            } else {
-              var er = document.getElementById('_error');
-              var rl = document.getElementById('_reload');
-              if (er) { er.innerHTML = 'Load failed after ' + maxAttempts + ' attempts.<br><button onclick="location.reload()" style="margin-top:8px;padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:8px;cursor:pointer;">Reload</button>'; er.style.display = 'block'; }
-              if (rl) rl.style.display = 'inline-block';
-            }
-          });
-      }
-      loadBundle();
-    })();
-    </script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>Work Pro</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon.ico">
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+#loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+#loader h1{font-size:28px;font-weight:700;color:#38bdf8;margin-bottom:16px}
+#loader p{color:#94a3b8;font-size:14px;margin-bottom:24px}
+.spinner{width:40px;height:40px;border:3px solid #1e293b;border-top-color:#38bdf8;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#error-box{display:none;margin-top:20px;padding:16px;background:#1e293b;border-radius:8px;max-width:320px;text-align:center;color:#f87171}
+#error-box button{margin-top:12px;padding:8px 20px;background:#38bdf8;border:none;border-radius:6px;color:#0f172a;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="loader">
+<h1>Work Pro</h1>
+<p id="status-text">Loading application...</p>
+<div class="spinner"></div>
+<div id="error-box">
+<p id="error-text">Failed to load</p>
+<button onclick="location.reload()">Reload</button>
+</div>
+</div>
+<script src="assets/app-v200.js?v=628" 
+        onload="document.getElementById('loader').style.display='none'"
+        onerror="document.getElementById('status-text').style.display='none';document.querySelector('.spinner').style.display='none';document.getElementById('error-box').style.display='block';document.getElementById('error-text').textContent='Failed to load app. Check connection and reload.';">
+</script>
+<script>
+setTimeout(function(){if(document.getElementById('loader').style.display!=='none'){document.getElementById('status-text').textContent='Taking longer than expected...';}},10000);
+setTimeout(function(){if(document.getElementById('loader').style.display!=='none'){document.querySelector('.spinner').style.display='none';document.getElementById('error-box').style.display='block';}},30000);
+</script>
+</body>
 </html>
