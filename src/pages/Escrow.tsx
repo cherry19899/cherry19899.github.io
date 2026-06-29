@@ -23,7 +23,7 @@ export default function EscrowPage() {
     queryKey: ['escrows'],
     queryFn: async () => {
       const { data } = await api.get('/api/escrows');
-      return data as EscrowType[];
+      return (data.escrows || data) as EscrowType[];
     },
   });
 
@@ -47,7 +47,7 @@ export default function EscrowPage() {
     },
   });
 
-  const filtered = escrows?.filter(e => 
+  const filtered = (escrows || []).filter((e: EscrowType) => 
     activeTab === 'active' 
       ? ['pending', 'funded', 'disputed'].includes(e.status)
       : ['released'].includes(e.status)
@@ -112,70 +112,45 @@ export default function EscrowPage() {
 
         {/* Escrows List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={32} className="text-emerald-400 animate-spin" />
+          <div className="flex items-center justify-center py-10">
+            <Loader2 size={24} className="text-emerald-400 animate-spin" />
           </div>
-        ) : filtered?.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="text-center py-10">
-            <Shield size={40} className="mx-auto text-slate-600 mb-3" />
-            <p className="text-slate-400">No {activeTab} escrows</p>
+            <Shield size={32} className="mx-auto text-slate-600 mb-3" />
+            <p className="text-slate-400">No escrow transactions</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered?.map(escrow => {
+            {filtered.map((escrow: EscrowType) => {
               const config = statusConfig[escrow.status] || statusConfig.pending;
               const Icon = config.icon;
-
               return (
                 <div key={escrow.id} className="card">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Icon size={16} className={config.color} />
-                      <span className={`text-sm font-medium ${config.color}`}>
-                        {config.label}
-                      </span>
+                      <Icon size={18} className={config.color} />
+                      <span className={`font-medium ${config.color}`}>{config.label}</span>
                     </div>
-                    <span className="text-lg font-bold text-emerald-400">{escrow.amount} π</span>
+                    <span className="text-emerald-400 font-bold">{escrow.amount} Pi</span>
                   </div>
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Job ID</span>
-                      <span className="text-slate-300 font-mono">{escrow.jobId.slice(0, 8)}...</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Created</span>
-                      <span className="text-slate-300">
-                        {new Date(escrow.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
+                  <p className="text-sm text-slate-400 mb-3">Job #{escrow.job_id}</p>
                   {escrow.status === 'funded' && (
-                    <div className="flex gap-2 mt-4">
-                      <button
+                    <div className="flex gap-2">
+                      <button 
                         onClick={() => releaseMutation.mutate(escrow.id)}
                         disabled={releaseMutation.isPending}
-                        className="flex-1 btn-primary text-sm py-2 flex items-center justify-center gap-1.5"
+                        className="btn-primary flex-1 text-sm py-2 flex items-center justify-center gap-1"
                       >
-                        {releaseMutation.isPending ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <CheckCircle size={14} />
-                        )}
+                        {releaseMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
                         Release
                       </button>
-                      <button
+                      <button 
                         onClick={() => disputeMutation.mutate(escrow.id)}
                         disabled={disputeMutation.isPending}
-                        className="flex-1 btn-danger text-sm py-2 flex items-center justify-center gap-1.5"
+                        className="btn-danger flex-1 text-sm py-2 flex items-center justify-center gap-1"
                       >
-                        {disputeMutation.isPending ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <AlertTriangle size={14} />
-                        )}
+                        {disputeMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <AlertTriangle size={14} />}
                         Dispute
                       </button>
                     </div>
