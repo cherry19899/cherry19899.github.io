@@ -1,7 +1,4 @@
-// Kill-switch service worker.
-// Neutralizes any previously-registered SW (old Vite/v630 app, or a stale
-// workbox precache build): clears all caches, unregisters itself, and reloads
-// controlled windows so the current Next.js (piwork) app loads fresh.
+// Kill-switch service worker — neutralize any old SW + stale caches.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
