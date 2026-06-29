@@ -18,10 +18,13 @@ export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { data: job, isLoading } = useJob(id!);
+  const { data, isLoading } = useJob(id!);
   const applyMutation = useApplyJob();
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
+
+  const job = data?.job;
+  const applications = data?.applications || [];
 
   if (isLoading) {
     return (
@@ -40,8 +43,8 @@ export default function JobDetail() {
     );
   }
 
-  const isOwner = user?.id === job.clientId;
-  const hasApplied = job.applicants?.some(a => a.freelancerId === user?.id);
+  const isOwner = user?.id === job.posted_by;
+  const hasApplied = applications.some((a: any) => a.freelancer_id === user?.id);
 
   const handleApply = async () => {
     if (!applyMessage.trim()) return;
@@ -85,7 +88,7 @@ export default function JobDetail() {
             <User size={18} className="text-emerald-400" />
           </div>
           <div>
-            <p className="text-sm font-medium text-white">{job.client?.name || job.client?.username || 'Anonymous'}</p>
+            <p className="text-sm font-medium text-white">{job.posted_by_name || 'Anonymous'}</p>
             <p className="text-xs text-slate-400">Client</p>
           </div>
         </div>
@@ -128,115 +131,85 @@ export default function JobDetail() {
 
         {/* Description */}
         <div className="card mb-6">
-          <h3 className="font-semibold text-white mb-3">Description</h3>
-          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+          <h2 className="text-lg font-semibold text-white mb-3">Description</h2>
+          <p className="text-slate-300 whitespace-pre-wrap">{job.description}</p>
         </div>
 
         {/* Images */}
         {job.images && job.images.length > 0 && (
           <div className="mb-6">
-            <h3 className="font-semibold text-white mb-3">Attachments</h3>
-            <div className="grid grid-cols-3 gap-2">
+            <h2 className="text-lg font-semibold text-white mb-3">Images</h2>
+            <div className="grid grid-cols-2 gap-2">
               {job.images.map((img, i) => (
-                <img 
-                  key={i} 
-                  src={img} 
-                  alt={`Attachment ${i + 1}`}
-                  className="w-full aspect-square rounded-xl object-cover bg-slate-700"
-                  loading="lazy"
-                />
+                <img key={i} src={img} alt="" className="rounded-xl w-full h-40 object-cover bg-slate-700" />
               ))}
             </div>
           </div>
         )}
 
-        {/* Applicants */}
-        {job.applicants && job.applicants.length > 0 && (
+        {/* Applications */}
+        {isOwner && applications.length > 0 && (
           <div className="card mb-6">
-            <h3 className="font-semibold text-white mb-3">
-              Applicants ({job.applicants.length})
-            </h3>
-            <div className="space-y-2">
-              {job.applicants.map(app => (
-                <div key={app.id} className="flex items-center gap-3 p-2 rounded-lg bg-slate-700/50">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <User size={14} className="text-emerald-400" />
+            <h2 className="text-lg font-semibold text-white mb-3">Applications ({applications.length})</h2>
+            <div className="space-y-3">
+              {applications.map((app: any) => (
+                <div key={app.id} className="p-3 rounded-xl bg-slate-800 border border-slate-700">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User size={16} className="text-emerald-400" />
+                    <span className="text-sm font-medium text-white">{app.freelancer_name || app.freelancer_id}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${
+                      app.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
+                      app.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>{app.status}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white truncate">
-                      {app.freelancer?.name || app.freelancer?.username || 'Anonymous'}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate">{app.message}</p>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-xs ${
-                    app.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-400' :
-                    app.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                    'bg-slate-600 text-slate-300'
-                  }`}>
-                    {app.status}
-                  </span>
+                  <p className="text-sm text-slate-300">{app.message}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          {!isOwner && job.status === 'open' && !hasApplied && (
-            <button 
-              onClick={() => setShowApplyModal(true)}
-              className="flex-1 btn-primary flex items-center justify-center gap-2"
-            >
-              <CheckCircle size={18} />
-              Apply Now
-            </button>
-          )}
-          {!isOwner && hasApplied && (
-            <button disabled className="flex-1 btn-secondary opacity-50 cursor-not-allowed">
-              Already Applied
-            </button>
-          )}
-          <button 
-            onClick={() => navigate(`/chat?jobId=${id}`)}
-            className="p-3 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400"
-          >
-            <MessageCircle size={20} />
-          </button>
-        </div>
+        {/* Apply Button */}
+        {!isOwner && job.status === 'open' && (
+          <div className="sticky bottom-20 z-30">
+            {hasApplied ? (
+              <div className="flex items-center justify-center gap-2 py-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+                <CheckCircle size={20} className="text-emerald-400" />
+                <span className="text-emerald-400 font-medium">You have applied</span>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowApplyModal(true)}
+                className="btn-primary w-full flex items-center justify-center gap-2"
+              >
+                <MessageCircle size={18} />
+                Apply Now
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Apply Modal */}
       {showApplyModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-slate-800 rounded-2xl w-full max-w-sm p-5 border border-slate-700">
-            <h3 className="text-lg font-bold text-white mb-2">Apply for Job</h3>
-            <p className="text-sm text-slate-400 mb-4">
-              This will cost 1 connect. You have {user?.connects || 0} connects.
-            </p>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl w-full max-w-md p-4 border border-slate-700">
+            <h3 className="text-lg font-bold text-white mb-3">Apply for this job</h3>
             <textarea
               value={applyMessage}
               onChange={(e) => setApplyMessage(e.target.value)}
-              placeholder="Tell the client why you're perfect for this job..."
-              className="input h-32 resize-none mb-4"
+              placeholder="Write your cover letter..."
+              className="input h-32 resize-none mb-3"
             />
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setShowApplyModal(false)}
-                className="flex-1 btn-secondary"
-              >
-                Cancel
-              </button>
+            <div className="flex gap-2">
+              <button onClick={() => setShowApplyModal(false)} className="btn-secondary flex-1">Cancel</button>
               <button 
                 onClick={handleApply}
                 disabled={!applyMessage.trim() || applyMutation.isPending}
-                className="flex-1 btn-primary flex items-center justify-center gap-2"
+                className="btn-primary flex-1 flex items-center justify-center gap-2"
               >
-                {applyMutation.isPending ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  'Submit'
-                )}
+                {applyMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'Submit'}
               </button>
             </div>
           </div>
