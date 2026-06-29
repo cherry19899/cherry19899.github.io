@@ -25,7 +25,7 @@ export default function JobCard({ job }: JobCardProps) {
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-white truncate pr-2">{job.title}</h3>
-          <p className="text-sm text-slate-400 mt-0.5">{job.client?.name || job.client?.username || 'Anonymous'}</p>
+          <p className="text-sm text-slate-400 mt-0.5">{job.posted_by_name || 'Anonymous'}</p>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${statusColors[job.status] || statusColors.open}`}>
           {job.status.replace('_', ' ')}
