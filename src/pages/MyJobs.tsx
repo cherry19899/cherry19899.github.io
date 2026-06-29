@@ -12,9 +12,11 @@ export default function MyJobs() {
   const [tab, setTab] = useState<Tab>('posted');
   const { data: jobs, isLoading } = useMyJobs();
 
-  const filtered = jobs?.filter(job => {
-    if (tab === 'posted') return true; // API returns user's jobs
-    return job.applicants?.some(a => a.freelancerId === JSON.parse(localStorage.getItem('workpro_user') || '{}').id);
+  const userId = JSON.parse(localStorage.getItem('workpro_user') || '{}').id;
+
+  const filtered = (jobs || []).filter(job => {
+    if (tab === 'posted') return job.posted_by === userId;
+    return job.hired_freelancer_id === userId;
   });
 
   return (
@@ -39,7 +41,7 @@ export default function MyJobs() {
               : 'bg-slate-800 text-slate-400 border border-slate-700'
           }`}
         >
-          Applied
+          Hired
         </button>
       </div>
 
@@ -48,11 +50,11 @@ export default function MyJobs() {
         <div className="flex items-center justify-center py-20">
           <Loader2 size={32} className="text-emerald-400 animate-spin" />
         </div>
-      ) : filtered?.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={<Briefcase size={28} />}
-          title={tab === 'posted' ? 'No jobs posted' : 'No applications'}
-          description={tab === 'posted' ? 'Post your first job to find freelancers' : 'Apply to jobs to see them here'}
+          title={tab === 'posted' ? 'No jobs posted' : 'No hired jobs'}
+          description={tab === 'posted' ? 'Post your first job to find freelancers' : 'Apply to jobs to get hired'}
           action={
             tab === 'posted' ? (
               <button onClick={() => navigate('/create-job')} className="btn-primary flex items-center gap-2">
@@ -64,7 +66,7 @@ export default function MyJobs() {
         />
       ) : (
         <div className="space-y-3">
-          {filtered?.map(job => (
+          {filtered.map(job => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>
