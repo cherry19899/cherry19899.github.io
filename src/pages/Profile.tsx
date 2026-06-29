@@ -26,10 +26,10 @@ export default function Profile() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data } = await api.post(`/api/users/${user?.id}`, {
-        name: form.name,
+      const { data } = await api.put('/api/me', {
+        display_name: form.name,
         bio: form.bio,
-        skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
+        skills: form.skills.split(',').map((s: string) => s.trim()).filter(Boolean),
       });
       setUser(data);
       localStorage.setItem('workpro_user', JSON.stringify(data));
@@ -40,6 +40,8 @@ export default function Profile() {
   };
 
   if (!user) return null;
+
+  const connects = (user as any).balance_connects ?? (user as any).connects ?? 0;
 
   return (
     <div className="p-4 pb-safe">
@@ -55,16 +57,16 @@ export default function Profile() {
         {/* Stats */}
         <div className="flex justify-center gap-6 mt-4">
           <div className="text-center">
-            <p className="text-xl font-bold text-emerald-400">{user.connects}</p>
+            <p className="text-xl font-bold text-emerald-400">{connects}</p>
             <p className="text-xs text-slate-500">Connects</p>
           </div>
           <div className="text-center">
-            <p className="text-xl font-bold text-white">0</p>
+            <p className="text-xl font-bold text-white">{(user as any).total_jobs_completed || 0}</p>
             <p className="text-xs text-slate-500">Jobs Done</p>
           </div>
           <div className="text-center">
-            <p className="text-xl font-bold text-white">0</p>
-            <p className="text-xs text-slate-500">Reviews</p>
+            <p className="text-xl font-bold text-white">{(user as any).total_jobs_posted || 0}</p>
+            <p className="text-xs text-slate-500">Posted</p>
           </div>
         </div>
       </div>
@@ -78,7 +80,7 @@ export default function Profile() {
             </div>
             <div>
               <p className="font-semibold text-white">Connects Balance</p>
-              <p className="text-sm text-slate-400">{user.connects} available</p>
+              <p className="text-sm text-slate-400">{connects} available</p>
             </div>
           </div>
           <button className="btn-primary text-sm py-2 px-4">
@@ -87,113 +89,70 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Edit Form */}
-      {editing ? (
-        <div className="card space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-white">Edit Profile</h3>
-            <button onClick={() => setEditing(false)} className="p-1 rounded-lg bg-slate-700 text-slate-400">
-              <X size={16} />
+      {/* Bio */}
+      <div className="card mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-white flex items-center gap-2">
+            <Edit3 size={16} className="text-emerald-400" />
+            About
+          </h3>
+          {!editing && (
+            <button onClick={() => setEditing(true)} className="text-sm text-emerald-400">
+              Edit
             </button>
-          </div>
+          )}
+        </div>
 
-          <div>
-            <label className="label">Display Name</label>
+        {editing ? (
+          <div className="space-y-3">
             <input
+              type="text"
               value={form.name}
               onChange={e => setForm({...form, name: e.target.value})}
+              placeholder="Display name"
               className="input"
-              placeholder="Your name"
             />
-          </div>
-
-          <div>
-            <label className="label">Bio</label>
             <textarea
               value={form.bio}
               onChange={e => setForm({...form, bio: e.target.value})}
+              placeholder="Tell about yourself..."
               className="input h-24 resize-none"
-              placeholder="Tell clients about yourself..."
             />
-          </div>
-
-          <div>
-            <label className="label">Skills (comma separated)</label>
             <input
+              type="text"
               value={form.skills}
               onChange={e => setForm({...form, skills: e.target.value})}
+              placeholder="Skills (comma separated)"
               className="input"
-              placeholder="React, Node.js, Design..."
             />
-          </div>
-
-          <button 
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full btn-primary flex items-center justify-center gap-2"
-          >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            Save Changes
-          </button>
-        </div>
-      ) : (
-        <div className="card space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white">About</h3>
-            <button 
-              onClick={() => setEditing(true)}
-              className="p-2 rounded-lg bg-slate-700 text-emerald-400"
-            >
-              <Edit3 size={16} />
-            </button>
-          </div>
-
-          {user.bio ? (
-            <p className="text-slate-300 text-sm">{user.bio}</p>
-          ) : (
-            <p className="text-slate-500 text-sm italic">No bio yet</p>
-          )}
-
-          {user.skills && user.skills.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {user.skills.map((skill, i) => (
-                <span key={i} className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">
-                  {skill}
-                </span>
-              ))}
+            <div className="flex gap-2">
+              <button onClick={() => setEditing(false)} className="btn-secondary flex-1 flex items-center justify-center gap-2">
+                <X size={16} /> Cancel
+              </button>
+              <button onClick={handleSave} disabled={saving} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                Save
+              </button>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Portfolio Placeholder */}
-      <div className="card mt-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-white">Portfolio</h3>
-          <button className="p-2 rounded-lg bg-slate-700 text-emerald-400">
-            <Plus size={16} />
-          </button>
-        </div>
-        <p className="text-slate-500 text-sm text-center py-4">No projects yet</p>
-      </div>
-
-      {/* Reviews Placeholder */}
-      <div className="card mt-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-white">Reviews</h3>
-          <div className="flex items-center gap-1 text-amber-400">
-            <Star size={14} fill="currentColor" />
-            <span className="text-sm font-medium">0.0</span>
           </div>
-        </div>
-        <p className="text-slate-500 text-sm text-center py-4">No reviews yet</p>
+        ) : (
+          <div>
+            <p className="text-slate-300 text-sm">{user.bio || 'No bio yet'}</p>
+            {user.skills && user.skills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {user.skills.map((skill: string, i: number) => (
+                  <span key={i} className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Logout */}
-      <button 
-        onClick={logout}
-        className="w-full mt-6 btn-danger flex items-center justify-center gap-2"
-      >
+      <button onClick={logout} className="w-full btn-danger flex items-center justify-center gap-2">
         <LogOut size={18} />
         Log Out
       </button>
