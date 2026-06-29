@@ -26,7 +26,7 @@ export default function PiPaymentModal({ t, amount, memo, metadata, onSuccess, o
   const initPayment = async () => {
     setStatus('loading');
     try {
-      if (typeof Pi === 'undefined') {
+      if (typeof Pi === 'undefined' || typeof Pi.createPayment !== 'function') {
         setStatus('error');
         setError(t('piBrowserRequired'));
         return;

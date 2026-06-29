@@ -25,7 +25,7 @@ export default function BuyConnectsModal({ t, onClose, onSuccess }: BuyConnectsM
   const handleBuy = async () => {
     setLoading(true);
     try {
-      if (typeof Pi === 'undefined') {
+      if (typeof Pi === 'undefined' || typeof Pi.createPayment !== 'function') {
         alert(t('piBrowserRequired') || 'Pi Browser required');
         return;
       }

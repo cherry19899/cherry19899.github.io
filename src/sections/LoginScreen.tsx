@@ -3,7 +3,7 @@ import { TFunction } from '../hooks/useTranslation';
 
 interface LoginScreenProps {
   t: TFunction;
-  onPiLogin: () => void;
+  onPiLogin: () => Promise<void>;
 }
 
 declare const Pi: any;
@@ -23,13 +23,19 @@ export default function LoginScreen({ t, onPiLogin }: LoginScreenProps) {
     setPiAvailable(typeof Pi !== 'undefined');
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!piAvailable) {
       alert(t('piBrowserRequired') || 'Please open this app in Pi Browser');
       return;
     }
     setLoading(true);
-    onPiLogin();
+    try {
+      await onPiLogin();
+    } catch (e: any) {
+      alert(e?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
