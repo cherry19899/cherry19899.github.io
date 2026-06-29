@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 15%;
+  --card-foreground: 210 40% 98%;
+  --muted: 217 33% 22%;
+  --muted-foreground: 215 20% 65%;
+  --border: 217 33% 28%;
+  --destructive: 0 84% 60%;
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
