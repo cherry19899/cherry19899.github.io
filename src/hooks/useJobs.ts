@@ -10,7 +10,7 @@ export const useJobs = (filters?: { category?: string; status?: string }) => {
       if (filters?.category) params.append('category', filters.category);
       if (filters?.status) params.append('status', filters.status);
       const { data } = await api.get(`/api/jobs?${params}`);
-      return data as Job[];
+      return data.jobs as Job[];
     },
   });
 };
@@ -20,7 +20,10 @@ export const useJob = (id: string) => {
     queryKey: ['job', id],
     queryFn: async () => {
       const { data } = await api.get(`/api/jobs/${id}`);
-      return data as Job;
+      return {
+        job: data.job as Job,
+        applications: (data.applications || []) as Application[],
+      };
     },
     enabled: !!id,
   });
@@ -30,10 +33,8 @@ export const useMyJobs = () => {
   return useQuery({
     queryKey: ['my-jobs'],
     queryFn: async () => {
-      const user = JSON.parse(localStorage.getItem('workpro_user') || '{}');
-      const uid = user.id;
-      const { data } = await api.get(`/api/jobs/user/${uid}`);
-      return data as Job[];
+      const { data } = await api.get('/api/jobs/my');
+      return data.jobs as Job[];
     },
   });
 };
