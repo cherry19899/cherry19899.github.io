@@ -4,27 +4,16 @@
     <!-- v625: Clean index — monkey-patches removed, TSX bundle handles all logic -->
     <script>
       (function(){
-        var KEY = '_wp_loaded_v625';
+        var KEY = '_wp_loaded_v626';
         var alreadyLoaded = sessionStorage.getItem(KEY);
         if (!alreadyLoaded) {
           sessionStorage.setItem(KEY, '1');
           if (location.search.indexOf('nocache=') === -1) {
-            var url = location.protocol + '//' + location.host + '/?nocache=625';
+            var url = location.protocol + '//' + location.host + '/?nocache=626';
             location.replace(url);
             return;
           }
         }
-        // Force-reload if server has a newer version
-        fetch('/?version-check=1', { cache: 'no-store' })
-          .then(function(r) { return r.text(); })
-          .then(function(html) {
-            var m = html.match(/WORKPRO_VERSION='(v\d+)'/);
-            var serverVersion = m ? m[1] : 'unknown';
-            if (serverVersion !== window.WORKPRO_VERSION && serverVersion !== 'unknown') {
-              location.reload(true);
-            }
-          })
-          .catch(function() {});
       })();
     </script>
     <meta charset="UTF-8" />
@@ -36,7 +25,7 @@
     <link rel="manifest" href="/manifest.json?v=555" />
     <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
     <title>Work Pro — Freelance Marketplace</title>
-    <script>window.WORKPRO_VERSION='v625';</script>
+    <script>window.WORKPRO_VERSION='v626';</script>
 
     <!-- Pi SDK: use native in Pi Browser, load from CDN otherwise -->
     <script>
@@ -128,11 +117,11 @@
           loader.style.transition = 'opacity 0.4s';
           setTimeout(function(){ loader.style.display = 'none'; }, 400);
           clearInterval(check);
-        } else if (elapsed > 120000 && !hasReact) {
+        } else if (elapsed > 300000 && !hasReact) {
           clearInterval(check);
           var el = document.getElementById('_error');
           var rl = document.getElementById('_reload');
-          if (el) { el.textContent = 'Loading timed out (120s). Check connection.'; el.style.display = 'block'; }
+          if (el) { el.textContent = 'Loading timed out (5min). Check connection.'; el.style.display = 'block'; }
           if (rl) rl.style.display = 'inline-block';
         }
       }, 500);
@@ -158,7 +147,7 @@
       var start = Date.now();
       var attempt = 0;
       var maxAttempts = 3;
-      var timeoutMs = 30000;
+      var timeoutMs = 90000;
       function loadBundle() {
         attempt++;
         var el = document.getElementById('_lstatus');
