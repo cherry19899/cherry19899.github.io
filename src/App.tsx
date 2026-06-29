@@ -112,8 +112,8 @@ export default function App() {
       skills: data?.skills || '',
       avatar: data?.avatar || '',
       kyc: data?.kyc || false,
-      balance_pi: data?.balance_pi || 0,
-      connects: data?.connects || 0,
+      balance_pi: Number(data?.balance_pi) || 0,
+      connects: Number(data?.connects) || 0,
     };
     if (u.username?.toLowerCase() === OWNER) u.role = 'admin';
     if (data?.connects !== undefined) localStorage.setItem('workpro_connects', String(data.connects));
