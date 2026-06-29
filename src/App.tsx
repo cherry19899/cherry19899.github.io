@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTheme } from './hooks/useTheme';
 import { useTranslation, LANGUAGES } from './hooks/useTranslation';
-import { apiFetch } from './lib/api';
+import { apiFetch, getChatUnread, getUnreadNotifCount } from './lib/api';
 
 import BottomNav from './components/BottomNav';
 import LoginScreen from './sections/LoginScreen';
@@ -48,7 +48,8 @@ export default function App() {
   const [portfolioUserId, setPortfolioUserId] = useState<string | null>(null);
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const [showLangMenu, setShowLangMenu] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [chatUnread, setChatUnread] = useState(0);
+  const [notifUnread, setNotifUnread] = useState(0);
 
   // Restore user from localStorage on mount
   useEffect(() => {
@@ -64,18 +65,19 @@ export default function App() {
     } catch {}
   }, []);
 
-  // Poll unread count
+  // Poll chat unread + notification unread independently
   useEffect(() => {
     if (!user) return;
-    const poll = async () => {
-      try {
-        const d = await apiFetch('/api/chat/unread');
-        setUnreadCount(d.count || d.unread_count || 0);
-      } catch {}
+    const pollChat = async () => {
+      try { const d = await getChatUnread(); setChatUnread(d.count || d.unread_count || 0); } catch {}
     };
-    poll();
-    const interval = setInterval(poll, 30000);
-    return () => clearInterval(interval);
+    const pollNotif = async () => {
+      try { const d = await getUnreadNotifCount(); setNotifUnread(d.unread_count || d.count || 0); } catch {}
+    };
+    pollChat(); pollNotif();
+    const i1 = setInterval(pollChat, 20000);
+    const i2 = setInterval(pollNotif, 30000);
+    return () => { clearInterval(i1); clearInterval(i2); };
   }, [user?.uid]);
 
   const handlePiLogin = useCallback(async () => {
@@ -146,9 +148,9 @@ export default function App() {
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
-              {unreadCount > 0 && (
+              {notifUnread > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {notifUnread > 9 ? '9+' : notifUnread}
                 </span>
               )}
             </button>
@@ -241,7 +243,16 @@ export default function App() {
           />
         )}
         {activeTab === 'notifications' && (
-          <NotificationsScreen t={t} onBack={() => setActiveTab('jobs')} />
+          <NotificationsScreen
+            t={t}
+            onBack={() => setActiveTab('jobs')}
+            onNavigate={(tab, extra) => {
+              setActiveTab('jobs');
+              if (tab === 'chat' && extra?.roomId) { setChatRoomId(extra.roomId); setActiveTab('chat'); }
+              else if (tab === 'jobDetail' && extra?.jobId) { setSelectedJobId(extra.jobId); setActiveTab('jobs'); }
+              else if (tab === 'escrow') { setActiveTab('escrow'); }
+            }}
+          />
         )}
         {activeTab === 'faq' && (
           <FaqScreen t={t} onBack={() => setActiveTab('profile')} />
@@ -278,7 +289,8 @@ export default function App() {
             setActiveTab(tab);
             if (tab === 'admin' && user.role === 'admin') setActiveTab('admin');
           }}
-          unreadCount={unreadCount}
+          chatUnread={chatUnread}
+          notifUnread={notifUnread}
         />
       )}
     </div>

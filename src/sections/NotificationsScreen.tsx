@@ -6,9 +6,24 @@ import { timeAgo } from '../lib/utils';
 interface NotificationsScreenProps {
   t: TFunction;
   onBack: () => void;
+  onNavigate?: (tab: string, extra?: any) => void;
 }
 
-export default function NotificationsScreen({ t, onBack }: NotificationsScreenProps) {
+const NOTIF_ICON: Record<string, string> = {
+  new_application: '📝',
+  application_accepted: '✅',
+  application_rejected: '❌',
+  escrow_funded: '🔒',
+  escrow_released: '💸',
+  escrow_disputed: '⚠️',
+  new_message: '💬',
+  job_completed: '🎉',
+  review_received: '⭐',
+  payment_approved: '✅',
+  default: '🔔',
+};
+
+export default function NotificationsScreen({ t, onBack, onNavigate }: NotificationsScreenProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,9 +35,27 @@ export default function NotificationsScreen({ t, onBack }: NotificationsScreenPr
   }, []);
 
   const markRead = async () => {
-    try { await markNotificationsRead(); setNotifications(ns => ns.map(n => ({ ...n, read: true }))); }
-    catch {}
+    try {
+      await markNotificationsRead();
+      setNotifications(ns => ns.map(n => ({ ...n, is_read: true })));
+    } catch {}
   };
+
+  const handleTap = (n: any) => {
+    if (!n.is_read) {
+      setNotifications(ns => ns.map(x => x.id === n.id ? { ...x, is_read: true } : x));
+    }
+    const data = n.data || {};
+    if (n.type === 'new_message' && data.room_id && onNavigate) {
+      onNavigate('chat', { roomId: data.room_id });
+    } else if ((n.type === 'new_application' || n.type === 'application_accepted') && data.job_id && onNavigate) {
+      onNavigate('jobDetail', { jobId: data.job_id });
+    } else if ((n.type === 'escrow_funded' || n.type === 'escrow_released') && onNavigate) {
+      onNavigate('escrow');
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in overflow-y-auto">
@@ -32,8 +65,15 @@ export default function NotificationsScreen({ t, onBack }: NotificationsScreenPr
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
-        <h1 className="font-bold text-base flex-1">{t('notifications')}</h1>
-        {notifications.some(n => !n.read) && (
+        <h1 className="font-bold text-base flex-1">
+          {t('notifications')}
+          {unreadCount > 0 && (
+            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-emerald-500 text-white font-bold">
+              {unreadCount}
+            </span>
+          )}
+        </h1>
+        {unreadCount > 0 && (
           <button onClick={markRead} className="text-xs text-emerald-500 font-semibold">
             {t('markAllRead')}
           </button>
@@ -52,13 +92,26 @@ export default function NotificationsScreen({ t, onBack }: NotificationsScreenPr
           </div>
         ) : (
           notifications.map((n: any) => (
-            <div
+            <button
               key={n.id}
-              className={`p-4 rounded-xl border ${n.read ? 'bg-card border-border' : 'bg-emerald-500/5 border-emerald-500/20'}`}
+              onClick={() => handleTap(n)}
+              className={`w-full text-left p-4 rounded-xl border flex items-start gap-3 transition-colors ${
+                n.is_read
+                  ? 'bg-card border-border'
+                  : 'bg-emerald-500/5 border-emerald-500/20'
+              }`}
             >
-              <p className="text-sm">{n.message || n.title}</p>
-              <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
-            </div>
+              <span className="text-xl flex-shrink-0 mt-0.5">
+                {NOTIF_ICON[n.type] || NOTIF_ICON.default}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm leading-snug">{n.message || n.title}</p>
+                <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
+              </div>
+              {!n.is_read && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 mt-2" />
+              )}
+            </button>
           ))
         )}
       </div>

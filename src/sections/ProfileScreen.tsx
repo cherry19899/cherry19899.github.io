@@ -33,7 +33,7 @@ export default function ProfileScreen({
   t, user, theme, onToggleTheme, onLogout, onOpenFaq, onOpenTerms,
   onOpenPortfolio, onOpenApplications, onUserUpdate,
 }: ProfileScreenProps) {
-  const [reviewStats, setReviewStats] = useState({ count: 0, average_rating: 0 });
+  const [reviewStats, setReviewStats] = useState({ total: 0, avg: 0 });
   const [showBuyConnects, setShowBuyConnects] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [bio, setBio] = useState(user?.bio || '');
@@ -47,7 +47,7 @@ export default function ProfileScreen({
 
   useEffect(() => {
     if (user?.uid) {
-      getReviewStats(user.uid).then(d => setReviewStats(d || { count: 0, average_rating: 0 })).catch(() => {});
+      getReviewStats(user.uid).then(d => setReviewStats(d || { total: 0, avg: 0 })).catch(() => {});
     }
     const handleStorage = () => {
       setConnects(parseInt(localStorage.getItem('workpro_connects') || '0'));
@@ -118,16 +118,16 @@ export default function ProfileScreen({
               {user?.kyc && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold">KYC ✓</span>
               )}
-              {reviewStats.count > 0 && (
+              {reviewStats.total > 0 && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold">
                   {t('risingTalent')}
                 </span>
               )}
             </div>
-            {reviewStats.count > 0 && (
+            {reviewStats.total > 0 && (
               <div className="flex items-center gap-1 mt-1">
-                <StarRating value={reviewStats.average_rating} size={12} />
-                <span className="text-xs text-muted-foreground">({reviewStats.count})</span>
+                <StarRating value={reviewStats.avg} size={12} />
+                <span className="text-xs text-muted-foreground">({reviewStats.total})</span>
               </div>
             )}
           </div>

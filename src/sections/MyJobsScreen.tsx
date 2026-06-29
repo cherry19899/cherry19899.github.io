@@ -40,7 +40,7 @@ export default function MyJobsScreen({ t, user, onOpenJob }: MyJobsScreenProps) 
     setLoading(true);
     try {
       const [jobs, apps] = await Promise.all([
-        getUserJobs(user.username).catch(() => ({ jobs: [] })),
+        getUserJobs(user.uid).catch(() => ({ jobs: [] })),
         myApplications().catch(() => []),
       ]);
       setPostedJobs((jobs as any).jobs || jobs || []);

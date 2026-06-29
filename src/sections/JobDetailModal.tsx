@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TFunction } from '../hooks/useTranslation';
-import { getJob, getApplicationsForJob, applyToJob, hireApplication, releaseEscrow, getEscrows, updateApplicationStatus } from '../lib/api';
+import { getJob, getApplicationsForJob, applyToJob, hireApplication, releaseEscrow, getEscrows, updateApplicationStatus, checkApplication } from '../lib/api';
 import { approvePayment, completePayment } from '../lib/api';
 import { formatBudget, formatDate, getStatusColor } from '../lib/utils';
 
@@ -40,10 +40,14 @@ export default function JobDetailModal({ t, jobId, user, onClose, onNavigate, on
     setLoading(true);
     setError('');
     try {
-      const d = await getJob(jobId);
-      const j = d.job || d;
+      const [jobData, appliedData] = await Promise.all([
+        getJob(jobId),
+        checkApplication(jobId).catch(() => ({ applied: false })),
+      ]);
+      const j = jobData.job || jobData;
       setJob(j);
       setIsOwner(j.client_id === user?.uid || j.client_uid === user?.uid || j.posted_by === user?.uid);
+      setHasApplied(appliedData?.applied || false);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -64,11 +68,9 @@ export default function JobDetailModal({ t, jobId, user, onClose, onNavigate, on
     if (connects < 1) { alert(t('notEnoughConnects')); return; }
     setApplying(true);
     try {
-      await applyToJob({
-        job_id: jobId,
-        message: coverLetter,
+      await applyToJob(jobId, {
+        cover_letter: coverLetter,
         bid_amount: parseFloat(proposedBudget) || job.budget,
-        username: user.username,
       });
       const c = parseInt(localStorage.getItem('workpro_connects') || '0');
       localStorage.setItem('workpro_connects', String(Math.max(0, c - 1)));

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TFunction } from '../hooks/useTranslation';
-import { apiFetch, getAdminStats, getAdminUsers, getAdminSettings, updateAdminSetting, banUser } from '../lib/api';
+import { apiFetch, getAdminStats, getAdminUsers, banUser, unbanUser } from '../lib/api';
 import { formatBudget, timeAgo } from '../lib/utils';
 
 interface AdminScreenProps {
@@ -9,7 +9,7 @@ interface AdminScreenProps {
   onBack: () => void;
 }
 
-type AdminTab = 'stats' | 'jobs' | 'users' | 'escrows' | 'settings';
+type AdminTab = 'stats' | 'jobs' | 'users' | 'escrows';
 
 export default function AdminScreen({ t, user, onBack }: AdminScreenProps) {
   const [tab, setTab] = useState<AdminTab>('stats');
@@ -17,25 +17,19 @@ export default function AdminScreen({ t, user, onBack }: AdminScreenProps) {
   const [jobs, setJobs] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [escrows, setEscrows] = useState<any[]>([]);
-  const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [feeValue, setFeeValue] = useState('');
-  const [feeLoading, setFeeLoading] = useState(false);
 
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [s, u, st] = await Promise.all([
+      const [s, u] = await Promise.all([
         getAdminStats().catch(() => null),
         getAdminUsers().catch(() => []),
-        getAdminSettings().catch(() => null),
       ]);
       setStats(s);
       setUsers((u as any)?.users || u || []);
-      setSettings(st);
-      if (st?.platform_fee !== undefined) setFeeValue(String(st.platform_fee));
     } catch {}
     finally { setLoading(false); }
   };
@@ -61,7 +55,8 @@ export default function AdminScreen({ t, user, onBack }: AdminScreenProps) {
 
   const handleBan = async (userId: string, banned: boolean) => {
     try {
-      await banUser(userId, !banned);
+      if (banned) await unbanUser(userId);
+      else await banUser(userId);
       setUsers(prev => prev.map(u => u.uid === userId ? { ...u, banned: !banned } : u));
     } catch (e: any) { alert(e.message); }
   };
@@ -74,21 +69,11 @@ export default function AdminScreen({ t, user, onBack }: AdminScreenProps) {
     } catch (e: any) { alert(e.message); }
   };
 
-  const handleSaveFee = async () => {
-    setFeeLoading(true);
-    try {
-      await updateAdminSetting('platform_fee', parseFloat(feeValue));
-      alert('Fee updated!');
-    } catch (e: any) { alert(e.message); }
-    finally { setFeeLoading(false); }
-  };
-
   const TABS: { key: AdminTab; label: string }[] = [
     { key: 'stats', label: t('stats') },
     { key: 'users', label: t('users') },
     { key: 'jobs', label: t('allJobs') },
     { key: 'escrows', label: t('escrow') },
-    { key: 'settings', label: 'Settings' },
   ];
 
   return (
@@ -188,30 +173,6 @@ export default function AdminScreen({ t, user, onBack }: AdminScreenProps) {
           </div>
         ))}
 
-        {/* Settings */}
-        {tab === 'settings' && (
-          <div className="rounded-xl bg-card border border-border p-4 space-y-3">
-            <h3 className="font-semibold text-sm">Platform Fee (%)</h3>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={feeValue}
-                onChange={e => setFeeValue(e.target.value)}
-                className="flex-1 rounded-xl bg-muted border border-border px-3 py-2 text-sm"
-              />
-              <button
-                onClick={handleSaveFee}
-                disabled={feeLoading}
-                className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-60"
-              >
-                {feeLoading ? '...' : t('save')}
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
