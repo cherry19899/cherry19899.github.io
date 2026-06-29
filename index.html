@@ -1,18 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#10b981">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Work Pro</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon.ico">
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-</head>
-<body class="bg-slate-900 text-white antialiased">
-<div id="root"></div>
-<script type="module" src="/src/main.tsx"></script>
-</body>
+  <head>
+    <!-- v630: React bundle loaded via direct <script src> (no fetch/eval — Pi Browser CSP-safe). -->
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/workpro-icon.svg?v=51" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=51" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#10b981" />
+    <meta name="description" content="Hire freelancers and find jobs. Pay and get paid in Pi." />
+    <link rel="manifest" href="/manifest.json?v=555" />
+    <link rel="apple-touch-icon" href="/icon-192.png?v=51" />
+    <title>Work Pro — Freelance Marketplace</title>
+    <script>window.WORKPRO_VERSION = 'v630';</script>
+
+    <!-- Pi SDK (always include per Pi docs; native object is used inside Pi Browser) -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+    <!-- Pi SDK init — must run BEFORE the app bundle -->
+    <script>
+    (function () {
+      var attempts = 0;
+      window._piSdkReady = false;
+      function tryInit() {
+        attempts++;
+        if (!window.Pi || typeof window.Pi.init !== 'function') {
+          if (attempts < 100) setTimeout(tryInit, 100);
+          return;
+        }
+        if (window.Pi._workpro_inited) { window._piSdkReady = true; return; }
+        try {
+          var isSandbox = /github\.io|localhost|127\.0\.0\.1/.test(location.hostname);
+          window.Pi.init({
+            version: '2.0',
+            sandbox: isSandbox,
+            onIncompletePayment: function (payment) {
+              var paymentId = payment && (payment.identifier || payment.paymentId || payment.id);
+              if (!paymentId) return Promise.resolve();
+              var st = payment && payment.status;
+              var isCompleted = typeof st === 'string'
+                ? (st === 'developer_completed' || st === 'completed')
+                : !!(st && (st.developer_completed || st.transaction_verified));
+              var endpoint = isCompleted ? '/resolve-complete' : '/cancelled';
+              var tok = localStorage.getItem('workpro_token') || '';
+              var hdrs = { 'Content-Type': 'application/json' };
+              if (tok) hdrs['Authorization'] = 'Bearer ' + tok;
+              return fetch('https://workpro-api.onrender.com/api/payments/' + paymentId + endpoint, {
+                method: 'POST', headers: hdrs
+              }).then(function (r) { return r.json().catch(function () { return {}; }); })
+                .then(function () {
+                  return fetch('https://workpro-api.onrender.com/api/payments/clear-pending', {
+                    method: 'POST', headers: hdrs
+                  }).catch(function () {});
+                })
+                .then(function () {
+                  return new Promise(function (resolve) { setTimeout(resolve, 3000); });
+                })
+                .catch(function (err) { console.error('[Pi] onIncompletePayment error:', err); });
+            }
+          });
+          window.Pi._workpro_inited = true;
+          window._piSdkReady = true;
+        } catch (e) {
+          console.error('[Pi] init error:', e && e.message);
+          if (attempts < 100) setTimeout(tryInit, 500);
+        }
+      }
+      tryInit();
+    })();
+    </script>
+
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: oklch(0.145 0 0); color: #e5e5e5;
+             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      #_loader { position: fixed; inset: 0; display: flex; flex-direction: column;
+                 align-items: center; justify-content: center; background: oklch(0.145 0 0); z-index: 99999; }
+      #_loader h1 { color: #10b981; font-size: 36px; font-weight: 900; margin: 0 0 8px; }
+      #_loader p { color: #6b7280; font-size: 14px; margin: 0 0 20px; }
+      .sp { width: 40px; height: 40px; border: 3px solid #374151; border-top-color: #10b981;
+            border-radius: 50%; animation: spin 1s linear infinite; }
+      #_err { display: none; color: #ef4444; font-size: 13px; text-align: center;
+              margin-top: 20px; max-width: 280px; padding: 0 20px; }
+      #_err button { margin-top: 12px; padding: 10px 24px; background: #10b981; color: #fff;
+                     border: none; border-radius: 6px; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- LOADER -->
+    <div id="_loader">
+      <h1>Work Pro</h1>
+      <p id="_lstatus">Loading…</p>
+      <div class="sp"></div>
+      <div id="_err">
+        <p id="_errtext">Failed to load</p>
+        <button onclick="location.reload()">Reload</button>
+      </div>
+    </div>
+
+    <!-- App bundle: direct script src — no fetch, no eval, no inline injection (CSP-safe in Pi Browser) -->
+    <script
+      src="assets/app-v200.js?v=630"
+      onerror="(function(){document.querySelector('.sp').style.display='none';document.getElementById('_lstatus').style.display='none';var e=document.getElementById('_err');e.style.display='block';document.getElementById('_errtext').textContent='Failed to load the app. Check your connection and tap Reload.';})()"
+    ></script>
+
+    <!-- Hide loader once React mounts into #root -->
+    <script>
+    (function () {
+      var start = Date.now();
+      var iv = setInterval(function () {
+        var root = document.getElementById('root');
+        var loader = document.getElementById('_loader');
+        if (root && root.children.length > 0) {
+          if (loader) {
+            loader.style.opacity = '0';
+            loader.style.transition = 'opacity 0.3s';
+            setTimeout(function () { loader.style.display = 'none'; }, 300);
+          }
+          clearInterval(iv);
+          return;
+        }
+        if (Date.now() - start > 30000) {
+          clearInterval(iv);
+          var sp = document.querySelector('.sp'); if (sp) sp.style.display = 'none';
+          var ls = document.getElementById('_lstatus'); if (ls) ls.style.display = 'none';
+          var er = document.getElementById('_err'); if (er) er.style.display = 'block';
+        }
+      }, 300);
+    })();
+    </script>
+
+    <!-- Broken-image fallback -->
+    <script>
+    document.addEventListener('error', function (e) {
+      var t = e.target;
+      if (t && t.tagName === 'IMG' && !t.dataset.fallback) {
+        t.dataset.fallback = '1';
+        t.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Ccircle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23374151%22/%3E%3C/svg%3E';
+      }
+    }, true);
+    </script>
+  </body>
 </html>
