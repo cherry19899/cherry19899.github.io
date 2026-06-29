@@ -226,6 +226,8 @@ export default function App() {
             onOpenTerms={() => setActiveTab('terms')}
             onOpenPortfolio={() => { setPortfolioUserId(user.uid); setActiveTab('portfolio'); }}
             onOpenApplications={() => setActiveTab('applications')}
+            onOpenOffers={() => setActiveTab('offers')}
+            onOpenAdmin={user.role === 'admin' ? () => setActiveTab('admin') : undefined}
             onUserUpdate={u => setUser(u)}
           />
         )}
