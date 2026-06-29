@@ -14,7 +14,7 @@ export default function Home() {
     category: category === 'All' ? undefined : category,
   });
 
-  const filteredJobs = jobs?.filter(job => 
+  const filteredJobs = (jobs || []).filter(job => 
     job.title.toLowerCase().includes(search.toLowerCase()) ||
     job.description.toLowerCase().includes(search.toLowerCase())
   );
@@ -61,7 +61,7 @@ export default function Home() {
           title="Error loading jobs"
           description="Please try again later"
         />
-      ) : filteredJobs?.length === 0 ? (
+      ) : filteredJobs.length === 0 ? (
         <EmptyState
           icon={<Briefcase size={28} />}
           title="No jobs found"
@@ -69,7 +69,7 @@ export default function Home() {
         />
       ) : (
         <div className="space-y-3">
-          {filteredJobs?.map(job => (
+          {filteredJobs.map(job => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>
