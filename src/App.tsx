@@ -4,10 +4,7 @@ import { useAuthStore } from './store/authStore';
 import { initPi } from './lib/pi';
 import { api } from './lib/api';
 
-// Layout
 import Layout from './components/Layout';
-
-// Pages
 import Home from './pages/Home';
 import JobDetail from './pages/JobDetail';
 import CreateJob from './pages/CreateJob';
@@ -20,41 +17,48 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 
 function App() {
-  const { user, setUser, setLoading, logout } = useAuthStore();
+  const { user, isLoading, setUser, setLoading, logout } = useAuthStore();
 
   useEffect(() => {
-    initPi();
+    let mounted = true;
+    
+    const init = async () => {
+      await initPi();
+      
+      const token = localStorage.getItem('workpro_token');
+      const storedUser = localStorage.getItem('workpro_user');
 
-    // Check existing auth
-    const token = localStorage.getItem('workpro_token');
-    const storedUser = localStorage.getItem('workpro_user');
-
-    if (token && storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        // Normalize ID
-        if (parsed.id && !parsed.id.startsWith('pi_')) {
-          parsed.id = `pi_${parsed.id}`;
+      if (token && storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.id && !parsed.id.startsWith('pi_')) {
+            parsed.id = `pi_${parsed.id}`;
+          }
+          if (mounted) setUser(parsed);
+          
+          try {
+            await api.get('/api/me');
+          } catch {
+            if (mounted) logout();
+          }
+        } catch {
+          if (mounted) logout();
         }
-        setUser(parsed);
-
-        // Verify token is still valid
-        api.get('/api/me').catch(() => {
-          logout();
-        });
-      } catch {
-        logout();
+      } else {
+        if (mounted) setLoading(false);
       }
-    } else {
-      setLoading(false);
-    }
+    };
+
+    init();
+    
+    return () => { mounted = false; };
   }, [setUser, setLoading, logout]);
 
-  if (useAuthStore.getState().isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
         <div className="w-10 h-10 border-3 border-slate-700 border-t-emerald-500 rounded-full animate-spin" />
-        <p className="mt-4 text-slate-400 text-sm">Loading...</p>
+        <p className="mt-4 text-slate-400 text-sm">Loading WorkPro...</p>
       </div>
     );
   }
