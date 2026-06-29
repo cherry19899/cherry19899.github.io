@@ -22,25 +22,38 @@ declare global {
 
 const isPiBrowser = () => typeof window !== 'undefined' && window.Pi != null;
 
+let piInitPromise: Promise<boolean> | null = null;
+
 export const initPi = async () => {
   if (!isPiBrowser()) {
-    console.warn('Pi SDK not available');
+    console.warn('[Pi] SDK not available — not in Pi Browser');
     return false;
   }
-  try {
-    const sandbox = import.meta.env.VITE_PI_SANDBOX === 'true';
-    await window.Pi.init({ version: '2.0', sandbox });
-    return true;
-  } catch (err) {
-    console.error('Pi init failed:', err);
-    return false;
-  }
+  // Singleton: prevent multiple parallel init() calls
+  if (piInitPromise) return piInitPromise;
+
+  piInitPromise = (async () => {
+    try {
+      const sandbox = import.meta.env.VITE_PI_SANDBOX === 'true';
+      await window.Pi.init({ version: '2.0', sandbox });
+      console.log('[Pi] SDK initialized, sandbox:', sandbox);
+      return true;
+    } catch (err: any) {
+      console.error('[Pi] init failed:', err.message || err);
+      return false;
+    }
+  })();
+
+  return piInitPromise;
+};
+
+export const ensurePiInit = async () => {
+  const ok = await initPi();
+  if (!ok) throw new Error('Pi Browser required');
 };
 
 export const authenticatePi = async () => {
-  if (!isPiBrowser()) {
-    throw new Error('Pi Browser required');
-  }
+  await ensurePiInit();
 
   const auth = await window.Pi.authenticate(
     ['username', 'payments'],
@@ -69,7 +82,7 @@ export const authenticatePi = async () => {
 };
 
 export const createPiPayment = async (amount: number, memo: string) => {
-  if (!isPiBrowser()) throw new Error('Pi Browser required');
+  await ensurePiInit();
 
   const payment = await window.Pi.createPayment({
     amount,
