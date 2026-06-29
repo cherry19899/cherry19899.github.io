@@ -6,49 +6,56 @@ export interface User {
   skills?: string[];
   avatar?: string;
   role: 'user' | 'admin';
-  connects: number;
-  createdAt: string;
+  balance_connects: number;
+  created_at: string;
 }
 
 export interface Job {
-  id: string;
+  id: number;
   title: string;
   description: string;
-  budget: number;
+  budget: string;
   category: string;
   location?: string;
   deadline?: string;
   images?: string[];
   status: 'open' | 'in_progress' | 'completed' | 'disputed';
-  clientId: string;
-  client?: User;
-  applicants?: Application[];
-  createdAt: string;
+  posted_by: string;
+  posted_by_name?: string;
+  applications: number;
+  apply_cost?: number;
+  connects_spent?: number;
+  created_at: string;
+  updated_at?: string;
+  hired_freelancer_id?: string | null;
+  hired_freelancer_name?: string | null;
+  escrow_id?: string | null;
+  room_id?: string | null;
 }
 
 export interface Application {
-  id: string;
-  jobId: string;
-  freelancerId: string;
-  freelancer?: User;
+  id: number;
+  job_id: number;
+  freelancer_id: string;
+  freelancer_name?: string;
   message: string;
   status: 'pending' | 'accepted' | 'rejected';
-  createdAt: string;
+  created_at: string;
 }
 
 export interface Escrow {
   id: string;
-  jobId: string;
+  job_id: number;
   amount: number;
   status: 'pending' | 'funded' | 'released' | 'disputed';
-  clientId: string;
-  freelancerId: string;
-  createdAt: string;
+  client_id: string;
+  freelancer_id: string;
+  created_at: string;
 }
 
 export interface ChatRoom {
   id: string;
-  jobId: string;
+  job_id: number;
   participants: string[];
   lastMessage?: ChatMessage;
   unreadCount: number;
