@@ -6,7 +6,8 @@ import {
   Briefcase, 
   MessageCircle, 
   User,
-  Shield
+  Shield,
+  Bell
 } from 'lucide-react';
 
 const navItems = [
@@ -27,6 +28,10 @@ export default function Layout() {
     return location.pathname.startsWith(path);
   };
 
+  const showNav = !location.pathname.startsWith('/jobs/') && 
+                 !location.pathname.startsWith('/chat/') &&
+                 location.pathname !== '/create-job';
+
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
       {/* Header */}
@@ -39,10 +44,15 @@ export default function Layout() {
                 {(user as any).balance_connects ?? (user as any).connects ?? 0} connects
               </span>
             )}
+            <button className="p-2 rounded-lg bg-slate-800 text-slate-300 relative">
+              <Bell size={18} />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+            </button>
             {user?.role === 'admin' && (
               <button 
                 onClick={() => navigate('/admin')}
-                className="p-2 rounded-lg bg-slate-800 text-emerald-400"
+                className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400"
+                title="Admin"
               >
                 <Shield size={18} />
               </button>
@@ -52,32 +62,34 @@ export default function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-lg mx-auto w-full pb-20">
+      <main className="flex-1 max-w-lg mx-auto w-full" style={{ paddingBottom: showNav ? '80px' : '0' }}>
         <Outlet />
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/90 backdrop-blur-lg border-t border-slate-700/50 safe-area-pb">
-        <div className="max-w-lg mx-auto flex justify-around items-center h-16">
-          {navItems.map((item) => {
-            const active = isActive(item.path);
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-                  active 
-                    ? 'text-emerald-400' 
-                    : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                <item.icon size={22} strokeWidth={active ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {showNav && (
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900/90 backdrop-blur-lg border-t border-slate-700/50 safe-area-pb">
+          <div className="max-w-lg mx-auto flex justify-around items-center h-16">
+            {navItems.map((item) => {
+              const active = isActive(item.path);
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
+                    active 
+                      ? 'text-emerald-400' 
+                      : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <item.icon size={22} strokeWidth={active ? 2.5 : 2} />
+                  <span className="text-[10px] font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }
