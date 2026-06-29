@@ -110,7 +110,7 @@ export default function JobsScreen({ t, user, onOpenJob, onPostJob }: JobsScreen
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Balance</p>
             <p className="text-base font-bold text-emerald-500">
-              {(user.balance_pi ?? 0).toFixed(0)} π
+              {Number(user.balance_pi ?? 0).toFixed(0)} π
             </p>
             <p className="text-xs text-muted-foreground">{connects} Connects</p>
           </div>

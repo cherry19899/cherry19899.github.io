@@ -50,7 +50,7 @@ export default function ProfileScreen({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = user?.role === 'admin';
-  const balance = (user?.balance_pi ?? 0).toFixed(2);
+  const balance = Number(user?.balance_pi ?? 0).toFixed(2);
 
   useEffect(() => {
     if (user?.uid) {
