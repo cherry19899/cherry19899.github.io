@@ -1,4 +1,5 @@
-// Kill-switch service worker — neutralize any old SW + stale caches.
+// Kill-switch service worker — neutralize any old/piwork SW + stale caches so the
+// green Work Pro app loads fresh.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
