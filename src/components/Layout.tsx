@@ -36,7 +36,7 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             {user && (
               <span className="text-xs text-slate-400">
-                {user.connects} connects
+                {(user as any).balance_connects ?? (user as any).connects ?? 0} connects
               </span>
             )}
             {user?.role === 'admin' && (
