@@ -64,24 +64,24 @@ export default function ChatRoom() {
           <div className="flex items-center justify-center py-10">
             <Loader2 size={24} className="text-emerald-400 animate-spin" />
           </div>
-        ) : messages?.length === 0 ? (
+        ) : (messages || []).length === 0 ? (
           <div className="text-center py-10">
             <p className="text-slate-500">No messages yet</p>
             <p className="text-sm text-slate-600 mt-1">Start the conversation!</p>
           </div>
         ) : (
-          messages?.map(msg => {
-            const isMe = msg.senderId === user?.id;
+          (messages || []).map((msg: any) => {
+            const isMe = msg.sender_id === user?.id || msg.senderId === user?.id;
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl ${
                   isMe 
                     ? 'bg-emerald-500 text-white rounded-br-md' 
-                    : 'bg-slate-800 text-slate-200 rounded-bl-md border border-slate-700'
+                    : 'bg-slate-800 text-slate-200 rounded-bl-md'
                 }`}>
                   <p className="text-sm">{msg.text}</p>
                   <p className={`text-[10px] mt-1 ${isMe ? 'text-emerald-100' : 'text-slate-500'}`}>
-                    {formatTime(msg.createdAt)}
+                    {formatTime(msg.created_at || msg.createdAt)}
                   </p>
                 </div>
               </div>
@@ -92,7 +92,7 @@ export default function ChatRoom() {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="p-3 bg-slate-900 border-t border-slate-700/50">
+      <form onSubmit={handleSend} className="p-3 bg-slate-900/80 backdrop-blur-lg border-t border-slate-700/50">
         <div className="flex gap-2">
           <input
             type="text"
@@ -106,11 +106,7 @@ export default function ChatRoom() {
             disabled={!text.trim() || sendMutation.isPending}
             className="btn-primary px-4"
           >
-            {sendMutation.isPending ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Send size={18} />
-            )}
+            {sendMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
         </div>
       </form>
