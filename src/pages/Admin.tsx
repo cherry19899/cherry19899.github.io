@@ -36,7 +36,7 @@ export default function Admin() {
     queryKey: ['admin-users'],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/users');
-      return data;
+      return data.users || data || [];
     },
     enabled: tab === 'users',
   });
@@ -45,7 +45,7 @@ export default function Admin() {
     queryKey: ['admin-jobs'],
     queryFn: async () => {
       const { data } = await api.get('/api/admin/jobs');
-      return data;
+      return data.jobs || data || [];
     },
     enabled: tab === 'jobs',
   });
@@ -104,23 +104,20 @@ export default function Admin() {
               </div>
             ) : (
               <div className="space-y-2">
-                {users?.map((u: any) => (
+                {(users || []).map((u: any) => (
                   <div key={u.id} className="card flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
                       <span className="text-emerald-400 font-bold">{u.username?.charAt(0).toUpperCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white">{u.name || u.username}</p>
-                      <p className="text-xs text-slate-400">@{u.username}</p>
+                      <p className="font-medium text-white truncate">{u.username}</p>
+                      <p className="text-xs text-slate-400">{u.id}</p>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      u.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-700 text-slate-300'
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      u.is_blocked ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'
                     }`}>
-                      {u.role}
+                      {u.is_blocked ? 'Blocked' : 'Active'}
                     </span>
-                    <button className="p-1.5 rounded-lg bg-slate-700 text-red-400">
-                      <Ban size={14} />
-                    </button>
                   </div>
                 ))}
               </div>
@@ -137,23 +134,10 @@ export default function Admin() {
               </div>
             ) : (
               <div className="space-y-2">
-                {jobs?.map((j: any) => (
+                {(jobs || []).map((j: any) => (
                   <div key={j.id} className="card">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{j.title}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          {j.status} • {j.budget} π
-                        </p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        j.status === 'open' ? 'bg-emerald-500/20 text-emerald-400' :
-                        j.status === 'disputed' ? 'bg-red-500/20 text-red-400' :
-                        'bg-slate-700 text-slate-300'
-                      }`}>
-                        {j.status}
-                      </span>
-                    </div>
+                    <p className="font-medium text-white">{j.title}</p>
+                    <p className="text-xs text-slate-400">{j.posted_by_name || j.posted_by} · {j.budget} Pi</p>
                   </div>
                 ))}
               </div>
@@ -162,24 +146,26 @@ export default function Admin() {
         )}
 
         {/* Analytics Tab */}
-        {tab === 'analytics' && (
-          <div className="space-y-3">
-            {[
-              { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users, color: 'text-blue-400' },
-              { label: 'Total Jobs', value: stats?.totalJobs || 0, icon: Briefcase, color: 'text-emerald-400' },
-              { label: 'Active Escrows', value: stats?.activeEscrows || 0, icon: TrendingUp, color: 'text-amber-400' },
-              { label: 'Total Volume', value: `${stats?.totalVolume || 0} π`, icon: BarChart3, color: 'text-purple-400' },
-            ].map((stat, i) => (
-              <div key={i} className="card flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl bg-slate-700 flex items-center justify-center ${stat.color}`}>
-                  <stat.icon size={22} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-sm text-slate-400">{stat.label}</p>
-                </div>
+        {tab === 'analytics' && stats && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="card text-center">
+                <p className="text-2xl font-bold text-emerald-400">{stats.total_users || 0}</p>
+                <p className="text-xs text-slate-400">Total Users</p>
               </div>
-            ))}
+              <div className="card text-center">
+                <p className="text-2xl font-bold text-emerald-400">{stats.total_jobs || 0}</p>
+                <p className="text-xs text-slate-400">Total Jobs</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-2xl font-bold text-emerald-400">{stats.total_escrows || 0}</p>
+                <p className="text-xs text-slate-400">Escrows</p>
+              </div>
+              <div className="card text-center">
+                <p className="text-2xl font-bold text-emerald-400">{stats.total_payments || 0}</p>
+                <p className="text-xs text-slate-400">Payments</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
