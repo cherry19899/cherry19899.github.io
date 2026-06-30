@@ -44,7 +44,7 @@ export default function MyJobsPage() {
               tab === t ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
             }`}
           >
-            {t === 'posted' ? `Posted (${posted.length})` : `Hired (${hired.length})`}
+            {t === 'posted' ? `Размещено (${posted.length})` : `Нанято (${hired.length})`}
           </button>
         ))}
       </div>

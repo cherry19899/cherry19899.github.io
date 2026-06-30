@@ -2,12 +2,14 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppCtx } from '../App';
 
-const TABS = [
-  { path: '/',        label: 'Jobs',    Icon: BriefcaseIcon },
-  { path: '/chat',    label: 'Chat',    Icon: ChatIcon },
-  { path: '/my-jobs', label: 'My Jobs', Icon: ListChecksIcon },
-  { path: '/escrow',  label: 'Escrow',  Icon: LockIcon },
-  { path: '/profile', label: 'Profile', Icon: UserIcon },
+import { t } from '../lib/i18n';
+
+const TABS = () => [
+  { path: '/',        label: t().jobs,    Icon: BriefcaseIcon },
+  { path: '/chat',    label: t().chat,    Icon: ChatIcon },
+  { path: '/my-jobs', label: t().myJobs,  Icon: ListChecksIcon },
+  { path: '/escrow',  label: t().escrow,  Icon: LockIcon },
+  { path: '/profile', label: t().profile, Icon: UserIcon },
 ];
 
 export default function BottomNav() {
@@ -18,7 +20,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
       <div className="flex h-16 max-w-lg mx-auto">
-        {TABS.map(({ path, label, Icon }) => {
+        {TABS().map(({ path, label, Icon }) => {
           const active = path === '/' ? pathname === '/' : pathname.startsWith(path);
           const badge  = path === '/chat' ? chatUnread : 0;
           return (

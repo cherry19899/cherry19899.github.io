@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getJobs } from '../lib/api';
 import { useAppCtx } from '../App';
 import { CATEGORIES, CAT_COLORS } from '../lib/constants';
+import { t } from '../lib/i18n';
 
 function timeAgo(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -64,7 +65,7 @@ export default function HomePage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search jobs..."
+            placeholder={t().searchJobs}
             className="w-full pl-10 pr-4 h-12 rounded-2xl bg-gray-100 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
           />
         </div>
@@ -85,15 +86,15 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center justify-between pb-3">
-          <span className="text-xs text-gray-500">{jobs.length} jobs</span>
+          <span className="text-xs text-gray-500">{jobs.length} {t().jobs.toLowerCase()}</span>
           <select
             value={sort}
             onChange={e => setSort(e.target.value)}
             className="text-xs bg-gray-100 border-0 text-gray-600 rounded-lg px-2 py-1.5 focus:outline-none"
           >
-            <option value="newest">Newest</option>
-            <option value="budget_high">Budget ↑</option>
-            <option value="budget_low">Budget ↓</option>
+            <option value="newest">{t().newest}</option>
+            <option value="budget_high">{t().budgetHigh}</option>
+            <option value="budget_low">{t().budgetLow}</option>
           </select>
         </div>
       </div>
@@ -106,8 +107,8 @@ export default function HomePage() {
           ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="text-5xl mb-3">🔍</span>
-              <p className="font-semibold text-gray-900">No jobs found</p>
-              <p className="text-sm text-gray-400 mt-1">Try different filters</p>
+              <p className="font-semibold text-gray-900">{t().noJobsFound}</p>
+              <p className="text-sm text-gray-400 mt-1">{t().tryDifferentFilters}</p>
             </div>
           )
           : jobs.map(job => (
@@ -116,7 +117,7 @@ export default function HomePage() {
         }
         {!loading && hasMore && (
           <button onClick={() => load(page + 1, false)} className="w-full py-3 text-sm text-emerald-500 font-semibold">
-            Load more
+            {t().loadMore}
           </button>
         )}
       </div>
@@ -155,7 +156,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
           {job.category}
         </span>
         {job.is_urgent && (
-          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">Urgent</span>
+          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">{t().urgent}</span>
         )}
         {(job.apply_cost ?? 0) > 0 && (
           <span className="text-xs text-gray-400">{job.apply_cost} connects</span>
@@ -165,7 +166,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
       <div className="flex items-center justify-between text-xs text-gray-400">
         <span>@{job.client_username || 'unknown'}</span>
         <div className="flex items-center gap-3">
-          <span>{job.applicants_count ?? 0} applicants</span>
+          <span>{job.applicants_count ?? 0} {t().applicants}</span>
           <span>{timeAgo(job.created_at)}</span>
         </div>
       </div>

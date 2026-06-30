@@ -4,6 +4,7 @@ import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
 import { CONNECT_PACKAGES } from '../lib/constants';
+import { t, currentLang, setLang } from '../lib/i18n';
 
 export default function ProfilePage() {
   const { user, updateUser, logout } = useAppCtx();
@@ -24,53 +25,57 @@ export default function ProfilePage() {
         setBuying(false);
       },
       onCancelled: () => setBuying(false),
-      onError: (e: any) => { toast(e.message || 'Failed', 'error'); setBuying(false); },
+      onError: (e: any) => { toast(e?.message || e?.toString() || 'Payment failed', 'error'); setBuying(false); },
     });
   };
 
   if (!user) return null;
 
+  const tr = t();
+  const totalReviews = (user as any).total_reviews ?? 0;
+  const balancePi = (user as any).balance_pi ?? '0.00';
+
   const rows = [
     ...(user?.role === 'admin' ? [{
       icon: ShieldIcon, bg: 'bg-red-100', ic: 'text-red-500',
-      label: 'Admin Panel', sub: 'Manage users, jobs, escrows',
-      right: <Chevron />,
-      onClick: () => nav('/admin'),
+      label: tr.admin, sub: tr.adminSub,
+      right: <Chevron />, onClick: () => nav('/admin'),
     }] : []),
     {
       icon: ClockIcon, bg: 'bg-emerald-100', ic: 'text-emerald-600',
-      label: 'Availability', sub: availability ? 'Available for work' : 'Not available',
+      label: tr.availability, sub: availability ? tr.availableForWork : tr.notAvailable,
       right: <Toggle on={availability} onChange={setAvailability} />,
     },
     {
       icon: SendIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
-      label: 'Custom Offers',
+      label: tr.customOffers,
       right: <span className="text-emerald-500 text-sm font-semibold">View →</span>,
       onClick: () => nav('/my-jobs'),
     },
     {
       icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
-      label: 'Light Mode',
+      label: tr.lightMode,
       right: <Toggle on={true} onChange={() => {}} />,
     },
     {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
-      label: 'Language', sub: 'English',
+      label: tr.language, sub: currentLang() === 'ru' ? 'Русский' : 'English',
       right: <Chevron />,
+      onClick: () => setLang(currentLang() === 'ru' ? 'en' : 'ru'),
     },
     {
       icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
-      label: 'Portfolio', right: <Chevron />,
+      label: tr.portfolio, right: <Chevron />,
       onClick: () => nav('/my-jobs'),
     },
     {
       icon: ListIcon, bg: 'bg-indigo-100', ic: 'text-indigo-600',
-      label: 'My Applications', right: <Chevron />,
+      label: tr.myApplications, right: <Chevron />,
       onClick: () => nav('/my-jobs'),
     },
     {
       icon: DownloadIcon, bg: 'bg-teal-100', ic: 'text-teal-600',
-      label: 'Install Work Pro?', sub: 'Add to home screen', right: <Chevron />,
+      label: tr.install, sub: tr.installSub, right: <Chevron />,
       onClick: () => {
         if ((window as any).__pwaInstallPrompt) {
           (window as any).__pwaInstallPrompt.prompt();
@@ -81,22 +86,22 @@ export default function ProfilePage() {
     },
     {
       icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
-      label: 'FAQ', right: <Chevron />,
+      label: tr.faq, right: <Chevron />,
       onClick: () => toast('FAQ coming soon', 'info'),
     },
     {
       icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
-      label: 'Terms of Service', right: <Chevron />,
+      label: tr.terms, right: <Chevron />,
       onClick: () => window.open('/terms-of-service.html', '_blank'),
     },
     {
       icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
-      label: 'Privacy Policy', right: <Chevron />,
+      label: tr.privacy, right: <Chevron />,
       onClick: () => window.open('/privacy-policy.html', '_blank'),
     },
     {
       icon: TrashIcon, bg: 'bg-orange-100', ic: 'text-orange-600',
-      label: 'Clear Cache', right: <Chevron />,
+      label: tr.clearCache, right: <Chevron />,
       onClick: () => {
         const token = localStorage.getItem('workpro_token');
         const u = localStorage.getItem('workpro_user');
@@ -110,42 +115,61 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-lg mx-auto pb-24 animate-fade-in">
-      {/* Avatar */}
-      <div className="flex flex-col items-center py-6 px-4">
-        <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-emerald-500/20 mb-3 overflow-hidden">
-          {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="" /> : initial}
-        </div>
-        <h2 className="text-xl font-bold text-gray-900">{user.username}</h2>
-        <p className="text-gray-500 text-sm capitalize">{user.role || 'freelancer'}</p>
-      </div>
 
-      {/* Connects */}
-      <div className="mx-4 mb-4 bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="font-semibold text-gray-900">Connects Balance</p>
-            <p className="text-sm text-gray-500">{connects} available</p>
+      {/* ── Profile card with gradient ── */}
+      <div className="mx-4 mt-4 mb-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-5 shadow-sm border border-emerald-100">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-20 h-20 rounded-full border-2 border-emerald-500 bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-600 shrink-0 overflow-hidden shadow-md">
+            {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="" /> : initial}
           </div>
-          <span className="text-3xl">⚡</span>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-bold text-gray-900 truncate">{user.username}</h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+              <span className="text-sm text-gray-600">
+                {user.role === 'admin' ? 'Админ' : 'Фрилансер'} · {availability ? tr.available : tr.notAvailableShort}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              <span className="bg-yellow-100 text-yellow-700 rounded-full px-2 py-0.5 text-xs font-semibold">
+                ⭐ {tr.risingTalent}
+              </span>
+              {(user as any).kyc_verified && (
+                <span className="bg-emerald-100 text-emerald-600 rounded-full px-2 py-0.5 text-xs font-semibold">
+                  ✅ {tr.kyc}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {CONNECT_PACKAGES.map(({ connects: qty, price }) => (
+
+        {/* Stats: 3 cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white rounded-2xl shadow-sm p-3 text-center">
+            <p className="text-xs text-gray-400 mb-1">{tr.connects}</p>
+            <p className="text-xl font-bold text-gray-900">{connects}</p>
             <button
-              key={qty}
-              onClick={() => buyConnects(qty, price)}
+              onClick={() => { const pkg = CONNECT_PACKAGES[0]; buyConnects(pkg.connects, pkg.price); }}
               disabled={buying}
-              className="py-2 rounded-xl bg-white border border-emerald-200 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-60 shadow-sm"
+              className="mt-2 bg-emerald-500 text-white rounded-full px-4 py-1 text-xs font-semibold disabled:opacity-60"
             >
-              {qty} for {price}π
+              {tr.buy}
             </button>
-          ))}
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm p-3 text-center">
+            <p className="text-xs text-gray-400 mb-1">{tr.balance}</p>
+            <p className="text-xl font-bold text-gray-900">{balancePi}<span className="text-sm text-gray-400"> π</span></p>
+            {!isPiBrowser() && <p className="text-[10px] text-gray-400 mt-1">Pi Browser</p>}
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm p-3 text-center">
+            <p className="text-xs text-gray-400 mb-1">{tr.reviews}</p>
+            <p className="text-xl font-bold text-gray-900">{totalReviews}</p>
+            <p className="text-[10px] text-amber-500 mt-1">{'★'.repeat(Math.min(5, Math.max(0, Math.round((user as any).rating ?? 0))))}</p>
+          </div>
         </div>
-        {!isPiBrowser() && (
-          <p className="text-xs text-gray-400 mt-2 text-center">Open in Pi Browser to buy</p>
-        )}
       </div>
 
-      {/* Settings rows */}
+      {/* ── Settings rows ── */}
       <div className="mx-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
         {rows.map((r, i) => (
           <button
@@ -167,7 +191,7 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* Logout */}
+      {/* ── Logout ── */}
       <div className="mx-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
         <button
           onClick={logout}
@@ -176,11 +200,10 @@ export default function ProfilePage() {
           <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
             <LogOutIcon className="w-5 h-5 text-red-500" />
           </div>
-          <span className="text-sm font-medium text-red-500">Logout</span>
+          <span className="text-sm font-medium text-red-500">{tr.logout}</span>
         </button>
       </div>
 
-      {/* Footer */}
       <div className="text-center px-4 pb-4">
         <p className="text-xs text-gray-400">Work Pro — Pi Network Freelance Marketplace</p>
       </div>

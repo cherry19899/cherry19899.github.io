@@ -35,8 +35,8 @@ export default function JobDetailPage() {
   useEffect(() => {
     if (!id) return;
     getJob(id)
-      .then(d => setJob(d?.job || d))
-      .catch(() => {})
+      .then(d => { if (d) setJob(d?.job || d); })
+      .catch(() => setJob(null))
       .finally(() => setLoading(false));
   }, [id]);
 
