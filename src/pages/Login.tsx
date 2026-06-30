@@ -7,6 +7,7 @@ export default function LoginPage() {
   const { setUser } = useAppCtx();
   const [loading, setLoading] = useState(false);
   const [piReady, setPiReady] = useState(false);
+  const [wakingUp, setWakingUp] = useState(false);
 
   useEffect(() => {
     let n = 0;
@@ -19,12 +20,18 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     setLoading(true);
+    setWakingUp(false);
+    const wakeTimer = setTimeout(() => setWakingUp(true), 4000);
     try {
       const user = await piAuthenticate();
       setUser(user);
     } catch (e: any) {
       toast(e.message || 'Login failed', 'error');
-    } finally { setLoading(false); }
+    } finally {
+      clearTimeout(wakeTimer);
+      setLoading(false);
+      setWakingUp(false);
+    }
   };
 
   return (
@@ -60,9 +67,12 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-base transition-colors disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
         >
-          {loading
-            ? <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            : 'Login with Pi'}
+          {loading ? (
+            <>
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              {wakingUp && <span className="text-sm font-medium">Waking up server…</span>}
+            </>
+          ) : 'Login with Pi'}
         </button>
 
         <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
