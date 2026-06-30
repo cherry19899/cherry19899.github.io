@@ -12,10 +12,10 @@ export const CATEGORIES = [
 ] as const;
 
 export const CAT_COLORS: Record<string, string> = {
-  development: 'bg-blue-500/15 text-blue-400',
-  design:      'bg-purple-500/15 text-purple-400',
-  writing:     'bg-amber-500/15 text-amber-400',
-  marketing:   'bg-rose-500/15 text-rose-400',
-  data:        'bg-cyan-500/15 text-cyan-400',
-  other:       'bg-slate-500/15 text-slate-400',
+  development: 'bg-blue-100 text-blue-600',
+  design:      'bg-purple-100 text-purple-600',
+  writing:     'bg-amber-100 text-amber-600',
+  marketing:   'bg-rose-100 text-rose-600',
+  data:        'bg-cyan-100 text-cyan-600',
+  other:       'bg-gray-100 text-gray-600',
 };

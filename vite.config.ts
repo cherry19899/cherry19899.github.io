@@ -13,7 +13,7 @@ export default defineConfig({
         short_name: 'WorkPro',
         description: 'Freelance marketplace on Pi Network',
         theme_color: '#10b981',
-        background_color: '#0f172a',
+        background_color: '#ffffff',
         display: 'standalone',
         scope: '/',
         start_url: '/',
@@ -35,7 +35,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          query: ['@tanstack/react-query'],
           socket: ['socket.io-client']
         }
       }

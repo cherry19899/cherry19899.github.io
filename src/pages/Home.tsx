@@ -52,32 +52,32 @@ export default function HomePage() {
   return (
     <div className="animate-fade-in max-w-lg mx-auto">
       {/* Sub-header */}
-      <div className="sticky top-14 z-30 bg-slate-900/95 backdrop-blur px-4 pt-3 pb-0 border-b border-slate-800">
+      <div className="sticky top-[calc(3.5rem+1.75rem)] z-30 bg-white px-4 pt-3 pb-0 border-b border-gray-100">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-gray-400">
               {(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })()}
             </p>
-            <p className="text-lg font-black text-white">Find Work</p>
+            <p className="text-lg font-black text-gray-900">Find Work</p>
           </div>
           {user && (
             <div className="text-right">
-              <p className="text-xs text-slate-500">Connects</p>
-              <p className="text-base font-bold text-emerald-400">{user.balance_connects ?? 0}</p>
+              <p className="text-xs text-gray-400">Connects</p>
+              <p className="text-base font-bold text-emerald-500">{user.balance_connects ?? 0}</p>
             </div>
           )}
         </div>
 
         {/* Search */}
         <div className="relative mb-3">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search jobs…"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            placeholder="Search jobs..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-100 border border-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-400"
           />
         </div>
 
@@ -88,7 +88,7 @@ export default function HomePage() {
               key={c.key}
               onClick={() => setCategory(c.key)}
               className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-                category === c.key ? 'bg-emerald-500 text-white' : 'bg-slate-800 border border-slate-700 text-slate-400'
+                category === c.key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
               }`}
             >
               {c.label}
@@ -97,11 +97,11 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center justify-between pb-3">
-          <p className="text-xs text-slate-500">{jobs.length} jobs</p>
+          <p className="text-xs text-gray-500">{jobs.length} jobs</p>
           <select
             value={sort}
             onChange={e => setSort(e.target.value)}
-            className="text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-lg px-2 py-1 focus:outline-none"
+            className="text-xs bg-gray-100 border border-gray-200 text-gray-700 rounded-lg px-2 py-1 focus:outline-none"
           >
             <option value="newest">Newest</option>
             <option value="budget_high">Budget ↑</option>
@@ -121,7 +121,7 @@ export default function HomePage() {
               ))
         }
         {!loading && hasMore && (
-          <button onClick={() => load(page + 1, false)} className="w-full py-3 text-sm text-emerald-400 font-semibold">
+          <button onClick={() => load(page + 1, false)} className="w-full py-3 text-sm text-emerald-500 font-semibold">
             Load more
           </button>
         )}
@@ -131,7 +131,7 @@ export default function HomePage() {
       {user && (
         <button
           onClick={() => nav('/post-job')}
-          className="fixed bottom-20 right-4 z-30 w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30 flex items-center justify-center text-white active:scale-95 transition-transform"
+          className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30 flex items-center justify-center text-white active:scale-95 transition-transform"
           aria-label="Post a job"
         >
           <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -148,21 +148,21 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
   return (
     <div
       onClick={onClick}
-      className="bg-slate-800 rounded-xl border border-slate-700 p-4 space-y-3 cursor-pointer active:scale-[0.99] transition-transform shadow-sm"
+      className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-2 cursor-pointer active:scale-[0.99] transition-transform"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-bold text-white leading-snug flex-1">{job.title}</h3>
-        <span className="text-emerald-400 font-bold text-sm shrink-0">{job.budget} π</span>
+        <h3 className="font-semibold text-gray-900 leading-snug flex-1">{job.title}</h3>
+        <span className="text-emerald-500 font-bold text-sm shrink-0">{job.budget} π</span>
       </div>
       {job.description && (
-        <p className="text-slate-400 text-sm leading-relaxed line-clamp-2">{job.description}</p>
+        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{job.description}</p>
       )}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
-        {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-400">Urgent</span>}
-        {(job.apply_cost ?? 0) > 0 && <span className="text-xs text-slate-500">{job.apply_cost} connects</span>}
+        <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
+        {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">Urgent</span>}
+        {(job.apply_cost ?? 0) > 0 && <span className="text-xs text-gray-400">{job.apply_cost} connects</span>}
       </div>
-      <div className="flex items-center justify-between text-xs text-slate-500">
+      <div className="flex items-center justify-between text-xs text-gray-400">
         <span>@{job.client_username || 'unknown'}</span>
         <div className="flex items-center gap-3">
           <span>{job.applicants_count ?? 0} applicants</span>

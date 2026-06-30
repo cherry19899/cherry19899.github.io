@@ -3,20 +3,20 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppAuth } from '../App';
 
 const TABS = [
-  { path: '/',          label: 'Jobs',     icon: BriefcaseIcon },
-  { path: '/chat',      label: 'Messages', icon: ChatIcon },
-  { path: '/my-jobs',   label: 'My Jobs',  icon: ListIcon },
-  { path: '/escrow',    label: 'Escrow',   icon: LockIcon },
-  { path: '/profile',   label: 'Profile',  icon: UserIcon },
+  { path: '/',        label: 'Jobs',    icon: BriefcaseIcon },
+  { path: '/chat',    label: 'Chat',    icon: ChatIcon },
+  { path: '/my-jobs', label: 'My Jobs', icon: ListIcon },
+  { path: '/escrow',  label: 'Escrow',  icon: LockIcon },
+  { path: '/profile', label: 'Profile', icon: UserIcon },
 ];
 
 export default function BottomNav() {
   const nav = useNavigate();
   const { pathname } = useLocation();
-  const { chatUnread, user } = useAppAuth();
+  const { chatUnread } = useAppAuth();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-slate-800 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-pb">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
         {TABS.map(({ path, label, icon: Icon }) => {
           const active = path === '/' ? pathname === '/' : pathname.startsWith(path);
@@ -25,18 +25,17 @@ export default function BottomNav() {
             <button
               key={path}
               onClick={() => nav(path)}
-              className={`flex flex-col items-center justify-center gap-0.5 w-16 h-full relative transition-colors ${
-                active ? 'text-emerald-400' : 'text-slate-500'
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative transition-colors ${
+                active ? 'text-emerald-500 border-t-2 border-emerald-500' : 'text-gray-400'
               }`}
             >
               <Icon className="w-5 h-5" />
               {badge > 0 && (
-                <span className="absolute top-2 right-2 min-w-[14px] h-3.5 px-0.5 bg-red-500 rounded-full text-[8px] font-bold flex items-center justify-center">
+                <span className="absolute top-2 right-2 min-w-[14px] h-3.5 px-0.5 bg-red-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center">
                   {badge > 9 ? '9+' : badge}
                 </span>
               )}
               <span className="text-[10px] font-medium">{label}</span>
-              {active && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-emerald-400 rounded-full" />}
             </button>
           );
         })}
@@ -63,9 +62,8 @@ function ChatIcon({ className }: { className?: string }) {
 function ListIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-      <line x1="8" y1="18" x2="21" y2="18"/>
-      <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      <polyline points="9 11 12 14 22 4"/>
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
     </svg>
   );
 }
