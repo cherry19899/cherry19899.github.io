@@ -17,32 +17,6 @@ export function ensurePiInit() {
   } catch {}
 }
 
-async function authWithRetry(auth: any, attempts = 3): Promise<any> {
-  const delays = [3000, 6000, 10000];
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const data = await apiFetch('/api/auth/pi', {
-        method: 'POST',
-        body: JSON.stringify({ auth }),
-      });
-      saveAuth(data.token, data.user);
-      return data.user;
-    } catch (e: any) {
-      const isRetryable = e.message?.includes('Not found') ||
-        e.message?.includes('404') ||
-        e.message?.includes('503') ||
-        e.message?.includes('fetch') ||
-        e.message?.includes('network') ||
-        e.message?.includes('Failed');
-      if (i < attempts - 1 && isRetryable) {
-        await new Promise(r => setTimeout(r, delays[i]));
-      } else {
-        throw e;
-      }
-    }
-  }
-}
-
 export async function piAuthenticate(onRetry?: (attempt: number) => void): Promise<any> {
   ensurePiInit();
   if (!isPiBrowser()) {
@@ -51,15 +25,21 @@ export async function piAuthenticate(onRetry?: (attempt: number) => void): Promi
   return new Promise((resolve, reject) => {
     window.Pi!.authenticate(
       ['username', 'payments'],
-      (inc: any) => {
-        apiFetch('/api/auth/incomplete', {
-          method: 'POST',
-          body: JSON.stringify({ paymentId: inc.paymentId }),
-        }).catch(() => {});
-      }
+      (_inc: any) => { /* incomplete payments handled server-side */ }
     ).then(async (auth: any) => {
       try {
-        const user = await authWithRetry(auth);
+        // Backend v3.2 uses POST /api/me with Pi credentials directly
+        const data = await apiFetch('/api/me', {
+          method: 'POST',
+          body: JSON.stringify({
+            accessToken: auth.accessToken,
+            uid: auth.user?.uid,
+            username: auth.user?.username,
+          }),
+        });
+        // Response is the user object with token embedded
+        const { token, ...user } = data;
+        saveAuth(token, user);
         resolve(user);
       } catch (e) { reject(e); }
     }).catch(reject);
