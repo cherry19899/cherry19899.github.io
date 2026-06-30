@@ -64,23 +64,12 @@ export const useAppCtx = () => useContext(Ctx);
 // ─── Layout wrapper for authenticated pages ───────────────────────────────────
 
 function AppLayout({ back }: { back?: boolean }) {
-  const nav = useNavigate();
-  const { user } = useAppCtx();
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
       <Header back={back} />
       <main className="flex-1 pb-16">
         <Outlet />
       </main>
-      {!back && user && (
-        <button
-          onClick={() => nav('/post-job')}
-          className="fixed bottom-20 right-4 z-[60] w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 flex items-center justify-center text-white text-3xl font-light active:scale-95 transition-transform"
-          aria-label="Создать вакансию"
-        >
-          +
-        </button>
-      )}
       <BottomNav />
     </div>
   );

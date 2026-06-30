@@ -122,6 +122,15 @@ export default function HomePage() {
         )}
       </div>
 
+      {/* FAB */}
+      {user && (
+        <button
+          onClick={() => nav('/post-job')}
+          className="fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 flex items-center justify-center text-white text-2xl active:scale-95 transition-transform"
+        >
+          +
+        </button>
+      )}
     </div>
   );
 }
