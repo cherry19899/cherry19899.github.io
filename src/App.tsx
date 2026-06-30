@@ -41,10 +41,10 @@ export const useAppCtx = () => useContext(Ctx);
 
 // ─── Layout wrapper for authenticated pages ───────────────────────────────────
 
-function AppLayout() {
+function AppLayout({ back }: { back?: boolean }) {
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col">
-      <Header />
+      <Header back={back} />
       <main className="flex-1 pb-16">
         <Outlet />
       </main>
@@ -100,10 +100,14 @@ export default function App() {
           auth.user ? <Navigate to="/" replace /> : <LoginPage />
         } />
 
-        {/* Pages with their own full layout (Header + BottomNav embedded) */}
-        <Route path="/post-job" element={<Protected><PostJobPage /></Protected>} />
+        {/* Chat room has its own custom header */}
         <Route path="/chat/:id" element={<Protected><ChatRoomPage /></Protected>} />
-        <Route path="/job/:id" element={<Protected><JobDetailPage /></Protected>} />
+
+        {/* Pages with back button */}
+        <Route element={<Protected><AppLayout back /></Protected>}>
+          <Route path="/job/:id"  element={<JobDetailPage />} />
+          <Route path="/post-job" element={<PostJobPage />} />
+        </Route>
 
         {/* Pages inside shared AppLayout */}
         <Route element={<Protected><AppLayout /></Protected>}>

@@ -18,6 +18,8 @@ export default function AdminPage() {
   const [earnings, setEarnings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [feeValue, setFeeValue] = useState('2');
+  const [savingFee, setSavingFee] = useState(false);
   const [grantModal, setGrantModal] = useState<any>(null);
   const [grantAmt, setGrantAmt] = useState('10');
   const [acting, setActing] = useState<string | null>(null);
@@ -122,15 +124,39 @@ export default function AdminPage() {
                 <StatCard bg="bg-orange-50" color="text-orange-500" value={String(stats.active_escrows ?? 0)} label="Active Escrows" />
                 <StatCard bg="bg-cyan-50" color="text-cyan-500" value={String(stats.chats ?? 0)} label="Chats" />
               </div>
-              {stats.platformFeePercent !== undefined && (
-                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-2 text-sm">
-                  <p className="font-semibold text-gray-900 text-xs uppercase tracking-wide text-gray-400 mb-2">Fee Settings</p>
-                  <div className="flex justify-between"><span className="text-gray-500">Platform fee</span><span className="font-semibold text-gray-900">{stats.platformFeePercent}%</span></div>
-                  {stats.developerFeePercent !== undefined && (
-                    <div className="flex justify-between"><span className="text-gray-500">Developer fee</span><span className="font-semibold text-gray-900">{stats.developerFeePercent}%</span></div>
-                  )}
+              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3 text-sm">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Platform Fee</p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="0"
+                    max="20"
+                    step="0.1"
+                    value={feeValue}
+                    onChange={e => setFeeValue(e.target.value)}
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400"
+                    placeholder="e.g. 2"
+                  />
+                  <span className="text-gray-500">%</span>
+                  <button
+                    onClick={async () => {
+                      setSavingFee(true);
+                      try {
+                        await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ key: 'platform_fee_percent', value: Number(feeValue) }) });
+                        toast(`Fee set to ${feeValue}%`, 'success');
+                      } catch (e: any) { toast(e.message, 'error'); }
+                      finally { setSavingFee(false); }
+                    }}
+                    disabled={savingFee}
+                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold disabled:opacity-60"
+                  >
+                    {savingFee ? '…' : 'Save'}
+                  </button>
                 </div>
-              )}
+                {stats?.platformFeePercent !== undefined && (
+                  <p className="text-xs text-gray-400">Current: {stats.platformFeePercent}%</p>
+                )}
+              </div>
             </>
           ) : <p className="text-center text-gray-400 py-10">No data</p>
         )}

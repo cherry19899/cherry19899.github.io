@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
@@ -6,6 +7,7 @@ import { CONNECT_PACKAGES } from '../lib/constants';
 
 export default function ProfilePage() {
   const { user, updateUser, logout } = useAppCtx();
+  const nav = useNavigate();
   const [availability, setAvailability] = useState(true);
   const [buying, setBuying] = useState(false);
 
@@ -29,6 +31,12 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const rows = [
+    ...(user?.role === 'admin' ? [{
+      icon: ShieldIcon, bg: 'bg-red-100', ic: 'text-red-500',
+      label: 'Admin Panel', sub: 'Manage users, jobs, escrows',
+      right: <Chevron />,
+      onClick: () => nav('/admin'),
+    }] : []),
     {
       icon: ClockIcon, bg: 'bg-emerald-100', ic: 'text-emerald-600',
       label: 'Availability', sub: availability ? 'Available for work' : 'Not available',
@@ -38,6 +46,7 @@ export default function ProfilePage() {
       icon: SendIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
       label: 'Custom Offers',
       right: <span className="text-emerald-500 text-sm font-semibold">View →</span>,
+      onClick: () => nav('/my-jobs'),
     },
     {
       icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
@@ -46,17 +55,56 @@ export default function ProfilePage() {
     },
     {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
-      label: 'Language', sub: 'Change in header',
+      label: 'Language', sub: 'English',
+      right: <Chevron />,
     },
-    { icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600', label: 'Portfolio',        right: <Chevron /> },
-    { icon: ListIcon,      bg: 'bg-indigo-100', ic: 'text-indigo-600', label: 'My Applications',  right: <Chevron /> },
-    { icon: DownloadIcon,  bg: 'bg-teal-100',   ic: 'text-teal-600',   label: 'Install Work Pro?', sub: 'Add to home screen', right: <Chevron /> },
-    { icon: HelpIcon,      bg: 'bg-gray-100',   ic: 'text-gray-600',   label: 'FAQ',              right: <Chevron /> },
-    { icon: ShieldIcon,    bg: 'bg-gray-100',   ic: 'text-gray-600',   label: 'Terms of Service', right: <Chevron /> },
+    {
+      icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
+      label: 'Portfolio', right: <Chevron />,
+      onClick: () => nav('/my-jobs'),
+    },
+    {
+      icon: ListIcon, bg: 'bg-indigo-100', ic: 'text-indigo-600',
+      label: 'My Applications', right: <Chevron />,
+      onClick: () => nav('/my-jobs'),
+    },
+    {
+      icon: DownloadIcon, bg: 'bg-teal-100', ic: 'text-teal-600',
+      label: 'Install Work Pro?', sub: 'Add to home screen', right: <Chevron />,
+      onClick: () => {
+        if ((window as any).__pwaInstallPrompt) {
+          (window as any).__pwaInstallPrompt.prompt();
+        } else {
+          toast('Open in Pi Browser and use "Add to Home Screen"', 'info');
+        }
+      },
+    },
+    {
+      icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
+      label: 'FAQ', right: <Chevron />,
+      onClick: () => toast('FAQ coming soon', 'info'),
+    },
+    {
+      icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
+      label: 'Terms of Service', right: <Chevron />,
+      onClick: () => window.open('/terms-of-service.html', '_blank'),
+    },
+    {
+      icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
+      label: 'Privacy Policy', right: <Chevron />,
+      onClick: () => window.open('/privacy-policy.html', '_blank'),
+    },
     {
       icon: TrashIcon, bg: 'bg-orange-100', ic: 'text-orange-600',
       label: 'Clear Cache', right: <Chevron />,
-      onClick: () => { localStorage.clear(); toast('Cache cleared', 'success'); },
+      onClick: () => {
+        const token = localStorage.getItem('workpro_token');
+        const u = localStorage.getItem('workpro_user');
+        localStorage.clear();
+        if (token) localStorage.setItem('workpro_token', token);
+        if (u) localStorage.setItem('workpro_user', u);
+        toast('Cache cleared', 'success');
+      },
     },
   ];
 
@@ -134,8 +182,7 @@ export default function ProfilePage() {
 
       {/* Footer */}
       <div className="text-center px-4 pb-4">
-        <p className="text-xs text-gray-400">Work Pro v608 — Pi Network Freelance Marketplace</p>
-        <button className="text-xs text-emerald-500 mt-1">Privacy Policy</button>
+        <p className="text-xs text-gray-400">Work Pro — Pi Network Freelance Marketplace</p>
       </div>
     </div>
   );

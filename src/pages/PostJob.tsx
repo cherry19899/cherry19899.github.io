@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { createJob } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CATEGORIES } from '../lib/constants';
-import Header from '../components/Header';
-import BottomNav from '../components/BottomNav';
 
 export default function PostJobPage() {
   const nav = useNavigate();
@@ -39,9 +37,7 @@ export default function PostJobPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header back />
-      <div className="flex-1 max-w-lg mx-auto w-full p-4 pb-24 space-y-4 animate-fade-in">
+    <div className="max-w-lg mx-auto w-full p-4 pb-8 space-y-4 animate-fade-in">
 
         <Field label="Job Title *">
           <input value={form.title} onChange={e => set('title', e.target.value)}
@@ -118,9 +114,6 @@ export default function PostJobPage() {
         >
           {saving ? 'Posting…' : 'Post a Job'}
         </button>
-      </div>
-      <BottomNav />
-
       <style>{`
         .field-input { width:100%; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:0.75rem; padding:0.625rem 0.875rem; font-size:0.875rem; color:#1f2937; outline:none; }
         .field-input:focus { border-color:#10b981; }
@@ -129,6 +122,7 @@ export default function PostJobPage() {
     </div>
   );
 }
+
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
