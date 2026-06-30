@@ -75,7 +75,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="max-w-lg mx-auto pb-24 animate-fade-in">
+    <div className="max-w-lg mx-auto pb-24 animate-fade-in bg-white dark:bg-slate-900 min-h-screen">
       {/* Tabs */}
       <div className="px-4 pt-4">
         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-1">
@@ -84,7 +84,7 @@ export default function AdminPage() {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                tab === t.key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
+                tab === t.key ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
               }`}
             >
               {t.label}
@@ -100,7 +100,7 @@ export default function AdminPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={tab === 'users' ? 'Search users…' : 'Search jobs…'}
-              className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-gray-100 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+              className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
           </div>
         )}
@@ -124,8 +124,8 @@ export default function AdminPage() {
                 <StatCard bg="bg-orange-50" color="text-orange-500" value={String(stats.active_escrows ?? 0)} label="Active Escrows" />
                 <StatCard bg="bg-cyan-50" color="text-cyan-500" value={String(stats.chats ?? 0)} label="Chats" />
               </div>
-              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3 text-sm">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Platform Fee</p>
+              <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3 text-sm">
+                <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">Platform Fee</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="number"
@@ -134,7 +134,7 @@ export default function AdminPage() {
                     step="0.1"
                     value={feeValue}
                     onChange={e => setFeeValue(e.target.value)}
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400"
+                    className="flex-1 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400"
                     placeholder="e.g. 2"
                   />
                   <span className="text-gray-500">%</span>
@@ -169,14 +169,14 @@ export default function AdminPage() {
             <>
               {filteredUsers.length === 0 && <p className="text-center text-gray-400 py-10">No users found</p>}
               {filteredUsers.map((u: any) => (
-                <div key={u.id || u.uid} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+                <div key={u.id || u.uid} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 font-bold text-sm">
                       {(u.username || '?')[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-gray-900 font-semibold text-sm">@{u.username}</p>
-                      <p className="text-xs text-gray-400">{u.role} · {u.balance_connects ?? 0}⚡ connects · {u.balance_pi ?? 0} π</p>
+                      <p className="text-gray-900 dark:text-white font-semibold text-sm">@{u.username}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">{u.role} · {u.balance_connects ?? 0}⚡ connects · {u.balance_pi ?? 0} π</p>
                       {u.rating && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(u.rating))} {parseFloat(u.rating).toFixed(1)}</p>}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${u.is_blocked ? 'bg-red-100 text-red-500' : 'bg-emerald-100 text-emerald-600'}`}>
@@ -223,10 +223,10 @@ export default function AdminPage() {
             <>
               {filteredJobs.length === 0 && <p className="text-center text-gray-400 py-10">No jobs</p>}
               {filteredJobs.map((j: any) => (
-                <div key={j.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 flex items-start gap-3">
+                <div key={j.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{j.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">@{j.posted_by_name || j.posted_by || j.client_username} · {j.budget} π · {j.status}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{j.title}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">@{j.posted_by_name || j.posted_by || j.client_username} · {j.budget} π · {j.status}</p>
                   </div>
                   <button
                     onClick={async () => {
@@ -254,11 +254,11 @@ export default function AdminPage() {
             <>
               {escrows.length === 0 && <p className="text-center text-gray-400 py-10">No escrows</p>}
               {escrows.map((e: any) => (
-                <div key={e.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+                <div key={e.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-semibold text-gray-900 text-sm">{e.job_title || `Escrow #${e.id}`}</p>
-                      <p className="text-xs text-gray-400">@{e.client_name || e.client_username} → @{e.freelancer_name || e.freelancer_username}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm">{e.job_title || `Escrow #${e.id}`}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">@{e.client_name || e.client_username} → @{e.freelancer_name || e.freelancer_username}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-emerald-500 font-bold">{e.amount} π</p>
@@ -328,10 +328,10 @@ export default function AdminPage() {
       {/* Grant connects modal */}
       {grantModal && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setGrantModal(null)}>
-          <div className="w-full max-w-lg bg-white rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Grant Connects</h2>
-            <p className="text-sm text-gray-400 mb-4">To @{grantModal.username}</p>
+          <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Grant Connects</h2>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">To @{grantModal.username}</p>
             <div className="flex gap-2 mb-4">
               {[5, 10, 25, 50].map(n => (
                 <button
@@ -371,9 +371,9 @@ export default function AdminPage() {
 
 function StatCard({ bg, color, value, label }: { bg: string; color: string; value: string; label: string }) {
   return (
-    <div className={`${bg} rounded-2xl p-4 text-center`}>
+    <div className={`${bg} dark:bg-slate-800 rounded-2xl p-4 text-center`}>
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-gray-500 mt-1">{label}</p>
+      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{label}</p>
     </div>
   );
 }

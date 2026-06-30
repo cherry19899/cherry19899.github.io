@@ -65,7 +65,7 @@ export const useAppCtx = () => useContext(Ctx);
 
 function AppLayout({ back }: { back?: boolean }) {
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 flex flex-col">
       <Header back={back} />
       <main className="flex-1 pb-16">
         <Outlet />

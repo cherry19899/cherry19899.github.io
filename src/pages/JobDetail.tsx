@@ -136,14 +136,14 @@ export default function JobDetailPage() {
     <div className="flex flex-col min-h-full">
       {/* View switcher for owner */}
       {isOwner && (
-        <div className="sticky top-[calc(3.5rem+1.75rem)] z-30 bg-white border-b border-gray-100 px-4 py-2">
+        <div className="sticky top-[calc(3.5rem+1.75rem)] z-30 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-4 py-2">
           <div className="flex gap-2 max-w-lg mx-auto">
             {(['detail', 'applicants'] as View[]).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  view === v ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
+                  view === v ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
                 }`}
               >
                 {v === 'detail' ? 'Details' : `Applicants${apps.length ? ` (${apps.length})` : ''}`}
@@ -153,7 +153,7 @@ export default function JobDetailPage() {
         </div>
       )}
 
-      <div className="flex-1 max-w-lg mx-auto w-full p-4 pb-28 animate-fade-in">
+      <div className="flex-1 max-w-lg mx-auto w-full p-4 pb-28 animate-fade-in bg-white dark:bg-slate-900">
 
         {/* ── Detail view ── */}
         {view === 'detail' && (
@@ -161,7 +161,7 @@ export default function JobDetailPage() {
             {/* Header */}
             <div className="mb-5">
               <div className="flex items-start justify-between gap-2 mb-3">
-                <h1 className="text-xl font-bold text-gray-900 leading-snug flex-1">{job.title}</h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-snug flex-1">{job.title}</h1>
                 <div className="text-right shrink-0">
                   <p className="text-emerald-500 font-bold text-xl">{job.budget} π</p>
                   {job.status && (
@@ -180,7 +180,7 @@ export default function JobDetailPage() {
                 {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-500">🔥 Urgent</span>}
               </div>
 
-              <div className="flex items-center gap-4 text-xs text-gray-400">
+              <div className="flex items-center gap-4 text-xs text-gray-400 dark:text-slate-500">
                 <span className="flex items-center gap-1">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   @{job.posted_by_name || 'unknown'}
@@ -191,8 +191,8 @@ export default function JobDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+            <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 mb-4">
+              <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
             </div>
 
             {/* Skills */}
@@ -203,18 +203,18 @@ export default function JobDetailPage() {
                   {(Array.isArray(job.skills) ? job.skills : job.skills.split(','))
                     .filter(Boolean)
                     .map((s: string) => (
-                      <span key={s} className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 font-medium">{s.trim()}</span>
+                      <span key={s} className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 font-medium">{s.trim()}</span>
                     ))}
                 </div>
               </div>
             )}
 
             {/* Fee breakdown */}
-            <div className="bg-gray-50 rounded-2xl p-4 mb-5 text-sm space-y-1.5">
-              <div className="flex justify-between text-gray-500"><span>Budget</span><span className="text-gray-900 font-medium">{Number(job.budget)} π</span></div>
-              <div className="flex justify-between text-gray-400"><span>Platform fee (2%)</span><span>{fee} π</span></div>
-              <div className="border-t border-gray-200 pt-1.5 flex justify-between font-bold">
-                <span className="text-gray-900">Total</span>
+            <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 mb-5 text-sm space-y-1.5">
+              <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>Budget</span><span className="text-gray-900 dark:text-white font-medium">{Number(job.budget)} π</span></div>
+              <div className="flex justify-between text-gray-400 dark:text-slate-500"><span>Platform fee (2%)</span><span>{fee} π</span></div>
+              <div className="border-t border-gray-200 dark:border-slate-700 pt-1.5 flex justify-between font-bold">
+                <span className="text-gray-900 dark:text-white">Total</span>
                 <span className="text-emerald-500">{(Number(job.budget) + fee).toFixed(2)} π</span>
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function JobDetailPage() {
                     autoFocus
                     placeholder="Describe your approach, timeline, and why you're the best fit…"
                     rows={5}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none"
+                    className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none"
                   />
                   {(job.apply_cost ?? 0) > 0 && (
                     <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
@@ -281,15 +281,15 @@ export default function JobDetailPage() {
                 <p className="text-sm text-gray-400 mt-1">Share your job to get more visibility</p>
               </div>
             ) : apps.map(app => (
-              <div key={app.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+              <div key={app.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 font-bold text-emerald-600 text-sm">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
                     {(app.applicant_username || '?')[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-gray-900 text-sm">@{app.applicant_username}</p>
-                      <span className="text-xs text-gray-400">{timeAgo(app.created_at)}</span>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm">@{app.applicant_username}</p>
+                      <span className="text-xs text-gray-400 dark:text-slate-500">{timeAgo(app.created_at)}</span>
                     </div>
                     {app.applicant_rating && (
                       <p className="text-xs text-amber-500">{'★'.repeat(Math.round(app.applicant_rating))} {app.applicant_rating}</p>
@@ -298,7 +298,7 @@ export default function JobDetailPage() {
                 </div>
 
                 {app.proposal && (
-                  <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-3">
+                  <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed bg-gray-50 dark:bg-slate-700/50 rounded-xl p-3">
                     {app.proposal}
                   </p>
                 )}

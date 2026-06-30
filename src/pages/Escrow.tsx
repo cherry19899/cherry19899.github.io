@@ -81,7 +81,7 @@ export default function EscrowPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24">
+    <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24 bg-white dark:bg-slate-900 min-h-screen">
       {/* Tabs */}
       <div className="flex gap-2 mb-4">
         {(['active', 'done'] as const).map(t => (
@@ -89,7 +89,7 @@ export default function EscrowPage() {
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-2xl text-sm font-semibold transition-colors ${
-              tab === t ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
+              tab === t ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
             }`}
           >
             {t === 'active' ? `Active (${escrows.filter(e => ['pending','funded','disputed'].includes(e.status)).length})` : 'History'}
@@ -104,8 +104,8 @@ export default function EscrowPage() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">🔒</span>
-          <p className="font-semibold text-gray-900">{tab === 'active' ? 'No active escrows' : 'No history yet'}</p>
-          <p className="text-sm text-gray-400 mt-1">Complete a job to see escrow activity</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{tab === 'active' ? 'No active escrows' : 'No history yet'}</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">Complete a job to see escrow activity</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -114,13 +114,13 @@ export default function EscrowPage() {
             const statusCls = STATUS_STYLE[e.status] || STATUS_STYLE.pending;
 
             return (
-              <div key={e.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+              <div key={e.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900 leading-snug line-clamp-2">
+                    <p className="font-semibold text-gray-900 dark:text-white leading-snug line-clamp-2">
                       {e.job_title || `Escrow #${e.id}`}
                     </p>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-400 dark:text-slate-500">
                       {e.client_username && <span>👤 @{e.client_username}</span>}
                       {e.freelancer_username && <span>→ @{e.freelancer_username}</span>}
                     </div>
@@ -182,16 +182,16 @@ export default function EscrowPage() {
       {/* Dispute modal */}
       {disputeModal !== null && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setDisputeModal(null)}>
-          <div className="w-full max-w-lg bg-white rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Raise a Dispute</h2>
-            <p className="text-sm text-gray-400 mb-4">Admin will review and resolve the escrow.</p>
+          <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Raise a Dispute</h2>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">Admin will review and resolve the escrow.</p>
             <textarea
               value={disputeText}
               onChange={e => setDisputeText(e.target.value)}
               placeholder="Describe the issue…"
               rows={4}
-              className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none mb-4"
+              className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none mb-4"
             />
             <button
               onClick={doDispute}

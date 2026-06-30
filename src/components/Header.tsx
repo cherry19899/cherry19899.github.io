@@ -10,7 +10,7 @@ export default function Header({ back }: { back?: boolean }) {
   const initial = (user?.username || '?')[0].toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 bg-gradient-to-r from-emerald-500 to-emerald-600 w-full shadow-sm">
+    <header className="sticky top-0 z-40 bg-emerald-500 dark:bg-slate-900 w-full shadow-sm">
       <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
         <div className="flex items-center gap-2">
           {back && (
@@ -45,7 +45,7 @@ export default function Header({ back }: { back?: boolean }) {
             )}
           </button>
 
-          {/* Globe — language toggle */}
+          {/* Language toggle */}
           <button
             onClick={() => setLang(currentLang() === 'ru' ? 'en' : 'ru')}
             className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
@@ -53,9 +53,9 @@ export default function Header({ back }: { back?: boolean }) {
             <span className="text-white text-xs font-bold">{currentLang() === 'ru' ? 'EN' : 'RU'}</span>
           </button>
 
-          {/* Moon — dark mode toggle */}
+          {/* Dark mode toggle */}
           <button
-            onClick={() => { toggleTheme(); window.location.reload(); }}
+            onClick={() => toggleTheme()}
             className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
           >
             {isDark()

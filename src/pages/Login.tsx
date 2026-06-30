@@ -35,7 +35,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
@@ -45,8 +45,8 @@ export default function LoginPage() {
               <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">Work Pro</h1>
-          <p className="text-gray-500 text-sm">Freelance marketplace on Pi Network</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Work Pro</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm">Freelance marketplace on Pi Network</p>
         </div>
 
         <div className="space-y-3 mb-8">
@@ -55,7 +55,7 @@ export default function LoginPage() {
             ['🔒', 'Escrow-protected payments'],
             ['⚡', 'Real-time chat & contracts'],
           ].map(([icon, text]) => (
-            <div key={text as string} className="flex items-center gap-3 text-sm text-gray-600">
+            <div key={text as string} className="flex items-center gap-3 text-sm text-gray-600 dark:text-slate-400">
               <span className="text-lg">{icon}</span>
               <span>{text}</span>
             </div>
@@ -75,19 +75,19 @@ export default function LoginPage() {
           ) : 'Login with Pi'}
         </button>
 
-        <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+        <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
           <svg className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="5" y="2" width="14" height="20" rx="2"/>
             <line x1="12" y1="18" x2="12.01" y2="18"/>
           </svg>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-slate-400">
             {piReady
               ? 'Pi SDK ready — tap Login to authenticate.'
               : 'Open this app inside the Pi Browser.'}
           </p>
         </div>
 
-        <p className="mt-5 text-gray-400 text-xs text-center">Testnet mode · sandbox payments</p>
+        <p className="mt-5 text-gray-400 dark:text-slate-600 text-xs text-center">Testnet mode · sandbox payments</p>
       </div>
     </div>
   );

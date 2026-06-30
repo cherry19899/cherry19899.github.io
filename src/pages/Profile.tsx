@@ -57,7 +57,7 @@ export default function ProfilePage() {
       icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
       label: tr.lightMode,
       sub: isDark() ? 'Тёмная тема' : 'Светлая тема',
-      right: <Toggle on={!isDark()} onChange={() => { toggleTheme(); window.location.reload(); }} />,
+      right: <Toggle on={!isDark()} onChange={() => toggleTheme()} />,
     },
     {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
@@ -116,28 +116,28 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="max-w-lg mx-auto pb-24 animate-fade-in">
+    <div className="max-w-lg mx-auto pb-24 animate-fade-in bg-white dark:bg-slate-900 min-h-screen">
 
       {/* ── Profile card with gradient ── */}
-      <div className="mx-4 mt-4 mb-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-5 shadow-sm border border-emerald-100">
+      <div className="mx-4 mt-4 mb-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-5 shadow-sm border border-emerald-100 dark:border-slate-700">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-20 h-20 rounded-full border-2 border-emerald-500 bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-600 shrink-0 overflow-hidden shadow-md">
+          <div className="w-20 h-20 rounded-full border-2 border-emerald-500 bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-2xl font-bold text-emerald-600 dark:text-emerald-400 shrink-0 overflow-hidden shadow-md">
             {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="" /> : initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold text-gray-900 truncate">{user.username}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate">{user.username}</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-slate-400">
                 {user.role === 'admin' ? 'Админ' : 'Фрилансер'} · {availability ? tr.available : tr.notAvailableShort}
               </span>
             </div>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className="bg-yellow-100 text-yellow-700 rounded-full px-2 py-0.5 text-xs font-semibold">
+              <span className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 rounded-full px-2 py-0.5 text-xs font-semibold">
                 ⭐ {tr.risingTalent}
               </span>
               {(user as any).kyc_verified && (
-                <span className="bg-emerald-100 text-emerald-600 rounded-full px-2 py-0.5 text-xs font-semibold">
+                <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full px-2 py-0.5 text-xs font-semibold">
                   ✅ {tr.kyc}
                 </span>
               )}
@@ -147,9 +147,9 @@ export default function ProfilePage() {
 
         {/* Stats: 3 cards */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl shadow-sm p-3 text-center">
-            <p className="text-xs text-gray-400 mb-1">{tr.connects}</p>
-            <p className="text-xl font-bold text-gray-900">{connects}</p>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
+            <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.connects}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{connects}</p>
             <button
               onClick={() => { const pkg = CONNECT_PACKAGES[0]; buyConnects(pkg.connects, pkg.price); }}
               disabled={buying}
@@ -158,35 +158,35 @@ export default function ProfilePage() {
               {tr.buy}
             </button>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-3 text-center">
-            <p className="text-xs text-gray-400 mb-1">{tr.balance}</p>
-            <p className="text-xl font-bold text-gray-900">{balancePi}<span className="text-sm text-gray-400"> π</span></p>
-            {!isPiBrowser() && <p className="text-[10px] text-gray-400 mt-1">Pi Browser</p>}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
+            <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.balance}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{balancePi}<span className="text-sm text-gray-400 dark:text-slate-500"> π</span></p>
+            {!isPiBrowser() && <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Pi Browser</p>}
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-3 text-center">
-            <p className="text-xs text-gray-400 mb-1">{tr.reviews}</p>
-            <p className="text-xl font-bold text-gray-900">{totalReviews}</p>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
+            <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.reviews}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">{totalReviews}</p>
             <p className="text-[10px] text-amber-500 mt-1">{'★'.repeat(Math.min(5, Math.max(0, Math.round((user as any).rating ?? 0))))}</p>
           </div>
         </div>
       </div>
 
       {/* ── Settings rows ── */}
-      <div className="mx-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+      <div className="mx-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden mb-4">
         {rows.map((r, i) => (
           <button
             key={r.label}
             onClick={r.onClick}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors ${
-              i < rows.length - 1 ? 'border-b border-gray-50' : ''
+            className={`w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
+              i < rows.length - 1 ? 'border-b border-gray-50 dark:border-slate-700' : ''
             }`}
           >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${r.bg}`}>
               <r.icon className={`w-5 h-5 ${r.ic}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">{r.label}</p>
-              {r.sub && <p className="text-xs text-gray-400">{r.sub}</p>}
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{r.label}</p>
+              {r.sub && <p className="text-xs text-gray-400 dark:text-slate-500">{r.sub}</p>}
             </div>
             {r.right}
           </button>
@@ -194,12 +194,12 @@ export default function ProfilePage() {
       </div>
 
       {/* ── Logout ── */}
-      <div className="mx-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+      <div className="mx-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden mb-4">
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
         >
-          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center shrink-0">
             <LogOutIcon className="w-5 h-5 text-red-500" />
           </div>
           <span className="text-sm font-medium text-red-500">{tr.logout}</span>
@@ -207,7 +207,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="text-center px-4 pb-4">
-        <p className="text-xs text-gray-400">Work Pro — Pi Network Freelance Marketplace</p>
+        <p className="text-xs text-gray-400 dark:text-slate-600">Work Pro — Pi Network Freelance Marketplace</p>
       </div>
     </div>
   );

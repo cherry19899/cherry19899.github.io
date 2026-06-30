@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppCtx } from '../App';
-
 import { t } from '../lib/i18n';
 
 const TABS = () => [
@@ -18,7 +17,7 @@ export default function BottomNav() {
   const { chatUnread } = useAppCtx();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 safe-area-bottom">
       <div className="flex h-16 max-w-lg mx-auto">
         {TABS().map(({ path, label, Icon }) => {
           const active = path === '/' ? pathname === '/' : pathname.startsWith(path);
@@ -30,7 +29,7 @@ export default function BottomNav() {
               className={`flex flex-col items-center justify-center flex-1 h-full relative transition-colors ${
                 active
                   ? 'text-emerald-500 border-t-2 border-emerald-500'
-                  : 'text-gray-400'
+                  : 'text-gray-400 dark:text-slate-500'
               }`}
             >
               <Icon className="w-5 h-5" />

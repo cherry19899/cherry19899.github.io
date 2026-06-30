@@ -34,14 +34,14 @@ export default function MyJobsPage() {
   const jobs = tab === 'posted' ? posted : hired;
 
   return (
-    <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24">
+    <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24 bg-white dark:bg-slate-900 min-h-screen">
       <div className="flex gap-2 mb-4">
         {(['posted', 'hired'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-2xl text-sm font-semibold transition-colors ${
-              tab === t ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
+              tab === t ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
             }`}
           >
             {t === 'posted' ? `Размещено (${posted.length})` : `Нанято (${hired.length})`}
@@ -56,7 +56,7 @@ export default function MyJobsPage() {
       ) : jobs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">📋</span>
-          <p className="font-semibold text-gray-900">No jobs yet</p>
+          <p className="font-semibold text-gray-900 dark:text-white">No jobs yet</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -67,10 +67,10 @@ export default function MyJobsPage() {
               <div
                 key={job.id}
                 onClick={() => nav(`/job/${job.id}`)}
-                className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 cursor-pointer active:scale-[0.99] transition-transform space-y-2"
+                className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 cursor-pointer active:scale-[0.99] transition-transform space-y-2"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-gray-900 leading-snug flex-1">{job.title}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white leading-snug flex-1">{job.title}</h3>
                   <span className="text-emerald-500 font-bold text-sm shrink-0">{job.budget} π</span>
                 </div>
                 <div className="flex items-center gap-2">
