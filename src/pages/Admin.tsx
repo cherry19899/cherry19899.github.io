@@ -226,7 +226,7 @@ export default function AdminPage() {
                 <div key={j.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm truncate">{j.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">@{j.client_username} · {j.budget} π · {j.status}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">@{j.posted_by_name || j.posted_by || j.client_username} · {j.budget} π · {j.status}</p>
                   </div>
                   <button
                     onClick={async () => {
@@ -258,7 +258,7 @@ export default function AdminPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-semibold text-gray-900 text-sm">{e.job_title || `Escrow #${e.id}`}</p>
-                      <p className="text-xs text-gray-400">@{e.client_username} → @{e.freelancer_username}</p>
+                      <p className="text-xs text-gray-400">@{e.client_name || e.client_username} → @{e.freelancer_name || e.freelancer_username}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-emerald-500 font-bold">{e.amount} π</p>
@@ -273,7 +273,7 @@ export default function AdminPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={async () => {
-                          try { await adminResolveEscrow(e.id, 'refund'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'refunded' } : x)); toast('Refunded', 'success'); }
+                          try { await adminResolveEscrow(e.id, 'refund_to_client'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'refunded' } : x)); toast('Refunded', 'success'); }
                           catch (err: any) { toast(err.message, 'error'); }
                         }}
                         className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-semibold"
@@ -282,7 +282,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={async () => {
-                          try { await adminResolveEscrow(e.id, 'release'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'released' } : x)); toast('Released to freelancer', 'success'); }
+                          try { await adminResolveEscrow(e.id, 'release_to_freelancer'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'released' } : x)); toast('Released to freelancer', 'success'); }
                           catch (err: any) { toast(err.message, 'error'); }
                         }}
                         className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold"

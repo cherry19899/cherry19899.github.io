@@ -17,7 +17,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<an
     headers['x-user-id'] = uid;
   }
   const res = await fetch(API_BASE + path, { ...opts, headers });
-  if (res.status === 401 && path !== '/api/auth/pi' && path !== '/api/auth/incomplete') {
+  if (res.status === 401 && path !== '/api/me') {
     clearAuth();
     window.location.hash = '#/login';
     throw new Error('Session expired — please log in again');
@@ -66,7 +66,7 @@ export const getJobApplications = (jobId: string | number) =>
   apiFetch(`/api/jobs/${jobId}/applications`);
 export const getMyApplications = () => apiFetch('/api/applications/my');
 export const applyToJob = (jobId: string | number, data: any) =>
-  apiFetch('/api/applications', { method: 'POST', body: JSON.stringify({ job_id: jobId, ...data }) });
+  apiFetch(`/api/jobs/${jobId}/apply`, { method: 'POST', body: JSON.stringify({ proposal: data.proposal }) });
 export const acceptApplication = (appId: string | number) =>
   apiFetch(`/api/applications/${appId}/accept`, { method: 'POST' });
 export const rejectApplication = (appId: string | number) =>
@@ -132,8 +132,8 @@ export const getAdminEscrows = () => apiFetch('/api/admin/escrows?limit=100');
 export const getAdminEarnings = () => apiFetch('/api/admin/earnings');
 export const adminDeleteJob = (id: string | number) =>
   apiFetch(`/api/admin/jobs/${id}`, { method: 'DELETE' });
-export const adminResolveEscrow = (id: string | number, resolution: 'release' | 'refund') =>
-  apiFetch(`/api/admin/escrows/${id}/resolve`, { method: 'POST', body: JSON.stringify({ resolution }) });
+export const adminResolveEscrow = (id: string | number, resolution: 'release_to_freelancer' | 'refund_to_client') =>
+  apiFetch(`/api/admin/escrows/${id}/resolve`, { method: 'POST', body: JSON.stringify({ action: resolution }) });
 export const adminGrantConnects = (userId: string, amount: number) =>
   apiFetch(`/api/admin/users/${userId}/grant-connects`, { method: 'POST', body: JSON.stringify({ amount }) });
 export const adminBlockUser = (uid: string, block: boolean) =>

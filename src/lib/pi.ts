@@ -51,6 +51,7 @@ export function createPiPayment(
   memo: string,
   metadata: any,
   callbacks: {
+    onApproval?: (paymentId: string) => Promise<void>;
     onCompleted: (paymentId: string, txid: string) => void;
     onCancelled: () => void;
     onError: (e: Error) => void;
@@ -64,8 +65,11 @@ export function createPiPayment(
   window.Pi!.createPayment(
     { amount, memo, metadata },
     {
-      onReadyForServerApproval: (paymentId: string) => {
-        apiFetch(`/api/payments/${paymentId}/approve`, { method: 'POST' }).catch(() => {});
+      onReadyForServerApproval: async (paymentId: string) => {
+        try {
+          await apiFetch(`/api/payments/${paymentId}/approve`, { method: 'POST' });
+          if (callbacks.onApproval) await callbacks.onApproval(paymentId);
+        } catch {}
       },
       onReadyForServerCompletion: (paymentId: string, txid: string) => {
         apiFetch(`/api/payments/${paymentId}/complete`, {

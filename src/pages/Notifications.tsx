@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getNotifications, markNotifRead } from '../lib/api';
+import { getNotifications, markAllNotifsRead } from '../lib/api';
 import { useAppCtx } from '../App';
 
 interface Notif { id: number; title?: string; body?: string; message?: string; created_at: string; is_read?: boolean; read?: boolean; }
@@ -27,7 +27,7 @@ export default function NotificationsPage() {
   }, []);
 
   const markRead = (id: number) => {
-    markNotifRead(id).catch(() => {});
+    markAllNotifsRead().catch(() => {});
     setNotifs(p => p.map(n => n.id === id ? { ...n, is_read: true, read: true } : n));
   };
 

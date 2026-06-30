@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJob, getJobApplications, applyToJob, acceptApplication, rejectApplication, createEscrow, startChat } from '../lib/api';
+import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, apiFetch } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
@@ -66,58 +66,49 @@ export default function JobDetailPage() {
     } finally { setApplying(false); }
   };
 
-  // ── Hire flow: accept app → create escrow with Pi payment ─────────────────
+  // ── Hire flow: Pi payment → hire endpoint (creates escrow) ───────────────
 
-  const handleHire = async (app: any) => {
+  const handleHire = (app: any) => {
     setHiringId(app.id);
-    try {
-      // 1. Accept the application
-      await acceptApplication(app.id);
-      toast(`Hiring @${app.applicant_username}…`, 'info');
+    toast(`Hiring @${app.applicant_username}…`, 'info');
 
-      // 2. Create escrow record
-      const escrow = await createEscrow({
-        job_id: Number(id),
-        freelancer_uid: app.applicant_uid || app.applicant_id,
-        amount: job.budget,
-      });
-
-      // 3. Pay via Pi SDK
-      createPiPayment(
-        job.budget,
-        `Escrow: ${job.title}`,
-        { type: 'escrow_fund', escrow_id: escrow.id, job_id: id },
-        {
-          onCompleted: async (_pid, txid) => {
-            try {
-              const { fundEscrow } = await import('../lib/api');
-              await fundEscrow(escrow.id, { txid });
-              toast('Escrow funded! Job started 🚀', 'success');
-              setJob((prev: any) => prev ? { ...prev, status: 'in_progress' } : prev);
-            } catch (e: any) { toast(e.message, 'error'); }
-          },
-          onCancelled: () => toast('Payment cancelled', 'info'),
-          onError: (e: any) => toast(e.message || 'Payment failed', 'error'),
-        }
-      );
-    } catch (e: any) {
-      toast(e.message || 'Failed to hire', 'error');
-    } finally { setHiringId(null); }
+    createPiPayment(
+      job.budget,
+      `Hire: ${job.title}`,
+      { type: 'hire', job_id: id, application_id: app.id },
+      {
+        onApproval: async (paymentId) => {
+          await apiFetch(`/api/jobs/${id}/hire`, {
+            method: 'POST',
+            body: JSON.stringify({
+              application_id: app.id,
+              freelancer_id: app.applicant_uid || app.applicant_id,
+              payment_id: paymentId,
+            }),
+          });
+        },
+        onCompleted: (_pid, _txid) => {
+          toast('Job started! Escrow funded 🚀', 'success');
+          setJob((prev: any) => prev ? { ...prev, status: 'in_progress' } : prev);
+          setHiringId(null);
+        },
+        onCancelled: () => { toast('Payment cancelled', 'info'); setHiringId(null); },
+        onError: (e: any) => { toast(e.message || 'Payment failed', 'error'); setHiringId(null); },
+      }
+    );
   };
 
-  const handleReject = async (appId: number) => {
+  const handleReject = (appId: number) => {
     setActing(String(appId));
-    try {
-      await rejectApplication(appId);
-      setApps(prev => prev.filter(a => a.id !== appId));
-      toast('Application rejected', 'info');
-    } catch (e: any) { toast(e.message, 'error'); }
-    finally { setActing(null); }
+    rejectApplication(appId).catch(() => {});
+    setApps(prev => prev.filter(a => a.id !== appId));
+    toast('Application declined', 'info');
+    setActing(null);
   };
 
   const handleChat = async (app: any) => {
     try {
-      const room = await startChat({ user_id: app.applicant_uid || app.applicant_id, job_id: Number(id) });
+      const room = await startChat({ other_user_id: app.applicant_uid || app.applicant_id, job_id: Number(id) });
       nav(`/chat/${room.room_id || room.id}`);
     } catch (e: any) { toast(e.message, 'error'); }
   };
