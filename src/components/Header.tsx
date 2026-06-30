@@ -1,25 +1,36 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppAuth } from '../App';
+import { useAppCtx } from '../App';
 
-export default function Header() {
-  const { user, notifUnread } = useAppAuth();
+export default function Header({ back }: { back?: boolean }) {
   const nav = useNavigate();
-
+  const { user, notifUnread } = useAppCtx();
   const initial = (user?.username || '?')[0].toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 bg-gradient-to-r from-emerald-500 to-emerald-600 w-full">
-      <div className="px-4 h-14 flex items-center justify-between max-w-lg mx-auto">
-        <button onClick={() => nav('/')} className="font-bold text-xl text-white">
-          Work Pro
-        </button>
-
+    <header className="sticky top-0 z-40 bg-gradient-to-r from-emerald-500 to-emerald-600 w-full shadow-sm">
+      <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
         <div className="flex items-center gap-2">
+          {back && (
+            <button
+              onClick={() => nav(-1)}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 mr-1"
+            >
+              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+            </button>
+          )}
+          <button onClick={() => nav('/')} className="text-xl font-bold text-white tracking-tight">
+            Work Pro
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1.5">
           {/* Bell */}
           <button
             onClick={() => nav('/notifications')}
-            className="relative w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+            className="relative w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
           >
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -33,7 +44,7 @@ export default function Header() {
           </button>
 
           {/* Globe */}
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10"/>
               <line x1="2" y1="12" x2="22" y2="12"/>
@@ -42,7 +53,7 @@ export default function Header() {
           </button>
 
           {/* Moon */}
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors">
+          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30">
             <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
@@ -52,7 +63,7 @@ export default function Header() {
           {user && (
             <button
               onClick={() => nav('/profile')}
-              className="w-9 h-9 rounded-full bg-white/30 border border-white/50 flex items-center justify-center text-sm font-bold text-white overflow-hidden"
+              className="w-9 h-9 rounded-full bg-white/30 border-2 border-white/50 flex items-center justify-center text-sm font-bold text-white overflow-hidden"
             >
               {user.avatar
                 ? <img src={user.avatar} className="w-full h-full object-cover" alt="" />

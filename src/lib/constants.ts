@@ -1,14 +1,13 @@
 export const API_BASE = 'https://workpro-api.onrender.com';
-export const OWNER_USERNAME = 'cherry19899';
 
 export const CATEGORIES = [
-  { key: 'all', label: 'All' },
+  { key: 'all',         label: 'All' },
   { key: 'development', label: 'Development' },
-  { key: 'design', label: 'Design' },
-  { key: 'writing', label: 'Writing' },
-  { key: 'marketing', label: 'Marketing' },
-  { key: 'data', label: 'Data' },
-  { key: 'other', label: 'Other' },
+  { key: 'design',      label: 'Design' },
+  { key: 'writing',     label: 'Writing' },
+  { key: 'marketing',   label: 'Marketing' },
+  { key: 'data',        label: 'Data' },
+  { key: 'other',       label: 'Other' },
 ] as const;
 
 export const CAT_COLORS: Record<string, string> = {
@@ -19,3 +18,9 @@ export const CAT_COLORS: Record<string, string> = {
   data:        'bg-cyan-100 text-cyan-600',
   other:       'bg-gray-100 text-gray-600',
 };
+
+export const CONNECT_PACKAGES = [
+  { connects: 10,  price: 1 },
+  { connects: 50,  price: 4.5 },
+  { connects: 100, price: 8 },
+];

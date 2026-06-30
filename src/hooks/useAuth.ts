@@ -1,46 +1,58 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { User } from '../types';
-import { OWNER_USERNAME } from '../lib/constants';
-import { initPiSdk } from '../lib/pi';
+import { useState, useCallback } from 'react';
+import { getStoredUser, clearAuth, apiFetch, saveAuth } from '../lib/api';
+
+export interface User {
+  uid: string;
+  username: string;
+  role: string;
+  avatar?: string;
+  bio?: string;
+  skills?: string | string[];
+  balance_connects?: number;
+  total_jobs_completed?: number;
+  total_jobs_posted?: number;
+  is_blocked?: boolean;
+}
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUserState] = useState<User | null>(() => getStoredUser());
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Restore user from localStorage on mount
-    try {
-      const raw = localStorage.getItem('workpro_user');
-      if (raw) {
-        const u: User = JSON.parse(raw);
-        if (u?.uid) {
-          if (u.username?.toLowerCase() === OWNER_USERNAME) u.role = 'admin';
-          setUser(u);
-        }
-      }
-    } catch {}
-    setLoading(false);
-
-    // Kick off Pi SDK init (no-op in regular browser)
-    initPiSdk();
+  const setUser = useCallback((u: User | null) => {
+    setUserState(u);
+    if (u) saveAuth(localStorage.getItem('workpro_token') || '', u);
   }, []);
 
-  const updateUser = useCallback((updated: Partial<User>) => {
-    setUser(prev => {
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUserState(prev => {
       if (!prev) return prev;
-      const next = { ...prev, ...updated };
+      const next = { ...prev, ...patch };
       localStorage.setItem('workpro_user', JSON.stringify(next));
       return next;
     });
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('workpro_user');
-    localStorage.removeItem('workpro_token');
-    localStorage.removeItem('workpro_jwt');
-    localStorage.removeItem('workpro_uid');
-    setUser(null);
+    clearAuth();
+    setUserState(null);
   }, []);
 
-  return { user, loading, setUser, updateUser, logout };
+  const refreshUser = useCallback(async () => {
+    const stored = getStoredUser();
+    if (!stored?.uid) return;
+    setLoading(true);
+    try {
+      const data = await apiFetch('/api/auth/me');
+      if (data?.user) {
+        saveAuth(localStorage.getItem('workpro_token') || '', data.user);
+        setUserState(data.user);
+      } else if (data?.uid) {
+        saveAuth(localStorage.getItem('workpro_token') || '', data);
+        setUserState(data);
+      }
+    } catch {}
+    finally { setLoading(false); }
+  }, []);
+
+  return { user, loading, setUser, updateUser, logout, refreshUser };
 }

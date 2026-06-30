@@ -1,113 +1,74 @@
 import React, { useState } from 'react';
-import { updateUser as apiUpdateUser } from '../lib/api';
+import { useAppCtx } from '../App';
+import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
-import { useAppAuth, useToastCtx } from '../App';
+import { CONNECT_PACKAGES } from '../lib/constants';
 
 export default function ProfilePage() {
-  const { user, updateUser, logout } = useAppAuth();
-  const { toast } = useToastCtx();
+  const { user, updateUser, logout } = useAppCtx();
   const [availability, setAvailability] = useState(true);
-  const [buyingConnects, setBuyingConnects] = useState(false);
+  const [buying, setBuying] = useState(false);
 
   const connects = user?.balance_connects ?? 0;
+  const initial = (user?.username || '?')[0].toUpperCase();
 
-  const handleBuyConnects = (qty: number, piCost: number) => {
-    if (!isPiBrowser()) { toast('Open in Pi Browser to buy Connects', 'error'); return; }
-    setBuyingConnects(true);
-    createPiPayment(piCost, `Buy ${qty} Connects`, { type: 'buy_connects', qty }, {
-      onCompleted: (_paymentId: string, _txid: string) => {
+  const buyConnects = (qty: number, price: number) => {
+    if (!isPiBrowser()) { toast('Open in Pi Browser to buy', 'error'); return; }
+    setBuying(true);
+    createPiPayment(price, `Buy ${qty} Connects`, { type: 'buy_connects', qty }, {
+      onCompleted: () => {
         updateUser({ balance_connects: connects + qty });
-        toast(`Added ${qty} Connects!`, 'success');
-        setBuyingConnects(false);
+        toast(`Added ${qty} connects!`, 'success');
+        setBuying(false);
       },
-      onCancelled: () => { setBuyingConnects(false); },
-      onError: (e: any) => { toast(e.message || 'Payment failed', 'error'); setBuyingConnects(false); },
+      onCancelled: () => setBuying(false),
+      onError: (e: any) => { toast(e.message || 'Failed', 'error'); setBuying(false); },
     });
   };
 
   if (!user) return null;
 
-  const initial = (user.username || '?').charAt(0).toUpperCase();
-
-  const settingsRows = [
+  const rows = [
     {
-      icon: ClockIcon, bg: 'bg-emerald-100', color: 'text-emerald-600',
-      label: 'Availability', sublabel: availability ? 'Available for work' : 'Not available',
-      right: (
-        <button
-          onClick={() => setAvailability(a => !a)}
-          className={`w-12 h-6 rounded-full transition-colors relative ${availability ? 'bg-emerald-500' : 'bg-gray-300'}`}
-        >
-          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${availability ? 'translate-x-6' : 'translate-x-0.5'}`} />
-        </button>
-      ),
+      icon: ClockIcon, bg: 'bg-emerald-100', ic: 'text-emerald-600',
+      label: 'Availability', sub: availability ? 'Available for work' : 'Not available',
+      right: <Toggle on={availability} onChange={setAvailability} />,
     },
     {
-      icon: SendIcon, bg: 'bg-blue-100', color: 'text-blue-600',
-      label: 'Custom Offers', sublabel: undefined,
+      icon: SendIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
+      label: 'Custom Offers',
       right: <span className="text-emerald-500 text-sm font-semibold">View →</span>,
     },
     {
-      icon: MoonIcon, bg: 'bg-purple-100', color: 'text-purple-600',
-      label: 'Light Mode', sublabel: undefined,
-      right: (
-        <div className="w-12 h-6 rounded-full bg-emerald-500 relative">
-          <span className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full shadow" />
-        </div>
-      ),
+      icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
+      label: 'Light Mode',
+      right: <Toggle on={true} onChange={() => {}} />,
     },
     {
-      icon: GlobeIcon, bg: 'bg-cyan-100', color: 'text-cyan-600',
-      label: 'Language', sublabel: 'Change in header',
-      right: undefined,
+      icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
+      label: 'Language', sub: 'Change in header',
     },
+    { icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600', label: 'Portfolio',        right: <Chevron /> },
+    { icon: ListIcon,      bg: 'bg-indigo-100', ic: 'text-indigo-600', label: 'My Applications',  right: <Chevron /> },
+    { icon: DownloadIcon,  bg: 'bg-teal-100',   ic: 'text-teal-600',   label: 'Install Work Pro?', sub: 'Add to home screen', right: <Chevron /> },
+    { icon: HelpIcon,      bg: 'bg-gray-100',   ic: 'text-gray-600',   label: 'FAQ',              right: <Chevron /> },
+    { icon: ShieldIcon,    bg: 'bg-gray-100',   ic: 'text-gray-600',   label: 'Terms of Service', right: <Chevron /> },
     {
-      icon: BriefcaseIcon, bg: 'bg-amber-100', color: 'text-amber-600',
-      label: 'Portfolio', sublabel: undefined,
-      right: <ChevronRight />,
-    },
-    {
-      icon: ListIcon, bg: 'bg-indigo-100', color: 'text-indigo-600',
-      label: 'My Applications', sublabel: undefined,
-      right: <ChevronRight />,
-    },
-    {
-      icon: DownloadIcon, bg: 'bg-teal-100', color: 'text-teal-600',
-      label: 'Install Work Pro?', sublabel: 'Add to home screen',
-      right: <ChevronRight />,
-    },
-    {
-      icon: HelpIcon, bg: 'bg-gray-100', color: 'text-gray-600',
-      label: 'FAQ', sublabel: undefined,
-      right: <ChevronRight />,
-    },
-    {
-      icon: ShieldIcon, bg: 'bg-gray-100', color: 'text-gray-600',
-      label: 'Terms of Service', sublabel: undefined,
-      right: <ChevronRight />,
-    },
-    {
-      icon: TrashIcon, bg: 'bg-orange-100', color: 'text-orange-600',
-      label: 'Clear Cache', sublabel: undefined,
-      right: <ChevronRight />,
+      icon: TrashIcon, bg: 'bg-orange-100', ic: 'text-orange-600',
+      label: 'Clear Cache', right: <Chevron />,
       onClick: () => { localStorage.clear(); toast('Cache cleared', 'success'); },
     },
   ];
 
   return (
     <div className="max-w-lg mx-auto pb-24 animate-fade-in">
-      {/* Avatar + Name */}
-      <div className="text-center py-6 px-4">
-        <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500 flex items-center justify-center text-3xl font-bold text-white mb-3 shadow-lg shadow-emerald-500/20">
-          {user.avatar
-            ? <img src={user.avatar} className="w-full h-full object-cover rounded-full" alt="" />
-            : initial}
+      {/* Avatar */}
+      <div className="flex flex-col items-center py-6 px-4">
+        <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-3xl font-bold text-white shadow-lg shadow-emerald-500/20 mb-3 overflow-hidden">
+          {user.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt="" /> : initial}
         </div>
         <h2 className="text-xl font-bold text-gray-900">{user.username}</h2>
         <p className="text-gray-500 text-sm capitalize">{user.role || 'freelancer'}</p>
-        {user.role === 'admin' && (
-          <span className="mt-1 inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-semibold">Admin</span>
-        )}
       </div>
 
       {/* Connects */}
@@ -120,38 +81,40 @@ export default function ProfilePage() {
           <span className="text-3xl">⚡</span>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {[[10, 1], [50, 4.5], [100, 8]].map(([qty, pi]) => (
+          {CONNECT_PACKAGES.map(({ connects: qty, price }) => (
             <button
               key={qty}
-              onClick={() => handleBuyConnects(qty as number, pi as number)}
-              disabled={buyingConnects}
+              onClick={() => buyConnects(qty, price)}
+              disabled={buying}
               className="py-2 rounded-xl bg-white border border-emerald-200 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-60 shadow-sm"
             >
-              {qty} for {pi}π
+              {qty} for {price}π
             </button>
           ))}
         </div>
         {!isPiBrowser() && (
-          <p className="text-xs text-gray-400 mt-2 text-center">Open in Pi Browser to buy Connects</p>
+          <p className="text-xs text-gray-400 mt-2 text-center">Open in Pi Browser to buy</p>
         )}
       </div>
 
-      {/* Settings list */}
+      {/* Settings rows */}
       <div className="mx-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
-        {settingsRows.map((row, i) => (
+        {rows.map((r, i) => (
           <button
-            key={row.label}
-            onClick={row.onClick}
-            className={`w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors ${i < settingsRows.length - 1 ? 'border-b border-gray-50' : ''}`}
+            key={r.label}
+            onClick={r.onClick}
+            className={`w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors ${
+              i < rows.length - 1 ? 'border-b border-gray-50' : ''
+            }`}
           >
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${row.bg} ${row.color}`}>
-              <row.icon className="w-5 h-5" />
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${r.bg}`}>
+              <r.icon className={`w-5 h-5 ${r.ic}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">{row.label}</p>
-              {row.sublabel && <p className="text-xs text-gray-400">{row.sublabel}</p>}
+              <p className="text-sm font-medium text-gray-900">{r.label}</p>
+              {r.sub && <p className="text-xs text-gray-400">{r.sub}</p>}
             </div>
-            {row.right}
+            {r.right}
           </button>
         ))}
       </div>
@@ -159,8 +122,8 @@ export default function ProfilePage() {
       {/* Logout */}
       <div className="mx-4 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
         <button
-          onClick={() => logout()}
-          className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-red-50 transition-colors"
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 transition-colors"
         >
           <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
             <LogOutIcon className="w-5 h-5 text-red-500" />
@@ -178,22 +141,27 @@ export default function ProfilePage() {
   );
 }
 
-function ChevronRight() {
+function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
   return (
-    <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M9 18l6-6-6-6"/>
-    </svg>
+    <button
+      onClick={e => { e.stopPropagation(); onChange(!on); }}
+      className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${on ? 'bg-emerald-500' : 'bg-gray-300'}`}
+    >
+      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${on ? 'left-[26px]' : 'left-0.5'}`} />
+    </button>
   );
 }
-
+function Chevron() {
+  return <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>;
+}
 function ClockIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
 }
 function SendIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
 }
-function MoonIcon({ className }: { className?: string }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+function SunIcon({ className }: { className?: string }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
 }
 function GlobeIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;

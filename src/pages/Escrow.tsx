@@ -1,33 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { getEscrows, releaseEscrow, cancelEscrow } from '../lib/api';
-import type { Escrow } from '../types';
-import { useToastCtx } from '../App';
-import EmptyState from '../components/EmptyState';
-import { SkeletonCard } from '../components/Skeleton';
+import { toast } from '../components/Toast';
 
-type Tab = 'active' | 'done';
+interface Escrow { id: number; job_title?: string; amount: number; status: string; client_username?: string; freelancer_username?: string; }
 
-const STATUS_ICON: Record<string, string> = {
-  pending: '⏳',
-  funded: '🔒',
-  released: '✅',
-  refunded: '↩️',
-  disputed: '⚠️',
+const STATUS_STYLE: Record<string, string> = {
+  pending:  'bg-amber-100 text-amber-600',
+  funded:   'bg-emerald-100 text-emerald-600',
+  released: 'bg-blue-100 text-blue-600',
+  refunded: 'bg-gray-100 text-gray-500',
+  disputed: 'bg-red-100 text-red-500',
 };
-
-const STATUS_COLOR: Record<string, string> = {
-  pending: 'text-amber-400',
-  funded: 'text-emerald-400',
-  released: 'text-blue-400',
-  refunded: 'text-slate-400',
-  disputed: 'text-red-400',
-};
+const STATUS_ICON: Record<string, string> = { pending:'⏳', funded:'🔒', released:'✅', refunded:'↩️', disputed:'⚠️' };
 
 export default function EscrowPage() {
-  const { toast } = useToastCtx();
   const [escrows, setEscrows] = useState<Escrow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>('active');
+  const [tab, setTab] = useState<'active' | 'done'>('active');
   const [acting, setActing] = useState<number | null>(null);
 
   const load = () => {
@@ -48,99 +37,89 @@ export default function EscrowPage() {
 
   const doRelease = async (id: number) => {
     setActing(id);
-    try {
-      await releaseEscrow(id);
-      toast('Escrow released! Funds sent to freelancer.', 'success');
-      load();
-    } catch (e: any) { toast(e.message || 'Failed to release', 'error'); }
+    try { await releaseEscrow(id); toast('Released! Funds sent.', 'success'); load(); }
+    catch (e: any) { toast(e.message || 'Failed', 'error'); }
     finally { setActing(null); }
   };
 
   const doCancel = async (id: number) => {
     setActing(id);
-    try {
-      await cancelEscrow(id);
-      toast('Escrow cancelled.', 'success');
-      load();
-    } catch (e: any) { toast(e.message || 'Failed to cancel', 'error'); }
+    try { await cancelEscrow(id); toast('Cancelled. Funds refunded.', 'success'); load(); }
+    catch (e: any) { toast(e.message || 'Failed', 'error'); }
     finally { setActing(null); }
   };
 
   return (
-    <div className="max-w-lg mx-auto p-4 pb-24 animate-fade-in">
-      {/* Info banner */}
-      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-4 flex items-start gap-3">
-        <span className="text-2xl">🔒</span>
-        <div>
-          <p className="font-semibold text-white text-sm">Secure Payments</p>
-          <p className="text-xs text-slate-400 mt-0.5">Funds are held in escrow until you approve delivery. Both parties are protected.</p>
-        </div>
-      </div>
-
-      {/* Tabs */}
+    <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24">
       <div className="flex gap-2 mb-4">
-        {(['active', 'done'] as Tab[]).map(t => (
+        {(['active', 'done'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-              tab === t ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400 border border-slate-700'
+            className={`flex-1 py-2.5 rounded-2xl text-sm font-semibold transition-colors ${
+              tab === t ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
             }`}
           >
-            {t === 'active' ? `Active (${escrows.filter(e => ['pending','funded','disputed'].includes(e.status)).length})` : 'Completed'}
+            {t === 'active' ? 'Active' : 'Completed'}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}</div>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 skeleton rounded-2xl" />)}
+        </div>
       ) : filtered.length === 0 ? (
-        <EmptyState icon="🔒" title={tab === 'active' ? 'No active escrows' : 'No completed escrows'} subtitle="Escrows are created when you hire a freelancer" />
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <span className="text-5xl mb-3">🔒</span>
+          <p className="font-semibold text-gray-900">No escrows</p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(e => (
-            <div key={e.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{STATUS_ICON[e.status] || '⏳'}</span>
-                    <span className={`font-semibold text-sm ${STATUS_COLOR[e.status] || 'text-slate-400'}`}>
-                      {e.status.charAt(0).toUpperCase() + e.status.slice(1)}
-                    </span>
+          {filtered.map(e => {
+            const statusCls = STATUS_STYLE[e.status] || STATUS_STYLE.pending;
+            return (
+              <div key={e.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900 leading-snug line-clamp-2">
+                      {e.job_title || `Escrow #${e.id}`}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {e.client_username && `@${e.client_username}`}
+                      {e.freelancer_username && ` → @${e.freelancer_username}`}
+                    </p>
                   </div>
-                  {e.job_title && <p className="text-white font-semibold text-sm mt-1">{e.job_title}</p>}
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {e.client_name && `Client: @${e.client_name}`}
-                    {e.client_name && e.freelancer_name && ' · '}
-                    {e.freelancer_name && `Freelancer: @${e.freelancer_name}`}
-                  </p>
+                  <span className="text-emerald-500 font-bold shrink-0">{e.amount} π</span>
                 </div>
-                <span className="text-emerald-400 font-bold text-lg shrink-0">{e.amount} π</span>
-              </div>
 
-              {e.status === 'funded' && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => doRelease(e.id)}
-                    disabled={acting === e.id}
-                    className="flex-1 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-bold disabled:opacity-60"
-                  >
-                    {acting === e.id ? '…' : '✓ Release Payment'}
-                  </button>
-                  <button
-                    onClick={() => doCancel(e.id)}
-                    disabled={acting === e.id}
-                    className="flex-1 py-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/30 text-sm font-semibold disabled:opacity-60"
-                  >
-                    Dispute
-                  </button>
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statusCls}`}>
+                    {STATUS_ICON[e.status]} {e.status}
+                  </span>
+
+                  {e.status === 'funded' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => doCancel(e.id)}
+                        disabled={acting === e.id}
+                        className="text-xs px-3 py-1.5 rounded-xl bg-red-100 text-red-500 font-semibold disabled:opacity-60"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => doRelease(e.id)}
+                        disabled={acting === e.id}
+                        className="text-xs px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-semibold disabled:opacity-60"
+                      >
+                        Release
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-              {e.status === 'pending' && (
-                <p className="text-xs text-amber-400">Waiting for freelancer to fund escrow via Pi payment…</p>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

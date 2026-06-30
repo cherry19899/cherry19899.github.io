@@ -1,122 +1,125 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import type { User } from './types';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import type { User } from './hooks/useAuth';
 import { apiFetch } from './lib/api';
+import { ensurePiInit } from './lib/pi';
+import { useToastFn, ToastContainer } from './components/Toast';
+import Header from './components/Header';
+import BottomNav from './components/BottomNav';
 
-// Pages
-import LoginPage from './pages/Login';
-import HomePage from './pages/Home';
-import JobDetailPage from './pages/JobDetail';
-import PostJobPage from './pages/PostJob';
-import ChatPage from './pages/Chat';
-import ChatRoomPage from './pages/ChatRoom';
-import ProfilePage from './pages/Profile';
-import AdminPage from './pages/Admin';
+import LoginPage        from './pages/Login';
+import HomePage         from './pages/Home';
+import PostJobPage      from './pages/PostJob';
+import ChatPage         from './pages/Chat';
+import ChatRoomPage     from './pages/ChatRoom';
+import ProfilePage      from './pages/Profile';
+import AdminPage        from './pages/Admin';
 import NotificationsPage from './pages/Notifications';
-import MyJobsPage from './pages/MyJobs';
-import EscrowPage from './pages/Escrow';
+import MyJobsPage       from './pages/MyJobs';
+import EscrowPage       from './pages/Escrow';
+import JobDetailPage    from './pages/JobDetail';
 
-// Components
-import Layout from './components/Layout';
-import Toast, { useToast } from './components/Toast';
+// ─── Context ─────────────────────────────────────────────────────────────────
 
-// ── Auth context ──────────────────────────────────────────────────────────────
-interface AuthCtx {
+interface AppCtx {
   user: User | null;
-  loading: boolean;
   setUser: (u: User | null) => void;
-  updateUser: (u: Partial<User>) => void;
+  updateUser: (p: Partial<User>) => void;
   logout: () => void;
   chatUnread: number;
   notifUnread: number;
   refreshUnread: () => void;
 }
-export const AuthContext = createContext<AuthCtx>({
-  user: null, loading: true,
-  setUser: () => {}, updateUser: () => {}, logout: () => {},
+
+const Ctx = createContext<AppCtx>({
+  user: null, setUser: () => {}, updateUser: () => {}, logout: () => {},
   chatUnread: 0, notifUnread: 0, refreshUnread: () => {},
 });
-export const useAppAuth = () => useContext(AuthContext);
 
-// ── Toast context ─────────────────────────────────────────────────────────────
-interface ToastCtx { toast: (msg: string, type?: 'success' | 'error' | 'info') => void; }
-export const ToastContext = createContext<ToastCtx>({ toast: () => {} });
-export const useToastCtx = () => useContext(ToastContext);
+export const useAppCtx = () => useContext(Ctx);
 
-// ── Protected route ───────────────────────────────────────────────────────────
+// ─── Layout wrapper for authenticated pages ───────────────────────────────────
+
+function AppLayout() {
+  return (
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+      <Header />
+      <main className="flex-1 pb-16">
+        <Outlet />
+      </main>
+      <BottomNav />
+    </div>
+  );
+}
+
 function Protected({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const { user, loading } = useAppAuth();
-  if (loading) return null;
+  const { user } = useAppCtx();
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
-// ── Scroll to top on route change ────────────────────────────────────────────
-function ScrollReset() {
+function ScrollTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
 }
 
-// ── Root app ──────────────────────────────────────────────────────────────────
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
 export default function App() {
   const auth = useAuth();
-  const { toasts, toast, dismiss } = useToast();
+  const { toasts, toast } = useToastFn();
   const [chatUnread, setChatUnread] = useState(0);
   const [notifUnread, setNotifUnread] = useState(0);
 
-  const refreshUnread = () => {
+  // Make toast globally accessible
+  (window as any).__wpToast = toast;
+
+  useEffect(() => { ensurePiInit(); }, []);
+
+  const refreshUnread = useCallback(() => {
     if (!auth.user) return;
     apiFetch('/api/chat/unread').then((d: any) => setChatUnread(d?.count || d?.unread_count || 0)).catch(() => {});
     apiFetch('/api/notifications/unread-count').then((d: any) => setNotifUnread(d?.unread_count || d?.count || 0)).catch(() => {});
-  };
+  }, [auth.user?.uid]);
 
   useEffect(() => {
     if (!auth.user) return;
     refreshUnread();
-    const iv = setInterval(refreshUnread, 30000);
+    const iv = setInterval(refreshUnread, 30_000);
     return () => clearInterval(iv);
   }, [auth.user?.uid]);
 
   return (
-    <AuthContext.Provider value={{ ...auth, chatUnread, notifUnread, refreshUnread }}>
-      <ToastContext.Provider value={{ toast }}>
-        <HashRouter>
-          <ScrollReset />
-          <Routes>
-            <Route path="/login" element={
-              auth.user ? <Navigate to="/" replace /> : <LoginPage />
-            } />
+    <Ctx.Provider value={{ ...auth, chatUnread, notifUnread, refreshUnread }}>
+      <ScrollTop />
+      <Routes>
+        <Route path="/login" element={
+          auth.user ? <Navigate to="/" replace /> : <LoginPage />
+        } />
 
-            {/* All authenticated routes wrapped in Layout */}
-            <Route path="/" element={<Protected><Layout /></Protected>}>
-              <Route index element={<HomePage />} />
-              <Route path="job/:id" element={<JobDetailPage />} />
-              <Route path="post-job" element={<PostJobPage />} />
-              <Route path="chat" element={<ChatPage />} />
-              <Route path="chat/:id" element={<ChatRoomPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="my-jobs" element={<MyJobsPage />} />
-              <Route path="escrow" element={<EscrowPage />} />
-              <Route path="admin" element={
-                <Protected adminOnly><AdminPage /></Protected>
-              } />
-            </Route>
+        {/* Pages with their own full layout (Header + BottomNav embedded) */}
+        <Route path="/post-job" element={<Protected><PostJobPage /></Protected>} />
+        <Route path="/chat/:id" element={<Protected><ChatRoomPage /></Protected>} />
+        <Route path="/job/:id" element={<Protected><JobDetailPage /></Protected>} />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </HashRouter>
+        {/* Pages inside shared AppLayout */}
+        <Route element={<Protected><AppLayout /></Protected>}>
+          <Route path="/"             element={<HomePage />} />
+          <Route path="/chat"         element={<ChatPage />} />
+          <Route path="/my-jobs"      element={<MyJobsPage />} />
+          <Route path="/escrow"       element={<EscrowPage />} />
+          <Route path="/profile"      element={<ProfilePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/admin"        element={<Protected adminOnly><AdminPage /></Protected>} />
+        </Route>
 
-        {/* Global toast notifications */}
-        <div className="fixed top-4 left-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-sm mx-auto">
-          {toasts.map(t => (
-            <Toast key={t.id} {...t} onDismiss={dismiss} />
-          ))}
-        </div>
-      </ToastContext.Provider>
-    </AuthContext.Provider>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      <ToastContainer toasts={toasts} />
+    </Ctx.Provider>
   );
 }
