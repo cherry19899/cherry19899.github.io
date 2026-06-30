@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, Component, ErrorInfo, ReactNode } from 'react';
 import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import type { User } from './hooks/useAuth';
@@ -19,6 +19,28 @@ import NotificationsPage from './pages/Notifications';
 import MyJobsPage       from './pages/MyJobs';
 import EscrowPage       from './pages/Escrow';
 import JobDetailPage    from './pages/JobDetail';
+
+// ─── Error Boundary ───────────────────────────────────────────────────────────
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(e: Error) { return { error: e.message }; }
+  componentDidCatch(e: Error, info: ErrorInfo) { console.error('App error:', e, info); }
+  render() {
+    if (this.state.error) return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+        <span className="text-5xl mb-4">⚠️</span>
+        <p className="font-bold text-gray-900 mb-2">Something went wrong</p>
+        <p className="text-sm text-gray-500 mb-6 break-all">{this.state.error}</p>
+        <button onClick={() => { this.setState({ error: null }); window.location.reload(); }}
+          className="px-6 py-3 rounded-full bg-emerald-500 text-white font-semibold">
+          Reload
+        </button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
@@ -93,6 +115,7 @@ export default function App() {
   }, [auth.user?.uid]);
 
   return (
+    <ErrorBoundary>
     <Ctx.Provider value={{ ...auth, chatUnread, notifUnread, refreshUnread }}>
       <ScrollTop />
       <Routes>
@@ -125,5 +148,6 @@ export default function App() {
 
       <ToastContainer toasts={toasts} />
     </Ctx.Provider>
+    </ErrorBoundary>
   );
 }

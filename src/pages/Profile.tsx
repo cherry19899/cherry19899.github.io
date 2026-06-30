@@ -53,11 +53,6 @@ export default function ProfilePage() {
       onClick: () => nav('/my-jobs'),
     },
     {
-      icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
-      label: tr.lightMode,
-      right: <Toggle on={true} onChange={() => {}} />,
-    },
-    {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
       label: tr.language, sub: currentLang() === 'ru' ? 'Русский' : 'English',
       right: <Chevron />,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
+import { currentLang, setLang } from '../lib/i18n';
 
 export default function Header({ back }: { back?: boolean }) {
   const nav = useNavigate();
@@ -43,20 +44,13 @@ export default function Header({ back }: { back?: boolean }) {
             )}
           </button>
 
-          {/* Globe */}
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="2" y1="12" x2="22" y2="12"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-            </svg>
-          </button>
-
-          {/* Moon */}
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
+          {/* Globe — language toggle */}
+          <button
+            onClick={() => setLang(currentLang() === 'ru' ? 'en' : 'ru')}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
+            title={currentLang() === 'ru' ? 'Switch to English' : 'Переключить на русский'}
+          >
+            <span className="text-white text-xs font-bold">{currentLang() === 'ru' ? 'EN' : 'RU'}</span>
           </button>
 
           {/* Avatar */}

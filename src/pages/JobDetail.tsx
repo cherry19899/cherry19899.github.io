@@ -30,7 +30,7 @@ export default function JobDetailPage() {
   const [acting, setActing] = useState<string | null>(null);
   const [hiringId, setHiringId] = useState<number | null>(null);
 
-  const isOwner = job && user && (job.client_uid === user.uid || job.client_id === user.uid);
+  const isOwner = job && user && job.posted_by === user.uid;
 
   useEffect(() => {
     if (!id) return;
@@ -73,7 +73,7 @@ export default function JobDetailPage() {
     toast(`Hiring @${app.applicant_username}…`, 'info');
 
     createPiPayment(
-      job.budget,
+      Number(job.budget),
       `Hire: ${job.title}`,
       { type: 'hire', job_id: id, application_id: app.id },
       {
@@ -130,7 +130,7 @@ export default function JobDetailPage() {
   );
 
   const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
-  const fee = +(job.budget * 0.02).toFixed(2);
+  const fee = +(Number(job.budget) * 0.02).toFixed(2);
 
   return (
     <div className="flex flex-col min-h-full">
@@ -183,9 +183,9 @@ export default function JobDetailPage() {
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  @{job.client_username || 'unknown'}
+                  @{job.posted_by_name || 'unknown'}
                 </span>
-                <span>{job.applicants_count ?? 0} applicants</span>
+                <span>{job.applications ?? 0} applicants</span>
                 <span>{timeAgo(job.created_at)}</span>
               </div>
             </div>
@@ -211,11 +211,11 @@ export default function JobDetailPage() {
 
             {/* Fee breakdown */}
             <div className="bg-gray-50 rounded-2xl p-4 mb-5 text-sm space-y-1.5">
-              <div className="flex justify-between text-gray-500"><span>Budget</span><span className="text-gray-900 font-medium">{job.budget} π</span></div>
+              <div className="flex justify-between text-gray-500"><span>Budget</span><span className="text-gray-900 font-medium">{Number(job.budget)} π</span></div>
               <div className="flex justify-between text-gray-400"><span>Platform fee (2%)</span><span>{fee} π</span></div>
               <div className="border-t border-gray-200 pt-1.5 flex justify-between font-bold">
                 <span className="text-gray-900">Total</span>
-                <span className="text-emerald-500">{(job.budget + fee).toFixed(2)} π</span>
+                <span className="text-emerald-500">{(Number(job.budget) + fee).toFixed(2)} π</span>
               </div>
             </div>
 
@@ -265,7 +265,7 @@ export default function JobDetailPage() {
                 onClick={() => { setView('applicants'); loadApps(); }}
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30"
               >
-                View Applicants ({job.applicants_count ?? 0})
+                View Applicants ({job.applications ?? 0})
               </button>
             )}
           </>
