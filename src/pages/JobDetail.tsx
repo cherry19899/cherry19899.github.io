@@ -1,220 +1,230 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useJob, useApplyJob } from '../hooks/useJobs';
-import { useAuthStore } from '../store/authStore';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  Briefcase,
-  MessageCircle,
-  User,
-  Loader2,
-  CheckCircle
-} from 'lucide-react';
+import { getJob, getApplicationsForJob, applyToJob, hireApplication, startChat } from '../lib/api';
+import type { Job, Application } from '../types';
+import { useAppAuth, useToastCtx } from '../App';
+import Modal from '../components/Modal';
+import { CAT_COLORS } from '../lib/constants';
 
-export default function JobDetail() {
+function timeAgo(d: string) {
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 2) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuthStore();
-  const { data, isLoading } = useJob(id!);
-  const applyMutation = useApplyJob();
-  const [showApplyModal, setShowApplyModal] = useState(false);
-  const [applyMessage, setApplyMessage] = useState('');
+  const nav = useNavigate();
+  const { user } = useAppAuth();
+  const { toast } = useToastCtx();
+  const [job, setJob] = useState<Job | null>(null);
+  const [apps, setApps] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [applying, setApplying] = useState(false);
+  const [showApply, setShowApply] = useState(false);
+  const [message, setMessage] = useState('');
+  const [bidAmount, setBidAmount] = useState('');
 
-  const job = data?.job;
-  const applications = data?.applications || [];
+  const isOwner = user && (user.uid === job?.posted_by || `pi_${job?.posted_by}` === user.uid || job?.posted_by === user.uid);
+  const isAdmin = user?.role === 'admin';
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!id) return;
+    Promise.all([
+      getJob(id).catch(() => null),
+      getApplicationsForJob(id).catch(() => []),
+    ]).then(([j, a]) => {
+      setJob(j?.job || j);
+      setApps(a?.applications || a || []);
+    }).finally(() => setLoading(false));
+  }, [id]);
+
+  const handleApply = async () => {
+    if (!user) { toast('Sign in to apply', 'error'); return; }
+    setApplying(true);
+    try {
+      await applyToJob(id!, { message, bid_amount: bidAmount ? Number(bidAmount) : undefined });
+      toast('Application sent!', 'success');
+      setShowApply(false);
+      setMessage(''); setBidAmount('');
+      // refresh apps
+      getApplicationsForJob(id!).then((a: any) => setApps(a?.applications || a || [])).catch(() => {});
+    } catch (e: any) {
+      toast(e.message || 'Failed to apply', 'error');
+    } finally { setApplying(false); }
+  };
+
+  const handleHire = async (app: Application) => {
+    try {
+      await hireApplication(id!, { application_id: app.id, freelancer_id: app.freelancer_id });
+      toast(`Hired @${app.freelancer_username}!`, 'success');
+      setJob(j => j ? { ...j, status: 'in_progress', hired_freelancer_id: app.freelancer_id } : j);
+      setApps(prev => prev.map(a => a.id === app.id ? { ...a, status: 'accepted' } : a));
+    } catch (e: any) { toast(e.message || 'Failed to hire', 'error'); }
+  };
+
+  const handleChat = async (withUid: string) => {
+    try {
+      const d = await startChat({ job_id: Number(id), other_uid: withUid });
+      nav(`/chat/${d.room_id || d.id}`);
+    } catch (e: any) { toast(e.message || 'Failed to open chat', 'error'); }
+  };
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 size={32} className="text-emerald-400 animate-spin" />
+      <div className="max-w-lg mx-auto p-4 space-y-4 animate-pulse">
+        <div className="h-8 bg-slate-800 rounded w-3/4" />
+        <div className="h-4 bg-slate-800 rounded w-1/4" />
+        <div className="h-24 bg-slate-800 rounded" />
       </div>
     );
   }
 
   if (!job) {
     return (
-      <div className="p-4 text-center">
+      <div className="flex flex-col items-center justify-center pt-20 gap-4">
         <p className="text-slate-400">Job not found</p>
-        <button onClick={() => navigate('/')} className="btn-primary mt-4">Go Home</button>
+        <button onClick={() => nav('/')} className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-sm font-semibold">Go Home</button>
       </div>
     );
   }
 
-  const isOwner = user?.id === job.posted_by;
-  const hasApplied = applications.some((a: any) => a.freelancer_id === user?.id);
-
-  const handleApply = async () => {
-    if (!applyMessage.trim()) return;
-    await applyMutation.mutateAsync({ jobId: id!, message: applyMessage });
-    setShowApplyModal(false);
-    setApplyMessage('');
-  };
+  const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
+  const alreadyApplied = apps.some(a => a.freelancer_id === user?.uid || a.freelancer_id === user?.id);
 
   return (
-    <div className="pb-4">
-      {/* Header Image / Gradient */}
-      <div className="h-32 bg-gradient-to-br from-emerald-600 to-emerald-900 relative">
-        <button 
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 p-2 rounded-full bg-black/30 backdrop-blur text-white"
+    <div className="max-w-lg mx-auto p-4 pb-28 space-y-4 animate-fade-in">
+      {/* Back */}
+      <button onClick={() => nav(-1)} className="flex items-center gap-2 text-slate-400 text-sm">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        Back
+      </button>
+
+      {/* Main card */}
+      <div className="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-4">
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="font-black text-xl text-white leading-tight flex-1">{job.title}</h1>
+          <span className="text-emerald-400 font-bold text-xl shrink-0">{job.budget} π</span>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${catColor}`}>{job.category}</span>
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+            job.status === 'open' ? 'border-emerald-500/40 text-emerald-400' :
+            job.status === 'in_progress' ? 'border-blue-500/40 text-blue-400' :
+            'border-slate-600 text-slate-400'
+          }`}>{job.status.replace('_', ' ')}</span>
+          {job.is_urgent && <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/15 text-red-400 font-semibold">Urgent</span>}
+        </div>
+
+        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+
+        {job.skills && job.skills.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {(Array.isArray(job.skills) ? job.skills : [job.skills])
+              .flatMap(s => (typeof s === 'string' ? s.split(',').map(x => x.trim()) : [s]))
+              .filter(Boolean)
+              .map(s => (
+                <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">{s}</span>
+              ))
+            }
+          </div>
+        )}
+
+        <div className="text-xs text-slate-500 flex items-center gap-3 flex-wrap">
+          <span>@{job.client_username || 'unknown'}</span>
+          <span>{job.applicants_count ?? 0} applicants</span>
+          {(job.apply_cost ?? 0) > 0 && <span>{job.apply_cost} connects to apply</span>}
+          <span>{timeAgo(job.created_at)}</span>
+        </div>
+      </div>
+
+      {/* Apply button */}
+      {job.status === 'open' && user && !isOwner && (
+        <button
+          onClick={() => alreadyApplied ? toast('Already applied!', 'info') : setShowApply(true)}
+          className={`w-full py-4 rounded-xl font-bold text-white transition-colors ${
+            alreadyApplied ? 'bg-slate-700 text-slate-400 cursor-default' : 'bg-emerald-500 hover:bg-emerald-600'
+          }`}
         >
-          <ArrowLeft size={20} />
+          {alreadyApplied ? '✓ Already Applied' : 'Apply Now'}
         </button>
-      </div>
+      )}
 
-      <div className="px-4 -mt-8 relative z-10">
-        {/* Status Badge */}
-        <div className="flex justify-between items-start mb-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-            job.status === 'open' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-            job.status === 'in_progress' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-            job.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
-            'bg-red-500/20 text-red-400 border-red-500/30'
-          }`}>
-            {job.status.replace('_', ' ')}
-          </span>
-          <span className="text-emerald-400 font-bold text-lg">{job.budget} Pi</span>
-        </div>
+      {/* Chat with hired freelancer (job owner) */}
+      {isOwner && job.status === 'in_progress' && job.hired_freelancer_id && (
+        <button
+          onClick={() => handleChat(job.hired_freelancer_id!)}
+          className="w-full py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold transition-colors"
+        >
+          💬 Chat with freelancer
+        </button>
+      )}
 
-        {/* Title */}
-        <h1 className="text-2xl font-bold text-white mb-2">{job.title}</h1>
-
-        {/* Client Info */}
-        <div className="flex items-center gap-3 mb-6 p-3 rounded-xl bg-slate-800/50 border border-slate-700">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <User size={18} className="text-emerald-400" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-white">{job.posted_by_name || 'Anonymous'}</p>
-            <p className="text-xs text-slate-400">Client</p>
-          </div>
-        </div>
-
-        {/* Meta Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="card p-3">
-            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-              <Briefcase size={14} />
-              Category
-            </div>
-            <p className="text-white font-medium">{job.category}</p>
-          </div>
-          {job.location && (
-            <div className="card p-3">
-              <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                <MapPin size={14} />
-                Location
-              </div>
-              <p className="text-white font-medium">{job.location}</p>
-            </div>
-          )}
-          {job.deadline && (
-            <div className="card p-3">
-              <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                <Clock size={14} />
-                Deadline
-              </div>
-              <p className="text-white font-medium">{new Date(job.deadline).toLocaleDateString()}</p>
-            </div>
-          )}
-          <div className="card p-3">
-            <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-              <DollarSign size={14} />
-              Budget
-            </div>
-            <p className="text-white font-medium">{job.budget} Pi</p>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="card mb-6">
-          <h2 className="text-lg font-semibold text-white mb-3">Description</h2>
-          <p className="text-slate-300 whitespace-pre-wrap">{job.description}</p>
-        </div>
-
-        {/* Images */}
-        {job.images && job.images.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-white mb-3">Images</h2>
-            <div className="grid grid-cols-2 gap-2">
-              {job.images.map((img, i) => (
-                <img key={i} src={img} alt="" className="rounded-xl w-full h-40 object-cover bg-slate-700" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Applications */}
-        {isOwner && applications.length > 0 && (
-          <div className="card mb-6">
-            <h2 className="text-lg font-semibold text-white mb-3">Applications ({applications.length})</h2>
-            <div className="space-y-3">
-              {applications.map((app: any) => (
-                <div key={app.id} className="p-3 rounded-xl bg-slate-800 border border-slate-700">
-                  <div className="flex items-center gap-2 mb-2">
-                    <User size={16} className="text-emerald-400" />
-                    <span className="text-sm font-medium text-white">{app.freelancer_name || app.freelancer_id}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${
-                      app.status === 'pending' ? 'bg-amber-500/20 text-amber-400' :
-                      app.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-400' :
-                      'bg-red-500/20 text-red-400'
-                    }`}>{app.status}</span>
-                  </div>
-                  <p className="text-sm text-slate-300">{app.message}</p>
+      {/* Applications list (owner/admin) */}
+      {(isOwner || isAdmin) && apps.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="font-bold text-white">Applications ({apps.length})</h2>
+          {apps.map(app => (
+            <div key={app.id} className="bg-slate-800 rounded-xl border border-slate-700 p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-white text-sm">@{app.freelancer_username || app.freelancer_id}</span>
+                <div className="flex items-center gap-2">
+                  {app.bid_amount && <span className="text-emerald-400 font-bold text-sm">{app.bid_amount} π</span>}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    app.status === 'accepted' ? 'bg-emerald-500/20 text-emerald-400' :
+                    app.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
+                    'bg-amber-500/20 text-amber-400'
+                  }`}>{app.status}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Apply Button */}
-        {!isOwner && job.status === 'open' && (
-          <div className="sticky bottom-20 z-30">
-            {hasApplied ? (
-              <div className="flex items-center justify-center gap-2 py-3 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
-                <CheckCircle size={20} className="text-emerald-400" />
-                <span className="text-emerald-400 font-medium">You have applied</span>
               </div>
-            ) : (
-              <button 
-                onClick={() => setShowApplyModal(true)}
-                className="btn-primary w-full flex items-center justify-center gap-2"
-              >
-                <MessageCircle size={18} />
-                Apply Now
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Apply Modal */}
-      {showApplyModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-          <div className="bg-slate-800 rounded-2xl w-full max-w-md p-4 border border-slate-700">
-            <h3 className="text-lg font-bold text-white mb-3">Apply for this job</h3>
-            <textarea
-              value={applyMessage}
-              onChange={(e) => setApplyMessage(e.target.value)}
-              placeholder="Write your cover letter..."
-              className="input h-32 resize-none mb-3"
-            />
-            <div className="flex gap-2">
-              <button onClick={() => setShowApplyModal(false)} className="btn-secondary flex-1">Cancel</button>
-              <button 
-                onClick={handleApply}
-                disabled={!applyMessage.trim() || applyMutation.isPending}
-                className="btn-primary flex-1 flex items-center justify-center gap-2"
-              >
-                {applyMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'Submit'}
-              </button>
+              {app.message && <p className="text-slate-400 text-xs leading-relaxed">{app.message}</p>}
+              {app.status === 'pending' && isOwner && job.status === 'open' && (
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => handleHire(app)} className="flex-1 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">
+                    Hire
+                  </button>
+                  <button onClick={() => handleChat(app.freelancer_id)} className="flex-1 py-2 rounded-lg bg-slate-700 text-white text-xs font-semibold">
+                    Chat
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
+          ))}
         </div>
       )}
+
+      {/* Apply modal */}
+      <Modal open={showApply} onClose={() => setShowApply(false)} title="Apply to job">
+        <div className="space-y-4">
+          <textarea
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            placeholder="Introduce yourself and describe your approach…"
+            rows={4}
+            className="w-full bg-slate-700 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-emerald-500"
+          />
+          <input
+            value={bidAmount}
+            onChange={e => setBidAmount(e.target.value)}
+            type="number"
+            placeholder={`Bid in Pi (budget: ${job.budget} π)`}
+            className="w-full bg-slate-700 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          />
+          <button
+            onClick={handleApply}
+            disabled={applying || !message.trim()}
+            className="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold disabled:opacity-60"
+          >
+            {applying ? 'Sending…' : 'Send Application'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

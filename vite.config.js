@@ -4,22 +4,22 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [tailwindcss(), react()],
-  resolve: {
-    extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
-  },
+  base: '/',
   build: {
-    outDir: 'dist-build',
+    outDir: 'dist',
+    emptyOutDir: true,
+    sourcemap: false,
     rollupOptions: {
-      input: 'src/main.tsx',
       output: {
-        format: 'iife',
-        name: 'WorkProApp',
-        entryFileNames: 'app-v200.js',
-      }
+        manualChunks: (id) => {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'vendor';
+          if (id.includes('node_modules/react-router')) return 'router';
+          if (id.includes('node_modules/socket.io')) return 'socket';
+        },
+      },
     },
-    minify: true,
   },
   define: {
     'process.env.NODE_ENV': '"production"',
-  }
+  },
 });

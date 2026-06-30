@@ -1,79 +1,174 @@
-import { useState } from 'react';
-import { useJobs } from '../hooks/useJobs';
-import JobCard from '../components/JobCard';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getJobs } from '../lib/api';
+import type { Job } from '../types';
+import { useAppAuth } from '../App';
+import { CATEGORIES, CAT_COLORS } from '../lib/constants';
+import { SkeletonCard } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
-import { Search, Filter, Briefcase, Loader2 } from 'lucide-react';
 
-const categories = ['All', 'Development', 'Design', 'Writing', 'Marketing', 'Other'];
+function timeAgo(d: string) {
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 2) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
-export default function Home() {
+export default function HomePage() {
+  const { user } = useAppAuth();
+  const nav = useNavigate();
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('All');
+  const [sort, setSort] = useState('newest');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const { data: jobs, isLoading, error } = useJobs({
-    category: category === 'All' ? undefined : category,
-  });
+  const load = useCallback(async (p = 1, replace = true) => {
+    if (p === 1) setLoading(true);
+    try {
+      const params = new URLSearchParams({ page: String(p), limit: '20', sort });
+      if (category !== 'all') params.set('category', category);
+      if (search) params.set('search', search);
+      const data = await getJobs(params.toString());
+      const list: Job[] = data?.jobs || data || [];
+      setJobs(prev => replace ? list : [...prev, ...list]);
+      setHasMore(list.length === 20);
+      setPage(p);
+    } catch {}
+    finally { setLoading(false); }
+  }, [category, sort, search]);
 
-  const filteredJobs = (jobs || []).filter(job => 
-    job.title.toLowerCase().includes(search.toLowerCase()) ||
-    job.description.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => load(1, true), search ? 300 : 0);
+    return () => clearTimeout(debounceRef.current);
+  }, [load]);
 
   return (
-    <div className="p-4 space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input
-          type="text"
-          placeholder="Search jobs..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input pl-10"
-        />
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              category === cat
-                ? 'bg-emerald-500 text-white'
-                : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Jobs List */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="text-emerald-400 animate-spin" />
+    <div className="animate-fade-in max-w-lg mx-auto">
+      {/* Sub-header */}
+      <div className="sticky top-14 z-30 bg-slate-900/95 backdrop-blur px-4 pt-3 pb-0 border-b border-slate-800">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-xs text-slate-500">
+              {(() => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; })()}
+            </p>
+            <p className="text-lg font-black text-white">Find Work</p>
+          </div>
+          {user && (
+            <div className="text-right">
+              <p className="text-xs text-slate-500">Connects</p>
+              <p className="text-base font-bold text-emerald-400">{user.balance_connects ?? 0}</p>
+            </div>
+          )}
         </div>
-      ) : error ? (
-        <EmptyState
-          icon={<span className="text-2xl">⚠️</span>}
-          title="Error loading jobs"
-          description="Please try again later"
-        />
-      ) : filteredJobs.length === 0 ? (
-        <EmptyState
-          icon={<Briefcase size={28} />}
-          title="No jobs found"
-          description={search ? 'Try different search terms' : 'Be the first to post a job!'}
-        />
-      ) : (
-        <div className="space-y-3">
-          {filteredJobs.map(job => (
-            <JobCard key={job.id} job={job} />
+
+        {/* Search */}
+        <div className="relative mb-3">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search jobs…"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+          />
+        </div>
+
+        {/* Category pills */}
+        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+          {CATEGORIES.map(c => (
+            <button
+              key={c.key}
+              onClick={() => setCategory(c.key)}
+              className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                category === c.key ? 'bg-emerald-500 text-white' : 'bg-slate-800 border border-slate-700 text-slate-400'
+              }`}
+            >
+              {c.label}
+            </button>
           ))}
         </div>
+
+        <div className="flex items-center justify-between pb-3">
+          <p className="text-xs text-slate-500">{jobs.length} jobs</p>
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value)}
+            className="text-xs bg-slate-800 border border-slate-700 text-slate-300 rounded-lg px-2 py-1 focus:outline-none"
+          >
+            <option value="newest">Newest</option>
+            <option value="budget_high">Budget ↑</option>
+            <option value="budget_low">Budget ↓</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Job list */}
+      <div className="p-4 space-y-3">
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+          : jobs.length === 0
+            ? <EmptyState icon="🔍" title="No jobs found" subtitle="Try a different search or category" />
+            : jobs.map(job => (
+                <JobCard key={job.id} job={job} onClick={() => nav(`/job/${job.id}`)} />
+              ))
+        }
+        {!loading && hasMore && (
+          <button onClick={() => load(page + 1, false)} className="w-full py-3 text-sm text-emerald-400 font-semibold">
+            Load more
+          </button>
+        )}
+      </div>
+
+      {/* FAB */}
+      {user && (
+        <button
+          onClick={() => nav('/post-job')}
+          className="fixed bottom-20 right-4 z-30 w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30 flex items-center justify-center text-white active:scale-95 transition-transform"
+          aria-label="Post a job"
+        >
+          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
       )}
+    </div>
+  );
+}
+
+function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
+  const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
+  return (
+    <div
+      onClick={onClick}
+      className="bg-slate-800 rounded-xl border border-slate-700 p-4 space-y-3 cursor-pointer active:scale-[0.99] transition-transform shadow-sm"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-bold text-white leading-snug flex-1">{job.title}</h3>
+        <span className="text-emerald-400 font-bold text-sm shrink-0">{job.budget} π</span>
+      </div>
+      {job.description && (
+        <p className="text-slate-400 text-sm leading-relaxed line-clamp-2">{job.description}</p>
+      )}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
+        {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-400">Urgent</span>}
+        {(job.apply_cost ?? 0) > 0 && <span className="text-xs text-slate-500">{job.apply_cost} connects</span>}
+      </div>
+      <div className="flex items-center justify-between text-xs text-slate-500">
+        <span>@{job.client_username || 'unknown'}</span>
+        <div className="flex items-center gap-3">
+          <span>{job.applicants_count ?? 0} applicants</span>
+          <span>{timeAgo(job.created_at)}</span>
+        </div>
+      </div>
     </div>
   );
 }

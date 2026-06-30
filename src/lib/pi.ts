@@ -1,128 +1,133 @@
-import api from './api';
+import { apiFetch } from './api';
+import { API_BASE, OWNER_USERNAME } from './constants';
+import type { User } from '../types';
 
-declare global {
-  interface Window {
-    Pi: {
-      init: (config: { version: string; sandbox?: boolean }) => Promise<void>;
-      authenticate: (
-        scopes: string[],
-        onIncompletePayment: (payment: any) => void
-      ) => Promise<{
-        accessToken: string;
-        user: {
-          uid: string;
-          username: string;
-        };
-      }>;
-      createPayment: (payment: any) => Promise<any>;
-      completePayment: (paymentId: string) => Promise<any>;
-    };
+export const isPiBrowser = (): boolean =>
+  typeof window !== 'undefined' && typeof window.Pi !== 'undefined';
+
+let _initDone = false;
+
+/** Initialise Pi SDK with sandbox:true (testnet). Safe to call multiple times. */
+export function initPiSdk(): void {
+  if (_initDone || !isPiBrowser()) return;
+  _initDone = true;
+  try {
+    window.Pi.init({
+      version: '2.0',
+      sandbox: true,               // TESTNET — always true
+      onIncompletePaymentFound: handleIncompletePayment,
+    });
+    window._piSdkReady = true;
+    console.log('[Pi] SDK init — sandbox:true (testnet)');
+  } catch (e: any) {
+    console.error('[Pi] init error:', e?.message);
   }
 }
 
-const isPiBrowser = () => typeof window !== 'undefined' && window.Pi != null;
+async function handleIncompletePayment(payment: any): Promise<void> {
+  try {
+    const pid = payment?.identifier || payment?.paymentId || payment?.id;
+    if (!pid) return;
+    const st = payment?.status;
+    const completed = typeof st === 'string'
+      ? (st === 'developer_completed' || st === 'completed')
+      : !!(st?.developer_completed || st?.transaction_verified);
+    const endpoint = completed ? '/resolve-complete' : '/cancelled';
+    const token = localStorage.getItem('workpro_token') || '';
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    await fetch(`${API_BASE}/api/payments/${pid}${endpoint}`, {
+      method: 'POST', headers,
+    }).catch(() => {});
+  } catch {}
+}
 
-// Poll until window.Pi is available (SDK loads synchronously but in case of delay)
-const waitForPi = (timeoutMs = 10000): Promise<boolean> =>
-  new Promise((resolve) => {
-    if (isPiBrowser()) { resolve(true); return; }
-    const start = Date.now();
+export async function piAuthenticate(): Promise<User> {
+  if (!isPiBrowser()) {
+    throw new Error('Pi Browser required. Please open this app in Pi Browser.');
+  }
+  initPiSdk();
+
+  // Wait up to 8 s for Pi.init to complete
+  await new Promise<void>((res, rej) => {
+    if (window._piSdkReady) { res(); return; }
+    let n = 0;
     const id = setInterval(() => {
-      if (isPiBrowser()) { clearInterval(id); resolve(true); }
-      else if (Date.now() - start > timeoutMs) { clearInterval(id); resolve(false); }
+      if (window._piSdkReady) { clearInterval(id); res(); }
+      else if (++n > 80) { clearInterval(id); rej(new Error('Pi SDK timeout')); }
     }, 100);
   });
 
-let piInitPromise: Promise<boolean> | null = null;
-
-export const initPi = async () => {
-  const ready = await waitForPi();
-  if (!ready) {
-    console.warn('[Pi] SDK not available — not in Pi Browser');
-    return false;
-  }
-  // Singleton: prevent multiple parallel init() calls
-  if (piInitPromise) return piInitPromise;
-
-  piInitPromise = (async () => {
-    try {
-      const sandbox = /github\.io|localhost|127\.0\.0\.1/.test(window.location.hostname);
-      const token = localStorage.getItem('workpro_token') || '';
-      await window.Pi.init({
-        version: '2.0',
-        sandbox,
-        onIncompletePayment: (p: any) => {
-          try {
-            const pid = p && (p.identifier || p.paymentId || p.id);
-            if (!pid) return;
-            const st = p.status;
-            const done = typeof st === 'string'
-              ? st === 'developer_completed' || st === 'completed'
-              : !!(st && (st.developer_completed || st.transaction_verified));
-            const ep = done ? '/resolve-complete' : '/cancelled';
-            const h: Record<string, string> = { 'Content-Type': 'application/json' };
-            if (token) h['Authorization'] = `Bearer ${token}`;
-            fetch(`https://workpro-api.onrender.com/api/payments/${pid}${ep}`, {
-              method: 'POST', headers: h,
-            }).catch(() => {});
-          } catch {}
-        },
-      } as any);
-      console.log('[Pi] SDK initialized, sandbox:', sandbox);
-      return true;
-    } catch (err: any) {
-      console.error('[Pi] init failed:', err.message || err);
-      return false;
-    }
-  })();
-
-  return piInitPromise;
-};
-
-export const ensurePiInit = async () => {
-  const ok = await initPi();
-  if (!ok) throw new Error('Pi Browser required');
-};
-
-export const authenticatePi = async () => {
-  await ensurePiInit();
-
   const auth = await window.Pi.authenticate(
     ['username', 'payments'],
-    (payment) => {
-      console.log('Incomplete payment:', payment);
-    }
+    handleIncompletePayment
   );
+  if (!auth?.user?.uid) throw new Error('Pi authentication failed');
 
-  // Normalize user ID
-  let uid = auth.user.uid;
-  if (!uid.startsWith('pi_')) {
-    uid = `pi_${uid}`;
+  const uid = auth.user.uid.startsWith('pi_')
+    ? auth.user.uid
+    : `pi_${auth.user.uid}`;
+
+  const data = await apiFetch('/api/me', {
+    method: 'POST',
+    body: JSON.stringify({ uid, username: auth.user.username, accessToken: auth.accessToken }),
+  });
+
+  if (data?.token) {
+    localStorage.setItem('workpro_token', data.token);
+    localStorage.setItem('workpro_jwt', data.token);
   }
 
-  // Register/login with backend
-  const { data } = await api.post('/api/me', {
-    accessToken: auth.accessToken,
-    uid: uid,
+  const user: User = {
+    id: uid,
+    uid,
     username: auth.user.username,
-  });
+    role: data?.role || 'freelancer',
+    bio: data?.bio || '',
+    skills: data?.skills || '',
+    avatar: data?.avatar || '',
+    kyc_verified: data?.kyc_verified || false,
+    balance_pi: Number(data?.balance_pi) || 0,
+    balance_connects: Number(data?.balance_connects ?? data?.connects) || 0,
+    rating: Number(data?.rating) || 0,
+  };
+  if (user.username?.toLowerCase() === OWNER_USERNAME) user.role = 'admin';
 
-  localStorage.setItem('workpro_token', data.token);
-  localStorage.setItem('workpro_user', JSON.stringify(data.user));
+  localStorage.setItem('workpro_user', JSON.stringify(user));
+  localStorage.setItem('workpro_uid', uid);
+  return user;
+}
 
-  return data.user;
-};
+export interface PiPaymentCallbacks {
+  onApproved?: (paymentId: string) => void;
+  onCompleted?: (paymentId: string, txid: string) => void;
+  onCancelled?: (paymentId: string) => void;
+  onError?: (err: Error) => void;
+}
 
-export const createPiPayment = async (amount: number, memo: string) => {
-  await ensurePiInit();
-
-  const payment = await window.Pi.createPayment({
-    amount,
-    memo,
-    metadata: { type: 'escrow' },
-  });
-
-  return payment;
-};
-
-export { isPiBrowser };
+export function createPiPayment(
+  amount: number,
+  memo: string,
+  metadata: Record<string, any>,
+  cbs: PiPaymentCallbacks
+): void {
+  window.Pi.createPayment(
+    { amount, memo, metadata },
+    {
+      onReadyForServerApproval: (paymentId) => {
+        apiFetch('/api/payments/approve', {
+          method: 'POST',
+          body: JSON.stringify({ paymentId }),
+        }).then(() => cbs.onApproved?.(paymentId)).catch(console.error);
+      },
+      onReadyForServerCompletion: (paymentId, txid) => {
+        apiFetch('/api/payments/complete', {
+          method: 'POST',
+          body: JSON.stringify({ paymentId, txid }),
+        }).then(() => cbs.onCompleted?.(paymentId, txid)).catch(console.error);
+      },
+      onCancel: (paymentId) => cbs.onCancelled?.(paymentId),
+      onError: (error) => cbs.onError?.(error),
+    }
+  );
+}

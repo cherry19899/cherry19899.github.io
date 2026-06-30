@@ -1,166 +1,148 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../lib/api';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  ArrowLeft, 
-  Shield, 
-  Lock, 
-  Unlock, 
-  AlertTriangle,
-  Loader2,
-  CheckCircle,
-  Clock
-} from 'lucide-react';
-import { Escrow as EscrowType } from '../types';
+import React, { useState, useEffect } from 'react';
+import { getEscrows, releaseEscrow, cancelEscrow } from '../lib/api';
+import type { Escrow } from '../types';
+import { useToastCtx } from '../App';
+import EmptyState from '../components/EmptyState';
+import { SkeletonCard } from '../components/Skeleton';
+
+type Tab = 'active' | 'done';
+
+const STATUS_ICON: Record<string, string> = {
+  pending: '⏳',
+  funded: '🔒',
+  released: '✅',
+  refunded: '↩️',
+  disputed: '⚠️',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  pending: 'text-amber-400',
+  funded: 'text-emerald-400',
+  released: 'text-blue-400',
+  refunded: 'text-slate-400',
+  disputed: 'text-red-400',
+};
 
 export default function EscrowPage() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
+  const { toast } = useToastCtx();
+  const [escrows, setEscrows] = useState<Escrow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>('active');
+  const [acting, setActing] = useState<number | null>(null);
 
-  const { data: escrows, isLoading } = useQuery({
-    queryKey: ['escrows'],
-    queryFn: async () => {
-      const { data } = await api.get('/api/escrows');
-      return (data.escrows || data) as EscrowType[];
-    },
-  });
+  const load = () => {
+    setLoading(true);
+    getEscrows()
+      .then((d: any) => setEscrows(d?.escrows || d || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  };
 
-  const releaseMutation = useMutation({
-    mutationFn: async (escrowId: string) => {
-      const { data } = await api.post(`/api/escrows/${escrowId}/release`);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['escrows'] });
-    },
-  });
+  useEffect(() => { load(); }, []);
 
-  const disputeMutation = useMutation({
-    mutationFn: async (escrowId: string) => {
-      const { data } = await api.post(`/api/escrows/${escrowId}/dispute`);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['escrows'] });
-    },
-  });
-
-  const filtered = (escrows || []).filter((e: EscrowType) => 
-    activeTab === 'active' 
+  const filtered = escrows.filter(e =>
+    tab === 'active'
       ? ['pending', 'funded', 'disputed'].includes(e.status)
-      : ['released'].includes(e.status)
+      : ['released', 'refunded'].includes(e.status)
   );
 
-  const statusConfig: Record<string, { icon: any; color: string; label: string }> = {
-    pending: { icon: Clock, color: 'text-amber-400', label: 'Pending' },
-    funded: { icon: Lock, color: 'text-emerald-400', label: 'Funded' },
-    released: { icon: Unlock, color: 'text-blue-400', label: 'Released' },
-    disputed: { icon: AlertTriangle, color: 'text-red-400', label: 'Disputed' },
+  const doRelease = async (id: number) => {
+    setActing(id);
+    try {
+      await releaseEscrow(id);
+      toast('Escrow released! Funds sent to freelancer.', 'success');
+      load();
+    } catch (e: any) { toast(e.message || 'Failed to release', 'error'); }
+    finally { setActing(null); }
+  };
+
+  const doCancel = async (id: number) => {
+    setActing(id);
+    try {
+      await cancelEscrow(id);
+      toast('Escrow cancelled.', 'success');
+      load();
+    } catch (e: any) { toast(e.message || 'Failed to cancel', 'error'); }
+    finally { setActing(null); }
   };
 
   return (
-    <div className="pb-4">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/50 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-full bg-slate-800 text-slate-300">
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-lg font-bold text-white">Escrow</h1>
+    <div className="max-w-lg mx-auto p-4 pb-24 animate-fade-in">
+      {/* Info banner */}
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-4 flex items-start gap-3">
+        <span className="text-2xl">🔒</span>
+        <div>
+          <p className="font-semibold text-white text-sm">Secure Payments</p>
+          <p className="text-xs text-slate-400 mt-0.5">Funds are held in escrow until you approve delivery. Both parties are protected.</p>
+        </div>
       </div>
 
-      <div className="p-4">
-        {/* Info Card */}
-        <div className="card mb-4 bg-gradient-to-r from-emerald-500/10 to-emerald-700/10 border-emerald-500/20">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
-              <Shield size={20} className="text-emerald-400" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Secure Payments</h3>
-              <p className="text-sm text-slate-400 mt-1">
-                Funds are held in escrow until work is completed. Both parties are protected.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-2 mb-4">
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4">
+        {(['active', 'done'] as Tab[]).map(t => (
           <button
-            onClick={() => setActiveTab('active')}
+            key={t}
+            onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-              activeTab === 'active' 
-                ? 'bg-emerald-500 text-white' 
-                : 'bg-slate-800 text-slate-400 border border-slate-700'
+              tab === t ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400 border border-slate-700'
             }`}
           >
-            Active
+            {t === 'active' ? `Active (${escrows.filter(e => ['pending','funded','disputed'].includes(e.status)).length})` : 'Completed'}
           </button>
-          <button
-            onClick={() => setActiveTab('completed')}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-              activeTab === 'completed' 
-                ? 'bg-emerald-500 text-white' 
-                : 'bg-slate-800 text-slate-400 border border-slate-700'
-            }`}
-          >
-            Completed
-          </button>
-        </div>
+        ))}
+      </div>
 
-        {/* Escrows List */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 size={24} className="text-emerald-400 animate-spin" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-10">
-            <Shield size={32} className="mx-auto text-slate-600 mb-3" />
-            <p className="text-slate-400">No escrow transactions</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((escrow: EscrowType) => {
-              const config = statusConfig[escrow.status] || statusConfig.pending;
-              const Icon = config.icon;
-              return (
-                <div key={escrow.id} className="card">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Icon size={18} className={config.color} />
-                      <span className={`font-medium ${config.color}`}>{config.label}</span>
-                    </div>
-                    <span className="text-emerald-400 font-bold">{escrow.amount} Pi</span>
+      {loading ? (
+        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}</div>
+      ) : filtered.length === 0 ? (
+        <EmptyState icon="🔒" title={tab === 'active' ? 'No active escrows' : 'No completed escrows'} subtitle="Escrows are created when you hire a freelancer" />
+      ) : (
+        <div className="space-y-3">
+          {filtered.map(e => (
+            <div key={e.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{STATUS_ICON[e.status] || '⏳'}</span>
+                    <span className={`font-semibold text-sm ${STATUS_COLOR[e.status] || 'text-slate-400'}`}>
+                      {e.status.charAt(0).toUpperCase() + e.status.slice(1)}
+                    </span>
                   </div>
-                  <p className="text-sm text-slate-400 mb-3">Job #{escrow.job_id}</p>
-                  {escrow.status === 'funded' && (
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => releaseMutation.mutate(escrow.id)}
-                        disabled={releaseMutation.isPending}
-                        className="btn-primary flex-1 text-sm py-2 flex items-center justify-center gap-1"
-                      >
-                        {releaseMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-                        Release
-                      </button>
-                      <button 
-                        onClick={() => disputeMutation.mutate(escrow.id)}
-                        disabled={disputeMutation.isPending}
-                        className="btn-danger flex-1 text-sm py-2 flex items-center justify-center gap-1"
-                      >
-                        {disputeMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <AlertTriangle size={14} />}
-                        Dispute
-                      </button>
-                    </div>
-                  )}
+                  {e.job_title && <p className="text-white font-semibold text-sm mt-1">{e.job_title}</p>}
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {e.client_name && `Client: @${e.client_name}`}
+                    {e.client_name && e.freelancer_name && ' · '}
+                    {e.freelancer_name && `Freelancer: @${e.freelancer_name}`}
+                  </p>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                <span className="text-emerald-400 font-bold text-lg shrink-0">{e.amount} π</span>
+              </div>
+
+              {e.status === 'funded' && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => doRelease(e.id)}
+                    disabled={acting === e.id}
+                    className="flex-1 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-bold disabled:opacity-60"
+                  >
+                    {acting === e.id ? '…' : '✓ Release Payment'}
+                  </button>
+                  <button
+                    onClick={() => doCancel(e.id)}
+                    disabled={acting === e.id}
+                    className="flex-1 py-2.5 rounded-lg bg-red-500/15 text-red-400 border border-red-500/30 text-sm font-semibold disabled:opacity-60"
+                  >
+                    Dispute
+                  </button>
+                </div>
+              )}
+              {e.status === 'pending' && (
+                <p className="text-xs text-amber-400">Waiting for freelancer to fund escrow via Pi payment…</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
