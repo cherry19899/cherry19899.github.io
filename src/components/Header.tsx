@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { currentLang, setLang } from '../lib/i18n';
+import { isDark, toggleTheme } from '../lib/theme';
 
 export default function Header({ back }: { back?: boolean }) {
   const nav = useNavigate();
@@ -48,9 +49,19 @@ export default function Header({ back }: { back?: boolean }) {
           <button
             onClick={() => setLang(currentLang() === 'ru' ? 'en' : 'ru')}
             className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
-            title={currentLang() === 'ru' ? 'Switch to English' : 'Переключить на русский'}
           >
             <span className="text-white text-xs font-bold">{currentLang() === 'ru' ? 'EN' : 'RU'}</span>
+          </button>
+
+          {/* Moon — dark mode toggle */}
+          <button
+            onClick={() => { toggleTheme(); window.location.reload(); }}
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
+          >
+            {isDark()
+              ? <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              : <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            }
           </button>
 
           {/* Avatar */}

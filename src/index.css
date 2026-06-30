@@ -31,3 +31,14 @@ input, textarea, select {
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Dark mode via CSS invert */
+html.dark {
+  filter: invert(1) hue-rotate(180deg);
+  background: #000;
+}
+html.dark img,
+html.dark video,
+html.dark canvas {
+  filter: invert(1) hue-rotate(180deg);
+}

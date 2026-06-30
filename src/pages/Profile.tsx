@@ -5,6 +5,7 @@ import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
 import { CONNECT_PACKAGES } from '../lib/constants';
 import { t, currentLang, setLang } from '../lib/i18n';
+import { isDark, toggleTheme } from '../lib/theme';
 
 export default function ProfilePage() {
   const { user, updateUser, logout } = useAppCtx();
@@ -51,6 +52,12 @@ export default function ProfilePage() {
       label: tr.customOffers,
       right: <span className="text-emerald-500 text-sm font-semibold">View →</span>,
       onClick: () => nav('/my-jobs'),
+    },
+    {
+      icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
+      label: tr.lightMode,
+      sub: isDark() ? 'Тёмная тема' : 'Светлая тема',
+      right: <Toggle on={!isDark()} onChange={() => { toggleTheme(); window.location.reload(); }} />,
     },
     {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
