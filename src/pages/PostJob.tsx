@@ -28,9 +28,11 @@ export default function PostJobPage() {
       const data = await createJob({
         title: form.title.trim(), description: form.description.trim(),
         budget, category: form.category, skills, is_urgent: form.is_urgent,
+        ...(form.deadline ? { deadline: form.deadline } : {}),
       });
       toast('Job posted!', 'success');
-      nav(data?.id ? `/job/${data.id}` : '/');
+      const newId = data?.job?.id || data?.id;
+      nav(newId ? `/job/${newId}` : '/');
     } catch (e: any) {
       toast(e.message || 'Failed to post job', 'error');
     } finally { setSaving(false); }
