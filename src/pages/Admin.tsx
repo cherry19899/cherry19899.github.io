@@ -1,168 +1,342 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAdminStats, getAdminUsers, apiFetch } from '../lib/api';
+import {
+  getAdminStats, getAdminUsers, getAdminJobs, getAdminEscrows, getAdminEarnings,
+  adminDeleteJob, adminResolveEscrow, adminBlockUser, adminGrantConnects, apiFetch,
+} from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 
 type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings';
 
-interface Stats {
-  total_users?: number; total_jobs?: number; total_escrows?: number;
-  active_escrows?: number; total_revenue?: number; chats?: number;
-  platformFeePercent?: number; developerFeePercent?: number;
-}
-
 export default function AdminPage() {
   const { user } = useAppCtx();
   const [tab, setTab] = useState<Tab>('stats');
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [escrows, setEscrows] = useState<any[]>([]);
+  const [earnings, setEarnings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [grantModal, setGrantModal] = useState<any>(null);
+  const [grantAmt, setGrantAmt] = useState('10');
+  const [acting, setActing] = useState<string | null>(null);
 
-  const loadStats = useCallback(() => {
+  const load = useCallback(() => {
     setLoading(true);
-    getAdminStats().then(d => setStats(d)).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-
-  const loadUsers = useCallback(() => {
-    setLoading(true);
-    getAdminUsers().then((d: any) => setUsers(d?.users || d || [])).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (tab === 'stats' || tab === 'earnings') loadStats();
-    else if (tab === 'users') loadUsers();
+    const fn: Record<Tab, () => Promise<any>> = {
+      stats:    getAdminStats,
+      users:    () => getAdminUsers(),
+      jobs:     getAdminJobs,
+      escrows:  getAdminEscrows,
+      earnings: getAdminEarnings,
+    };
+    fn[tab]()
+      .then(d => {
+        if (tab === 'stats')    setStats(d);
+        if (tab === 'users')    setUsers(d?.users || d || []);
+        if (tab === 'jobs')     setJobs(d?.jobs || d?.all_jobs || d || []);
+        if (tab === 'escrows')  setEscrows(d?.escrows || d || []);
+        if (tab === 'earnings') setEarnings(d);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [tab]);
 
-  const handleBan = async (uid: string, isBanned: boolean) => {
-    try {
-      await apiFetch(`/api/admin/users/${uid}/${isBanned ? 'unblock' : 'block'}`, { method: 'POST' });
-      setUsers(p => p.map(u => (u.id === uid || u.uid === uid) ? { ...u, is_blocked: !isBanned } : u));
-      toast(isBanned ? 'Unblocked' : 'Blocked', 'success');
-    } catch (e: any) { toast(e.message || 'Failed', 'error'); }
-  };
+  useEffect(() => { load(); }, [load]);
 
   if (user?.role !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center pt-20 gap-3">
         <span className="text-5xl">🔒</span>
         <p className="text-gray-900 font-bold text-lg">Admin Only</p>
-        <p className="text-gray-500 text-sm">No permission</p>
       </div>
     );
   }
 
-  const rev = (stats?.total_revenue || 0).toFixed(2);
+  const rev = (stats?.total_revenue || earnings?.summary?.total_earnings || 0).toFixed(2);
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'stats',    label: 'Stats' },
-    { key: 'users',    label: 'Users' },
-    { key: 'jobs',     label: 'All Jobs' },
-    { key: 'escrows',  label: 'All Escrows' },
+    { key: 'users',    label: `Users${users.length ? ` (${users.length})` : ''}` },
+    { key: 'jobs',     label: `Jobs${jobs.length ? ` (${jobs.length})` : ''}` },
+    { key: 'escrows',  label: `Escrows${escrows.length ? ` (${escrows.length})` : ''}` },
     { key: 'earnings', label: 'Earnings' },
   ];
 
+  const filteredUsers = users.filter(u =>
+    !search || u.username?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredJobs = jobs.filter(j =>
+    !search || j.title?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="max-w-lg mx-auto p-4 pb-24 animate-fade-in">
+    <div className="max-w-lg mx-auto pb-24 animate-fade-in">
       {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-4">
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-              tab === t.key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="px-4 pt-4">
+        <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide mb-1">
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+                tab === t.key ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search bar for users / jobs */}
+        {(tab === 'users' || tab === 'jobs') && (
+          <div className="relative mb-4">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={tab === 'users' ? 'Search users…' : 'Search jobs…'}
+              className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-gray-100 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Stats / Earnings */}
-      {(tab === 'stats' || tab === 'earnings') && (
-        loading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 skeleton rounded-2xl" />
-            ))}
-          </div>
-        ) : stats ? (
-          <div className="space-y-3">
+      <div className="px-4 space-y-3">
+
+        {/* ── STATS ── */}
+        {tab === 'stats' && (
+          loading ? (
             <div className="grid grid-cols-2 gap-3">
-              <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${rev} π`} label="Total Earnings" />
-              <StatCard bg="bg-blue-50" color="text-blue-500" value={String(stats.total_escrows ?? 0)} label="Transactions" />
-              <StatCard bg="bg-orange-50" color="text-orange-500" value={`${rev} π`} label="Collected" />
-              <StatCard bg="bg-purple-50" color="text-purple-500" value="0 π" label="Pending" />
-              <StatCard bg="bg-gray-50" color="text-gray-700" value={String(stats.total_users ?? 0)} label="Users" />
-              <StatCard bg="bg-gray-50" color="text-gray-700" value={String(stats.total_jobs ?? 0)} label="Jobs" />
+              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-24 skeleton rounded-2xl" />)}
             </div>
-
-            {(stats.platformFeePercent !== undefined || stats.developerFeePercent !== undefined) && (
-              <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-2 text-sm">
-                {stats.platformFeePercent !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Platform fee</span>
-                    <span className="text-gray-900 font-semibold">{stats.platformFeePercent}%</span>
-                  </div>
-                )}
-                {stats.developerFeePercent !== undefined && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Developer fee</span>
-                    <span className="text-gray-900 font-semibold">{stats.developerFeePercent}%</span>
-                  </div>
-                )}
+          ) : stats ? (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${rev} π`} label="Revenue" />
+                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(stats.total_escrows ?? 0)} label="Escrows" />
+                <StatCard bg="bg-violet-50" color="text-violet-500" value={String(stats.total_users ?? 0)} label="Users" />
+                <StatCard bg="bg-amber-50" color="text-amber-500" value={String(stats.total_jobs ?? 0)} label="Jobs" />
+                <StatCard bg="bg-orange-50" color="text-orange-500" value={String(stats.active_escrows ?? 0)} label="Active Escrows" />
+                <StatCard bg="bg-cyan-50" color="text-cyan-500" value={String(stats.chats ?? 0)} label="Chats" />
               </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-center text-gray-400 py-10">No data yet</p>
-        )
-      )}
-
-      {/* Users */}
-      {tab === 'users' && (
-        loading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 skeleton rounded-2xl" />)}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {users.length === 0 && <p className="text-center text-gray-400 py-10">No users</p>}
-            {users.map((u: any) => (
-              <div key={u.id || u.uid} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 font-bold text-sm">
-                  {(u.username || '?')[0].toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-900 font-semibold text-sm truncate">@{u.username}</p>
-                  <p className="text-xs text-gray-400">{u.role}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${u.is_blocked ? 'bg-red-100 text-red-500' : 'bg-emerald-100 text-emerald-600'}`}>
-                    {u.is_blocked ? 'BLOCKED' : 'Active'}
-                  </span>
-                  {u.role !== 'admin' && (
-                    <button
-                      onClick={() => handleBan(u.id || u.uid, u.is_blocked)}
-                      className={`text-xs px-3 py-1.5 rounded-xl font-semibold transition-colors ${
-                        u.is_blocked ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'
-                      }`}
-                    >
-                      {u.is_blocked ? 'Unblock' : 'Block'}
-                    </button>
+              {stats.platformFeePercent !== undefined && (
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-2 text-sm">
+                  <p className="font-semibold text-gray-900 text-xs uppercase tracking-wide text-gray-400 mb-2">Fee Settings</p>
+                  <div className="flex justify-between"><span className="text-gray-500">Platform fee</span><span className="font-semibold text-gray-900">{stats.platformFeePercent}%</span></div>
+                  {stats.developerFeePercent !== undefined && (
+                    <div className="flex justify-between"><span className="text-gray-500">Developer fee</span><span className="font-semibold text-gray-900">{stats.developerFeePercent}%</span></div>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-        )
-      )}
+              )}
+            </>
+          ) : <p className="text-center text-gray-400 py-10">No data</p>
+        )}
 
-      {/* Jobs / Escrows placeholder */}
-      {(tab === 'jobs' || tab === 'escrows') && (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-          <span className="text-4xl mb-3">🚧</span>
-          <p className="font-medium">Coming soon</p>
+        {/* ── USERS ── */}
+        {tab === 'users' && (
+          loading ? (
+            <div className="space-y-2">{Array.from({length:5}).map((_,i)=><div key={i} className="h-16 skeleton rounded-2xl"/>)}</div>
+          ) : (
+            <>
+              {filteredUsers.length === 0 && <p className="text-center text-gray-400 py-10">No users found</p>}
+              {filteredUsers.map((u: any) => (
+                <div key={u.id || u.uid} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 font-bold text-sm">
+                      {(u.username || '?')[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-900 font-semibold text-sm">@{u.username}</p>
+                      <p className="text-xs text-gray-400">{u.role} · {u.balance_connects ?? 0}⚡ connects · {u.balance_pi ?? 0} π</p>
+                      {u.rating && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(u.rating))} {parseFloat(u.rating).toFixed(1)}</p>}
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${u.is_blocked ? 'bg-red-100 text-red-500' : 'bg-emerald-100 text-emerald-600'}`}>
+                      {u.is_blocked ? 'BLOCKED' : 'Active'}
+                    </span>
+                  </div>
+
+                  {u.role !== 'admin' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setGrantModal(u)}
+                        className="flex-1 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold"
+                      >
+                        ⚡ Grant Connects
+                      </button>
+                      <button
+                        onClick={async () => {
+                          setActing(u.id || u.uid);
+                          try {
+                            await adminBlockUser(u.id || u.uid, !u.is_blocked);
+                            setUsers(prev => prev.map(x => (x.id || x.uid) === (u.id || u.uid) ? { ...x, is_blocked: !u.is_blocked } : x));
+                            toast(u.is_blocked ? 'Unblocked' : 'Blocked', 'success');
+                          } catch (e: any) { toast(e.message, 'error'); }
+                          finally { setActing(null); }
+                        }}
+                        disabled={acting === (u.id || u.uid)}
+                        className={`flex-1 py-1.5 rounded-xl text-xs font-semibold disabled:opacity-60 ${u.is_blocked ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}
+                      >
+                        {u.is_blocked ? 'Unblock' : 'Block'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )
+        )}
+
+        {/* ── JOBS ── */}
+        {tab === 'jobs' && (
+          loading ? (
+            <div className="space-y-2">{Array.from({length:5}).map((_,i)=><div key={i} className="h-16 skeleton rounded-2xl"/>)}</div>
+          ) : (
+            <>
+              {filteredJobs.length === 0 && <p className="text-center text-gray-400 py-10">No jobs</p>}
+              {filteredJobs.map((j: any) => (
+                <div key={j.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{j.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">@{j.client_username} · {j.budget} π · {j.status}</p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Delete "${j.title}"?`)) return;
+                      try { await adminDeleteJob(j.id); setJobs(prev => prev.filter(x => x.id !== j.id)); toast('Job deleted', 'success'); }
+                      catch (e: any) { toast(e.message, 'error'); }
+                    }}
+                    className="text-red-400 hover:text-red-600 shrink-0 p-1"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </>
+          )
+        )}
+
+        {/* ── ESCROWS ── */}
+        {tab === 'escrows' && (
+          loading ? (
+            <div className="space-y-2">{Array.from({length:4}).map((_,i)=><div key={i} className="h-20 skeleton rounded-2xl"/>)}</div>
+          ) : (
+            <>
+              {escrows.length === 0 && <p className="text-center text-gray-400 py-10">No escrows</p>}
+              {escrows.map((e: any) => (
+                <div key={e.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">{e.job_title || `Escrow #${e.id}`}</p>
+                      <p className="text-xs text-gray-400">@{e.client_username} → @{e.freelancer_username}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-emerald-500 font-bold">{e.amount} π</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        e.status === 'funded' ? 'bg-emerald-100 text-emerald-600' :
+                        e.status === 'disputed' ? 'bg-red-100 text-red-500' :
+                        'bg-gray-100 text-gray-500'
+                      }`}>{e.status}</span>
+                    </div>
+                  </div>
+                  {(e.status === 'funded' || e.status === 'disputed') && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          try { await adminResolveEscrow(e.id, 'refund'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'refunded' } : x)); toast('Refunded', 'success'); }
+                          catch (err: any) { toast(err.message, 'error'); }
+                        }}
+                        className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-semibold"
+                      >
+                        Refund Client
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try { await adminResolveEscrow(e.id, 'release'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'released' } : x)); toast('Released to freelancer', 'success'); }
+                          catch (err: any) { toast(err.message, 'error'); }
+                        }}
+                        className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold"
+                      >
+                        Release Funds
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )
+        )}
+
+        {/* ── EARNINGS ── */}
+        {tab === 'earnings' && (
+          loading ? (
+            <div className="grid grid-cols-2 gap-3">{Array.from({length:4}).map((_,i)=><div key={i} className="h-24 skeleton rounded-2xl"/>)}</div>
+          ) : earnings ? (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${(earnings.summary?.total_earnings || 0).toFixed(2)} π`} label="Total Earnings" />
+                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(earnings.summary?.total_transactions || 0)} label="Transactions" />
+                <StatCard bg="bg-orange-50" color="text-orange-500" value={`${(earnings.summary?.collected || 0).toFixed(2)} π`} label="Collected" />
+                <StatCard bg="bg-purple-50" color="text-purple-500" value={`${(earnings.summary?.pending_volume || 0).toFixed(2)} π`} label="Pending" />
+              </div>
+              {earnings.payments?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Recent Transactions</p>
+                  {earnings.payments.slice(0, 10).map((p: any, i: number) => (
+                    <div key={i} className="bg-white border border-gray-100 rounded-xl p-3 flex justify-between text-sm">
+                      <span className="text-gray-600 truncate flex-1">{p.job_title || p.memo || `Payment #${p.id}`}</span>
+                      <span className="text-emerald-500 font-semibold shrink-0 ml-2">{p.amount} π</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : <p className="text-center text-gray-400 py-10">No earnings data</p>
+        )}
+      </div>
+
+      {/* Grant connects modal */}
+      {grantModal && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setGrantModal(null)}>
+          <div className="w-full max-w-lg bg-white rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Grant Connects</h2>
+            <p className="text-sm text-gray-400 mb-4">To @{grantModal.username}</p>
+            <div className="flex gap-2 mb-4">
+              {[5, 10, 25, 50].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setGrantAmt(String(n))}
+                  className={`flex-1 py-2 rounded-xl text-sm font-semibold ${grantAmt === String(n) ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <input
+              type="number"
+              value={grantAmt}
+              onChange={e => setGrantAmt(e.target.value)}
+              className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm mb-4 focus:outline-none focus:border-emerald-400"
+              placeholder="Custom amount"
+            />
+            <button
+              onClick={async () => {
+                try {
+                  await adminGrantConnects(grantModal.id || grantModal.uid, Number(grantAmt));
+                  toast(`Granted ${grantAmt} connects to @${grantModal.username}`, 'success');
+                  setGrantModal(null);
+                } catch (e: any) { toast(e.message, 'error'); }
+              }}
+              className="w-full h-12 rounded-full bg-emerald-500 text-white font-semibold"
+            >
+              Grant {grantAmt} Connects ⚡
+            </button>
+          </div>
         </div>
       )}
     </div>
