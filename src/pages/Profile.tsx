@@ -67,7 +67,7 @@ export default function ProfilePage() {
       label: tr.language,
       sub: LANGUAGES.find(l => l.code === currentLang())?.label || currentLang(),
       right: <Chevron />,
-      onClick: () => { langOpenedAt.current = Date.now(); setLangModal(true); },
+      onClick: () => { (window as any).__dbg?.('LANG row onClick fired'); langOpenedAt.current = Date.now(); setLangModal(true); },
     },
     {
       icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
@@ -216,7 +216,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Language picker modal */}
-      {langModal && (
+      {langModal && ((window as any).__dbg?.('LANG modal RENDERING, langModal=' + langModal), true) && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => { if (Date.now() - langOpenedAt.current > 400) setLangModal(false); }}>
           <div
             className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
