@@ -216,7 +216,7 @@ export default function ProfilePage() {
 
       {/* Language picker modal */}
       {langModal && (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
           <div
             className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
             onClick={e => e.stopPropagation()}
