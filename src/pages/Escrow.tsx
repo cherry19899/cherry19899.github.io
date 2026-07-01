@@ -473,7 +473,7 @@ export default function EscrowPage() {
 
       {/* Dispute modal */}
       {disputeModal !== null && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setDisputeModal(null)}>
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40" onClick={() => setDisputeModal(null)}>
           <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Raise a Dispute</h2>

@@ -74,7 +74,7 @@ export default function ChatPage() {
                 </p>
               </div>
               {(room.unread_count ?? 0) > 0 && (
-                <span className="shrink-0 min-w-[20px] h-5 px-1 bg-emerald-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                <span className="shrink-0 min-w-5 h-5 px-1 bg-emerald-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
                   {room.unread_count}
                 </span>
               )}

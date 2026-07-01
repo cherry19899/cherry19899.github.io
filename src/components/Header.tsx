@@ -39,7 +39,7 @@ export default function Header({ back }: { back?: boolean }) {
               <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
             </svg>
             {notifUnread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-0.5 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-0.5 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">
                 {notifUnread > 9 ? '9+' : notifUnread}
               </span>
             )}

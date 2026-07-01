@@ -21,7 +21,7 @@ export function toast(msg: string, type: Toast['type'] = 'info') {
 
 export function ToastContainer({ toasts }: { toasts: Toast[] }) {
   return (
-    <div className="fixed top-4 left-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none max-w-sm mx-auto">
+    <div className="fixed top-4 left-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm mx-auto">
       {toasts.map(t => (
         <div
           key={t.id}

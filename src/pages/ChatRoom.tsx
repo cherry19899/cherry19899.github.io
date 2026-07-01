@@ -89,7 +89,7 @@ export default function ChatRoomPage() {
     setSending(true);
 
     // Optimistic
-    const tempId = `tmp-${Date.now()}`;
+    const tempId = `tmp-${crypto.randomUUID()}`;
     const optimistic: Msg = {
       id: tempId,
       content,
@@ -157,7 +157,7 @@ export default function ChatRoomPage() {
                     {(m.sender_username || '?')[0].toUpperCase()}
                   </div>
                 )}
-                <div className={`max-w-[72%] space-y-0.5`}>
+                <div className="max-w-xs space-y-0.5">
                   {!mine && m.sender_username && (
                     <p className="text-xs text-gray-400 ml-1">@{m.sender_username}</p>
                   )}

@@ -34,7 +34,7 @@ export default function BottomNav() {
             >
               <Icon className="w-5 h-5" />
               {badge > 0 && (
-                <span className="absolute top-2 right-2.5 min-w-[14px] h-3.5 px-0.5 bg-red-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center">
+                <span className="absolute top-2 right-2.5 min-w-3.5 h-3.5 px-0.5 bg-red-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center">
                   {badge > 9 ? '9+' : badge}
                 </span>
               )}

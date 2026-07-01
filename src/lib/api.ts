@@ -2,7 +2,8 @@ import { API_BASE } from './constants';
 
 function getAuth() {
   const token = localStorage.getItem('workpro_token') || '';
-  const user  = JSON.parse(localStorage.getItem('workpro_user') || 'null');
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch { user = null; }
   return { token, uid: user?.uid || '' };
 }
 
@@ -42,7 +43,7 @@ export function clearAuth() {
 }
 
 export function getStoredUser() {
-  return JSON.parse(localStorage.getItem('workpro_user') || 'null');
+  try { return JSON.parse(localStorage.getItem('workpro_user') || 'null'); } catch { return null; }
 }
 
 export function getToken() {

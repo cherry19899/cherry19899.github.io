@@ -146,7 +146,7 @@ function FilterSheet({
   const hasFilters = draft.minBudget || draft.maxBudget || draft.urgentOnly;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40" onClick={onClose}>
       <div
         className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-8 overflow-hidden"
         onClick={e => e.stopPropagation()}
@@ -248,7 +248,7 @@ function SaveSearchModal({
   const [alert, setAlert] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/40" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40" onClick={onClose}>
       <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
         <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
         <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">{tr.saveSearch}</h2>
@@ -429,7 +429,7 @@ export default function HomePage() {
       </div>
 
       {/* Filter bar */}
-      <div className="sticky top-[calc(3.5rem+1.75rem)] z-30 bg-white dark:bg-slate-900 px-4 pt-2 border-b border-gray-100 dark:border-slate-800">
+      <div className="sticky top-24 z-30 bg-white dark:bg-slate-900 px-4 pt-2 border-b border-gray-100 dark:border-slate-800">
         {/* Search with autocomplete */}
         <div className="relative mb-3 flex gap-2">
           <div className="relative flex-1">
@@ -574,7 +574,7 @@ export default function HomePage() {
       {user && (
         <button
           onClick={() => nav('/post-job')}
-          className="fixed bottom-24 right-4 z-[999] w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 flex items-center justify-center text-white text-3xl font-light active:scale-95 transition-transform"
+          className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 flex items-center justify-center text-white text-3xl font-light active:scale-95 transition-transform"
         >
           +
         </button>

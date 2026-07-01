@@ -982,9 +982,8 @@ function getLang(): LangCode {
 
 export function setLang(l: LangCode) {
   localStorage.setItem(STORAGE_KEY, l);
-  // Apply RTL if needed
   document.documentElement.setAttribute('dir', RTL_LANGS.has(l) ? 'rtl' : 'ltr');
-  window.location.reload();
+  window.dispatchEvent(new CustomEvent('workpro:langchange'));
 }
 
 export function t(): Translations {

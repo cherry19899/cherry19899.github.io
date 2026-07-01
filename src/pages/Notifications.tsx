@@ -207,4 +207,4 @@ export default function NotificationsPage() {
 }
 
 // Expose offline queue helper for SW / push handler use
-(window as any).__queueOfflineNotif = queueOfflineNotif;
+window.__queueOfflineNotif = queueOfflineNotif;

@@ -32,9 +32,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
         <span className="text-5xl mb-4">⚠️</span>
         <p className="font-bold text-gray-900 mb-2">Something went wrong</p>
         <p className="text-sm text-gray-500 mb-6 break-all">{this.state.error}</p>
-        <button onClick={() => { this.setState({ error: null }); window.location.reload(); }}
+        <button onClick={() => this.setState({ error: null })}
           className="px-6 py-3 rounded-full bg-emerald-500 text-white font-semibold">
-          Reload
+          Try again
         </button>
       </div>
     );
@@ -95,9 +95,16 @@ export default function App() {
   const { toasts, toast } = useToastFn();
   const [chatUnread, setChatUnread] = useState(0);
   const [notifUnread, setNotifUnread] = useState(0);
+  const [langKey, setLangKey] = useState(0);
 
   // Make toast globally accessible
-  (window as any).__wpToast = toast;
+  window.__wpToast = toast;
+
+  useEffect(() => {
+    const handler = () => setLangKey(k => k + 1);
+    window.addEventListener('workpro:langchange', handler);
+    return () => window.removeEventListener('workpro:langchange', handler);
+  }, []);
 
   useEffect(() => { ensurePiInit(); }, []);
 
@@ -118,6 +125,7 @@ export default function App() {
     <ErrorBoundary>
     <Ctx.Provider value={{ ...auth, chatUnread, notifUnread, refreshUnread }}>
       <ScrollTop />
+      <div key={langKey}>
       <Routes>
         <Route path="/login" element={
           auth.user ? <Navigate to="/" replace /> : <LoginPage />
@@ -145,6 +153,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </div>
 
       <ToastContainer toasts={toasts} />
     </Ctx.Provider>

@@ -136,7 +136,7 @@ export default function JobDetailPage() {
     <div className="flex flex-col min-h-full">
       {/* View switcher for owner */}
       {isOwner && (
-        <div className="sticky top-[calc(3.5rem+1.75rem)] z-30 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-4 py-2">
+        <div className="sticky top-24 z-30 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-4 py-2">
           <div className="flex gap-2 max-w-lg mx-auto">
             {(['detail', 'applicants'] as View[]).map(v => (
               <button

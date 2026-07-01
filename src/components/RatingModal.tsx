@@ -43,7 +43,7 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={onSkip}>
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={onSkip}>
       <div
         className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10 animate-fade-in"
         onClick={e => e.stopPropagation()}

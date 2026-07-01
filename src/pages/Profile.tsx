@@ -82,8 +82,8 @@ export default function ProfilePage() {
       icon: DownloadIcon, bg: 'bg-teal-100', ic: 'text-teal-600',
       label: tr.install, sub: tr.installSub, right: <Chevron />,
       onClick: () => {
-        if ((window as any).__pwaInstallPrompt) {
-          (window as any).__pwaInstallPrompt.prompt();
+        if (window.__pwaInstallPrompt) {
+          window.__pwaInstallPrompt.prompt();
         } else {
           toast('Open in Pi Browser and use "Add to Home Screen"', 'info');
         }
@@ -216,7 +216,7 @@ export default function ProfilePage() {
 
       {/* Language picker modal */}
       {langModal && (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
           <div
             className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
             onClick={e => e.stopPropagation()}
