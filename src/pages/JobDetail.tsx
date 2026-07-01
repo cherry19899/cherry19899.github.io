@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { t } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, apiFetch } from '../lib/api';
 import { useAppCtx } from '../App';
@@ -26,6 +27,7 @@ function daysUntil(d?: string): number | null {
 type View = 'detail' | 'apply' | 'applicants';
 
 export default function JobDetailPage() {
+  const tr = t();
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
   const { user, updateUser } = useAppCtx();
@@ -132,7 +134,7 @@ export default function JobDetailPage() {
   if (!job) return (
     <div className="flex flex-col items-center justify-center py-20">
       <span className="text-5xl mb-3">😕</span>
-      <p className="font-semibold text-gray-900">Job not found</p>
+      <p className="font-semibold text-gray-900">{tr.jobNotFound}</p>
       <button onClick={() => nav('/')} className="mt-4 text-emerald-500 font-semibold">← Back to Jobs</button>
     </div>
   );
@@ -234,7 +236,7 @@ export default function JobDetailPage() {
             {/* Skills */}
             {job.skills && (Array.isArray(job.skills) ? job.skills : job.skills.split(',')).filter(Boolean).length > 0 && (
               <div className="mb-5">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Skills Required</p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{tr.skillsRequired}</p>
                 <div className="flex flex-wrap gap-2">
                   {(Array.isArray(job.skills) ? job.skills : job.skills.split(','))
                     .filter(Boolean)
@@ -247,10 +249,10 @@ export default function JobDetailPage() {
 
             {/* Fee breakdown */}
             <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 mb-5 text-sm space-y-1.5">
-              <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>Budget</span><span className="text-gray-900 dark:text-white font-medium">{Number(job.budget)} π</span></div>
+              <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>{tr.budget}</span><span className="text-gray-900 dark:text-white font-medium">{Number(job.budget)} π</span></div>
               <div className="flex justify-between text-gray-400 dark:text-slate-500"><span>Platform fee (2%)</span><span>{fee} π</span></div>
               <div className="border-t border-gray-200 dark:border-slate-700 pt-1.5 flex justify-between font-bold">
-                <span className="text-gray-900 dark:text-white">Total</span>
+                <span className="text-gray-900 dark:text-white">{tr.total}</span>
                 <span className="text-emerald-500">{(Number(job.budget) + fee).toFixed(2)} π</span>
               </div>
             </div>
@@ -259,7 +261,7 @@ export default function JobDetailPage() {
             {!isOwner && job.status === 'open' && (
               view === 'apply' ? (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Your Proposal</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{tr.yourProposal}</p>
                   <textarea
                     value={proposal}
                     onChange={e => setProposal(e.target.value)}
@@ -313,7 +315,7 @@ export default function JobDetailPage() {
             {apps.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <span className="text-5xl mb-3">📭</span>
-                <p className="font-semibold text-gray-900">No applicants yet</p>
+                <p className="font-semibold text-gray-900">{tr.noApplicants}</p>
                 <p className="text-sm text-gray-400 mt-1">Share your job to get more visibility</p>
               </div>
             ) : apps.map(app => (

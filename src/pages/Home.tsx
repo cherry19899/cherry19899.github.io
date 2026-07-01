@@ -190,7 +190,7 @@ function FilterSheet({
           <div className="flex items-center justify-between mt-5 mb-5 py-3 border-t border-gray-100 dark:border-slate-700">
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white">{tr.urgentOnly}</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500">Only show urgent jobs</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500">{tr.onlyUrgent}</p>
             </div>
             <button
               onClick={() => setDraft(d => ({ ...d, urgentOnly: !d.urgentOnly }))}

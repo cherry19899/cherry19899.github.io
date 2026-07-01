@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { t } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { createJob } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CATEGORIES } from '../lib/constants';
 
 export default function PostJobPage() {
+  const tr = t();
   const nav = useNavigate();
   const [form, setForm] = useState({
     title: '', description: '', budget: '', category: 'development',
@@ -91,7 +93,7 @@ export default function PostJobPage() {
             <Row label={`Platform fee (2%)`} value={`${fee} π`} muted />
             <Row label="Стоимость отклика" value="1 connect" muted />
             <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
-              <span className="text-gray-900">Total</span>
+              <span className="text-gray-900">{tr.total}</span>
               <span className="text-emerald-500">{total} π</span>
             </div>
           </div>
@@ -106,7 +108,7 @@ export default function PostJobPage() {
           >
             <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${form.is_urgent ? 'left-[26px]' : 'left-0.5'}`} />
           </button>
-          <span className="text-sm text-gray-700">Mark as urgent</span>
+          <span className="text-sm text-gray-700">{tr.markAsUrgent}</span>
         </label>
 
         <button

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { t } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { getChatRooms, markChatRead } from '../lib/api';
 import { useAppCtx } from '../App';
@@ -16,6 +17,7 @@ function timeAgo(d?: string) {
 interface Room { id: number; job_title?: string; other_username?: string; last_message?: string; last_message_at?: string; unread_count?: number; }
 
 export default function ChatPage() {
+  const tr = t();
   const nav = useNavigate();
   const { refreshUnread } = useAppCtx();
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -36,7 +38,7 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">Messages</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-4">{tr.messages}</h2>
 
       {loading ? (
         <div className="space-y-3">
@@ -47,7 +49,7 @@ export default function ChatPage() {
       ) : rooms.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">💬</span>
-          <p className="font-semibold text-gray-900">No messages yet</p>
+          <p className="font-semibold text-gray-900">{tr.noMessages}</p>
           <p className="text-sm text-gray-400 mt-1">Apply to a job to start chatting</p>
         </div>
       ) : (
@@ -70,7 +72,7 @@ export default function ChatPage() {
                 </div>
                 <p className="text-xs text-gray-500 truncate mt-0.5">
                   {room.other_username && `@${room.other_username} · `}
-                  {room.last_message || 'No messages yet'}
+                  {room.last_message || tr.noMessages}
                 </p>
               </div>
               {(room.unread_count ?? 0) > 0 && (

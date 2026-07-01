@@ -93,7 +93,7 @@ export default function ProfilePage() {
     {
       icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
       label: tr.faq, right: <Chevron />,
-      onClick: () => toast('FAQ coming soon', 'info'),
+      onClick: () => toast(tr.faqComingSoon, 'info'),
     },
     {
       icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
@@ -166,7 +166,7 @@ export default function ProfilePage() {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.balance}</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">{balancePi}<span className="text-sm text-gray-400 dark:text-slate-500"> π</span></p>
-            {!isPiBrowser() && <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">Pi Browser</p>}
+            {!isPiBrowser() && <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{tr.piBrowser}</p>}
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.reviews}</p>

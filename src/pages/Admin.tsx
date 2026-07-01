@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { t } from '../lib/i18n';
 import { createPortal } from 'react-dom';
 import {
   getAdminStats, getAdminUsers, getAdminJobs, getAdminEscrows, getAdminEarnings,
@@ -16,6 +17,7 @@ import {
 type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings' | 'analytics';
 
 export default function AdminPage() {
+  const tr = t();
   const { user } = useAppCtx();
   const [tab, setTab] = useState<Tab>('stats');
   const [stats, setStats] = useState<any>(null);
@@ -74,7 +76,7 @@ export default function AdminPage() {
     return (
       <div className="flex flex-col items-center justify-center pt-20 gap-3">
         <span className="text-5xl">🔒</span>
-        <p className="text-gray-900 font-bold text-lg">Admin Only</p>
+        <p className="text-gray-900 font-bold text-lg">{tr.adminOnly}</p>
       </div>
     );
   }
@@ -151,7 +153,7 @@ export default function AdminPage() {
                 <StatCard bg="bg-cyan-50" color="text-cyan-500" value={String(stats.chats ?? 0)} label="Chats" />
               </div>
               <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3 text-sm">
-                <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">Platform Fee</p>
+                <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">{tr.platformFee}</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="number"
@@ -184,7 +186,7 @@ export default function AdminPage() {
                 )}
               </div>
             </>
-          ) : <p className="text-center text-gray-400 py-10">No data</p>
+          ) : <p className="text-center text-gray-400 py-10">{tr.noData}</p>
         )}
 
         {/* ── USERS ── */}
@@ -193,7 +195,7 @@ export default function AdminPage() {
             <div className="space-y-2">{Array.from({length:5}).map((_,i)=><div key={i} className="h-16 skeleton rounded-2xl"/>)}</div>
           ) : (
             <>
-              {filteredUsers.length === 0 && <p className="text-center text-gray-400 py-10">No users found</p>}
+              {filteredUsers.length === 0 && <p className="text-center text-gray-400 py-10">{tr.noUsersFound}</p>}
               {filteredUsers.map((u: any) => (
                 <div key={u.id || u.uid} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                   <div className="flex items-center gap-3">
@@ -434,7 +436,7 @@ export default function AdminPage() {
 
                 {/* Export CSV buttons */}
                 <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
-                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Export CSV</p>
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">{tr.exportCSV}</p>
                   <div className="flex flex-wrap gap-2">
                     {['users', 'jobs', 'escrows', 'payments', 'reviews'].map(table => (
                       <button

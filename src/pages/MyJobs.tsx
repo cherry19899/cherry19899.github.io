@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { t } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { getMyJobs, getMyJobsAsFreelancer } from '../lib/api';
 import { CAT_COLORS } from '../lib/constants';
@@ -14,6 +15,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function MyJobsPage() {
+  const tr = t();
   const nav = useNavigate();
   const [tab, setTab] = useState<'posted' | 'hired'>('posted');
   const [posted, setPosted] = useState<Job[]>([]);
@@ -56,7 +58,7 @@ export default function MyJobsPage() {
       ) : jobs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">📋</span>
-          <p className="font-semibold text-gray-900 dark:text-white">No jobs yet</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{tr.noJobsYet}</p>
         </div>
       ) : (
         <div className="space-y-3">
