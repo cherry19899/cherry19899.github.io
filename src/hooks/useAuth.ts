@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react';
 import { getStoredUser, clearAuth, apiFetch, saveAuth } from '../lib/api';
 
+export function isAuthenticated(): boolean {
+  return !!localStorage.getItem('workpro_token');
+}
+
 export interface User {
   uid: string;
   username: string;

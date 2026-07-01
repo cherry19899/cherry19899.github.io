@@ -5,14 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#10b981" />
   <meta name="description" content="WorkPro — Freelance marketplace on Pi Network" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://sdk.minepi.com https://*.minepi.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://workpro-api.onrender.com wss://workpro-api.onrender.com https://api.minepi.com https://*.minepi.com; img-src 'self' data: blob: https:; frame-src https://*.minepi.com;" />
   <title>WorkPro</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icon-192.png" />
-  <!-- Pi SDK loads synchronously — must precede app bundle -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <!-- GitHub Pages deep-link → HashRouter redirect -->
+  <script>
+    if (location.pathname.length > 1 && !location.hash.includes('#/')) {
+      location.replace('/#' + location.pathname);
+    }
+  </script>
+  <!-- Pi SDK -->
+  <script src="https://sdk.minepi.com/pi-sdk.js" crossorigin="anonymous" async></script>
 </head>
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
+  <!-- Pi Browser detection: warn if not opened in Pi Browser -->
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (!window.Pi) {
+          var el = document.getElementById('root');
+          if (el && !el.children.length) {
+            el.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:system-ui,sans-serif;color:#334155">' +
+              '<div style="font-size:48px;margin-bottom:16px">π</div>' +
+              '<h1 style="font-size:18px;font-weight:700;margin:0 0 8px">Open in Pi Browser</h1>' +
+              '<p style="font-size:14px;color:#64748b;max-width:280px">WorkPro runs inside the Pi Browser. Please open this page from the Pi Browser app to continue.</p>' +
+              '</div>';
+          }
+        }
+      }, 2500);
+    });
+  </script>
 </body>
 </html>

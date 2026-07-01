@@ -33,6 +33,15 @@ interface Job {
   category?: string; posted_by_name?: string; client_username?: string;
   applications?: number; applicants_count?: number;
   apply_cost?: number; is_urgent?: boolean; created_at: string;
+  deadline?: string;
+}
+
+// Days until a deadline (negative = past). null if no/invalid date.
+function daysUntil(d?: string): number | null {
+  if (!d) return null;
+  const t = new Date(d).getTime();
+  if (isNaN(t)) return null;
+  return Math.ceil((t - Date.now()) / 86400000);
 }
 
 interface Filters {
@@ -328,6 +337,9 @@ export default function HomePage() {
   const [savedSearches, setSavedSearches] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [dueSoon, setDueSoon] = useState(false);
+  const [pullDist, setPullDist] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>();
   const sugTimer = useRef<ReturnType<typeof setTimeout>>();
   const tr = t();
@@ -387,6 +399,51 @@ export default function HomePage() {
     return () => clearTimeout(timer.current);
   }, [load]);
 
+  // ── Pull-to-refresh ───────────────────────────────────────────────────────
+
+  useEffect(() => {
+    let startY = 0;
+    let pulling = false;
+    const THRESHOLD = 70;
+
+    const onStart = (e: TouchEvent) => {
+      if (window.scrollY <= 0 && !refreshing) {
+        startY = e.touches[0].clientY;
+        pulling = true;
+      }
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!pulling) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy > 0 && window.scrollY <= 0) {
+        setPullDist(Math.min(dy * 0.5, 90));
+      } else {
+        pulling = false;
+        setPullDist(0);
+      }
+    };
+    const onEnd = () => {
+      if (!pulling) return;
+      pulling = false;
+      setPullDist(prev => {
+        if (prev >= THRESHOLD * 0.5) {
+          setRefreshing(true);
+          load(1, true).finally(() => setRefreshing(false));
+        }
+        return 0;
+      });
+    };
+
+    window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', onEnd);
+    return () => {
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+    };
+  }, [load, refreshing]);
+
   // ── Saved search actions ──────────────────────────────────────────────────
 
   const handleSaveSearch = async (name: string, alertEnabled: boolean) => {
@@ -416,8 +473,24 @@ export default function HomePage() {
     });
   };
 
+  const visibleJobs = dueSoon
+    ? jobs.filter(j => { const d = daysUntil(j.deadline); return d !== null && d <= 7; })
+    : jobs;
+
   return (
     <div className="max-w-lg mx-auto animate-fade-in bg-white dark:bg-slate-900 min-h-screen">
+
+      {/* Pull-to-refresh indicator */}
+      {(pullDist > 0 || refreshing) && (
+        <div
+          className="flex items-center justify-center text-emerald-500 overflow-hidden transition-[height]"
+          style={{ height: refreshing ? 40 : pullDist }}
+        >
+          <svg className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+          </svg>
+        </div>
+      )}
 
       {/* Greeting */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
@@ -537,7 +610,17 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center justify-between pb-3">
-          <span className="text-xs text-gray-500 dark:text-slate-400">{jobs.length} {tr.jobs.toLowerCase()}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 dark:text-slate-400">{visibleJobs.length} {tr.jobs.toLowerCase()}</span>
+            <button
+              onClick={() => setDueSoon(v => !v)}
+              className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                dueSoon ? 'bg-red-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+              }`}
+            >
+              ⏰ {tr.dueSoon}
+            </button>
+          </div>
           <select
             value={sort}
             onChange={e => setSort(e.target.value)}
@@ -554,7 +637,7 @@ export default function HomePage() {
       <div className="p-4 space-y-3 pb-32">
         {loading
           ? Array.from({ length: 5 }).map((_, i) => <JobSkeleton key={i} />)
-          : jobs.length === 0
+          : visibleJobs.length === 0
           ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="text-5xl mb-3">🔍</span>
@@ -562,7 +645,7 @@ export default function HomePage() {
               <p className="text-sm text-gray-400 mt-1">{tr.tryDifferentFilters}</p>
             </div>
           )
-          : jobs.map(job => (
+          : visibleJobs.map(job => (
             <JobCard key={job.id} job={job} onClick={() => nav(`/job/${job.id}`)} />
           ))
         }

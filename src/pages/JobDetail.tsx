@@ -4,7 +4,7 @@ import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, a
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
-import { createPiPayment } from '../lib/pi';
+import { createPiPayment, shareJob, isPiBrowser } from '../lib/pi';
 
 function timeAgo(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -13,6 +13,14 @@ function timeAgo(d: string) {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
+}
+
+// Days until a deadline (negative = past). null if no/invalid date.
+function daysUntil(d?: string): number | null {
+  if (!d) return null;
+  const t = new Date(d).getTime();
+  if (isNaN(t)) return null;
+  return Math.ceil((t - Date.now()) / 86400000);
 }
 
 type View = 'detail' | 'apply' | 'applicants';
@@ -188,6 +196,36 @@ export default function JobDetailPage() {
                 <span>{job.applications ?? 0} applicants</span>
                 <span>{timeAgo(job.created_at)}</span>
               </div>
+
+              {/* Deadline */}
+              {job.deadline && (() => {
+                const d = daysUntil(job.deadline);
+                const soon = d !== null && d <= 3;
+                return (
+                  <div className="flex items-center gap-2 mt-3 text-xs">
+                    <svg className="w-3.5 h-3.5 text-gray-400 dark:text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span className="text-gray-500 dark:text-slate-400">
+                      Deadline: {new Date(job.deadline).toLocaleDateString()}
+                    </span>
+                    {soon && (
+                      <span className="font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-500">
+                        {d! < 0 ? 'Overdue' : 'Due soon'}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Share */}
+              {isPiBrowser() && (
+                <button
+                  onClick={() => shareJob(String(job.id), job.title)}
+                  className="flex items-center gap-1.5 mt-3 text-xs font-semibold text-emerald-500 active:opacity-70"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  Share
+                </button>
+              )}
             </div>
 
             {/* Description */}

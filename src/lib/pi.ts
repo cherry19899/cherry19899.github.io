@@ -8,12 +8,26 @@ export function isPiBrowser(): boolean {
   return typeof window.Pi !== 'undefined';
 }
 
+// Sandbox in dev, real mainnet in production build. Override with VITE_PI_MODE.
+const PI_MODE = import.meta.env.VITE_PI_MODE || (import.meta.env.PROD ? 'production' : 'sandbox');
+
 let piInitialized = false;
 export function ensurePiInit() {
   if (piInitialized || !isPiBrowser()) return;
   try {
-    window.Pi.init({ version: '2.0', sandbox: true });
+    window.Pi.init({ version: '2.0', sandbox: PI_MODE === 'sandbox' });
     piInitialized = true;
+  } catch {}
+}
+
+// Native Pi share dialog — falls back to a no-op outside Pi Browser.
+export function shareJob(jobId: string, title: string) {
+  if (!isPiBrowser()) return;
+  try {
+    window.Pi?.openShareDialog({
+      title,
+      url: `https://cherry19899.github.io/#/job/${jobId}`,
+    });
   } catch {}
 }
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, Component, ErrorInfo, ReactNode } from 'react';
 import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
+import { useAuth, isAuthenticated } from './hooks/useAuth';
 import type { User } from './hooks/useAuth';
 import { apiFetch } from './lib/api';
 import { ensurePiInit } from './lib/pi';
@@ -77,7 +77,7 @@ function AppLayout({ back }: { back?: boolean }) {
 
 function Protected({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const { user } = useAppCtx();
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user || !isAuthenticated()) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />;
   return <>{children}</>;
 }
