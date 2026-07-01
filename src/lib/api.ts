@@ -26,6 +26,8 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<an
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err?.error || err?.message || res.statusText);
   }
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('text/csv') || ct.includes('text/plain')) return res.text();
   return res.json().catch(() => null);
 }
 

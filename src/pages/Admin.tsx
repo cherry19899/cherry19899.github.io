@@ -440,8 +440,8 @@ export default function AdminPage() {
                         key={table}
                         onClick={async () => {
                           try {
-                            const data = await apiFetch(`/api/admin/export/${table}`);
-                            const blob = new Blob([data.csv || JSON.stringify(data)], { type: 'text/csv' });
+                            const csvText = await apiFetch(`/api/admin/export/${table}`);
+                            const blob = new Blob([typeof csvText === 'string' ? csvText : JSON.stringify(csvText)], { type: 'text/csv' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
