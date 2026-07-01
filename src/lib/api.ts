@@ -86,6 +86,38 @@ export const cancelEscrow = (id: number) =>
 export const disputeEscrow = (id: number, reason: string) =>
   apiFetch(`/api/escrows/${id}/dispute`, { method: 'POST', body: JSON.stringify({ reason }) });
 
+// Milestones
+export const getMilestones = (id: number) => apiFetch(`/api/escrows/${id}/milestones`);
+export const saveMilestones = (id: number, milestones: any[]) =>
+  apiFetch(`/api/escrows/${id}/milestones`, { method: 'POST', body: JSON.stringify({ milestones }) });
+export const requestMilestone = (escrowId: number, milestoneId: number) =>
+  apiFetch(`/api/escrows/${escrowId}/milestone/${milestoneId}/request`, { method: 'POST' });
+export const approveMilestone = (escrowId: number, milestoneId: number) =>
+  apiFetch(`/api/escrows/${escrowId}/milestone/${milestoneId}/approve`, { method: 'POST' });
+
+// Admin analytics
+export const getAdminAnalytics = (type: string, days = 30) =>
+  apiFetch(`/api/admin/analytics/${type}?days=${days}`);
+export const getAdminRealtime = () => apiFetch('/api/admin/realtime');
+export const exportAdminCSV = (table: string) =>
+  apiFetch(`/api/admin/export/${table}`);
+
+// Reviews v2
+export const getReviewsV2 = (userId: string) => apiFetch(`/api/reviews/v2/user/${userId}`);
+export const submitReviewV2 = (data: any) =>
+  apiFetch('/api/reviews/v2', { method: 'POST', body: JSON.stringify(data) });
+
+// Saved searches
+export const getSavedSearches = () => apiFetch('/api/saved-searches');
+export const createSavedSearch = (data: any) =>
+  apiFetch('/api/saved-searches', { method: 'POST', body: JSON.stringify(data) });
+export const deleteSavedSearch = (id: number) =>
+  apiFetch(`/api/saved-searches/${id}`, { method: 'DELETE' });
+
+// Full-text search
+export const fulltextSearch = (q: string, extra = '') =>
+  apiFetch(`/api/jobs/search/fulltext?q=${encodeURIComponent(q)}&${extra}`);
+
 // ─── Chat ────────────────────────────────────────────────────────────────────
 
 export const getChatRooms = () => apiFetch('/api/chat/rooms');

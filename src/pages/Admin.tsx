@@ -2,11 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   getAdminStats, getAdminUsers, getAdminJobs, getAdminEscrows, getAdminEarnings,
   adminDeleteJob, adminResolveEscrow, adminBlockUser, adminGrantConnects, apiFetch,
+  getAdminAnalytics, getAdminRealtime,
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
+import {
+  LineChart, Line, BarChart, Bar, AreaChart, Area,
+  PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from 'recharts';
 
-type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings';
+type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings' | 'analytics';
 
 export default function AdminPage() {
   const { user } = useAppCtx();
@@ -23,10 +29,26 @@ export default function AdminPage() {
   const [grantModal, setGrantModal] = useState<any>(null);
   const [grantAmt, setGrantAmt] = useState('10');
   const [acting, setActing] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [realtimeData, setRealtimeData] = useState<any>(null);
+  const [analyticsDays, setAnalyticsDays] = useState(30);
 
   const load = useCallback(() => {
     setLoading(true);
-    const fn: Record<Tab, () => Promise<any>> = {
+    if (tab === 'analytics') {
+      Promise.all([
+        getAdminAnalytics('signups', analyticsDays),
+        getAdminAnalytics('revenue', analyticsDays),
+        getAdminAnalytics('jobs', analyticsDays),
+        getAdminAnalytics('retention'),
+        getAdminRealtime(),
+      ]).then(([signups, revenue, jobsData, retention, realtime]) => {
+        setAnalytics({ signups, revenue, jobs: jobsData, retention });
+        setRealtimeData(realtime);
+      }).catch(() => {}).finally(() => setLoading(false));
+      return;
+    }
+    const fn: Record<string, () => Promise<any>> = {
       stats:    getAdminStats,
       users:    () => getAdminUsers(),
       jobs:     getAdminJobs,
@@ -43,7 +65,7 @@ export default function AdminPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [tab]);
+  }, [tab, analyticsDays]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -59,12 +81,15 @@ export default function AdminPage() {
   const rev = (stats?.total_revenue || earnings?.summary?.total_earnings || 0).toFixed(2);
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'stats',    label: 'Stats' },
-    { key: 'users',    label: `Users${users.length ? ` (${users.length})` : ''}` },
-    { key: 'jobs',     label: `Jobs${jobs.length ? ` (${jobs.length})` : ''}` },
-    { key: 'escrows',  label: `Escrows${escrows.length ? ` (${escrows.length})` : ''}` },
-    { key: 'earnings', label: 'Earnings' },
+    { key: 'stats',     label: 'Stats' },
+    { key: 'users',     label: `Users${users.length ? ` (${users.length})` : ''}` },
+    { key: 'jobs',      label: `Jobs${jobs.length ? ` (${jobs.length})` : ''}` },
+    { key: 'escrows',   label: `Escrows${escrows.length ? ` (${escrows.length})` : ''}` },
+    { key: 'earnings',  label: 'Earnings' },
+    { key: 'analytics', label: '📊 Analytics' },
   ];
+
+  const PIE_COLORS = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
 
   const filteredUsers = users.filter(u =>
     !search || u.username?.toLowerCase().includes(search.toLowerCase())
@@ -295,6 +320,146 @@ export default function AdminPage() {
               ))}
             </>
           )
+        )}
+
+        {/* ── ANALYTICS ── */}
+        {tab === 'analytics' && (
+          <>
+            {/* Realtime strip */}
+            {realtimeData && (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={String(realtimeData.online_now ?? 0)} label="Online now" />
+                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(realtimeData.signups_24h ?? 0)} label="Signups 24h" />
+                <StatCard bg="bg-amber-50" color="text-amber-500" value={String(realtimeData.active_escrows ?? 0)} label="Active escrows" />
+              </div>
+            )}
+
+            {/* Days filter */}
+            <div className="flex gap-2 mb-4">
+              {[7, 14, 30, 90].map(d => (
+                <button
+                  key={d}
+                  onClick={() => setAnalyticsDays(d)}
+                  className={`flex-1 py-1.5 rounded-xl text-xs font-semibold ${analyticsDays === d ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'}`}
+                >
+                  {d}d
+                </button>
+              ))}
+            </div>
+
+            {loading ? (
+              <div className="space-y-4">{Array.from({length:4}).map((_,i)=><div key={i} className="h-48 skeleton rounded-2xl"/>)}</div>
+            ) : analytics ? (
+              <div className="space-y-4">
+                {/* Sign-ups line chart */}
+                {analytics.signups?.data?.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Sign-ups</p>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <LineChart data={analytics.signups.data}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5)} />
+                        <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Revenue area chart */}
+                {analytics.revenue?.data?.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Revenue (π)</p>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <AreaChart data={analytics.revenue.data}>
+                        <defs>
+                          <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5)} />
+                        <YAxis tick={{ fontSize: 10 }} />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="amount" stroke="#10b981" fill="url(#revGrad)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Jobs by category bar chart */}
+                {analytics.jobs?.by_category?.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Jobs by Category</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={analytics.jobs.by_category} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
+                        <YAxis type="category" dataKey="category" tick={{ fontSize: 9 }} width={80} />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#6366f1" radius={[0,4,4,0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Retention / role breakdown pie */}
+                {analytics.retention?.by_role?.length > 0 && (
+                  <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">User Roles</p>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <PieChart>
+                        <Pie
+                          data={analytics.retention.by_role}
+                          dataKey="count"
+                          nameKey="role"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={65}
+                          label={({ role, percent }) => `${role} ${(percent * 100).toFixed(0)}%`}
+                          labelLine={false}
+                        >
+                          {analytics.retention.by_role.map((_: any, i: number) => (
+                            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* Export CSV buttons */}
+                <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Export CSV</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['users', 'jobs', 'escrows', 'payments', 'reviews'].map(table => (
+                      <button
+                        key={table}
+                        onClick={async () => {
+                          try {
+                            const data = await apiFetch(`/api/admin/export/${table}`);
+                            const blob = new Blob([data.csv || JSON.stringify(data)], { type: 'text/csv' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${table}-${new Date().toISOString().slice(0,10)}.csv`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          } catch (e: any) { toast(e.message, 'error'); }
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 text-xs font-semibold capitalize"
+                      >
+                        ⬇ {table}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : <p className="text-center text-gray-400 py-10">No analytics data</p>}
+          </>
         )}
 
         {/* ── EARNINGS ── */}

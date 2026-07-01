@@ -4,14 +4,16 @@ import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
 import { CONNECT_PACKAGES } from '../lib/constants';
-import { t, currentLang, setLang } from '../lib/i18n';
+import { t, currentLang, setLang, LANGUAGES } from '../lib/i18n';
 import { isDark, toggleTheme } from '../lib/theme';
+import BadgeChip from '../components/BadgeChip';
 
 export default function ProfilePage() {
   const { user, updateUser, logout } = useAppCtx();
   const nav = useNavigate();
   const [availability, setAvailability] = useState(true);
   const [buying, setBuying] = useState(false);
+  const [langModal, setLangModal] = useState(false);
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
@@ -61,9 +63,10 @@ export default function ProfilePage() {
     },
     {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
-      label: tr.language, sub: currentLang() === 'ru' ? 'Русский' : 'English',
+      label: tr.language,
+      sub: LANGUAGES.find(l => l.code === currentLang())?.label || currentLang(),
       right: <Chevron />,
-      onClick: () => setLang(currentLang() === 'ru' ? 'en' : 'ru'),
+      onClick: () => setLangModal(true),
     },
     {
       icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
@@ -132,15 +135,16 @@ export default function ProfilePage() {
                 {user.role === 'admin' ? 'Админ' : 'Фрилансер'} · {availability ? tr.available : tr.notAvailableShort}
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 rounded-full px-2 py-0.5 text-xs font-semibold">
-                ⭐ {tr.risingTalent}
-              </span>
-              {(user as any).kyc_verified && (
-                <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-full px-2 py-0.5 text-xs font-semibold">
-                  ✅ {tr.kyc}
-                </span>
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              {/* Dynamic badges from DB */}
+              {((user as any).badges as string[] | undefined)?.map(b => (
+                <BadgeChip key={b} badge={b} />
+              ))}
+              {/* Fallback if no badges yet */}
+              {!((user as any).badges as string[] | undefined)?.length && (
+                <BadgeChip badge="rising_talent" />
               )}
+              {(user as any).kyc_verified && <BadgeChip badge="verified" />}
             </div>
           </div>
         </div>
@@ -209,6 +213,42 @@ export default function ProfilePage() {
       <div className="text-center px-4 pb-4">
         <p className="text-xs text-gray-400 dark:text-slate-600">Work Pro — Pi Network Freelance Marketplace</p>
       </div>
+
+      {/* Language picker modal */}
+      {langModal && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
+          <div
+            className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mt-4 mb-4" />
+            <h2 className="text-base font-bold text-gray-900 dark:text-white px-5 mb-3">{tr.language}</h2>
+            <div className="max-h-80 overflow-y-auto">
+              {LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => { setLangModal(false); setLang(lang.code); }}
+                  className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left ${
+                    currentLang() === lang.code
+                      ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                      : 'hover:bg-gray-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <span className="text-xl">{lang.flag}</span>
+                  <span className={`text-sm font-medium flex-1 ${currentLang() === lang.code ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+                    {lang.label}
+                  </span>
+                  {currentLang() === lang.code && (
+                    <svg className="w-4 h-4 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

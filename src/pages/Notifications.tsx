@@ -1,8 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getNotifications, markAllNotifsRead } from '../lib/api';
 import { useAppCtx } from '../App';
+import { t } from '../lib/i18n';
 
-interface Notif { id: number; title?: string; body?: string; message?: string; created_at: string; is_read?: boolean; read?: boolean; }
+interface Notif {
+  id: number; title?: string; body?: string; message?: string;
+  type?: string; created_at: string; is_read?: boolean; read?: boolean;
+}
+
+// ─── IndexedDB offline queue ──────────────────────────────────────────────────
+
+const DB_NAME = 'workpro_notifs';
+const STORE = 'pending';
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+async function queueOfflineNotif(notif: { title: string; body: string }) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).add({ ...notif, queued_at: new Date().toISOString() });
+  } catch { /* ignore */ }
+}
+
+async function flushOfflineQueue(onFlush: (items: any[]) => void) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE, 'readwrite');
+    const store = tx.objectStore(STORE);
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const items = req.result || [];
+      if (items.length > 0) {
+        items.forEach(item => store.delete(item.id));
+        onFlush(items);
+      }
+    };
+  } catch { /* ignore */ }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const NOTIF_ICONS: Record<string, string> = {
+  application: '📝',
+  message: '💬',
+  hired: '🎉',
+  payment: '💰',
+  dispute: '⚠️',
+  review: '⭐',
+  system: '📣',
+};
 
 function timeAgo(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -13,64 +67,144 @@ function timeAgo(d: string) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+function groupByDate(notifs: Notif[]): { label: string; items: Notif[] }[] {
+  const now = new Date();
+  const today = now.toDateString();
+  const yesterday = new Date(now.getTime() - 86400000).toDateString();
+
+  const groups: Record<string, Notif[]> = {};
+  for (const n of notifs) {
+    const d = new Date(n.created_at).toDateString();
+    const label = d === today ? 'Today' : d === yesterday ? 'Yesterday' : new Date(n.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(n);
+  }
+  return Object.entries(groups).map(([label, items]) => ({ label, items }));
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function NotificationsPage() {
   const { refreshUnread } = useAppCtx();
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const tr = t();
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
     getNotifications()
-      .then((d: any) => setNotifs(d?.notifications || d || []))
+      .then((d: any) => {
+        const list: Notif[] = d?.notifications || d || [];
+        setNotifs(list);
+        refreshUnread();
+        // flush offline queue if any
+        flushOfflineQueue(queued => {
+          setNotifs(prev => [
+            ...queued.map((q, i) => ({
+              id: -(i + 1), title: q.title, body: q.body,
+              created_at: q.queued_at, is_read: false,
+            })),
+            ...prev,
+          ]);
+        });
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
-    refreshUnread();
-  }, []);
+  }, [refreshUnread]);
+
+  useEffect(() => { load(); }, [load]);
 
   const markRead = (id: number) => {
     markAllNotifsRead().catch(() => {});
     setNotifs(p => p.map(n => n.id === id ? { ...n, is_read: true, read: true } : n));
   };
 
+  const markAll = () => {
+    markAllNotifsRead().catch(() => {});
+    setNotifs(p => p.map(n => ({ ...n, is_read: true, read: true })));
+  };
+
+  const visible = notifs.filter(n => filter === 'all' || !n.is_read && !n.read);
+  const unreadCount = notifs.filter(n => !n.is_read && !n.read).length;
+  const groups = groupByDate(visible);
+
   return (
     <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24 bg-white dark:bg-slate-900 min-h-screen">
-      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Notifications</h2>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">{tr.notifications}</h2>
+        {unreadCount > 0 && (
+          <button
+            onClick={markAll}
+            className="text-xs text-emerald-500 font-semibold"
+          >
+            {tr.markAllRead}
+          </button>
+        )}
+      </div>
+
+      {/* Filter pills */}
+      <div className="flex gap-2 mb-4">
+        {(['all', 'unread'] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              filter === f ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+            }`}
+          >
+            {f === 'all' ? tr.all : `${tr.noNotifications.split(' ')[1] || 'Unread'}${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-16 skeleton rounded-2xl" />)}
         </div>
-      ) : notifs.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">🔔</span>
-          <p className="font-semibold text-gray-900 dark:text-white">No notifications</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{tr.noNotifications}</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {notifs.map(n => {
-            const read = n.is_read || n.read;
-            return (
-              <button
-                key={n.id}
-                onClick={() => !read && markRead(n.id)}
-                className={`w-full text-left p-4 rounded-2xl border transition-colors ${
-                  read ? 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700' : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    {n.title && <p className="font-semibold text-gray-900 dark:text-white text-sm">{n.title}</p>}
-                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">{n.body || n.message}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-gray-400 dark:text-slate-500">{timeAgo(n.created_at)}</span>
-                    {!read && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        <div className="space-y-4">
+          {groups.map(({ label, items }) => (
+            <div key={label}>
+              <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-2">{label}</p>
+              <div className="space-y-2">
+                {items.map(n => {
+                  const read = n.is_read || n.read;
+                  const icon = NOTIF_ICONS[n.type || ''] || '🔔';
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => !read && markRead(n.id)}
+                      className={`w-full text-left p-4 rounded-2xl border transition-colors flex items-start gap-3 ${
+                        read
+                          ? 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
+                          : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800'
+                      }`}
+                    >
+                      <span className="text-xl shrink-0">{icon}</span>
+                      <div className="flex-1 min-w-0">
+                        {n.title && <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{n.title}</p>}
+                        <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5 line-clamp-2">{n.body || n.message}</p>
+                        <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">{timeAgo(n.created_at)}</p>
+                      </div>
+                      {!read && <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 }
+
+// Expose offline queue helper for SW / push handler use
+(window as any).__queueOfflineNotif = queueOfflineNotif;
