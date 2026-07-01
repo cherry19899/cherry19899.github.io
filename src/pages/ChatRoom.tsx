@@ -39,7 +39,7 @@ export default function ChatRoomPage() {
   useEffect(() => {
     if (!id) return;
     getChatMessages(id)
-      .then((d: any) => setMsgs(d?.messages || d || []))
+      .then((d: any) => setMsgs((d?.messages || d || []).map((m: any) => ({ ...m, content: m.content || m.message || '' }))))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
@@ -63,9 +63,9 @@ export default function ChatRoomPage() {
 
     socket.on('disconnect', () => setConnected(false));
 
-    socket.on('new_message', (msg: Msg) => {
+    socket.on('new_message', (raw: any) => {
+      const msg: Msg = { ...raw, content: raw.content || raw.message || '' };
       setMsgs(prev => {
-        // deduplicate
         if (prev.some(m => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
@@ -101,8 +101,10 @@ export default function ChatRoomPage() {
     setMsgs(prev => [...prev, optimistic]);
 
     try {
-      const msg = await sendMessage(id, content);
-      setMsgs(prev => prev.map(m => m.id === tempId ? { ...msg, pending: false } : m));
+      const res = await sendMessage(id, content);
+      const raw = res?.message || res;
+      const msg: Msg = { ...raw, content: raw.content || raw.message || content, pending: false };
+      setMsgs(prev => prev.map(m => m.id === tempId ? msg : m));
     } catch {
       setMsgs(prev => prev.filter(m => m.id !== tempId));
       setText(content);
