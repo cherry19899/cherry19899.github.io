@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   getAdminStats, getAdminUsers, getAdminJobs, getAdminEscrows, getAdminEarnings,
   adminDeleteJob, adminResolveEscrow, adminBlockUser, adminGrantConnects, apiFetch,
@@ -491,8 +492,8 @@ export default function AdminPage() {
       </div>
 
       {/* Grant connects modal */}
-      {grantModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setGrantModal(null)}>
+      {grantModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setGrantModal(null)}>
           <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Grant Connects</h2>
@@ -528,7 +529,8 @@ export default function AdminPage() {
               Grant {grantAmt} Connects ⚡
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   getJobs, fulltextSearch,
@@ -145,8 +146,8 @@ function FilterSheet({
 
   const hasFilters = draft.minBudget || draft.maxBudget || draft.urgentOnly;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={onClose}>
       <div
         className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-8 overflow-hidden"
         onClick={e => e.stopPropagation()}
@@ -231,7 +232,8 @@ function FilterSheet({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -247,8 +249,8 @@ function SaveSearchModal({
   const [name, setName] = useState('');
   const [alert, setAlert] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={onClose}>
       <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
         <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
         <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">{tr.saveSearch}</h2>
@@ -276,7 +278,8 @@ function SaveSearchModal({
           {tr.save}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
