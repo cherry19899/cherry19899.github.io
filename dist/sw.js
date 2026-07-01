@@ -2,7 +2,7 @@
 // - Navigations (HTML): network-first, fall back to cache/offline so users never
 //   get a stale index.html pointing at old bundles.
 // - Hashed static assets (/assets/*): cache-first (content-addressed, immutable).
-const CACHE_NAME = 'workpro-v3';
+const CACHE_NAME = 'workpro-v4';
 const OFFLINE_URL = '/index.html';
 
 self.addEventListener('install', (event) => {

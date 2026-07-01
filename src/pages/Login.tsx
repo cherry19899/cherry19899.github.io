@@ -87,7 +87,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <p className="mt-5 text-gray-400 dark:text-slate-600 text-xs text-center">Testnet mode · sandbox payments</p>
+        <p className="mt-5 text-gray-400 dark:text-slate-600 text-xs text-center">
+          {(import.meta.env.VITE_PI_MODE || (import.meta.env.PROD ? 'production' : 'sandbox')) === 'sandbox'
+            ? 'Testnet mode · sandbox payments'
+            : 'Mainnet · real Pi payments'}
+        </p>
       </div>
     </div>
   );

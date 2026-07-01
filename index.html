@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#10b981" />
   <meta name="description" content="WorkPro — Freelance marketplace on Pi Network" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://sdk.minepi.com https://*.minepi.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://workpro-api.onrender.com wss://workpro-api.onrender.com https://api.minepi.com https://*.minepi.com; img-src 'self' data: blob: https:; frame-src https://*.minepi.com;" />
   <title>WorkPro</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icon-192.png" />
@@ -15,9 +14,9 @@
       location.replace('/#' + location.pathname);
     }
   </script>
-  <!-- Pi SDK — loads synchronously so window.Pi is available before the app bundle
-       (auth, payments, share and the Pi-Browser guard all rely on this). -->
-  <script src="https://sdk.minepi.com/pi-sdk.js" crossorigin="anonymous"></script>
+  <!-- Pi SDK — loads synchronously (no crossorigin: real Pi Browser fails the load
+       otherwise) so window.Pi is available before the app bundle. -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
 <body>
   <div id="root"></div>
