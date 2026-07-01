@@ -7,6 +7,8 @@ import {
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { CATEGORIES, CAT_COLORS } from '../lib/constants';
+import { applyCostFor } from '../lib/connects';
+import { getFavorites, isFavorite, toggleFavorite } from '../lib/favorites';
 import { t } from '../lib/i18n';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -338,6 +340,7 @@ export default function HomePage() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [searchFocused, setSearchFocused] = useState(false);
   const [dueSoon, setDueSoon] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>();
@@ -473,9 +476,13 @@ export default function HomePage() {
     });
   };
 
-  const visibleJobs = dueSoon
+  let visibleJobs = dueSoon
     ? jobs.filter(j => { const d = daysUntil(j.deadline); return d !== null && d <= 7; })
     : jobs;
+  if (showSaved) {
+    const favs = getFavorites();
+    visibleJobs = visibleJobs.filter(j => favs.includes(j.id));
+  }
 
   return (
     <div className="max-w-lg mx-auto animate-fade-in bg-white dark:bg-slate-900 min-h-screen">
@@ -620,6 +627,14 @@ export default function HomePage() {
             >
               ⏰ {tr.dueSoon}
             </button>
+            <button
+              onClick={() => setShowSaved(v => !v)}
+              className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
+                showSaved ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+              }`}
+            >
+              🔖 {tr.saved}
+            </button>
           </div>
           <select
             value={sort}
@@ -702,6 +717,8 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
   const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
   const author = job.posted_by_name || job.client_username || 'unknown';
   const applicants = job.applications ?? job.applicants_count ?? 0;
+  const cost = applyCostFor(job.budget);
+  const [saved, setSaved] = useState(() => isFavorite(job.id));
   const tr = t();
 
   return (
@@ -713,8 +730,12 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
         <h3 className="font-semibold text-gray-900 dark:text-white leading-snug flex-1 line-clamp-2">{job.title}</h3>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-emerald-500 font-bold text-sm">{Number(job.budget)} π</span>
-          <button className="text-gray-300 dark:text-slate-600 hover:text-emerald-400 transition-colors" onClick={e => e.stopPropagation()}>
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <button
+            aria-label={tr.saved}
+            className={`transition-colors ${saved ? 'text-emerald-500' : 'text-gray-300 dark:text-slate-600 hover:text-emerald-400'}`}
+            onClick={e => { e.stopPropagation(); setSaved(toggleFavorite(job.id)); }}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>
       </div>
@@ -726,7 +747,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
         {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">{tr.urgent}</span>}
-        {(job.apply_cost ?? 0) > 0 && <span className="text-xs text-gray-400 dark:text-slate-500">{job.apply_cost} connects</span>}
+        <span className="text-xs text-gray-400 dark:text-slate-500">⚡ {cost} {tr.connects.toLowerCase()}</span>
       </div>
 
       <div className="flex items-center justify-between text-xs">

@@ -20,13 +20,28 @@ export function ensurePiInit() {
   } catch {}
 }
 
-// Native Pi share dialog — falls back to a no-op outside Pi Browser.
-export function shareJob(jobId: string, title: string) {
-  if (!isPiBrowser()) return;
+// Share a job. Uses the Web Share API (Pi SDK v2.0 has no share method).
+export async function shareJob(jobId: string, title: string) {
+  const url = `https://cherry19899.github.io/#/job/${jobId}`;
   try {
-    window.Pi?.openShareDialog({
-      title,
-      url: `https://cherry19899.github.io/#/job/${jobId}`,
+    if (navigator.share) {
+      await navigator.share({ title, text: title, url });
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(url);
+      window.__wpToast?.('Link copied', 'success');
+    }
+  } catch { /* user cancelled */ }
+}
+
+// Report an incomplete/unfinished Pi payment to the backend so it can be resolved.
+async function reportIncompletePayment(payment: any) {
+  const paymentId = payment?.identifier || payment?.paymentId;
+  const txid = payment?.transaction?.txid;
+  if (!paymentId) return;
+  try {
+    await apiFetch('/api/payments/incomplete', {
+      method: 'POST',
+      body: JSON.stringify({ paymentId, txid }),
     });
   } catch {}
 }
@@ -39,7 +54,7 @@ export async function piAuthenticate(onRetry?: (attempt: number) => void): Promi
   return new Promise((resolve, reject) => {
     window.Pi!.authenticate(
       ['username', 'payments'],
-      (_inc: any) => { /* incomplete payments handled server-side */ }
+      (payment: any) => { reportIncompletePayment(payment); }
     ).then(async (auth: any) => {
       try {
         // Backend v3.2 uses POST /api/me with Pi credentials directly
@@ -79,6 +94,7 @@ export function createPiPayment(
   window.Pi!.createPayment(
     { amount, memo, metadata },
     {
+      onIncompletePaymentFound: (payment: any) => { reportIncompletePayment(payment); },
       onReadyForServerApproval: async (paymentId: string) => {
         try {
           await apiFetch(`/api/payments/${paymentId}/approve`, { method: 'POST' });

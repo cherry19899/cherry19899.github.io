@@ -4,10 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { createJob } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CATEGORIES } from '../lib/constants';
+import { POST_JOB_COST } from '../lib/connects';
+import { useAppCtx } from '../App';
 
 export default function PostJobPage() {
   const tr = t();
   const nav = useNavigate();
+  const { user, updateUser } = useAppCtx();
+  const myConnects = user?.balance_connects ?? 0;
+  const canAfford = myConnects >= POST_JOB_COST;
   const [form, setForm] = useState({
     title: '', description: '', budget: '', category: 'development',
     skills: '', deadline: '', is_urgent: false, image: '',
@@ -31,9 +36,10 @@ export default function PostJobPage() {
   const total = +(budget + fee).toFixed(2);
 
   const handleSubmit = async () => {
-    if (!form.title.trim()) { toast('Title is required', 'error'); return; }
-    if (!form.description.trim()) { toast('Description is required', 'error'); return; }
-    if (!budget || budget < 1) { toast('Budget ≥ 1 Pi', 'error'); return; }
+    if (!form.title.trim()) { toast(tr.titleRequired, 'error'); return; }
+    if (!form.description.trim()) { toast(tr.descRequired, 'error'); return; }
+    if (!budget || budget < 1) { toast(tr.budgetMin, 'error'); return; }
+    if (!canAfford) { toast(tr.notEnoughConnects, 'error'); return; }
     setSaving(true);
     try {
       const skills = form.skills.split(',').map(s => s.trim()).filter(Boolean);
@@ -43,7 +49,9 @@ export default function PostJobPage() {
         ...(form.deadline ? { deadline: form.deadline } : {}),
         ...(form.image ? { image: form.image } : {}),
       });
-      toast('Job posted!', 'success');
+      // Optimistically reflect the connect the server deducted.
+      updateUser({ balance_connects: Math.max(0, myConnects - POST_JOB_COST) });
+      toast(tr.jobPosted, 'success');
       const newId = data?.job?.id || data?.id;
       nav(newId ? `/job/${newId}` : '/');
     } catch (e: any) {
@@ -54,17 +62,17 @@ export default function PostJobPage() {
   return (
     <div className="max-w-lg mx-auto w-full p-4 pb-8 space-y-4 animate-fade-in">
 
-        <Field label="Job Title *">
+        <Field label={`${tr.jobTitle} *`}>
           <input value={form.title} onChange={e => set('title', e.target.value)}
             placeholder="e.g. Build a Pi Network dApp" maxLength={120} className="field-input" />
         </Field>
 
         <Field label="Description *">
           <textarea value={form.description} onChange={e => set('description', e.target.value)}
-            placeholder="Describe what needs to be done…" rows={5} className="field-input resize-none" />
+            placeholder={tr.jobDescPlaceholder} rows={5} className="field-input resize-none" />
         </Field>
 
-        <Field label="Category">
+        <Field label={tr.category}>
           <select value={form.category} onChange={e => set('category', e.target.value)} className="field-input">
             {CATEGORIES.filter(c => c.key !== 'all').map(c => (
               <option key={c.key} value={c.key}>{c.label}</option>
@@ -73,19 +81,19 @@ export default function PostJobPage() {
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Budget (π) *">
+          <Field label={`${tr.budget} (π) *`}>
             <input value={form.budget} onChange={e => set('budget', e.target.value)}
-              type="number" min="1" placeholder="e.g. 50" className="field-input" />
+              type="number" min="1" placeholder={tr.budgetPlaceholder} className="field-input" />
           </Field>
-          <Field label="Deadline">
+          <Field label={tr.deadline}>
             <input value={form.deadline} onChange={e => set('deadline', e.target.value)}
               type="date" className="field-input" />
           </Field>
         </div>
 
-        <Field label="Skills (comma-separated)">
+        <Field label={tr.skills}>
           <input value={form.skills} onChange={e => set('skills', e.target.value)}
-            placeholder="e.g. React, Node.js" className="field-input" />
+            placeholder={tr.skillsPlaceholder} className="field-input" />
         </Field>
 
         {/* Attach Photo */}
@@ -106,17 +114,23 @@ export default function PostJobPage() {
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
               <circle cx="12" cy="13" r="4"/>
             </svg>
-            <span className="text-sm">Attach Photo · Add</span>
+            <span className="text-sm">{tr.attachPhoto}</span>
             <input type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
           </label>
         )}
 
+        {/* Connects cost */}
+        <div className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm ${canAfford ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+          <span className="font-semibold">⚡ {tr.costOneConnect}</span>
+          <span className="text-xs">{myConnects} {tr.connects.toLowerCase()}</span>
+        </div>
+
         {/* Summary */}
         {budget > 0 && (
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2 text-sm">
-            <Row label="Budget" value={`${budget} π`} />
-            <Row label={`Platform fee (2%)`} value={`${fee} π`} muted />
-            <Row label="Стоимость отклика" value="1 connect" muted />
+            <Row label={tr.budget} value={`${budget} π`} />
+            <Row label={`${tr.platformFee} (2%)`} value={`${fee} π`} muted />
+            <Row label={tr.costOneConnect} value={`${POST_JOB_COST}`} muted />
             <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
               <span className="text-gray-900">{tr.total}</span>
               <span className="text-emerald-500">{total} π</span>
@@ -138,10 +152,10 @@ export default function PostJobPage() {
 
         <button
           onClick={handleSubmit}
-          disabled={saving}
+          disabled={saving || !canAfford}
           className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60 transition-colors"
         >
-          {saving ? 'Posting…' : 'Post a Job'}
+          {saving ? '⏳' : !canAfford ? tr.notEnoughConnects : tr.postJob}
         </button>
       <style>{`
         .field-input { width:100%; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:0.75rem; padding:0.625rem 0.875rem; font-size:0.875rem; color:#1f2937; outline:none; }

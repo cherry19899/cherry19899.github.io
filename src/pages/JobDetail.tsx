@@ -6,6 +6,7 @@ import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
 import { createPiPayment, shareJob } from '../lib/pi';
+import { applyCostFor } from '../lib/connects';
 
 function timeAgo(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -41,6 +42,8 @@ export default function JobDetailPage() {
   const [hiringId, setHiringId] = useState<number | null>(null);
 
   const isOwner = job && user && job.posted_by === user.uid;
+  const myConnects = user?.balance_connects ?? 0;
+  const applyCost = applyCostFor(job?.budget);
 
   useEffect(() => {
     if (!id) return;
@@ -66,9 +69,11 @@ export default function JobDetailPage() {
 
   const handleApply = async () => {
     if (!proposal.trim()) { toast('Write a proposal first', 'error'); return; }
+    if (myConnects < applyCost) { toast(tr.notEnoughConnects, 'error'); return; }
     setApplying(true);
     try {
       await applyToJob(id!, { proposal, job_id: Number(id) });
+      updateUser({ balance_connects: Math.max(0, myConnects - applyCost) });
       toast('Application sent! ✅', 'success');
       nav('/my-jobs');
     } catch (e: any) {
@@ -275,9 +280,9 @@ export default function JobDetailPage() {
                     rows={5}
                     className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none"
                   />
-                  {(job.apply_cost ?? 0) > 0 && (
-                    <p className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                      ⚡ Costs {job.apply_cost} connects
+                  {(
+                    <p className={`text-xs font-medium flex items-center gap-1 ${myConnects >= applyCost ? 'text-amber-600' : 'text-red-500'}`}>
+                      ⚡ {tr.applyCostLabel}: {applyCost} {tr.connects.toLowerCase()} · {myConnects} {tr.connects.toLowerCase()}
                     </p>
                   )}
                   <div className="flex gap-2">
@@ -286,10 +291,10 @@ export default function JobDetailPage() {
                     </button>
                     <button
                       onClick={handleApply}
-                      disabled={applying}
+                      disabled={applying || myConnects < applyCost}
                       className="flex-[2] h-12 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-60"
                     >
-                      {applying ? 'Sending…' : 'Submit Proposal'}
+                      {applying ? '⏳' : myConnects < applyCost ? tr.notEnoughConnects : tr.submitProposal}
                     </button>
                   </div>
                 </div>
@@ -298,7 +303,7 @@ export default function JobDetailPage() {
                   onClick={() => setView('apply')}
                   className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 transition-colors"
                 >
-                  Apply Now
+                  {tr.applyNow} · {applyCost} {tr.connects.toLowerCase()}
                 </button>
               )
             )}
