@@ -228,6 +228,11 @@ export default function JobDetailPage() {
               </button>
             </div>
 
+            {/* Photo */}
+            {job.image && (
+              <img src={job.image} alt="" className="w-full max-h-64 object-cover rounded-2xl mb-4" />
+            )}
+
             {/* Description */}
             <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 mb-4">
               <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>

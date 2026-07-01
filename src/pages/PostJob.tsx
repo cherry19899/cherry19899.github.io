@@ -10,11 +10,21 @@ export default function PostJobPage() {
   const nav = useNavigate();
   const [form, setForm] = useState({
     title: '', description: '', budget: '', category: 'development',
-    skills: '', deadline: '', is_urgent: false,
+    skills: '', deadline: '', is_urgent: false, image: '',
   });
   const [saving, setSaving] = useState(false);
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
+
+  const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Image files only', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast('Image must be under 5 MB', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = () => set('image', String(reader.result || ''));
+    reader.readAsDataURL(file);
+  };
 
   const budget = Number(form.budget) || 0;
   const fee = +(budget * 0.02).toFixed(2);
@@ -31,6 +41,7 @@ export default function PostJobPage() {
         title: form.title.trim(), description: form.description.trim(),
         budget, category: form.category, skills, is_urgent: form.is_urgent,
         ...(form.deadline ? { deadline: form.deadline } : {}),
+        ...(form.image ? { image: form.image } : {}),
       });
       toast('Job posted!', 'success');
       const newId = data?.job?.id || data?.id;
@@ -77,14 +88,28 @@ export default function PostJobPage() {
             placeholder="e.g. React, Node.js" className="field-input" />
         </Field>
 
-        {/* Attach Photos */}
-        <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center gap-2 text-gray-400 cursor-pointer hover:border-emerald-300 transition-colors">
-          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-          <span className="text-sm">Attach Photos · Add</span>
-        </div>
+        {/* Attach Photo */}
+        {form.image ? (
+          <div className="relative rounded-2xl overflow-hidden">
+            <img src={form.image} alt="" className="w-full max-h-56 object-cover" />
+            <button
+              type="button"
+              onClick={() => set('image', '')}
+              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center text-lg"
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label className="border-2 border-dashed border-gray-300 rounded-2xl p-6 flex flex-col items-center gap-2 text-gray-400 cursor-pointer hover:border-emerald-300 transition-colors">
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span className="text-sm">Attach Photo · Add</span>
+            <input type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
+          </label>
+        )}
 
         {/* Summary */}
         {budget > 0 && (

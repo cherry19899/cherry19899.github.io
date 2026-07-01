@@ -15,22 +15,28 @@ export default function ProfilePage() {
   const [availability, setAvailability] = useState(true);
   const [buying, setBuying] = useState(false);
   const [langModal, setLangModal] = useState(false);
+  const [piModal, setPiModal] = useState(false);
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
 
   const buyConnects = (qty: number, price: number) => {
-    if (!isPiBrowser()) { toast('Open in Pi Browser to buy', 'error'); return; }
+    if (!isPiBrowser()) { setPiModal(true); return; }
     setBuying(true);
-    createPiPayment(price, `Buy ${qty} Connects`, { type: 'buy_connects', qty }, {
-      onCompleted: () => {
-        updateUser({ balance_connects: connects + qty });
-        toast(`Added ${qty} connects!`, 'success');
-        setBuying(false);
-      },
-      onCancelled: () => setBuying(false),
-      onError: (e: any) => { toast(e?.message || e?.toString() || 'Payment failed', 'error'); setBuying(false); },
-    });
+    try {
+      createPiPayment(price, `Buy ${qty} Connects`, { type: 'buy_connects', qty }, {
+        onCompleted: () => {
+          updateUser({ balance_connects: connects + qty });
+          toast(`Added ${qty} connects!`, 'success');
+          setBuying(false);
+        },
+        onCancelled: () => setBuying(false),
+        onError: (e: any) => { toast(e?.message || e?.toString() || 'Payment failed', 'error'); setBuying(false); },
+      });
+    } catch (e: any) {
+      toast(e?.message || 'Payment failed', 'error');
+      setBuying(false);
+    }
   };
 
   if (!user) return null;
@@ -158,8 +164,9 @@ export default function ProfilePage() {
             <button
               onClick={() => { const pkg = CONNECT_PACKAGES[0]; buyConnects(pkg.connects, pkg.price); }}
               disabled={buying}
-              className="mt-2 bg-emerald-500 text-white rounded-full px-4 py-1 text-xs font-semibold disabled:opacity-60"
+              className="mt-2 bg-emerald-500 text-white rounded-full px-4 py-1 text-xs font-semibold disabled:opacity-60 inline-flex items-center gap-1"
             >
+              {buying && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
               {tr.buy}
             </button>
           </div>
@@ -249,6 +256,26 @@ export default function ProfilePage() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Open in Pi Browser modal */}
+      {piModal && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-6" onClick={() => setPiModal(false)}>
+          <div className="w-full max-w-xs bg-white dark:bg-slate-800 rounded-3xl p-6 text-center" onClick={e => e.stopPropagation()}>
+            <div className="text-5xl mb-3">📱</div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{tr.piBrowser}</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-5">
+              {tr.openInPiBrowser}
+            </p>
+            <button
+              onClick={() => setPiModal(false)}
+              className="w-full h-11 rounded-full bg-emerald-500 text-white font-semibold"
+            >
+              {tr.close}
+            </button>
           </div>
         </div>,
         document.body

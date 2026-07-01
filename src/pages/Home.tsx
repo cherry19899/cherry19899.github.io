@@ -33,7 +33,7 @@ interface Job {
   category?: string; posted_by_name?: string; client_username?: string;
   applications?: number; applicants_count?: number;
   apply_cost?: number; is_urgent?: boolean; created_at: string;
-  deadline?: string;
+  deadline?: string; image?: string;
 }
 
 // Days until a deadline (negative = past). null if no/invalid date.
@@ -660,9 +660,13 @@ export default function HomePage() {
       {user && (
         <button
           onClick={() => nav('/post-job')}
-          className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40 flex items-center justify-center text-white text-3xl font-light active:scale-95 transition-transform"
+          aria-label={tr.postJob}
+          className="fixed bottom-20 right-4 z-[999] w-14 h-14 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shadow-xl shadow-black/30 flex items-center justify-center text-white active:scale-95 transition-transform"
         >
-          +
+          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
         </button>
       )}
 
@@ -700,6 +704,9 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-3">
+      {job.image && (
+        <img src={job.image} alt="" className="w-full h-32 object-cover rounded-xl -mt-1" />
+      )}
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-gray-900 dark:text-white leading-snug flex-1 line-clamp-2">{job.title}</h3>
         <div className="flex items-center gap-2 shrink-0">
