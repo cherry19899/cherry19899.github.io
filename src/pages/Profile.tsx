@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
@@ -14,7 +15,6 @@ export default function ProfilePage() {
   const [availability, setAvailability] = useState(true);
   const [buying, setBuying] = useState(false);
   const [langModal, setLangModal] = useState(false);
-  const langOpenedAt = useRef(0);
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
@@ -67,7 +67,7 @@ export default function ProfilePage() {
       label: tr.language,
       sub: LANGUAGES.find(l => l.code === currentLang())?.label || currentLang(),
       right: <Chevron />,
-      onClick: () => { (window as any).__dbg?.('LANG row onClick fired'); langOpenedAt.current = Date.now(); setLangModal(true); },
+      onClick: () => setLangModal(true),
     },
     {
       icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
@@ -215,9 +215,11 @@ export default function ProfilePage() {
         <p className="text-xs text-gray-400 dark:text-slate-600">Work Pro — Pi Network Freelance Marketplace</p>
       </div>
 
-      {/* Language picker modal */}
-      {langModal && ((window as any).__dbg?.('LANG modal RENDERING, langModal=' + langModal), true) && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => { if (Date.now() - langOpenedAt.current > 400) setLangModal(false); }}>
+      {/* Language picker modal — rendered via portal to <body> so it escapes the
+          page root's `animate-fade-in` transform, which would otherwise become the
+          containing block for `position: fixed` and push the sheet off-screen. */}
+      {langModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
           <div
             className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
             onClick={e => e.stopPropagation()}
@@ -228,7 +230,7 @@ export default function ProfilePage() {
               {LANGUAGES.map(lang => (
                 <button
                   key={lang.code}
-                  onClick={() => { if (Date.now() - langOpenedAt.current < 400) return; setLangModal(false); setLang(lang.code); }}
+                  onClick={() => { setLangModal(false); setLang(lang.code); }}
                   className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left ${
                     currentLang() === lang.code
                       ? 'bg-emerald-50 dark:bg-emerald-900/20'
@@ -248,7 +250,8 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
