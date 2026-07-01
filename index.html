@@ -15,8 +15,9 @@
       location.replace('/#' + location.pathname);
     }
   </script>
-  <!-- Pi SDK -->
-  <script src="https://sdk.minepi.com/pi-sdk.js" crossorigin="anonymous" async></script>
+  <!-- Pi SDK — loads synchronously so window.Pi is available before the app bundle
+       (auth, payments, share and the Pi-Browser guard all rely on this). -->
+  <script src="https://sdk.minepi.com/pi-sdk.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div id="root"></div>
