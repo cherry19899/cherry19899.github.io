@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getJobs } from '../lib/api';
+import {
+  getJobs, fulltextSearch,
+  getSavedSearches, createSavedSearch, deleteSavedSearch,
+} from '../lib/api';
 import { useAppCtx } from '../App';
 import { CATEGORIES, CAT_COLORS } from '../lib/constants';
 import { t } from '../lib/i18n';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function timeAgo(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -29,6 +34,281 @@ interface Job {
   apply_cost?: number; is_urgent?: boolean; created_at: string;
 }
 
+interface Filters {
+  minBudget: string;
+  maxBudget: string;
+  urgentOnly: boolean;
+}
+
+const DEFAULT_FILTERS: Filters = { minBudget: '', maxBudget: '', urgentOnly: false };
+
+// ─── Budget Slider ────────────────────────────────────────────────────────────
+
+function BudgetSlider({
+  min, max, value, onChange,
+}: {
+  min: number; max: number; value: [number, number]; onChange: (v: [number, number]) => void;
+}) {
+  const rangeRef = useRef<HTMLDivElement>(null);
+
+  const pct = (v: number) => ((v - min) / (max - min)) * 100;
+
+  const handleTrackClick = (e: React.MouseEvent, isRight: boolean) => {
+    if (!rangeRef.current) return;
+    const rect = rangeRef.current.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    const newVal = Math.round(min + ratio * (max - min));
+    if (isRight) {
+      onChange([value[0], Math.max(value[0], newVal)]);
+    } else {
+      onChange([Math.min(value[1], newVal), value[1]]);
+    }
+  };
+
+  return (
+    <div className="px-2">
+      <div className="flex justify-between text-xs text-gray-500 dark:text-slate-400 mb-2">
+        <span>{value[0]} π</span>
+        <span>{value[1]} π</span>
+      </div>
+      <div ref={rangeRef} className="relative h-6 flex items-center cursor-pointer" onClick={e => {
+        if (!rangeRef.current) return;
+        const rect = rangeRef.current.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        const newVal = Math.round(min + ratio * (max - min));
+        const leftDist = Math.abs(newVal - value[0]);
+        const rightDist = Math.abs(newVal - value[1]);
+        if (leftDist < rightDist) onChange([Math.min(newVal, value[1]), value[1]]);
+        else onChange([value[0], Math.max(newVal, value[0])]);
+      }}>
+        {/* Track */}
+        <div className="absolute w-full h-1.5 bg-gray-200 dark:bg-slate-600 rounded-full" />
+        {/* Active range */}
+        <div
+          className="absolute h-1.5 bg-emerald-400 rounded-full"
+          style={{ left: `${pct(value[0])}%`, width: `${pct(value[1]) - pct(value[0])}%` }}
+        />
+        {/* Thumb left */}
+        <input
+          type="range" min={min} max={max} value={value[0]}
+          onChange={e => onChange([Math.min(Number(e.target.value), value[1]), value[1]])}
+          className="absolute w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white"
+          style={{ zIndex: value[0] > max - 10 ? 5 : 3 }}
+        />
+        {/* Thumb right */}
+        <input
+          type="range" min={min} max={max} value={value[1]}
+          onChange={e => onChange([value[0], Math.max(Number(e.target.value), value[0])])}
+          className="absolute w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white"
+          style={{ zIndex: 4 }}
+        />
+      </div>
+      {/* Preset quick buttons */}
+      <div className="flex gap-2 mt-3 flex-wrap">
+        {[[0,50],[50,200],[200,500],[500,2000]].map(([a,b]) => (
+          <button
+            key={`${a}-${b}`}
+            onClick={() => onChange([a, b])}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              value[0] === a && value[1] === b
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'
+            }`}
+          >
+            {a}–{b} π
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Filter Sheet ─────────────────────────────────────────────────────────────
+
+function FilterSheet({
+  filters, onApply, onClose, savedSearches, onSaveSearch, onDeleteSavedSearch, onLoadSearch,
+}: {
+  filters: Filters;
+  onApply: (f: Filters) => void;
+  onClose: () => void;
+  savedSearches: any[];
+  onSaveSearch: () => void;
+  onDeleteSavedSearch: (id: number) => void;
+  onLoadSearch: (s: any) => void;
+}) {
+  const tr = t();
+  const [draft, setDraft] = useState<Filters>(filters);
+  const budgetRange: [number, number] = [
+    parseInt(draft.minBudget) || 0,
+    parseInt(draft.maxBudget) || 2000,
+  ];
+
+  const hasFilters = draft.minBudget || draft.maxBudget || draft.urgentOnly;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={onClose}>
+      <div
+        className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-8 overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Handle */}
+        <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mt-4 mb-5" />
+
+        <div className="px-5">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">{tr.filters}</h2>
+            {hasFilters && (
+              <button
+                onClick={() => setDraft(DEFAULT_FILTERS)}
+                className="text-xs text-red-400 font-semibold"
+              >
+                {tr.clearFilters}
+              </button>
+            )}
+          </div>
+
+          {/* Budget range */}
+          <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">{tr.budget}</p>
+          <BudgetSlider
+            min={0}
+            max={2000}
+            value={budgetRange}
+            onChange={([lo, hi]) => setDraft(d => ({ ...d, minBudget: String(lo), maxBudget: String(hi) }))}
+          />
+
+          {/* Urgent only toggle */}
+          <div className="flex items-center justify-between mt-5 mb-5 py-3 border-t border-gray-100 dark:border-slate-700">
+            <div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">{tr.urgentOnly}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500">Only show urgent jobs</p>
+            </div>
+            <button
+              onClick={() => setDraft(d => ({ ...d, urgentOnly: !d.urgentOnly }))}
+              className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${draft.urgentOnly ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-600'}`}
+            >
+              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${draft.urgentOnly ? 'left-[26px]' : 'left-0.5'}`} />
+            </button>
+          </div>
+
+          {/* Saved searches */}
+          {savedSearches.length > 0 && (
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-2">{tr.savedSearches}</p>
+              <div className="flex flex-wrap gap-2">
+                {savedSearches.map(s => (
+                  <div key={s.id} className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 rounded-full px-3 py-1">
+                    <button
+                      onClick={() => { onLoadSearch(s); onClose(); }}
+                      className="text-xs text-gray-700 dark:text-slate-200 font-medium"
+                    >
+                      🔍 {s.name}
+                    </button>
+                    <button
+                      onClick={() => onDeleteSavedSearch(s.id)}
+                      className="text-gray-300 dark:text-slate-500 hover:text-red-400 ml-1"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              onClick={onSaveSearch}
+              className="flex-1 py-3 rounded-2xl border border-emerald-300 dark:border-emerald-700 text-emerald-500 text-sm font-semibold"
+            >
+              + {tr.saveSearch}
+            </button>
+            <button
+              onClick={() => { onApply(draft); onClose(); }}
+              className="flex-[2] py-3 rounded-2xl bg-emerald-500 text-white text-sm font-bold"
+            >
+              {tr.applyFilters}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Save Search Modal ────────────────────────────────────────────────────────
+
+function SaveSearchModal({
+  onSave, onClose,
+}: {
+  onSave: (name: string, alert: boolean) => void;
+  onClose: () => void;
+}) {
+  const tr = t();
+  const [name, setName] = useState('');
+  const [alert, setAlert] = useState(false);
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/40" onClick={onClose}>
+      <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
+        <h2 className="text-base font-bold text-gray-900 dark:text-white mb-4">{tr.saveSearch}</h2>
+        <input
+          autoFocus
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="e.g. Python jobs under 100π"
+          className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 mb-3"
+        />
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-gray-700 dark:text-slate-300">{tr.searchAlert}</p>
+          <button
+            onClick={() => setAlert(a => !a)}
+            className={`w-12 h-6 rounded-full relative transition-colors ${alert ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-600'}`}
+          >
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${alert ? 'left-[26px]' : 'left-0.5'}`} />
+          </button>
+        </div>
+        <button
+          onClick={() => name.trim() && onSave(name.trim(), alert)}
+          disabled={!name.trim()}
+          className="w-full h-12 rounded-full bg-emerald-500 text-white font-semibold disabled:opacity-50"
+        >
+          {tr.save}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Autocomplete dropdown ────────────────────────────────────────────────────
+
+function AutocompleteDropdown({
+  suggestions, onSelect,
+}: {
+  suggestions: string[];
+  onSelect: (s: string) => void;
+}) {
+  if (suggestions.length === 0) return null;
+  return (
+    <div className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-2xl shadow-xl z-50 overflow-hidden">
+      {suggestions.map((s, i) => (
+        <button
+          key={i}
+          onMouseDown={e => { e.preventDefault(); onSelect(s); }}
+          className="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2"
+        >
+          <svg className="w-3.5 h-3.5 text-gray-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          {s}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function HomePage() {
   const { user } = useAppCtx();
   const nav = useNavigate();
@@ -39,7 +319,46 @@ export default function HomePage() {
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [savedSearches, setSavedSearches] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [searchFocused, setSearchFocused] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>();
+  const sugTimer = useRef<ReturnType<typeof setTimeout>>();
+  const tr = t();
+
+  const filtersActive = !!(filters.minBudget || filters.maxBudget || filters.urgentOnly);
+
+  // ── Load saved searches ───────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (user) {
+      getSavedSearches()
+        .then(d => setSavedSearches(d?.searches || d || []))
+        .catch(() => {});
+    }
+  }, [user]);
+
+  // ── Autocomplete ──────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    clearTimeout(sugTimer.current);
+    if (search.length < 2) { setSuggestions([]); return; }
+    sugTimer.current = setTimeout(async () => {
+      try {
+        const res = await fulltextSearch(search, 'limit=5');
+        const jobs: Job[] = res?.jobs || res || [];
+        // extract unique title fragments as suggestions
+        const sugs = jobs.slice(0, 5).map((j: Job) => j.title);
+        setSuggestions(sugs);
+      } catch { setSuggestions([]); }
+    }, 200);
+    return () => clearTimeout(sugTimer.current);
+  }, [search]);
+
+  // ── Job fetch ─────────────────────────────────────────────────────────────
 
   const load = useCallback(async (p = 1, replace = true) => {
     if (p === 1) setLoading(true);
@@ -47,6 +366,9 @@ export default function HomePage() {
       const qs = new URLSearchParams({ page: String(p), limit: '20', sort });
       if (cat !== 'all') qs.set('category', cat);
       if (search) qs.set('search', search);
+      if (filters.minBudget) qs.set('min_budget', filters.minBudget);
+      if (filters.maxBudget) qs.set('max_budget', filters.maxBudget);
+      if (filters.urgentOnly) qs.set('urgent', '1');
       const data = await getJobs(qs.toString());
       const list: Job[] = data?.jobs || data || [];
       setJobs(prev => replace ? list : [...prev, ...list]);
@@ -54,7 +376,7 @@ export default function HomePage() {
       setPage(p);
     } catch {}
     finally { setLoading(false); }
-  }, [cat, sort, search]);
+  }, [cat, sort, search, filters]);
 
   useEffect(() => {
     clearTimeout(timer.current);
@@ -62,7 +384,34 @@ export default function HomePage() {
     return () => clearTimeout(timer.current);
   }, [load]);
 
-  const tr = t();
+  // ── Saved search actions ──────────────────────────────────────────────────
+
+  const handleSaveSearch = async (name: string, alertEnabled: boolean) => {
+    try {
+      const params = { search, category: cat, sort, ...filters };
+      const s = await createSavedSearch({ name, query_params: params, alert_enabled: alertEnabled });
+      setSavedSearches(prev => [...prev, s?.search || { id: Date.now(), name }]);
+    } catch {}
+    setShowSaveModal(false);
+  };
+
+  const handleDeleteSaved = async (id: number) => {
+    try { await deleteSavedSearch(id); }
+    catch {}
+    setSavedSearches(prev => prev.filter(s => s.id !== id));
+  };
+
+  const handleLoadSearch = (s: any) => {
+    const p = s.query_params || {};
+    if (p.search) setSearch(p.search);
+    if (p.category) setCat(p.category);
+    if (p.sort) setSort(p.sort);
+    setFilters({
+      minBudget: p.minBudget || '',
+      maxBudget: p.maxBudget || '',
+      urgentOnly: p.urgentOnly || false,
+    });
+  };
 
   return (
     <div className="max-w-lg mx-auto animate-fade-in bg-white dark:bg-slate-900 min-h-screen">
@@ -81,7 +430,7 @@ export default function HomePage() {
 
       {/* Filter bar */}
       <div className="sticky top-[calc(3.5rem+1.75rem)] z-30 bg-white dark:bg-slate-900 px-4 pt-2 border-b border-gray-100 dark:border-slate-800">
-        {/* Search */}
+        {/* Search with autocomplete */}
         <div className="relative mb-3 flex gap-2">
           <div className="relative flex-1">
             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -89,17 +438,83 @@ export default function HomePage() {
             </svg>
             <input
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => { setSearch(e.target.value); }}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
               placeholder={tr.searchJobs}
               className="w-full pl-10 pr-4 h-11 rounded-full bg-gray-100 dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
+            {/* Autocomplete suggestions */}
+            {searchFocused && suggestions.length > 0 && (
+              <AutocompleteDropdown
+                suggestions={suggestions}
+                onSelect={s => { setSearch(s); setSuggestions([]); }}
+              />
+            )}
           </div>
-          <button className="w-11 h-11 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-            <svg className="w-4 h-4 text-gray-500 dark:text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+
+          {/* Filter button — badge if active */}
+          <button
+            onClick={() => setShowFilterSheet(true)}
+            className={`relative w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+              filtersActive ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
+            }`}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
             </svg>
+            {filtersActive && (
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] font-bold text-white flex items-center justify-center">
+                !
+              </span>
+            )}
           </button>
         </div>
+
+        {/* Active filters strip */}
+        {filtersActive && (
+          <div className="flex gap-2 pb-2 overflow-x-auto scrollbar-hide">
+            {filters.minBudget && (
+              <span className="flex-shrink-0 text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full px-2.5 py-1 font-medium">
+                ≥{filters.minBudget} π
+                <button onClick={() => setFilters(f => ({ ...f, minBudget: '' }))} className="ml-1">×</button>
+              </span>
+            )}
+            {filters.maxBudget && (
+              <span className="flex-shrink-0 text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full px-2.5 py-1 font-medium">
+                ≤{filters.maxBudget} π
+                <button onClick={() => setFilters(f => ({ ...f, maxBudget: '' }))} className="ml-1">×</button>
+              </span>
+            )}
+            {filters.urgentOnly && (
+              <span className="flex-shrink-0 text-xs bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full px-2.5 py-1 font-medium">
+                🔥 Urgent
+                <button onClick={() => setFilters(f => ({ ...f, urgentOnly: false }))} className="ml-1">×</button>
+              </span>
+            )}
+            <button
+              onClick={() => setFilters(DEFAULT_FILTERS)}
+              className="flex-shrink-0 text-xs text-gray-400 dark:text-slate-500 font-medium"
+            >
+              {tr.clearFilters}
+            </button>
+          </div>
+        )}
+
+        {/* Saved searches quick row */}
+        {savedSearches.length > 0 && (
+          <div className="flex gap-2 pb-2 overflow-x-auto scrollbar-hide">
+            {savedSearches.slice(0, 5).map(s => (
+              <button
+                key={s.id}
+                onClick={() => handleLoadSearch(s)}
+                className="flex-shrink-0 text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 rounded-full px-3 py-1 font-medium"
+              >
+                🔍 {s.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Category pills */}
         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
@@ -164,9 +579,32 @@ export default function HomePage() {
           +
         </button>
       )}
+
+      {/* Filter sheet */}
+      {showFilterSheet && (
+        <FilterSheet
+          filters={filters}
+          onApply={f => setFilters(f)}
+          onClose={() => setShowFilterSheet(false)}
+          savedSearches={savedSearches}
+          onSaveSearch={() => { setShowFilterSheet(false); setShowSaveModal(true); }}
+          onDeleteSavedSearch={handleDeleteSaved}
+          onLoadSearch={handleLoadSearch}
+        />
+      )}
+
+      {/* Save search modal */}
+      {showSaveModal && (
+        <SaveSearchModal
+          onSave={handleSaveSearch}
+          onClose={() => setShowSaveModal(false)}
+        />
+      )}
     </div>
   );
 }
+
+// ─── JobCard ──────────────────────────────────────────────────────────────────
 
 function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
   const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
@@ -176,7 +614,6 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-3">
-      {/* Title row */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-gray-900 dark:text-white leading-snug flex-1 line-clamp-2">{job.title}</h3>
         <div className="flex items-center gap-2 shrink-0">
@@ -187,19 +624,16 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
         </div>
       </div>
 
-      {/* Description */}
       {job.description && (
         <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">{job.description}</p>
       )}
 
-      {/* Tags */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
         {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">{tr.urgent}</span>}
         {(job.apply_cost ?? 0) > 0 && <span className="text-xs text-gray-400 dark:text-slate-500">{job.apply_cost} connects</span>}
       </div>
 
-      {/* Author + stats */}
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-[10px]">
@@ -214,7 +648,6 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
         </div>
       </div>
 
-      {/* Apply Now button */}
       <button
         onClick={onClick}
         className="w-full h-10 rounded-full bg-emerald-500 text-white text-sm font-semibold active:scale-[0.98] transition-transform shadow-sm shadow-emerald-500/30"
