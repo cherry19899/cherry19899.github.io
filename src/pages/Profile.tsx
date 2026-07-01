@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [availability, setAvailability] = useState(true);
   const [buying, setBuying] = useState(false);
   const [langModal, setLangModal] = useState(false);
+  const langOpenedAt = useRef(0);
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
@@ -66,7 +67,7 @@ export default function ProfilePage() {
       label: tr.language,
       sub: LANGUAGES.find(l => l.code === currentLang())?.label || currentLang(),
       right: <Chevron />,
-      onClick: () => setLangModal(true),
+      onClick: () => { langOpenedAt.current = Date.now(); setLangModal(true); },
     },
     {
       icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
@@ -216,7 +217,7 @@ export default function ProfilePage() {
 
       {/* Language picker modal */}
       {langModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => setLangModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={() => { if (Date.now() - langOpenedAt.current > 400) setLangModal(false); }}>
           <div
             className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
             onClick={e => e.stopPropagation()}
@@ -227,7 +228,7 @@ export default function ProfilePage() {
               {LANGUAGES.map(lang => (
                 <button
                   key={lang.code}
-                  onClick={() => { setLangModal(false); setLang(lang.code); }}
+                  onClick={() => { if (Date.now() - langOpenedAt.current < 400) return; setLangModal(false); setLang(lang.code); }}
                   className={`w-full flex items-center gap-3 px-5 py-3 transition-colors text-left ${
                     currentLang() === lang.code
                       ? 'bg-emerald-50 dark:bg-emerald-900/20'
