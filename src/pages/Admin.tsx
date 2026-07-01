@@ -358,7 +358,7 @@ export default function AdminPage() {
                     <ResponsiveContainer width="100%" height={160}>
                       <LineChart data={analytics.signups.data}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5)} />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5, 10)} />
                         <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                         <Tooltip />
                         <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} dot={false} />
@@ -380,7 +380,7 @@ export default function AdminPage() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5)} />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => d.slice(5, 10)} />
                         <YAxis tick={{ fontSize: 10 }} />
                         <Tooltip />
                         <Area type="monotone" dataKey="amount" stroke="#10b981" fill="url(#revGrad)" strokeWidth={2} />
