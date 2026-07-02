@@ -21,6 +21,6 @@ export const CAT_COLORS: Record<string, string> = {
 
 export const CONNECT_PACKAGES = [
   { connects: 10,  price: 1 },
-  { connects: 50,  price: 4.5 },
-  { connects: 100, price: 8 },
+  { connects: 50,  price: 5 },
+  { connects: 100, price: 7 },
 ];
