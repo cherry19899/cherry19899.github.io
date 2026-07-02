@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { t } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, apiFetch } from '../lib/api';
+import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
@@ -72,11 +72,12 @@ export default function JobDetailPage() {
     if (myConnects < applyCost) { toast(tr.notEnoughConnects, 'error'); return; }
     setApplying(true);
     try {
-      const data = await applyToJob(id!, { proposal, job_id: Number(id) });
+      const data: any = await applyToJob(id!, { proposal, job_id: Number(id) });
       updateUser({ balance_connects: Math.max(0, myConnects - applyCost) });
-      if (data?.room_id) {
+      const roomId = data?.room_id || data?.room?.id;
+      if (roomId) {
         toast('Application sent! Opening chat...', 'success');
-        nav(`/chat/${data.room_id}`);
+        nav(`/chat/${roomId}`);
       } else {
         toast('Application sent! ✅', 'success');
         nav('/my-jobs');
@@ -84,6 +85,18 @@ export default function JobDetailPage() {
     } catch (e: any) {
       toast(e.message || 'Failed to apply', 'error');
     } finally { setApplying(false); }
+  };
+
+  const [submitting, setSubmitting] = useState(false);
+  const handleSubmitWork = async () => {
+    setSubmitting(true);
+    try {
+      await submitWork(id!);
+      setJob((prev: any) => prev ? { ...prev, status: 'submitted' } : prev);
+      toast(tr.workSubmitted, 'success');
+    } catch (e: any) {
+      toast(e.message || 'Failed to submit', 'error');
+    } finally { setSubmitting(false); }
   };
 
   // ── Hire flow: Pi payment → hire endpoint (creates escrow) ───────────────
@@ -320,6 +333,22 @@ export default function JobDetailPage() {
               >
                 View Applicants ({job.applications ?? 0})
               </button>
+            )}
+
+            {/* Hired freelancer: submit work */}
+            {!isOwner && user && job.hired_freelancer_id === user.uid && job.status === 'in_progress' && (
+              <button
+                onClick={handleSubmitWork}
+                disabled={submitting}
+                className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
+              >
+                {submitting ? '⏳' : `📤 ${tr.submitWork}`}
+              </button>
+            )}
+            {!isOwner && user && job.hired_freelancer_id === user.uid && job.status === 'submitted' && (
+              <div className="w-full py-4 rounded-2xl bg-amber-50 text-amber-700 text-sm font-semibold text-center">
+                ✅ {tr.workSubmitted}
+              </div>
             )}
           </>
         )}

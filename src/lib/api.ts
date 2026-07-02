@@ -58,6 +58,8 @@ export const createJob = (data: any) =>
   apiFetch('/api/jobs', { method: 'POST', body: JSON.stringify(data) });
 export const completeJob = (id: string | number) =>
   apiFetch(`/api/jobs/${id}/complete`, { method: 'POST' });
+export const submitWork = (id: string | number) =>
+  apiFetch(`/api/jobs/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'submitted' }) });
 export const getMyJobs = () => apiFetch('/api/jobs/my');
 export const getMyJobsAsFreelancer = () => apiFetch('/api/jobs/as-freelancer');
 export const autocompleteJobs = (q: string) =>

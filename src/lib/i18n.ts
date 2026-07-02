@@ -49,6 +49,7 @@ const KEYS = {
   faqComingSoon: '', piBrowser: '', onlyUrgent: '', skillsRequired: '', yourProposal: '', noApplicants: '', markAsUrgent: '', messages: '', noMessages: '', adminOnly: '', noData: '', noUsersFound: '', exportCSV: '', raiseDispute: '', noJobsYet: '',
   openInPiBrowser: '',
   jobTitle: '', category: '', deadline: '', skills: '', jobDescPlaceholder: '', budgetPlaceholder: '', skillsPlaceholder: '', attachPhoto: '', costOneConnect: '', applyCostLabel: '', notEnoughConnects: '', titleRequired: '', descRequired: '', budgetMin: '', jobPosted: '', saved: '', savedJobs: '',
+  submitWork: '', workSubmitted: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -103,6 +104,7 @@ const en: Translations = {
   faqComingSoon: 'FAQ coming soon', piBrowser: 'Pi Browser', onlyUrgent: 'Only show urgent jobs', skillsRequired: 'Skills Required', yourProposal: 'Your Proposal', noApplicants: 'No applicants yet', markAsUrgent: 'Mark as urgent', messages: 'Messages', noMessages: 'No messages yet', adminOnly: 'Admin Only', noData: 'No data', noUsersFound: 'No users found', exportCSV: 'Export CSV', raiseDispute: 'Raise a Dispute', noJobsYet: 'No jobs yet',
   openInPiBrowser: 'Open this app in the Pi Browser to continue.',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: 'Submit Work', workSubmitted: 'Work submitted — awaiting review',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
@@ -154,6 +156,7 @@ const ru: Translations = {
   faqComingSoon: 'FAQ скоро', piBrowser: 'Pi Browser', onlyUrgent: 'Только срочные работы', skillsRequired: 'Требуемые навыки', yourProposal: 'Ваш отклик', noApplicants: 'Пока нет откликов', markAsUrgent: 'Отметить срочным', messages: 'Сообщения', noMessages: 'Пока нет сообщений', adminOnly: 'Только для админа', noData: 'Нет данных', noUsersFound: 'Пользователи не найдены', exportCSV: 'Экспорт CSV', raiseDispute: 'Открыть спор', noJobsYet: 'Пока нет работ',
   openInPiBrowser: 'Откройте это приложение в Pi Browser, чтобы продолжить.',
   jobTitle: 'Название работы', category: 'Категория', deadline: 'Дедлайн', skills: 'Навыки (через запятую)', jobDescPlaceholder: 'Опишите, что нужно сделать…', budgetPlaceholder: 'напр. 50', skillsPlaceholder: 'напр. React, Node.js', attachPhoto: 'Прикрепить фото · Добавить', costOneConnect: 'Стоимость: 1 коннект', applyCostLabel: 'Стоимость отклика', notEnoughConnects: 'Недостаточно коннектов', titleRequired: 'Введите название', descRequired: 'Введите описание', budgetMin: 'Бюджет ≥ 1 Pi', jobPosted: 'Работа опубликована!', saved: 'Сохранено', savedJobs: 'Сохранённые',
+  submitWork: 'Сдать работу', workSubmitted: 'Работа сдана — ждёт проверки',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
@@ -205,6 +208,7 @@ const uk: Translations = {
   faqComingSoon: 'FAQ незабаром', piBrowser: 'Pi Browser', onlyUrgent: 'Лише термінові роботи', skillsRequired: 'Потрібні навички', yourProposal: 'Ваша пропозиція', noApplicants: 'Ще немає відгуків', markAsUrgent: 'Позначити терміновим', messages: 'Повідомлення', noMessages: 'Ще немає повідомлень', adminOnly: 'Лише для адміна', noData: 'Немає даних', noUsersFound: 'Користувачів не знайдено', exportCSV: 'Експорт CSV', raiseDispute: 'Відкрити спір', noJobsYet: 'Ще немає робіт',
   openInPiBrowser: 'Відкрийте цей застосунок у Pi Browser, щоб продовжити.',
   jobTitle: 'Назва роботи', category: 'Категорія', deadline: 'Дедлайн', skills: 'Навички (через кому)', jobDescPlaceholder: 'Опишіть, що потрібно зробити…', budgetPlaceholder: 'напр. 50', skillsPlaceholder: 'напр. React, Node.js', attachPhoto: 'Додати фото', costOneConnect: 'Вартість: 1 конект', applyCostLabel: 'Вартість відгуку', notEnoughConnects: 'Недостатньо конектів', titleRequired: 'Введіть назву', descRequired: 'Введіть опис', budgetMin: 'Бюджет ≥ 1 Pi', jobPosted: 'Роботу опубліковано!', saved: 'Збережено', savedJobs: 'Збережені',
+  submitWork: 'Здати роботу', workSubmitted: 'Роботу здано — очікує перевірки',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
@@ -256,6 +260,7 @@ const de: Translations = {
   faqComingSoon: 'FAQ bald verfügbar', piBrowser: 'Pi Browser', onlyUrgent: 'Nur dringende Jobs', skillsRequired: 'Erforderliche Fähigkeiten', yourProposal: 'Dein Angebot', noApplicants: 'Noch keine Bewerber', markAsUrgent: 'Als dringend markieren', messages: 'Nachrichten', noMessages: 'Noch keine Nachrichten', adminOnly: 'Nur Admin', noData: 'Keine Daten', noUsersFound: 'Keine Nutzer gefunden', exportCSV: 'CSV exportieren', raiseDispute: 'Streitfall eröffnen', noJobsYet: 'Noch keine Jobs',
   openInPiBrowser: 'Öffne diese App im Pi Browser, um fortzufahren.',
   jobTitle: 'Job-Titel', category: 'Kategorie', deadline: 'Frist', skills: 'Fähigkeiten (kommagetrennt)', jobDescPlaceholder: 'Beschreibe, was zu tun ist…', budgetPlaceholder: 'z. B. 50', skillsPlaceholder: 'z. B. React, Node.js', attachPhoto: 'Foto anhängen', costOneConnect: 'Kosten: 1 Connect', applyCostLabel: 'Bewerbungskosten', notEnoughConnects: 'Nicht genug Connects', titleRequired: 'Titel erforderlich', descRequired: 'Beschreibung erforderlich', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job veröffentlicht!', saved: 'Gespeichert', savedJobs: 'Gespeicherte Jobs',
+  submitWork: 'Arbeit einreichen', workSubmitted: 'Eingereicht — wird geprüft',
 };
 
 // ─── French ───────────────────────────────────────────────────────────────────
@@ -307,6 +312,7 @@ const fr: Translations = {
   faqComingSoon: 'FAQ bientôt disponible', piBrowser: 'Pi Browser', onlyUrgent: 'Uniquement les urgents', skillsRequired: 'Compétences requises', yourProposal: 'Votre proposition', noApplicants: 'Aucun candidat', markAsUrgent: 'Marquer comme urgent', messages: 'Messages', noMessages: 'Aucun message', adminOnly: 'Admin uniquement', noData: 'Aucune donnée', noUsersFound: 'Aucun utilisateur trouvé', exportCSV: 'Exporter CSV', raiseDispute: 'Ouvrir un litige', noJobsYet: 'Aucun travail',
   openInPiBrowser: 'Ouvrez cette application dans le Pi Browser pour continuer.',
   jobTitle: 'Titre du poste', category: 'Catégorie', deadline: 'Échéance', skills: 'Compétences (séparées par des virgules)', jobDescPlaceholder: 'Décrivez ce qui doit être fait…', budgetPlaceholder: 'ex. 50', skillsPlaceholder: 'ex. React, Node.js', attachPhoto: 'Ajouter une photo', costOneConnect: 'Coût : 1 connect', applyCostLabel: 'Coût de candidature', notEnoughConnects: 'Pas assez de connects', titleRequired: 'Le titre est requis', descRequired: 'La description est requise', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Offre publiée !', saved: 'Enregistré', savedJobs: 'Offres enregistrées',
+  submitWork: 'Soumettre le travail', workSubmitted: 'Travail soumis — en attente',
 };
 
 // ─── Spanish ──────────────────────────────────────────────────────────────────
@@ -358,6 +364,7 @@ const es: Translations = {
   faqComingSoon: 'FAQ próximamente', piBrowser: 'Pi Browser', onlyUrgent: 'Solo urgentes', skillsRequired: 'Habilidades requeridas', yourProposal: 'Tu propuesta', noApplicants: 'Sin candidatos aún', markAsUrgent: 'Marcar como urgente', messages: 'Mensajes', noMessages: 'Sin mensajes aún', adminOnly: 'Solo administrador', noData: 'Sin datos', noUsersFound: 'No se encontraron usuarios', exportCSV: 'Exportar CSV', raiseDispute: 'Abrir una disputa', noJobsYet: 'Aún no hay trabajos',
   openInPiBrowser: 'Abre esta app en el Pi Browser para continuar.',
   jobTitle: 'Título del trabajo', category: 'Categoría', deadline: 'Fecha límite', skills: 'Habilidades (separadas por comas)', jobDescPlaceholder: 'Describe lo que hay que hacer…', budgetPlaceholder: 'p. ej. 50', skillsPlaceholder: 'p. ej. React, Node.js', attachPhoto: 'Adjuntar foto', costOneConnect: 'Costo: 1 connect', applyCostLabel: 'Costo de postulación', notEnoughConnects: 'No hay suficientes connects', titleRequired: 'El título es obligatorio', descRequired: 'La descripción es obligatoria', budgetMin: 'Presupuesto ≥ 1 Pi', jobPosted: '¡Trabajo publicado!', saved: 'Guardado', savedJobs: 'Trabajos guardados',
+  submitWork: 'Enviar trabajo', workSubmitted: 'Trabajo enviado — en revisión',
 };
 
 // ─── Portuguese ───────────────────────────────────────────────────────────────
@@ -409,6 +416,7 @@ const pt: Translations = {
   faqComingSoon: 'FAQ em breve', piBrowser: 'Pi Browser', onlyUrgent: 'Apenas urgentes', skillsRequired: 'Habilidades necessárias', yourProposal: 'Sua proposta', noApplicants: 'Ainda sem candidatos', markAsUrgent: 'Marcar como urgente', messages: 'Mensagens', noMessages: 'Ainda sem mensagens', adminOnly: 'Apenas admin', noData: 'Sem dados', noUsersFound: 'Nenhum usuário encontrado', exportCSV: 'Exportar CSV', raiseDispute: 'Abrir disputa', noJobsYet: 'Ainda sem trabalhos',
   openInPiBrowser: 'Abra este app no Pi Browser para continuar.',
   jobTitle: 'Título do trabalho', category: 'Categoria', deadline: 'Prazo', skills: 'Habilidades (separadas por vírgula)', jobDescPlaceholder: 'Descreva o que precisa ser feito…', budgetPlaceholder: 'ex. 50', skillsPlaceholder: 'ex. React, Node.js', attachPhoto: 'Anexar foto', costOneConnect: 'Custo: 1 connect', applyCostLabel: 'Custo da candidatura', notEnoughConnects: 'Connects insuficientes', titleRequired: 'O título é obrigatório', descRequired: 'A descrição é obrigatória', budgetMin: 'Orçamento ≥ 1 Pi', jobPosted: 'Trabalho publicado!', saved: 'Salvo', savedJobs: 'Trabalhos salvos',
+  submitWork: 'Enviar trabalho', workSubmitted: 'Trabalho enviado — em análise',
 };
 
 // ─── Turkish ──────────────────────────────────────────────────────────────────
@@ -460,6 +468,7 @@ const tr: Translations = {
   faqComingSoon: 'SSS yakında', piBrowser: 'Pi Browser', onlyUrgent: 'Sadece acil işler', skillsRequired: 'Gerekli beceriler', yourProposal: 'Teklifiniz', noApplicants: 'Henüz başvuran yok', markAsUrgent: 'Acil olarak işaretle', messages: 'Mesajlar', noMessages: 'Henüz mesaj yok', adminOnly: 'Sadece yönetici', noData: 'Veri yok', noUsersFound: 'Kullanıcı bulunamadı', exportCSV: 'CSV dışa aktar', raiseDispute: 'Anlaşmazlık aç', noJobsYet: 'Henüz iş yok',
   openInPiBrowser: 'Devam etmek için bu uygulamayı Pi Browser’da açın.',
   jobTitle: 'İş Başlığı', category: 'Kategori', deadline: 'Son tarih', skills: 'Beceriler (virgülle ayrılmış)', jobDescPlaceholder: 'Yapılması gerekeni açıklayın…', budgetPlaceholder: 'örn. 50', skillsPlaceholder: 'örn. React, Node.js', attachPhoto: 'Fotoğraf ekle', costOneConnect: 'Maliyet: 1 bağlantı', applyCostLabel: 'Başvuru maliyeti', notEnoughConnects: 'Yeterli bağlantı yok', titleRequired: 'Başlık gerekli', descRequired: 'Açıklama gerekli', budgetMin: 'Bütçe ≥ 1 Pi', jobPosted: 'İş yayınlandı!', saved: 'Kaydedildi', savedJobs: 'Kaydedilen işler',
+  submitWork: 'İşi gönder', workSubmitted: 'Gönderildi — inceleniyor',
 };
 
 // ─── Arabic (RTL) ─────────────────────────────────────────────────────────────
@@ -511,6 +520,7 @@ const ar: Translations = {
   faqComingSoon: 'الأسئلة الشائعة قريبًا', piBrowser: 'متصفح Pi', onlyUrgent: 'العاجلة فقط', skillsRequired: 'المهارات المطلوبة', yourProposal: 'عرضك', noApplicants: 'لا يوجد متقدمون بعد', markAsUrgent: 'وضع علامة عاجل', messages: 'الرسائل', noMessages: 'لا توجد رسائل بعد', adminOnly: 'للمشرف فقط', noData: 'لا توجد بيانات', noUsersFound: 'لم يتم العثور على مستخدمين', exportCSV: 'تصدير CSV', raiseDispute: 'فتح نزاع', noJobsYet: 'لا توجد أعمال بعد',
   openInPiBrowser: 'افتح هذا التطبيق في متصفح Pi للمتابعة.',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: 'إرسال العمل', workSubmitted: 'تم الإرسال — قيد المراجعة',
 };
 
 // ─── Hindi ────────────────────────────────────────────────────────────────────
@@ -562,6 +572,7 @@ const hi: Translations = {
   faqComingSoon: 'FAQ जल्द आ रहा है', piBrowser: 'Pi ब्राउज़र', onlyUrgent: 'केवल अत्यावश्यक काम', skillsRequired: 'आवश्यक कौशल', yourProposal: 'आपका प्रस्ताव', noApplicants: 'अभी तक कोई आवेदक नहीं', markAsUrgent: 'अत्यावश्यक चिह्नित करें', messages: 'संदेश', noMessages: 'अभी तक कोई संदेश नहीं', adminOnly: 'केवल एडमिन', noData: 'कोई डेटा नहीं', noUsersFound: 'कोई उपयोगकर्ता नहीं मिला', exportCSV: 'CSV निर्यात करें', raiseDispute: 'विवाद उठाएं', noJobsYet: 'अभी तक कोई काम नहीं',
   openInPiBrowser: 'जारी रखने के लिए इस ऐप को Pi ब्राउज़र में खोलें।',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: 'काम सबमिट करें', workSubmitted: 'सबमिट किया — समीक्षा प्रतीक्षित',
 };
 
 // ─── Chinese Simplified ───────────────────────────────────────────────────────
@@ -613,6 +624,7 @@ const zh: Translations = {
   faqComingSoon: '常见问题即将推出', piBrowser: 'Pi 浏览器', onlyUrgent: '仅显示紧急工作', skillsRequired: '所需技能', yourProposal: '你的提案', noApplicants: '暂无申请者', markAsUrgent: '标记为紧急', messages: '消息', noMessages: '暂无消息', adminOnly: '仅限管理员', noData: '暂无数据', noUsersFound: '未找到用户', exportCSV: '导出 CSV', raiseDispute: '发起争议', noJobsYet: '暂无工作',
   openInPiBrowser: '请在 Pi 浏览器中打开此应用以继续。',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: '提交工作', workSubmitted: '已提交 — 等待审核',
 };
 
 // ─── Japanese ─────────────────────────────────────────────────────────────────
@@ -664,6 +676,7 @@ const ja: Translations = {
   faqComingSoon: 'FAQ は近日公開', piBrowser: 'Pi ブラウザ', onlyUrgent: '緊急の仕事のみ', skillsRequired: '必要なスキル', yourProposal: 'あなたの提案', noApplicants: '応募者はまだいません', markAsUrgent: '緊急として登録', messages: 'メッセージ', noMessages: 'メッセージはまだありません', adminOnly: '管理者専用', noData: 'データなし', noUsersFound: 'ユーザーが見つかりません', exportCSV: 'CSV をエクスポート', raiseDispute: '異議を申し立てる', noJobsYet: '仕事はまだありません',
   openInPiBrowser: '続行するには、このアプリを Pi ブラウザで開いてください。',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: '作業を提出', workSubmitted: '提出済み — 確認待ち',
 };
 
 // ─── Korean ───────────────────────────────────────────────────────────────────
@@ -715,6 +728,7 @@ const ko: Translations = {
   faqComingSoon: 'FAQ 준비 중', piBrowser: 'Pi 브라우저', onlyUrgent: '긴급 작업만 표시', skillsRequired: '필요한 기술', yourProposal: '내 제안', noApplicants: '아직 지원자가 없습니다', markAsUrgent: '긴급으로 표시', messages: '메시지', noMessages: '아직 메시지가 없습니다', adminOnly: '관리자 전용', noData: '데이터 없음', noUsersFound: '사용자를 찾을 수 없습니다', exportCSV: 'CSV 내보내기', raiseDispute: '분쟁 제기', noJobsYet: '아직 작업이 없습니다',
   openInPiBrowser: '계속하려면 Pi 브라우저에서 이 앱을 여세요.',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: '작업 제출', workSubmitted: '제출됨 — 검토 대기',
 };
 
 // ─── Vietnamese ───────────────────────────────────────────────────────────────
@@ -766,6 +780,7 @@ const vi: Translations = {
   faqComingSoon: 'FAQ sắp ra mắt', piBrowser: 'Trình duyệt Pi', onlyUrgent: 'Chỉ việc khẩn cấp', skillsRequired: 'Kỹ năng yêu cầu', yourProposal: 'Đề xuất của bạn', noApplicants: 'Chưa có ứng viên', markAsUrgent: 'Đánh dấu khẩn cấp', messages: 'Tin nhắn', noMessages: 'Chưa có tin nhắn', adminOnly: 'Chỉ quản trị viên', noData: 'Không có dữ liệu', noUsersFound: 'Không tìm thấy người dùng', exportCSV: 'Xuất CSV', raiseDispute: 'Mở tranh chấp', noJobsYet: 'Chưa có công việc',
   openInPiBrowser: 'Mở ứng dụng này trong trình duyệt Pi để tiếp tục.',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: 'Nộp công việc', workSubmitted: 'Đã nộp — chờ duyệt',
 };
 
 // ─── Indonesian ───────────────────────────────────────────────────────────────
@@ -817,6 +832,7 @@ const id: Translations = {
   faqComingSoon: 'FAQ segera hadir', piBrowser: 'Peramban Pi', onlyUrgent: 'Hanya pekerjaan mendesak', skillsRequired: 'Keterampilan yang dibutuhkan', yourProposal: 'Proposal Anda', noApplicants: 'Belum ada pelamar', markAsUrgent: 'Tandai sebagai mendesak', messages: 'Pesan', noMessages: 'Belum ada pesan', adminOnly: 'Hanya admin', noData: 'Tidak ada data', noUsersFound: 'Tidak ada pengguna ditemukan', exportCSV: 'Ekspor CSV', raiseDispute: 'Ajukan sengketa', noJobsYet: 'Belum ada pekerjaan',
   openInPiBrowser: 'Buka aplikasi ini di Peramban Pi untuk melanjutkan.',
   jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  submitWork: 'Kirim pekerjaan', workSubmitted: 'Terkirim — menunggu tinjauan',
 };
 
 // ─── Italian ──────────────────────────────────────────────────────────────────
@@ -868,6 +884,7 @@ const it: Translations = {
   faqComingSoon: 'FAQ in arrivo', piBrowser: 'Pi Browser', onlyUrgent: 'Solo urgenti', skillsRequired: 'Competenze richieste', yourProposal: 'La tua proposta', noApplicants: 'Ancora nessun candidato', markAsUrgent: 'Segna come urgente', messages: 'Messaggi', noMessages: 'Ancora nessun messaggio', adminOnly: 'Solo admin', noData: 'Nessun dato', noUsersFound: 'Nessun utente trovato', exportCSV: 'Esporta CSV', raiseDispute: 'Apri una controversia', noJobsYet: 'Ancora nessun lavoro',
   openInPiBrowser: 'Apri questa app nel Pi Browser per continuare.',
   jobTitle: 'Titolo del lavoro', category: 'Categoria', deadline: 'Scadenza', skills: 'Competenze (separate da virgole)', jobDescPlaceholder: 'Descrivi cosa va fatto…', budgetPlaceholder: 'es. 50', skillsPlaceholder: 'es. React, Node.js', attachPhoto: 'Allega foto', costOneConnect: 'Costo: 1 connect', applyCostLabel: 'Costo candidatura', notEnoughConnects: 'Connect insufficienti', titleRequired: 'Il titolo è obbligatorio', descRequired: 'La descrizione è obbligatoria', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Lavoro pubblicato!', saved: 'Salvato', savedJobs: 'Lavori salvati',
+  submitWork: 'Invia lavoro', workSubmitted: 'Lavoro inviato — in revisione',
 };
 
 // ─── Polish ───────────────────────────────────────────────────────────────────
@@ -919,6 +936,7 @@ const pl: Translations = {
   faqComingSoon: 'FAQ wkrótce', piBrowser: 'Pi Browser', onlyUrgent: 'Tylko pilne', skillsRequired: 'Wymagane umiejętności', yourProposal: 'Twoja oferta', noApplicants: 'Brak kandydatów', markAsUrgent: 'Oznacz jako pilne', messages: 'Wiadomości', noMessages: 'Brak wiadomości', adminOnly: 'Tylko administrator', noData: 'Brak danych', noUsersFound: 'Nie znaleziono użytkowników', exportCSV: 'Eksportuj CSV', raiseDispute: 'Zgłoś spór', noJobsYet: 'Brak prac',
   openInPiBrowser: 'Otwórz tę aplikację w Pi Browser, aby kontynuować.',
   jobTitle: 'Tytuł pracy', category: 'Kategoria', deadline: 'Termin', skills: 'Umiejętności (oddzielone przecinkami)', jobDescPlaceholder: 'Opisz, co trzeba zrobić…', budgetPlaceholder: 'np. 50', skillsPlaceholder: 'np. React, Node.js', attachPhoto: 'Dodaj zdjęcie', costOneConnect: 'Koszt: 1 connect', applyCostLabel: 'Koszt aplikacji', notEnoughConnects: 'Za mało connectów', titleRequired: 'Tytuł jest wymagany', descRequired: 'Opis jest wymagany', budgetMin: 'Budżet ≥ 1 Pi', jobPosted: 'Praca opublikowana!', saved: 'Zapisano', savedJobs: 'Zapisane prace',
+  submitWork: 'Wyślij pracę', workSubmitted: 'Wysłano — oczekuje na sprawdzenie',
 };
 
 // ─── Thai, Filipino, Dutch, Swedish, Romanian — compact versions ──────────────
