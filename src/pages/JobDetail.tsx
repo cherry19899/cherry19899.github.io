@@ -108,7 +108,7 @@ export default function JobDetailPage() {
 
   const handleHire = (app: any) => {
     setHiringId(app.id);
-    toast(`Hiring @${app.applicant_username}…`, 'info');
+    toast(`Hiring @${app.freelancer_username || app.freelancer_name || app.applicant_username || 'user'}…`, 'info');
 
     createPiPayment(
       Number(job.budget),
@@ -120,7 +120,7 @@ export default function JobDetailPage() {
             method: 'POST',
             body: JSON.stringify({
               application_id: app.id,
-              freelancer_id: app.applicant_uid || app.applicant_id,
+              freelancer_id: app.freelancer_id || app.applicant_uid || app.applicant_id,
               payment_id: paymentId,
             }),
           });
@@ -146,7 +146,7 @@ export default function JobDetailPage() {
 
   const handleChat = async (app: any) => {
     try {
-      const room = await startChat({ other_user_id: app.applicant_uid || app.applicant_id, job_id: Number(id) });
+      const room = await startChat({ other_user_id: app.freelancer_id || app.applicant_uid || app.applicant_id, job_id: Number(id) });
       nav(`/chat/${room.room_id || room.id}`);
     } catch (e: any) { toast(e.message, 'error'); }
   };
@@ -367,15 +367,19 @@ export default function JobDetailPage() {
                 <p className="font-semibold text-gray-900">{tr.noApplicants}</p>
                 <p className="text-sm text-gray-400 mt-1">Share your job to get more visibility</p>
               </div>
-            ) : apps.map(app => (
+            ) : apps.map(app => {
+              const applicantName = app.freelancer_username || app.freelancer_name || app.applicant_username || 'user';
+              return (
               <div key={app.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                    {(app.applicant_username || '?')[0].toUpperCase()}
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 font-bold text-emerald-600 dark:text-emerald-400 text-sm overflow-hidden">
+                    {app.freelancer_avatar
+                      ? <img src={app.freelancer_avatar} className="w-full h-full object-cover" alt="" />
+                      : applicantName[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-gray-900 dark:text-white text-sm">@{app.applicant_username}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm">@{applicantName}</p>
                       <span className="text-xs text-gray-400 dark:text-slate-500">{timeAgo(app.created_at)}</span>
                     </div>
                     {app.applicant_rating && (
@@ -384,9 +388,9 @@ export default function JobDetailPage() {
                   </div>
                 </div>
 
-                {app.proposal && (
+                {(app.message || app.proposal) && (
                   <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed bg-gray-50 dark:bg-slate-700/50 rounded-xl p-3">
-                    {app.proposal}
+                    {app.message || app.proposal}
                   </p>
                 )}
 
@@ -413,7 +417,8 @@ export default function JobDetailPage() {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
