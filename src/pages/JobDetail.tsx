@@ -72,10 +72,15 @@ export default function JobDetailPage() {
     if (myConnects < applyCost) { toast(tr.notEnoughConnects, 'error'); return; }
     setApplying(true);
     try {
-      await applyToJob(id!, { proposal, job_id: Number(id) });
+      const data = await applyToJob(id!, { proposal, job_id: Number(id) });
       updateUser({ balance_connects: Math.max(0, myConnects - applyCost) });
-      toast('Application sent! ✅', 'success');
-      nav('/my-jobs');
+      if (data?.room_id) {
+        toast('Application sent! Opening chat...', 'success');
+        nav(`/chat/${data.room_id}`);
+      } else {
+        toast('Application sent! ✅', 'success');
+        nav('/my-jobs');
+      }
     } catch (e: any) {
       toast(e.message || 'Failed to apply', 'error');
     } finally { setApplying(false); }
