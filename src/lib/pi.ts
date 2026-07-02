@@ -140,7 +140,7 @@ function startPayment(
           body: JSON.stringify({ txid }),
         }).then(() => callbacks.onCompleted(paymentId, txid)).catch(callbacks.onError);
       },
-      onCancelled: callbacks.onCancelled,
+      onCancel: (_paymentId: string) => { callbacks.onCancelled(); },
       onError: (error: any, _payment: any) => {
         console.error('Pi payment error:', error);
         const msg = error?.message || error?.toString() || 'Payment failed';
