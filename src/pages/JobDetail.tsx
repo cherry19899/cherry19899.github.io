@@ -36,6 +36,7 @@ export default function JobDetailPage() {
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>('detail');
+  const [applyMode, setApplyMode] = useState(false);
   const [proposal, setProposal] = useState('');
   const [applying, setApplying] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
@@ -291,7 +292,7 @@ export default function JobDetailPage() {
 
             {/* Actions */}
             {!isOwner && job.status === 'open' && (
-              view === 'apply' ? (
+              applyMode ? (
                 <div className="space-y-3">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{tr.yourProposal}</p>
                   <textarea
@@ -308,7 +309,7 @@ export default function JobDetailPage() {
                     </p>
                   )}
                   <div className="flex gap-2">
-                    <button onClick={() => setView('detail')} className="flex-1 h-12 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
+                    <button onClick={() => setApplyMode(false)} className="flex-1 h-12 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
                       Cancel
                     </button>
                     <button
@@ -322,7 +323,7 @@ export default function JobDetailPage() {
                 </div>
               ) : (
                 <button
-                  onClick={() => setView('apply')}
+                  onClick={() => setApplyMode(true)}
                   className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 transition-colors"
                 >
                   {tr.applyNow} · {applyCost} {tr.connects.toLowerCase()}
