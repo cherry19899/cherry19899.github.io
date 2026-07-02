@@ -12,7 +12,7 @@ interface Props {
   onSkip: () => void;
 }
 
-const LABELS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+const LABELS = (tr: any) => ['', tr.ratingPoor, tr.ratingFair, tr.ratingGood, tr.ratingGreat, tr.ratingExcellent];
 
 export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSkip }: Props) {
   const [stars, setStars] = useState(0);
@@ -72,7 +72,7 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
 
         {(hover || stars) > 0 && (
           <p className="text-center text-sm font-semibold text-emerald-500 mb-4">
-            {LABELS[hover || stars]}
+            {LABELS(tr)[hover || stars]}
           </p>
         )}
 
@@ -97,7 +97,7 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
         </button>
 
         <button onClick={onSkip} className="w-full py-3 text-sm text-gray-400 dark:text-slate-500 font-medium">
-          Skip for now
+          {tr.skipForNow}
         </button>
       </div>
     </div>,

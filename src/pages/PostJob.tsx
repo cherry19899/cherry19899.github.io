@@ -67,7 +67,7 @@ export default function PostJobPage() {
             placeholder={tr.titlePlaceholder} maxLength={120} className="field-input" />
         </Field>
 
-        <Field label="Description *">
+        <Field label={`${tr.description} *`}>
           <textarea value={form.description} onChange={e => set('description', e.target.value)}
             placeholder={tr.jobDescPlaceholder} rows={5} className="field-input resize-none" />
         </Field>

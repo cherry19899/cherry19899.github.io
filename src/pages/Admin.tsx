@@ -163,7 +163,7 @@ export default function AdminPage() {
                     value={feeValue}
                     onChange={e => setFeeValue(e.target.value)}
                     className="flex-1 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400"
-                    placeholder="e.g. 2"
+                    placeholder="2"
                   />
                   <span className="text-gray-500">%</span>
                   <button
@@ -249,7 +249,7 @@ export default function AdminPage() {
             <div className="space-y-2">{Array.from({length:5}).map((_,i)=><div key={i} className="h-16 skeleton rounded-2xl"/>)}</div>
           ) : (
             <>
-              {filteredJobs.length === 0 && <p className="text-center text-gray-400 py-10">No jobs</p>}
+              {filteredJobs.length === 0 && <p className="text-center text-gray-400 py-10">{tr.noJobs}</p>}
               {filteredJobs.map((j: any) => (
                 <div key={j.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
@@ -259,7 +259,7 @@ export default function AdminPage() {
                   <button
                     onClick={async () => {
                       if (!confirm(`Delete "${j.title}"?`)) return;
-                      try { await adminDeleteJob(j.id); setJobs(prev => prev.filter(x => x.id !== j.id)); toast('Job deleted', 'success'); }
+                      try { await adminDeleteJob(j.id); setJobs(prev => prev.filter(x => x.id !== j.id)); toast(tr.jobDeleted, 'success'); }
                       catch (e: any) { toast(e.message, 'error'); }
                     }}
                     className="text-red-400 hover:text-red-600 shrink-0 p-1"
@@ -280,7 +280,7 @@ export default function AdminPage() {
             <div className="space-y-2">{Array.from({length:4}).map((_,i)=><div key={i} className="h-20 skeleton rounded-2xl"/>)}</div>
           ) : (
             <>
-              {escrows.length === 0 && <p className="text-center text-gray-400 py-10">No escrows</p>}
+              {escrows.length === 0 && <p className="text-center text-gray-400 py-10">{tr.noEscrows}</p>}
               {escrows.map((e: any) => (
                 <div key={e.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
                   <div className="flex justify-between items-start">
@@ -301,7 +301,7 @@ export default function AdminPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={async () => {
-                          try { await adminResolveEscrow(e.id, 'refund_to_client'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'refunded' } : x)); toast('Refunded', 'success'); }
+                          try { await adminResolveEscrow(e.id, 'refund_to_client'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'refunded' } : x)); toast(tr.refunded, 'success'); }
                           catch (err: any) { toast(err.message, 'error'); }
                         }}
                         className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-semibold"
@@ -310,7 +310,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={async () => {
-                          try { await adminResolveEscrow(e.id, 'release_to_freelancer'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'released' } : x)); toast('Released to freelancer', 'success'); }
+                          try { await adminResolveEscrow(e.id, 'release_to_freelancer'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'released' } : x)); toast(tr.releasedToFreelancer, 'success'); }
                           catch (err: any) { toast(err.message, 'error'); }
                         }}
                         className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold"
@@ -357,7 +357,7 @@ export default function AdminPage() {
                 {/* Sign-ups line chart */}
                 {analytics.signups?.data?.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
-                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Sign-ups</p>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">{tr.signUps}</p>
                     <ResponsiveContainer width="100%" height={160}>
                       <LineChart data={analytics.signups.data}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -395,7 +395,7 @@ export default function AdminPage() {
                 {/* Jobs by category bar chart */}
                 {analytics.jobs?.by_category?.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
-                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Jobs by Category</p>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">{tr.jobsByCategory}</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <BarChart data={analytics.jobs.by_category} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -411,7 +411,7 @@ export default function AdminPage() {
                 {/* Retention / role breakdown pie */}
                 {analytics.retention?.by_role?.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
-                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">User Roles</p>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">{tr.userRoles}</p>
                     <ResponsiveContainer width="100%" height={180}>
                       <PieChart>
                         <Pie
@@ -461,7 +461,7 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
-            ) : <p className="text-center text-gray-400 py-10">No analytics data</p>}
+            ) : <p className="text-center text-gray-400 py-10">{tr.noAnalyticsData}</p>}
           </>
         )}
 
@@ -479,7 +479,7 @@ export default function AdminPage() {
               </div>
               {earnings.payments?.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Recent Transactions</p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{tr.recentTransactions}</p>
                   {earnings.payments.slice(0, 10).map((p: any, i: number) => (
                     <div key={i} className="bg-white border border-gray-100 rounded-xl p-3 flex justify-between text-sm">
                       <span className="text-gray-600 truncate flex-1">{p.job_title || p.memo || `Payment #${p.id}`}</span>
@@ -489,7 +489,7 @@ export default function AdminPage() {
                 </div>
               )}
             </>
-          ) : <p className="text-center text-gray-400 py-10">No earnings data</p>
+          ) : <p className="text-center text-gray-400 py-10">{tr.noEarningsData}</p>
         )}
       </div>
 
@@ -498,7 +498,7 @@ export default function AdminPage() {
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setGrantModal(null)}>
           <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Grant Connects</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{tr.grantConnects}</h2>
             <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">To @{grantModal.username}</p>
             <div className="flex gap-2 mb-4">
               {[5, 10, 25, 50].map(n => (
@@ -516,7 +516,7 @@ export default function AdminPage() {
               value={grantAmt}
               onChange={e => setGrantAmt(e.target.value)}
               className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-sm mb-4 focus:outline-none focus:border-emerald-400"
-              placeholder="Custom amount"
+              placeholder={tr.customAmount}
             />
             <button
               onClick={async () => {
