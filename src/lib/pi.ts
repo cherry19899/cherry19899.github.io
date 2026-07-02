@@ -8,8 +8,9 @@ export function isPiBrowser(): boolean {
   return typeof window.Pi !== 'undefined';
 }
 
-// Sandbox in dev, real mainnet in production build. Override with VITE_PI_MODE.
-const PI_MODE = import.meta.env.VITE_PI_MODE || (import.meta.env.PROD ? 'production' : 'sandbox');
+// Sandbox (testnet) by default — must match the backend's SANDBOX_MODE.
+// Flip to mainnet later by setting VITE_PI_MODE=production AND SANDBOX_MODE=false together.
+const PI_MODE = import.meta.env.VITE_PI_MODE || 'sandbox';
 
 let piInitialized = false;
 export function ensurePiInit() {
