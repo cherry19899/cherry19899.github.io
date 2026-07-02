@@ -122,6 +122,18 @@ export default function App() {
     return () => clearInterval(iv);
   }, [auth.user?.uid]);
 
+  // Keep the user's balance (connects/π) in sync with the server — otherwise
+  // server-side changes (e.g. connects refunded when your application is
+  // rejected, or escrow payouts) never appear until re-login.
+  useEffect(() => {
+    if (!auth.user) return;
+    auth.refreshUser();
+    const iv = setInterval(() => auth.refreshUser(), 60_000);
+    const onFocus = () => auth.refreshUser();
+    window.addEventListener('focus', onFocus);
+    return () => { clearInterval(iv); window.removeEventListener('focus', onFocus); };
+  }, [auth.user?.uid]);
+
   return (
     <ErrorBoundary>
     <Ctx.Provider value={{ ...auth, chatUnread, notifUnread, refreshUnread }}>
