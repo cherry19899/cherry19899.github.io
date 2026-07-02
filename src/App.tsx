@@ -7,6 +7,7 @@ import { ensurePiInit } from './lib/pi';
 import { useToastFn, ToastContainer } from './components/Toast';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
+import DebugConsole from './components/DebugConsole';
 
 import LoginPage        from './pages/Login';
 import HomePage         from './pages/Home';
@@ -156,6 +157,7 @@ export default function App() {
       </div>
 
       <ToastContainer toasts={toasts} />
+      <DebugConsole />
     </Ctx.Provider>
     </ErrorBoundary>
   );

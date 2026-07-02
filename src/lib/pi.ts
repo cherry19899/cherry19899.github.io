@@ -98,15 +98,18 @@ export function createPiPayment(
   // A cached JWT keeps the user "logged in" without Pi.authenticate() having run this
   // session, so createPayment would fail with "Cannot create a payment without
   // 'payments' scope". Re-authenticate to (re)establish the payments scope first.
+  console.log('[pay] createPiPayment', { amount, memo, meta: metadata, scopeAuthed });
   ensurePaymentsScope()
-    .then(() => startPayment(amount, memo, metadata, callbacks))
-    .catch((e: any) => callbacks.onError(new Error(e?.message || 'Pi authentication failed')));
+    .then(() => { console.log('[pay] scope ok → startPayment'); startPayment(amount, memo, metadata, callbacks); })
+    .catch((e: any) => { console.error('[pay] scope auth failed', e?.message || e); callbacks.onError(new Error(e?.message || 'Pi authentication failed')); });
 }
 
 let scopeAuthed = false;
 async function ensurePaymentsScope() {
-  if (scopeAuthed) return;
-  await window.Pi!.authenticate(['username', 'payments'], (p: any) => reportIncompletePayment(p));
+  if (scopeAuthed) { console.log('[pay] scope cached'); return; }
+  console.log('[pay] authenticate(payments)…');
+  const auth = await window.Pi!.authenticate(['username', 'payments'], (p: any) => reportIncompletePayment(p));
+  console.log('[pay] authenticate ok, scopes=', auth?.scopes || auth?.user?.scopes || '?');
   scopeAuthed = true;
 }
 
