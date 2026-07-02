@@ -50,7 +50,7 @@ export default function ChatPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">💬</span>
           <p className="font-semibold text-gray-900">{tr.noMessages}</p>
-          <p className="text-sm text-gray-400 mt-1">Apply to a job to start chatting</p>
+          <p className="text-sm text-gray-400 mt-1">{tr.applyToStartChatting}</p>
         </div>
       ) : (
         <div className="space-y-2">

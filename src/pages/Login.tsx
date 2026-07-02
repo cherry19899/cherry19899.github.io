@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { t } from '../lib/i18n';
 import { isPiBrowser, piAuthenticate } from '../lib/pi';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 
 export default function LoginPage() {
+  const tr = t();
   const { setUser } = useAppCtx();
   const [loading, setLoading] = useState(false);
   const [piReady, setPiReady] = useState(false);
@@ -46,7 +48,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Work Pro</h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm">Freelance marketplace on Pi Network</p>
+          <p className="text-gray-500 dark:text-slate-400 text-sm">{tr.appTagline}</p>
         </div>
 
         <div className="space-y-3 mb-8">
@@ -70,7 +72,7 @@ export default function LoginPage() {
           {loading ? (
             <>
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              {wakingUp && <span className="text-sm font-medium">Waking up server…</span>}
+              {wakingUp && <span className="text-sm font-medium">{tr.wakingServer}</span>}
             </>
           ) : 'Login with Pi'}
         </button>

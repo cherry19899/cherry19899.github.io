@@ -93,7 +93,7 @@ export default function ProfilePage() {
         if (window.__pwaInstallPrompt) {
           window.__pwaInstallPrompt.prompt();
         } else {
-          toast('Open in Pi Browser and use "Add to Home Screen"', 'info');
+          toast(tr.addToHomeScreen, 'info');
         }
       },
     },
@@ -121,7 +121,7 @@ export default function ProfilePage() {
         localStorage.clear();
         if (token) localStorage.setItem('workpro_token', token);
         if (u) localStorage.setItem('workpro_user', u);
-        toast('Cache cleared', 'success');
+        toast(tr.cacheCleared, 'success');
       },
     },
   ];

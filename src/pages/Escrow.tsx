@@ -12,8 +12,8 @@ import { t } from '../lib/i18n';
 
 interface Escrow {
   id: number; job_title?: string; amount: number; status: string;
-  client_uid?: string; client_username?: string;
-  freelancer_uid?: string; freelancer_username?: string;
+  client_id?: string; client_uid?: string; client_username?: string;
+  freelancer_id?: string; freelancer_uid?: string; freelancer_username?: string;
   job_id?: number; created_at: string;
 }
 
@@ -76,10 +76,10 @@ function MilestoneTimeline({
 
   const doSave = async () => {
     if (Math.abs(totalPercent - 100) > 0.01) {
-      toast('Percentages must sum to 100%', 'error'); return;
+      toast(tr.percentagesSum100, 'error'); return;
     }
     if (draft.some(m => !m.title.trim())) {
-      toast('All milestones need a title', 'error'); return;
+      toast(tr.allMilestonesTitle, 'error'); return;
     }
     try {
       const payload = draft.map((m, i) => ({
@@ -309,9 +309,9 @@ export default function EscrowPage() {
     setActing(e.id);
     try {
       await releaseEscrow(e.id);
-      toast('Funds released! 🎉', 'success');
+      toast(tr.fundsReleased, 'success');
       load();
-      if (e.freelancer_uid && e.freelancer_uid !== user?.uid) {
+      if ((e.freelancer_id || e.freelancer_uid) && (e.freelancer_id || e.freelancer_uid) !== user?.uid) {
         setRatingTarget({ escrow: e });
       }
     } catch (err: any) { toast(err.message || 'Failed', 'error'); }
@@ -320,7 +320,7 @@ export default function EscrowPage() {
 
   const doCancel = async (id: number) => {
     setActing(id);
-    try { await cancelEscrow(id); toast('Escrow cancelled, funds refunded.', 'success'); load(); }
+    try { await cancelEscrow(id); toast(tr.escrowCancelledRefunded, 'success'); load(); }
     catch (err: any) { toast(err.message || 'Failed', 'error'); }
     finally { setActing(null); }
   };
@@ -329,7 +329,7 @@ export default function EscrowPage() {
     if (!disputeModal) return;
     try {
       await disputeEscrow(disputeModal, disputeText);
-      toast('Dispute raised — admin will review.', 'info');
+      toast(tr.disputeRaisedMsg, 'info');
       setDisputeModal(null);
       setDisputeText('');
       load();
@@ -375,13 +375,13 @@ export default function EscrowPage() {
           <p className="font-semibold text-gray-900 dark:text-white">
             {tab === 'active' ? 'No active escrows' : 'No history yet'}
           </p>
-          <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">Complete a job to see escrow activity</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">{tr.completeJobToSeeEscrow}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map(e => {
-            const isClient = e.client_uid === user?.uid;
-            const isFreelancer = e.freelancer_uid === user?.uid;
+            const isClient = (e.client_id || e.client_uid) === user?.uid;
+            const isFreelancer = (e.freelancer_id || e.freelancer_uid) === user?.uid;
             const statusCls = STATUS_STYLE[e.status] || STATUS_STYLE.pending;
             const isExpanded = expanded.has(e.id);
 
@@ -442,7 +442,7 @@ export default function EscrowPage() {
                           onClick={() => setDisputeModal(e.id)}
                           className="flex-1 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-semibold"
                         >
-                          ⚠️ Dispute
+                          ⚠️ {tr.dispute}
                         </button>
                         <button
                           onClick={() => doCancel(e.id)}
@@ -456,7 +456,7 @@ export default function EscrowPage() {
                           disabled={acting === e.id}
                           className="flex-[1.5] py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-60 shadow-sm"
                         >
-                          {acting === e.id ? '⏳' : '✅ Release All'}
+                          {acting === e.id ? '⏳' : `✅ ${tr.releaseAll}`}
                         </button>
                       </div>
                     )}
@@ -489,7 +489,7 @@ export default function EscrowPage() {
           <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{tr.raiseDispute}</h2>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">Admin will review and resolve the escrow.</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">{tr.adminWillReview}</p>
             <textarea
               value={disputeText}
               onChange={e => setDisputeText(e.target.value)}
@@ -501,7 +501,7 @@ export default function EscrowPage() {
               onClick={doDispute}
               className="w-full h-12 rounded-full bg-red-500 text-white font-semibold"
             >
-              Submit Dispute
+              {tr.submitDispute}
             </button>
           </div>
         </div>,
@@ -512,7 +512,7 @@ export default function EscrowPage() {
       {ratingTarget && (
         <RatingModal
           jobId={ratingTarget.escrow.job_id || 0}
-          toUserId={ratingTarget.escrow.freelancer_uid || ratingTarget.escrow.client_uid || ''}
+          toUserId={ratingTarget.escrow.freelancer_id || ratingTarget.escrow.freelancer_uid || ratingTarget.escrow.client_id || ratingTarget.escrow.client_uid || ''}
           toUsername={ratingTarget.escrow.freelancer_username || ratingTarget.escrow.client_username || '?'}
           onDone={() => { setRatingTarget(null); load(); }}
           onSkip={() => setRatingTarget(null)}

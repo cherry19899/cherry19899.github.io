@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { t } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { getChatMessages, getChatRoom, sendMessage, uploadChatFile, fetchAttachmentBlobUrl } from '../lib/api';
@@ -24,6 +25,7 @@ function formatTime(d: string) {
 }
 
 export default function ChatRoomPage() {
+  const tr = t();
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
   const { user } = useAppCtx();
@@ -43,7 +45,7 @@ export default function ChatRoomPage() {
     const file = e.target.files?.[0];
     if (e.target) e.target.value = '';
     if (!file || !id) return;
-    if (file.size > 5 * 1024 * 1024) { toast('File must be under 5 MB', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast(tr.fileMax5mb, 'error'); return; }
     setUploading(true);
     try {
       const res: any = await uploadChatFile(id, file);
@@ -177,7 +179,7 @@ export default function ChatRoomPage() {
             <p className="text-white font-semibold text-sm truncate">{peer ? `@${peer.name}` : 'Chat'}</p>
             <p className="text-white/70 text-xs flex items-center gap-1">
               <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-300' : 'bg-white/40'}`} />
-              {connected ? 'Live' : 'Connecting…'}
+              {connected ? tr.live : tr.connecting}
             </p>
           </div>
         </div>
@@ -192,7 +194,7 @@ export default function ChatRoomPage() {
         ) : msgs.length === 0 ? (
           <div className="flex flex-col items-center justify-center pt-16 text-center">
             <span className="text-4xl mb-3">👋</span>
-            <p className="text-gray-500 text-sm">Say hello to start the conversation!</p>
+            <p className="text-gray-500 text-sm">{tr.sayHello}</p>
           </div>
         ) : (
           msgs.map(m => {
@@ -248,7 +250,7 @@ export default function ChatRoomPage() {
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={onKey}
-            placeholder="Message…"
+            placeholder={tr.messagePlaceholder}
             className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
           />
           <button
@@ -283,7 +285,7 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
       const url = await fetchAttachmentBlobUrl(path);
       window.open(url, '_blank');
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch { toast('Failed to open attachment', 'error'); }
+    } catch { toast(tr.failedOpenAttachment, 'error'); }
     finally { setBusy(false); }
   };
   return (

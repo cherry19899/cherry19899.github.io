@@ -24,8 +24,8 @@ export default function PostJobPage() {
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast('Image files only', 'error'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast('Image must be under 5 MB', 'error'); return; }
+    if (!file.type.startsWith('image/')) { toast(tr.imageFilesOnly, 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast(tr.imageMax5mb, 'error'); return; }
     const reader = new FileReader();
     reader.onload = () => set('image', String(reader.result || ''));
     reader.readAsDataURL(file);
@@ -64,7 +64,7 @@ export default function PostJobPage() {
 
         <Field label={`${tr.jobTitle} *`}>
           <input value={form.title} onChange={e => set('title', e.target.value)}
-            placeholder="e.g. Build a Pi Network dApp" maxLength={120} className="field-input" />
+            placeholder={tr.titlePlaceholder} maxLength={120} className="field-input" />
         </Field>
 
         <Field label="Description *">

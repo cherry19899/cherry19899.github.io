@@ -69,7 +69,7 @@ export default function JobDetailPage() {
   // ── Apply flow ────────────────────────────────────────────────────────────
 
   const handleApply = async () => {
-    if (!proposal.trim()) { toast('Write a proposal first', 'error'); return; }
+    if (!proposal.trim()) { toast(tr.writeProposalFirst, 'error'); return; }
     if (myConnects < applyCost) { toast(tr.notEnoughConnects, 'error'); return; }
     setApplying(true);
     console.log('[apply] start', { jobId: id, applyCost, myConnects });
@@ -80,10 +80,10 @@ export default function JobDetailPage() {
       const roomId = data?.room_id || data?.room?.id;
       console.log('[apply] roomId=', roomId, 'new_balance=', data?.new_balance ?? data?.remaining_connects);
       if (roomId) {
-        toast('Application sent! Opening chat...', 'success');
+        toast(tr.applicationSentChat, 'success');
         nav(`/chat/${roomId}`);
       } else {
-        toast('Application sent! ✅', 'success');
+        toast(tr.applicationSent, 'success');
         nav('/my-jobs');
       }
     } catch (e: any) {
@@ -130,7 +130,7 @@ export default function JobDetailPage() {
         },
         onCompleted: async (_pid, _txid) => {
           const res = hireResultRef.current;
-          toast(res?.escrow ? 'Escrow created — job started 🚀' : 'Job started! 🚀', 'success');
+          toast(res?.escrow ? tr.escrowCreated : tr.jobStarted, 'success');
           setHiringId(null);
           // Re-fetch the job so hired_freelancer_id/status are authoritative (the
           // freelancer needs hired_freelancer_id to see they're hired).
@@ -143,8 +143,8 @@ export default function JobDetailPage() {
           if (res?.room_id) nav(`/chat/${res.room_id}`);
           else nav('/escrow');
         },
-        onCancelled: () => { toast('Payment cancelled', 'info'); setHiringId(null); },
-        onError: (e: any) => { toast(e.message || 'Payment failed', 'error'); setHiringId(null); },
+        onCancelled: () => { toast(tr.paymentCancelled, 'info'); setHiringId(null); },
+        onError: (e: any) => { toast(e.message || tr.paymentFailedMsg, 'error'); setHiringId(null); },
       }
     );
   };
@@ -153,7 +153,7 @@ export default function JobDetailPage() {
     setActing(String(appId));
     rejectApplication(appId).catch(() => {});
     setApps(prev => prev.filter(a => a.id !== appId));
-    toast('Application declined', 'info');
+    toast(tr.applicationDeclined, 'info');
     setActing(null);
   };
 
@@ -176,7 +176,7 @@ export default function JobDetailPage() {
     <div className="flex flex-col items-center justify-center py-20">
       <span className="text-5xl mb-3">😕</span>
       <p className="font-semibold text-gray-900">{tr.jobNotFound}</p>
-      <button onClick={() => nav('/')} className="mt-4 text-emerald-500 font-semibold">← Back to Jobs</button>
+      <button onClick={() => nav('/')} className="mt-4 text-emerald-500 font-semibold">← {tr.backToJobs}</button>
     </div>
   );
 
@@ -197,7 +197,7 @@ export default function JobDetailPage() {
                   view === v ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
                 }`}
               >
-                {v === 'detail' ? 'Details' : `Applicants${apps.length ? ` (${apps.length})` : ''}`}
+                {v === 'detail' ? tr.details : `${tr.applicantsTab}${apps.length ? ` (${apps.length})` : ''}`}
               </button>
             ))}
           </div>
@@ -322,7 +322,7 @@ export default function JobDetailPage() {
                     value={proposal}
                     onChange={e => setProposal(e.target.value)}
                     autoFocus
-                    placeholder="Describe your approach, timeline, and why you're the best fit…"
+                    placeholder={tr.proposalPlaceholder}
                     rows={5}
                     className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none"
                   />
@@ -359,7 +359,7 @@ export default function JobDetailPage() {
                 onClick={() => { setView('applicants'); loadApps(); }}
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30"
               >
-                View Applicants ({job.applications ?? 0})
+                {tr.viewApplicants} ({job.applications ?? 0})
               </button>
             )}
 
@@ -388,7 +388,7 @@ export default function JobDetailPage() {
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <span className="text-5xl mb-3">📭</span>
                 <p className="font-semibold text-gray-900">{tr.noApplicants}</p>
-                <p className="text-sm text-gray-400 mt-1">Share your job to get more visibility</p>
+                <p className="text-sm text-gray-400 mt-1">{tr.shareToVisibility}</p>
               </div>
             ) : apps.map(app => {
               const applicantName = app.freelancer_username || app.freelancer_name || app.applicant_username || 'user';
@@ -422,21 +422,21 @@ export default function JobDetailPage() {
                     onClick={() => handleChat(app)}
                     className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-700 text-xs font-semibold"
                   >
-                    💬 Chat
+                    💬 {tr.chat}
                   </button>
                   <button
                     onClick={() => handleReject(app.id)}
                     disabled={acting === String(app.id)}
                     className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-semibold disabled:opacity-60"
                   >
-                    Decline
+                    {tr.decline}
                   </button>
                   <button
                     onClick={() => handleHire(app)}
                     disabled={hiringId === app.id || job.status !== 'open'}
                     className="flex-[1.5] py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold disabled:opacity-60 shadow-sm"
                   >
-                    {hiringId === app.id ? '⏳ Hiring…' : '✅ Hire'}
+                    {hiringId === app.id ? `⏳ ${tr.hiring}` : `✅ ${tr.hire}`}
                   </button>
                 </div>
               </div>
