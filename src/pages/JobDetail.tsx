@@ -106,8 +106,10 @@ export default function JobDetailPage() {
 
   // ── Hire flow: Pi payment → hire endpoint (creates escrow) ───────────────
 
+  const hireResultRef = React.useRef<any>(null);
   const handleHire = (app: any) => {
     setHiringId(app.id);
+    hireResultRef.current = null;
     toast(`Hiring @${app.freelancer_username || app.freelancer_name || app.applicant_username || 'user'}…`, 'info');
 
     createPiPayment(
@@ -116,7 +118,7 @@ export default function JobDetailPage() {
       { type: 'hire', job_id: id, application_id: app.id },
       {
         onApproval: async (paymentId) => {
-          await apiFetch(`/api/jobs/${id}/hire`, {
+          const res: any = await apiFetch(`/api/jobs/${id}/hire`, {
             method: 'POST',
             body: JSON.stringify({
               application_id: app.id,
@@ -124,11 +126,22 @@ export default function JobDetailPage() {
               payment_id: paymentId,
             }),
           });
+          hireResultRef.current = res;
         },
-        onCompleted: (_pid, _txid) => {
-          toast('Job started! Escrow funded 🚀', 'success');
-          setJob((prev: any) => prev ? { ...prev, status: 'in_progress' } : prev);
+        onCompleted: async (_pid, _txid) => {
+          const res = hireResultRef.current;
+          toast(res?.escrow ? 'Escrow created — job started 🚀' : 'Job started! 🚀', 'success');
           setHiringId(null);
+          // Re-fetch the job so hired_freelancer_id/status are authoritative (the
+          // freelancer needs hired_freelancer_id to see they're hired).
+          try {
+            const d: any = await getJob(id!);
+            if (d) setJob(d?.job || d);
+          } catch {}
+          loadApps();
+          // Go straight to the chat if the backend opened a room, else to Escrow.
+          if (res?.room_id) nav(`/chat/${res.room_id}`);
+          else nav('/escrow');
         },
         onCancelled: () => { toast('Payment cancelled', 'info'); setHiringId(null); },
         onError: (e: any) => { toast(e.message || 'Payment failed', 'error'); setHiringId(null); },

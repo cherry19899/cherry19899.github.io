@@ -32,6 +32,34 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<an
   return res.json().catch(() => null);
 }
 
+// Upload a file to a chat room (multipart; must NOT set JSON Content-Type).
+export async function uploadChatFile(roomId: string | number, file: File): Promise<any> {
+  const { token, uid } = getAuth();
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch(API_BASE + `/api/chat/rooms/${roomId}/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: 'Bearer ' + token, 'x-user-id': uid } : {},
+    body: fd,
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e?.error || res.statusText);
+  }
+  return res.json();
+}
+
+// Attachment GET requires auth, so fetch with the token and return a blob URL.
+export async function fetchAttachmentBlobUrl(path: string): Promise<string> {
+  const { token, uid } = getAuth();
+  const res = await fetch(API_BASE + path, {
+    headers: token ? { Authorization: 'Bearer ' + token, 'x-user-id': uid } : {},
+  });
+  if (!res.ok) throw new Error('Failed to load attachment');
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
+}
+
 export function saveAuth(token: string, user: any) {
   localStorage.setItem('workpro_token', token);
   localStorage.setItem('workpro_user', JSON.stringify(user));

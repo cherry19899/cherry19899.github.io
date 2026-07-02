@@ -286,7 +286,18 @@ export default function EscrowPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    // Refresh when returning to the tab — a just-created escrow (right after hiring)
+    // shows up immediately for both client and freelancer.
+    const onFocus = () => load();
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, []);
 
   const filtered = escrows.filter(e =>
     tab === 'active'

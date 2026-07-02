@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { getChatMessages, getChatRoom, sendMessage } from '../lib/api';
+import { getChatMessages, getChatRoom, sendMessage, uploadChatFile, fetchAttachmentBlobUrl } from '../lib/api';
+import { toast } from '../components/Toast';
 import { API_BASE } from '../lib/constants';
 import { useAppCtx } from '../App';
 import { getToken } from '../lib/api';
@@ -35,6 +36,27 @@ export default function ChatRoomPage() {
   const bottom = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (e.target) e.target.value = '';
+    if (!file || !id) return;
+    if (file.size > 5 * 1024 * 1024) { toast('File must be under 5 MB', 'error'); return; }
+    setUploading(true);
+    try {
+      const res: any = await uploadChatFile(id, file);
+      // Socket usually delivers it, but append defensively (deduped by id).
+      if (res?.message) {
+        setMsgs(prev => prev.some(m => m.id === res.message.id)
+          ? prev
+          : [...prev, { ...res.message, content: res.message.message || res.message.content || '' }]);
+      }
+    } catch (err: any) {
+      toast(err.message || 'Upload failed', 'error');
+    } finally { setUploading(false); }
+  };
 
   // Load history
   useEffect(() => {
@@ -193,7 +215,7 @@ export default function ChatRoomPage() {
                       ? `bg-emerald-500 text-white rounded-br-sm ${m.pending ? 'opacity-60' : ''}`
                       : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                   }`}>
-                    {m.content}
+                    <MessageBody content={m.content} mine={mine} />
                   </div>
                   <p className={`text-[10px] text-gray-400 ${mine ? 'text-right mr-1' : 'ml-1'}`}>
                     {formatTime(m.created_at)}
@@ -210,6 +232,17 @@ export default function ChatRoomPage() {
       {/* Input bar */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 max-w-lg mx-auto">
         <div className="flex gap-2 items-center">
+          <input ref={fileRef} type="file" onChange={handleFileUpload} className="hidden" />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            aria-label="Attach file"
+            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 shrink-0 disabled:opacity-40 active:scale-95 transition-transform"
+          >
+            {uploading
+              ? <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>}
+          </button>
           <input
             ref={inputRef}
             value={text}
@@ -232,5 +265,30 @@ export default function ChatRoomPage() {
       </div>
       <BottomNav />
     </div>
+  );
+}
+
+// Renders a chat message: plain text, or a tappable attachment for
+// "📎 filename|/api/chat/attachments/:id" bodies (fetched with auth → blob URL).
+function MessageBody({ content, mine }: { content: string; mine: boolean }) {
+  const [busy, setBusy] = useState(false);
+  const isAtt = content.startsWith('📎 ') && content.includes('|/api/chat/attachments/');
+  if (!isAtt) return <>{content}</>;
+  const sep = content.indexOf('|');
+  const name = content.slice(2, sep).trim();
+  const path = content.slice(sep + 1);
+  const open = async () => {
+    setBusy(true);
+    try {
+      const url = await fetchAttachmentBlobUrl(path);
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch { toast('Failed to open attachment', 'error'); }
+    finally { setBusy(false); }
+  };
+  return (
+    <button onClick={open} disabled={busy} className={`flex items-center gap-1.5 underline break-all text-left ${mine ? 'text-white' : 'text-emerald-600'}`}>
+      📎 {name}{busy ? ' …' : ''}
+    </button>
   );
 }
