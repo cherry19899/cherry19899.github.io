@@ -94,6 +94,33 @@ export function createPiPayment(
     callbacks.onError(new Error('Open in Pi Browser'));
     return;
   }
+  // The Pi SDK auth session (and its scopes) only lives for the current page load.
+  // A cached JWT keeps the user "logged in" without Pi.authenticate() having run this
+  // session, so createPayment would fail with "Cannot create a payment without
+  // 'payments' scope". Re-authenticate to (re)establish the payments scope first.
+  ensurePaymentsScope()
+    .then(() => startPayment(amount, memo, metadata, callbacks))
+    .catch((e: any) => callbacks.onError(new Error(e?.message || 'Pi authentication failed')));
+}
+
+let scopeAuthed = false;
+async function ensurePaymentsScope() {
+  if (scopeAuthed) return;
+  await window.Pi!.authenticate(['username', 'payments'], (p: any) => reportIncompletePayment(p));
+  scopeAuthed = true;
+}
+
+function startPayment(
+  amount: number,
+  memo: string,
+  metadata: any,
+  callbacks: {
+    onApproval?: (paymentId: string) => Promise<void>;
+    onCompleted: (paymentId: string, txid: string) => void;
+    onCancelled: () => void;
+    onError: (e: Error) => void;
+  }
+) {
   window.Pi!.createPayment(
     { amount, memo, metadata },
     {
