@@ -47,7 +47,7 @@ export default function PostJobPage() {
         title: form.title.trim(), description: form.description.trim(),
         budget, category: form.category, skills, is_urgent: form.is_urgent,
         ...(form.deadline ? { deadline: form.deadline } : {}),
-        ...(form.image ? { image: form.image } : {}),
+        ...(form.image ? { images: [form.image] } : {}),
       });
       // Optimistically reflect the connect the server deducted.
       updateUser({ balance_connects: Math.max(0, myConnects - POST_JOB_COST) });

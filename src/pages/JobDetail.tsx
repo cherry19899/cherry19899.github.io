@@ -234,8 +234,8 @@ export default function JobDetailPage() {
             </div>
 
             {/* Photo */}
-            {job.image && (
-              <img src={job.image} alt="" className="w-full max-h-64 object-cover rounded-2xl mb-4" />
+            {(job.images?.[0] || job.image) && (
+              <img src={job.images?.[0] || job.image} alt="" className="w-full max-h-64 object-cover rounded-2xl mb-4" />
             )}
 
             {/* Description */}

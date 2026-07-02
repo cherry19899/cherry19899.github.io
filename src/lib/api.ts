@@ -69,7 +69,7 @@ export const getJobApplications = (jobId: string | number) =>
   apiFetch(`/api/jobs/${jobId}/applications`);
 export const getMyApplications = () => apiFetch('/api/applications/my');
 export const applyToJob = (jobId: string | number, data: any) =>
-  apiFetch(`/api/jobs/${jobId}/apply`, { method: 'POST', body: JSON.stringify({ proposal: data.proposal }) });
+  apiFetch(`/api/jobs/${jobId}/apply`, { method: 'POST', body: JSON.stringify({ message: data.proposal }) });
 export const acceptApplication = (appId: string | number) =>
   apiFetch(`/api/applications/${appId}/accept`, { method: 'POST' });
 export const rejectApplication = (appId: string | number) =>

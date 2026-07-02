@@ -35,7 +35,7 @@ interface Job {
   category?: string; posted_by_name?: string; client_username?: string;
   applications?: number; applicants_count?: number;
   apply_cost?: number; is_urgent?: boolean; created_at: string;
-  deadline?: string; image?: string;
+  deadline?: string; image?: string; images?: string[];
 }
 
 // Days until a deadline (negative = past). null if no/invalid date.
@@ -723,8 +723,8 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 space-y-3">
-      {job.image && (
-        <img src={job.image} alt="" className="w-full h-32 object-cover rounded-xl -mt-1" />
+      {(job.images?.[0] || job.image) && (
+        <img src={job.images?.[0] || job.image} alt="" className="w-full h-32 object-cover rounded-xl -mt-1" />
       )}
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-gray-900 dark:text-white leading-snug flex-1 line-clamp-2">{job.title}</h3>

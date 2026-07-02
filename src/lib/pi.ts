@@ -33,15 +33,17 @@ export async function shareJob(jobId: string, title: string) {
   } catch { /* user cancelled */ }
 }
 
-// Report an incomplete/unfinished Pi payment to the backend so it can be resolved.
+// Report an incomplete/unfinished Pi payment so the backend can approve/complete or
+// cancel it via the Pi API (unblocks the SDK). Uses the no-auth resolver endpoint
+// that is purpose-built for onIncompletePaymentFound.
 async function reportIncompletePayment(payment: any) {
   const paymentId = payment?.identifier || payment?.paymentId;
   const txid = payment?.transaction?.txid;
   if (!paymentId) return;
   try {
-    await apiFetch('/api/payments/incomplete', {
+    await apiFetch(`/api/payments/${paymentId}/resolve-incomplete`, {
       method: 'POST',
-      body: JSON.stringify({ paymentId, txid }),
+      body: JSON.stringify({ txid }),
     });
   } catch {}
 }
