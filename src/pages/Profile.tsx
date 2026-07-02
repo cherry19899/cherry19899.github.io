@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const [buying, setBuying] = useState(false);
   const [langModal, setLangModal] = useState(false);
   const [piModal, setPiModal] = useState(false);
+  const [connectsModal, setConnectsModal] = useState(false);
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
@@ -162,7 +163,7 @@ export default function ProfilePage() {
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.connects}</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">{connects}</p>
             <button
-              onClick={() => { const pkg = CONNECT_PACKAGES[0]; buyConnects(pkg.connects, pkg.price); }}
+              onClick={() => setConnectsModal(true)}
               disabled={buying}
               className="mt-2 bg-emerald-500 text-white rounded-full px-4 py-1 text-xs font-semibold disabled:opacity-60 inline-flex items-center gap-1"
             >
@@ -256,6 +257,49 @@ export default function ProfilePage() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Connects purchase modal */}
+      {connectsModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setConnectsModal(false)}>
+          <div
+            className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl pb-10 overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mt-4 mb-4" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center mb-4 px-4">
+              {tr.buyConnects || 'Buy Connects'}
+            </h3>
+            <div className="px-4 space-y-3">
+              {CONNECT_PACKAGES.map((pkg, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setConnectsModal(false); buyConnects(pkg.connects, pkg.price); }}
+                  disabled={buying}
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors border border-gray-100 dark:border-slate-600 disabled:opacity-50"
+                >
+                  <div className="text-left">
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">{pkg.connects} Connects</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{tr.bestValue || 'Best value'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-emerald-600">{pkg.price}π</p>
+                    {pkg.connects === 100 && (
+                      <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{tr.popular || 'Popular'}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setConnectsModal(false)}
+              className="w-full mt-4 mx-4 px-4 py-3 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white"
+            >
+              {tr.cancel || 'Cancel'}
+            </button>
           </div>
         </div>,
         document.body
