@@ -280,13 +280,23 @@ export default function JobDetailPage() {
               </div>
             )}
 
-            {/* Fee breakdown */}
+            {/* Payment breakdown — employer pays the budget; the 2% platform fee is
+                deducted from the freelancer's payout (freelancer bears the fee). */}
             <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 mb-5 text-sm space-y-1.5">
               <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>{tr.budget}</span><span className="text-gray-900 dark:text-white font-medium">{Number(job.budget)} π</span></div>
-              <div className="flex justify-between text-gray-400 dark:text-slate-500"><span>Platform fee (2%)</span><span>{fee} π</span></div>
+              <div className="flex justify-between text-gray-400 dark:text-slate-500"><span>{tr.platformFee} (2%)</span><span>−{fee} π</span></div>
               <div className="border-t border-gray-200 dark:border-slate-700 pt-1.5 flex justify-between font-bold">
-                <span className="text-gray-900 dark:text-white">{tr.total}</span>
-                <span className="text-emerald-500">{(Number(job.budget) + fee).toFixed(2)} π</span>
+                {isOwner ? (
+                  <>
+                    <span className="text-gray-900 dark:text-white">{tr.youPay}</span>
+                    <span className="text-emerald-500">{Number(job.budget).toFixed(2)} π</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-gray-900 dark:text-white">{tr.youReceive}</span>
+                    <span className="text-emerald-500">{(Number(job.budget) - fee).toFixed(2)} π</span>
+                  </>
+                )}
               </div>
             </div>
 

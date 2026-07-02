@@ -125,15 +125,16 @@ export default function PostJobPage() {
           <span className="text-xs">{myConnects} {tr.connects.toLowerCase()}</span>
         </div>
 
-        {/* Summary */}
+        {/* Summary — employer pays the budget when hiring; the 2% platform fee is
+            deducted from the freelancer's payout, not added on top. */}
         {budget > 0 && (
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2 text-sm">
             <Row label={tr.budget} value={`${budget} π`} />
-            <Row label={`${tr.platformFee} (2%)`} value={`${fee} π`} muted />
-            <Row label={tr.costOneConnect} value={`${POST_JOB_COST}`} muted />
+            <Row label={`${tr.platformFee} (2%)`} value={`−${fee} π`} muted />
+            <Row label={`${tr.costOneConnect}`} value={`${POST_JOB_COST}`} muted />
             <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
-              <span className="text-gray-900">{tr.total}</span>
-              <span className="text-emerald-500">{total} π</span>
+              <span className="text-gray-900">{tr.youPay}</span>
+              <span className="text-emerald-500">{budget} π</span>
             </div>
           </div>
         )}
