@@ -71,10 +71,13 @@ export default function JobDetailPage() {
     if (!proposal.trim()) { toast('Write a proposal first', 'error'); return; }
     if (myConnects < applyCost) { toast(tr.notEnoughConnects, 'error'); return; }
     setApplying(true);
+    console.log('[apply] start', { jobId: id, applyCost, myConnects });
     try {
       const data: any = await applyToJob(id!, { proposal, job_id: Number(id) });
+      console.log('[apply] response', data);
       updateUser({ balance_connects: Math.max(0, myConnects - applyCost) });
       const roomId = data?.room_id || data?.room?.id;
+      console.log('[apply] roomId=', roomId, 'new_balance=', data?.new_balance ?? data?.remaining_connects);
       if (roomId) {
         toast('Application sent! Opening chat...', 'success');
         nav(`/chat/${roomId}`);
@@ -83,6 +86,7 @@ export default function JobDetailPage() {
         nav('/my-jobs');
       }
     } catch (e: any) {
+      console.error('[apply] error', e?.message || e, e?.status);
       toast(e.message || 'Failed to apply', 'error');
     } finally { setApplying(false); }
   };
