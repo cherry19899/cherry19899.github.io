@@ -126,6 +126,8 @@ export const fulltextSearch = (q: string, extra = '') =>
 // ─── Chat ────────────────────────────────────────────────────────────────────
 
 export const getChatRooms = () => apiFetch('/api/chat/rooms');
+export const getChatRoom = (roomId: string | number) =>
+  apiFetch(`/api/chat/rooms/${roomId}`);
 export const getChatMessages = (roomId: string | number) =>
   apiFetch(`/api/chat/rooms/${roomId}/messages`);
 export const sendMessage = (roomId: string | number, content: string) =>

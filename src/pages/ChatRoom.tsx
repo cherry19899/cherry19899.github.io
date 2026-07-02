@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { getChatMessages, sendMessage } from '../lib/api';
+import { getChatMessages, getChatRoom, sendMessage } from '../lib/api';
 import { API_BASE } from '../lib/constants';
 import { useAppCtx } from '../App';
 import { getToken } from '../lib/api';
@@ -31,6 +31,7 @@ export default function ChatRoomPage() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [peer, setPeer] = useState<{ name: string; avatar?: string } | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,6 +44,22 @@ export default function ChatRoomPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Load room to show the other participant (avatar + name) in the header
+  useEffect(() => {
+    if (!id || !user) return;
+    getChatRoom(id)
+      .then((d: any) => {
+        const r = d?.room || d;
+        if (!r) return;
+        const iAmClient = String(r.client_id) === String(user.uid);
+        setPeer({
+          name: (iAmClient ? r.freelancer_username : r.client_username) || 'user',
+          avatar: iAmClient ? r.freelancer_avatar : r.client_avatar,
+        });
+      })
+      .catch(() => {});
+  }, [id, user?.uid]);
 
   // Socket.io
   useEffect(() => {
@@ -128,8 +145,14 @@ export default function ChatRoomPage() {
               <path d="M19 12H5M12 5l-7 7 7 7"/>
             </svg>
           </button>
-          <div className="flex-1">
-            <p className="text-white font-semibold text-sm">Chat</p>
+          {/* Peer avatar */}
+          <div className="w-9 h-9 rounded-full bg-white/25 flex items-center justify-center shrink-0 overflow-hidden text-white font-bold text-sm">
+            {peer?.avatar
+              ? <img src={peer.avatar} className="w-full h-full object-cover" alt="" />
+              : (peer?.name || '·')[0].toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-semibold text-sm truncate">{peer ? `@${peer.name}` : 'Chat'}</p>
             <p className="text-white/70 text-xs flex items-center gap-1">
               <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-300' : 'bg-white/40'}`} />
               {connected ? 'Live' : 'Connecting…'}

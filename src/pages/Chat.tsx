@@ -14,7 +14,7 @@ function timeAgo(d?: string) {
   return `${Math.floor(h / 24)}d`;
 }
 
-interface Room { id: number; job_title?: string; other_username?: string; last_message?: string; last_message_at?: string; unread_count?: number; }
+interface Room { id: number; job_title?: string; other_user_name?: string; other_user_avatar?: string; last_message?: string; last_message_at?: string; unread_count?: number; }
 
 export default function ChatPage() {
   const tr = t();
@@ -60,8 +60,10 @@ export default function ChatPage() {
               onClick={() => open(room)}
               className="w-full bg-white border border-gray-100 rounded-2xl shadow-sm p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
             >
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-600">
-                {(room.other_username || '?')[0].toUpperCase()}
+              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-600 overflow-hidden">
+                {room.other_user_avatar
+                  ? <img src={room.other_user_avatar} className="w-full h-full object-cover" alt="" />
+                  : (room.other_user_name || 'U')[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
@@ -71,7 +73,7 @@ export default function ChatPage() {
                   <span className="text-xs text-gray-400 shrink-0">{timeAgo(room.last_message_at)}</span>
                 </div>
                 <p className="text-xs text-gray-500 truncate mt-0.5">
-                  {room.other_username && `@${room.other_username} · `}
+                  {room.other_user_name && `@${room.other_user_name} · `}
                   {room.last_message || tr.noMessages}
                 </p>
               </div>
