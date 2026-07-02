@@ -234,7 +234,7 @@ export default function ChatRoomPage() {
       {/* Input bar */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 max-w-lg mx-auto">
         <div className="flex gap-2 items-center">
-          <input ref={fileRef} type="file" onChange={handleFileUpload} className="hidden" />
+          <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={handleFileUpload} className="hidden" />
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
@@ -273,12 +273,31 @@ export default function ChatRoomPage() {
 // Renders a chat message: plain text, or a tappable attachment for
 // "📎 filename|/api/chat/attachments/:id" bodies (fetched with auth → blob URL).
 function MessageBody({ content, mine }: { content: string; mine: boolean }) {
+  const tr = t();
   const [busy, setBusy] = useState(false);
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
   const isAtt = content.startsWith('📎 ') && content.includes('|/api/chat/attachments/');
+  const sep = isAtt ? content.indexOf('|') : -1;
+  const name = isAtt ? content.slice(2, sep).trim() : '';
+  const path = isAtt ? content.slice(sep + 1) : '';
+  const isImage = isAtt && /\.(png|jpe?g|gif|webp|bmp|heic)$/i.test(name);
+
+  // Auto-load images inline (attachment endpoint needs auth → blob URL).
+  useEffect(() => {
+    if (!isImage) return;
+    let revoked: string | null = null;
+    fetchAttachmentBlobUrl(path).then(u => { revoked = u; setImgUrl(u); }).catch(() => {});
+    return () => { if (revoked) URL.revokeObjectURL(revoked); };
+  }, [path, isImage]);
+
   if (!isAtt) return <>{content}</>;
-  const sep = content.indexOf('|');
-  const name = content.slice(2, sep).trim();
-  const path = content.slice(sep + 1);
+
+  if (isImage) {
+    return imgUrl
+      ? <img src={imgUrl} alt={name} className="rounded-lg max-w-[200px] max-h-[240px] object-cover" />
+      : <span className="opacity-70">🖼️ {name}…</span>;
+  }
+
   const open = async () => {
     setBusy(true);
     try {
