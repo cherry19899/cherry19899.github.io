@@ -117,18 +117,26 @@ export default function JobDetailPage() {
       `Hire: ${job.title}`,
       { type: 'hire', job_id: id, application_id: app.id },
       {
-        onApproval: async (paymentId) => {
-          const res: any = await apiFetch(`/api/jobs/${id}/hire`, {
-            method: 'POST',
-            body: JSON.stringify({
-              application_id: app.id,
-              freelancer_id: app.freelancer_id || app.applicant_uid || app.applicant_id,
-              payment_id: paymentId,
-            }),
-          });
-          hireResultRef.current = res;
-        },
-        onCompleted: async (_pid, _txid) => {
+        // The hire endpoint requires the Pi payment to be `completed`, which only
+        // happens after onReadyForServerCompletion. So call it here (onCompleted),
+        // NOT at approval time — otherwise the backend returns 402 and the hire is
+        // silently lost.
+        onCompleted: async (paymentId, _txid) => {
+          try {
+            const res: any = await apiFetch(`/api/jobs/${id}/hire`, {
+              method: 'POST',
+              body: JSON.stringify({
+                application_id: app.id,
+                freelancer_id: app.freelancer_id || app.applicant_uid || app.applicant_id,
+                payment_id: paymentId,
+              }),
+            });
+            hireResultRef.current = res;
+          } catch (e: any) {
+            setHiringId(null);
+            toast(e?.message || tr.paymentFailedMsg, 'error');
+            return;
+          }
           const res = hireResultRef.current;
           toast(res?.escrow ? tr.escrowCreated : tr.jobStarted, 'success');
           setHiringId(null);
