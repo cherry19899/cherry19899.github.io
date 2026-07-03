@@ -28,7 +28,7 @@ export default function ProfilePage() {
       createPiPayment(price, `Buy ${qty} Connects`, { type: 'buy_connects', qty }, {
         onCompleted: () => {
           updateUser({ balance_connects: connects + qty });
-          toast(`Added ${qty} connects!`, 'success');
+          toast(currentLang() === 'ru' ? `Начислено ${qty} коннектов!` : `Added ${qty} connects!`, 'success');
           setBuying(false);
         },
         onCancelled: () => setBuying(false),

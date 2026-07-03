@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { t } from '../lib/i18n';
+import { t, currentLang } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch } from '../lib/api';
 import { useAppCtx } from '../App';
@@ -117,7 +117,8 @@ export default function JobDetailPage() {
   const handleHire = (app: any) => {
     setHiringId(app.id);
     hireResultRef.current = null;
-    toast(`Hiring @${app.freelancer_username || app.freelancer_name || app.applicant_username || 'user'}…`, 'info');
+    { const who = app.freelancer_username || app.freelancer_name || app.applicant_username || 'user';
+      toast((currentLang() === 'ru' ? 'Найм @' : 'Hiring @') + who + '…', 'info'); }
 
     createPiPayment(
       Number(job.budget),
