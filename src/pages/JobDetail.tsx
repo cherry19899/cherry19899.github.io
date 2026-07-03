@@ -88,7 +88,14 @@ export default function JobDetailPage() {
       }
     } catch (e: any) {
       console.error('[apply] error', e?.message || e, e?.status);
-      toast(e.message || 'Failed to apply', 'error');
+      // Already applied → not a hard error; the connect was NOT re-charged. Inform
+      // and send the user to their jobs where the existing application lives.
+      if (e?.data?.alreadyApplied || e?.status === 409 || /already applied/i.test(e?.message || '')) {
+        toast((tr as any).alreadyApplied || 'Вы уже откликнулись на эту вакансию', 'info');
+        nav('/my-jobs');
+      } else {
+        toast(e.message || (tr as any).failedToApply || 'Не удалось откликнуться', 'error');
+      }
     } finally { setApplying(false); }
   };
 
