@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { translateError } from '../lib/i18n';
 
 interface Toast { id: number; msg: string; type: 'success' | 'error' | 'info'; }
 
@@ -8,7 +9,9 @@ export function useToastFn() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toast = useCallback((msg: string, type: Toast['type'] = 'info') => {
     const id = Date.now();
-    setToasts(p => [...p, { id, msg, type }]);
+    // Localize backend English error strings for RU users (no-op for other langs
+    // or already-localized text).
+    setToasts(p => [...p, { id, msg: translateError(msg), type }]);
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
   }, []);
   _toast = toast;
