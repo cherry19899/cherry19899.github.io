@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { t } from '../lib/i18n';
-import { isPiBrowser, piAuthenticate } from '../lib/pi';
+import { isPiBrowser, piAuthenticate, PI_MODE } from '../lib/pi';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 
@@ -90,9 +90,10 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-5 text-gray-400 dark:text-slate-600 text-xs text-center">
-          {(import.meta.env.VITE_PI_MODE || (import.meta.env.PROD ? 'production' : 'sandbox')) === 'sandbox'
-            ? 'Testnet mode · sandbox payments'
-            : 'Mainnet · real Pi payments'}
+          {/* Single source of truth — same PI_MODE the SDK is initialized with. */}
+          {PI_MODE === 'sandbox'
+            ? 'Testnet · sandbox-платежи (Test-π)'
+            : 'Mainnet · настоящие Pi-платежи'}
         </p>
       </div>
     </div>
