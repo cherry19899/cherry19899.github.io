@@ -28,10 +28,11 @@ const STATUS_STYLE: Record<string, string> = {
   funded:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   released: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   refunded: 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400',
+  cancelled: 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400',
   disputed: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
 };
 const STATUS_ICON: Record<string, string> = {
-  pending: '⏳', funded: '🔒', released: '✅', refunded: '↩️', disputed: '⚠️',
+  pending: '⏳', funded: '🔒', released: '✅', refunded: '↩️', cancelled: '🚫', disputed: '⚠️',
 };
 
 // ─── Milestone timeline ───────────────────────────────────────────────────────
@@ -302,7 +303,7 @@ export default function EscrowPage() {
   const filtered = escrows.filter(e =>
     tab === 'active'
       ? ['pending', 'funded', 'disputed'].includes(e.status)
-      : ['released', 'refunded'].includes(e.status)
+      : ['released', 'refunded', 'cancelled'].includes(e.status)
   );
 
   const doRelease = async (e: Escrow) => {
@@ -359,8 +360,8 @@ export default function EscrowPage() {
             }`}
           >
             {tab_key === 'active'
-              ? `Active (${escrows.filter(e => ['pending','funded','disputed'].includes(e.status)).length})`
-              : 'History'}
+              ? `${tr.active} (${escrows.filter(e => ['pending','funded','disputed'].includes(e.status)).length})`
+              : tr.history}
           </button>
         ))}
       </div>
@@ -373,7 +374,7 @@ export default function EscrowPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">🔒</span>
           <p className="font-semibold text-gray-900 dark:text-white">
-            {tab === 'active' ? 'No active escrows' : 'No history yet'}
+            {tab === 'active' ? tr.noActiveEscrows : tr.noHistoryYet}
           </p>
           <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">{tr.completeJobToSeeEscrow}</p>
         </div>
@@ -418,7 +419,7 @@ export default function EscrowPage() {
                     >
                       <path d="m6 9 6 6 6-6"/>
                     </svg>
-                    <span>{isExpanded ? 'Collapse' : `${tr.milestones} · ${tr.view}`}</span>
+                    <span>{isExpanded ? tr.collapse : `${tr.milestones} · ${tr.view}`}</span>
                   </div>
                 </div>
 
@@ -449,7 +450,7 @@ export default function EscrowPage() {
                           disabled={acting === e.id}
                           className="flex-1 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 text-xs font-semibold disabled:opacity-60"
                         >
-                          Cancel
+                          {tr.cancel}
                         </button>
                         <button
                           onClick={() => doRelease(e)}
@@ -463,7 +464,7 @@ export default function EscrowPage() {
 
                     {e.status === 'pending' && isClient && (
                       <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl px-3 py-2">
-                        ⏳ Waiting for payment to fund escrow
+                        ⏳ {tr.waitingFunding}
                       </div>
                     )}
 
