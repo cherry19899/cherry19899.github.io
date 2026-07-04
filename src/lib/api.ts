@@ -115,6 +115,16 @@ export const acceptOffer = (offerId: string | number) =>
 export const declineOffer = (offerId: string | number) =>
   apiFetch(`/api/offers/${offerId}/decline`, { method: 'POST' });
 
+// ─── Portfolio ───────────────────────────────────────────────────────────────
+
+export const getPortfolio = (userId: string) => apiFetch(`/api/users/${userId}/portfolio`);
+export const savePortfolio = (data: any) =>
+  apiFetch('/api/users/me/portfolio', { method: 'PUT', body: JSON.stringify(data) });
+export const addPortfolioItem = (data: any) =>
+  apiFetch('/api/users/me/portfolio/items', { method: 'POST', body: JSON.stringify(data) });
+export const deletePortfolioItem = (itemId: number) =>
+  apiFetch(`/api/users/me/portfolio/items/${itemId}`, { method: 'DELETE' });
+
 // ─── Escrow ──────────────────────────────────────────────────────────────────
 
 export const getEscrows = () => apiFetch('/api/escrows');

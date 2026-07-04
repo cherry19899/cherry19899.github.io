@@ -79,7 +79,7 @@ export default function ProfilePage() {
     {
       icon: BriefcaseIcon, bg: 'bg-violet-100', ic: 'text-violet-600',
       label: tr.portfolio, right: <Chevron />,
-      onClick: () => nav('/my-jobs'),
+      onClick: () => nav('/portfolio'),
     },
     {
       icon: ListIcon, bg: 'bg-indigo-100', ic: 'text-indigo-600',
