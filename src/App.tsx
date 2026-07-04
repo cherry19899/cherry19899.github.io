@@ -18,6 +18,7 @@ import ProfilePage      from './pages/Profile';
 import AdminPage        from './pages/Admin';
 import NotificationsPage from './pages/Notifications';
 import MyJobsPage       from './pages/MyJobs';
+import FAQPage          from './pages/FAQ';
 import EscrowPage       from './pages/Escrow';
 import JobDetailPage    from './pages/JobDetail';
 
@@ -161,6 +162,7 @@ export default function App() {
           <Route path="/escrow"       element={<EscrowPage />} />
           <Route path="/profile"      element={<ProfilePage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/faq"          element={<FAQPage />} />
           <Route path="/admin"        element={<Protected adminOnly><AdminPage /></Protected>} />
         </Route>
 

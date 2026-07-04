@@ -61,7 +61,7 @@ export default function ProfilePage() {
       icon: SendIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
       label: tr.customOffers,
       right: <span className="text-emerald-500 text-sm font-semibold">View →</span>,
-      onClick: () => nav('/my-jobs'),
+      onClick: () => nav('/my-jobs?tab=offers'),
     },
     {
       icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
@@ -84,7 +84,7 @@ export default function ProfilePage() {
     {
       icon: ListIcon, bg: 'bg-indigo-100', ic: 'text-indigo-600',
       label: tr.myApplications, right: <Chevron />,
-      onClick: () => nav('/my-jobs'),
+      onClick: () => nav('/my-jobs?tab=applied'),
     },
     {
       icon: DownloadIcon, bg: 'bg-teal-100', ic: 'text-teal-600',
@@ -100,7 +100,7 @@ export default function ProfilePage() {
     {
       icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
       label: tr.faq, right: <Chevron />,
-      onClick: () => toast(tr.faqComingSoon, 'info'),
+      onClick: () => nav('/faq'),
     },
     {
       icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',

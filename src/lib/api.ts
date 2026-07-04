@@ -108,6 +108,13 @@ export const acceptApplication = (appId: string | number) =>
 export const rejectApplication = (appId: string | number) =>
   apiFetch(`/api/applications/${appId}/reject`, { method: 'POST' });
 
+// Direct offers a client sent to me (freelancer): list / accept / decline.
+export const getOffers = () => apiFetch('/api/offers');
+export const acceptOffer = (offerId: string | number) =>
+  apiFetch(`/api/offers/${offerId}/accept`, { method: 'POST' });
+export const declineOffer = (offerId: string | number) =>
+  apiFetch(`/api/offers/${offerId}/decline`, { method: 'POST' });
+
 // ─── Escrow ──────────────────────────────────────────────────────────────────
 
 export const getEscrows = () => apiFetch('/api/escrows');
