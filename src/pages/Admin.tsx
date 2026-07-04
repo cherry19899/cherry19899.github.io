@@ -214,6 +214,23 @@ export default function AdminPage() {
 
                   {u.role !== 'admin' && (
                     <div className="flex gap-2">
+                      {parseFloat(u.balance_pi || 0) > 0 && (
+                        <button
+                          onClick={async () => {
+                            setActing(u.id || u.uid);
+                            try {
+                              const r: any = await apiFetch(`/api/admin/users/${u.id || u.uid}/payout-owed`, { method: 'POST' });
+                              setUsers(prev => prev.map(x => (x.id || x.uid) === (u.id || u.uid) ? { ...x, balance_pi: 0 } : x));
+                              toast(`Выплачено ${r.paid}π → @${u.username} (tx ${String(r.txid).slice(0, 8)}…)`, 'success');
+                            } catch (e: any) { toast(e.message, 'error'); }
+                            finally { setActing(null); }
+                          }}
+                          disabled={acting === (u.id || u.uid)}
+                          className="flex-1 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold disabled:opacity-60"
+                        >
+                          π Выплатить {parseFloat(u.balance_pi).toFixed(2)}
+                        </button>
+                      )}
                       <button
                         onClick={() => setGrantModal(u)}
                         className="flex-1 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold"
