@@ -56,7 +56,9 @@ export async function piAuthenticate(onRetry?: (attempt: number) => void): Promi
   }
   return new Promise((resolve, reject) => {
     window.Pi!.authenticate(
-      ['username', 'payments'],
+      // wallet_address is required for A2U payouts (the backend needs the user's
+      // public wallet key to send real Pi to them).
+      ['username', 'payments', 'wallet_address'],
       (payment: any) => { reportIncompletePayment(payment); }
     ).then(async (auth: any) => {
       try {
@@ -108,7 +110,7 @@ let scopeAuthed = false;
 async function ensurePaymentsScope() {
   if (scopeAuthed) { console.log('[pay] scope cached'); return; }
   console.log('[pay] authenticate(payments)…');
-  const auth = await window.Pi!.authenticate(['username', 'payments'], (p: any) => reportIncompletePayment(p));
+  const auth = await window.Pi!.authenticate(['username', 'payments', 'wallet_address'], (p: any) => reportIncompletePayment(p));
   console.log('[pay] authenticate ok, scopes=', auth?.scopes || auth?.user?.scopes || '?');
   scopeAuthed = true;
 }
