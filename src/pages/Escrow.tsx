@@ -462,6 +462,15 @@ export default function EscrowPage() {
                       </div>
                     )}
 
+                    {/* Freelancer view of a funded escrow: no actions (only the
+                        client can release), so show an explanatory hint instead
+                        of an empty expansion. */}
+                    {e.status === 'funded' && isFreelancer && !isClient && (
+                      <div className="text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl px-3 py-2">
+                        🔒 {tr.escrowFundedFreelancerHint}
+                      </div>
+                    )}
+
                     {e.status === 'pending' && isClient && (
                       <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-xl px-3 py-2">
                         ⏳ {tr.waitingFunding}
