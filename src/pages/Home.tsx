@@ -354,7 +354,7 @@ export default function HomePage() {
   useEffect(() => {
     if (user) {
       getSavedSearches()
-        .then(d => setSavedSearches(d?.searches || d || []))
+        .then(d => setSavedSearches(d?.saved_searches || d?.searches || (Array.isArray(d) ? d : [])))
         .catch(() => {});
     }
   }, [user]);
@@ -453,7 +453,7 @@ export default function HomePage() {
     try {
       const params = { search, category: cat, sort, ...filters };
       const s = await createSavedSearch({ name, query_params: params, alert_enabled: alertEnabled });
-      setSavedSearches(prev => [...prev, s?.search || { id: Date.now(), name }]);
+      setSavedSearches(prev => [...(Array.isArray(prev) ? prev : []), s?.saved_search || s?.search || { id: Date.now(), name }]);
     } catch {}
     setShowSaveModal(false);
   };
