@@ -519,16 +519,23 @@ export default function EscrowPage() {
         document.body
       )}
 
-      {/* Rating modal */}
-      {ratingTarget && (
-        <RatingModal
-          jobId={ratingTarget.escrow.job_id || 0}
-          toUserId={ratingTarget.escrow.freelancer_id || ratingTarget.escrow.freelancer_uid || ratingTarget.escrow.client_id || ratingTarget.escrow.client_uid || ''}
-          toUsername={ratingTarget.escrow.freelancer_username || ratingTarget.escrow.client_username || '?'}
-          onDone={() => { setRatingTarget(null); load(); }}
-          onSkip={() => setRatingTarget(null)}
-        />
-      )}
+      {/* Rating modal — always review the OTHER party, not yourself */}
+      {ratingTarget && (() => {
+        const e = ratingTarget.escrow;
+        const freelancerId = e.freelancer_id || e.freelancer_uid || '';
+        const iAmFreelancer = user?.uid && freelancerId === user.uid;
+        const toUserId = iAmFreelancer ? (e.client_id || e.client_uid || '') : freelancerId;
+        const toUsername = iAmFreelancer ? (e.client_username || '?') : (e.freelancer_username || '?');
+        return (
+          <RatingModal
+            jobId={e.job_id || 0}
+            toUserId={toUserId}
+            toUsername={toUsername}
+            onDone={() => { setRatingTarget(null); load(); }}
+            onSkip={() => setRatingTarget(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
