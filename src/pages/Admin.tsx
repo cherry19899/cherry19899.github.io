@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { t } from '../lib/i18n';
+import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
-  getAdminStats, getAdminUsers, getAdminJobs, getAdminEscrows, getAdminEarnings,
+  getAdminStats, getAdminUsers, getAdminJobs, getAdminEscrows, getAdminEarnings, startChat,
   adminDeleteJob, adminResolveEscrow, adminBlockUser, adminGrantConnects, apiFetch,
   getAdminAnalytics, getAdminRealtime,
 } from '../lib/api';
@@ -18,6 +19,7 @@ type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings' | 'analytics';
 
 export default function AdminPage() {
   const tr = t();
+  const nav = useNavigate();
   const { user } = useAppCtx();
   const [tab, setTab] = useState<Tab>('stats');
   const [stats, setStats] = useState<any>(null);
@@ -236,6 +238,18 @@ export default function AdminPage() {
                         className="flex-1 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold"
                       >
                         ⚡ Grant Connects
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const r = await startChat({ other_user_id: u.id || u.uid });
+                            const roomId = r?.id || r?.conversation?.id;
+                            if (roomId) nav(`/chat/${roomId}`);
+                          } catch (e: any) { toast(e.message, 'error'); }
+                        }}
+                        className="flex-1 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold"
+                      >
+                        💬 Написать
                       </button>
                       <button
                         onClick={async () => {
