@@ -68,7 +68,7 @@ export default function ChatPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold text-gray-900 text-sm truncate">
-                    {room.job_title || `Chat #${room.id}`}
+                    {room.job_title || (room.other_user_name ? `@${room.other_user_name}` : `Chat #${room.id}`)}
                   </p>
                   <span className="text-xs text-gray-400 shrink-0">{timeAgo(room.last_message_at)}</span>
                 </div>

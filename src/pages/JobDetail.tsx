@@ -419,7 +419,10 @@ export default function JobDetailPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="font-semibold text-gray-900 dark:text-white text-sm">@{applicantName}</p>
+                      <p
+                        onClick={() => nav(`/portfolio/${app.freelancer_id || app.applicant_uid || app.applicant_id}`)}
+                        className="font-semibold text-emerald-600 dark:text-emerald-400 text-sm cursor-pointer active:opacity-70"
+                      >@{applicantName} →</p>
                       <span className="text-xs text-gray-400 dark:text-slate-500">{timeAgo(app.created_at)}</span>
                     </div>
                     {app.applicant_rating && (
