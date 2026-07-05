@@ -369,7 +369,7 @@ export default function HomePage() {
         const res = await fulltextSearch(search, 'limit=5');
         const jobs: Job[] = res?.jobs || res || [];
         // extract unique title fragments as suggestions
-        const sugs = jobs.slice(0, 5).map((j: Job) => j.title);
+        const sugs = [...new Set(jobs.map((j: Job) => j.title))].slice(0, 5);
         setSuggestions(sugs);
       } catch { setSuggestions([]); }
     }, 200);
