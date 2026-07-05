@@ -19,7 +19,7 @@ interface Escrow {
 
 interface Milestone {
   id?: number; milestone_index: number; title: string; percent: number; amount?: number;
-  status: 'pending' | 'requested' | 'approved' | 'auto_released';
+  status: 'pending' | 'requested' | 'approved' | 'released' | 'auto_released';
   freelancer_requested?: boolean; client_approved?: boolean;
 }
 
@@ -117,13 +117,13 @@ function MilestoneTimeline({
   };
 
   const mStatusIcon = (m: Milestone) => {
-    if (m.status === 'approved' || m.status === 'auto_released') return '✅';
+    if (m.status === 'approved' || m.status === 'released' || m.status === 'auto_released') return '✅';
     if (m.status === 'requested') return '🟡';
     return '⭕';
   };
 
   const mStatusColor = (m: Milestone) => {
-    if (m.status === 'approved' || m.status === 'auto_released')
+    if (m.status === 'approved' || m.status === 'released' || m.status === 'auto_released')
       return 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20';
     if (m.status === 'requested')
       return 'border-amber-400 bg-amber-50 dark:bg-amber-900/20';
@@ -189,7 +189,7 @@ function MilestoneTimeline({
   }
 
   // Progress bar
-  const approvedCount = milestones.filter(m => m.status === 'approved' || m.status === 'auto_released').length;
+  const approvedCount = milestones.filter(m => m.status === 'approved' || m.status === 'released' || m.status === 'auto_released').length;
   const progress = milestones.length > 0 ? (approvedCount / milestones.length) * 100 : 0;
 
   return (
