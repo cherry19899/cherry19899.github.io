@@ -92,6 +92,8 @@ export const completeJob = (id: string | number) =>
 export const submitWork = (id: string | number) =>
   apiFetch(`/api/jobs/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'submitted' }) });
 export const getMyJobs = () => apiFetch('/api/jobs/my');
+export const deleteJob = (id: string | number) =>
+  apiFetch(`/api/jobs/${id}`, { method: 'DELETE' });
 export const getMyJobsAsFreelancer = () => apiFetch('/api/jobs/as-freelancer');
 export const autocompleteJobs = (q: string) =>
   apiFetch(`/api/jobs/search/autocomplete?q=${encodeURIComponent(q)}`);

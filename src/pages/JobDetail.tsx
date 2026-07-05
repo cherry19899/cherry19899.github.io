@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { t, currentLang } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch } from '../lib/api';
+import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob,
+} from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
@@ -377,6 +378,23 @@ export default function JobDetailPage() {
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30"
               >
                 {tr.viewApplicants} ({job.applications ?? 0})
+              </button>
+            )}
+
+            {isOwner && job.status === 'open' && (
+              <button
+                onClick={async () => {
+                  const ru = currentLang() === 'ru';
+                  if (!window.confirm(ru ? 'Удалить задачу? Откликнувшимся вернутся коннекты.' : 'Delete this job? Applicants get their connects back.')) return;
+                  try {
+                    await deleteJob(Number(id));
+                    toast(ru ? 'Задача удалена' : 'Job deleted', 'success');
+                    nav('/my-jobs');
+                  } catch (e: any) { toast(e.message, 'error'); }
+                }}
+                className="w-full py-3 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 font-semibold text-sm"
+              >
+                🗑 {currentLang() === 'ru' ? 'Удалить задачу' : 'Delete job'}
               </button>
             )}
 
