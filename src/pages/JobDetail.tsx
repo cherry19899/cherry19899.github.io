@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { t, currentLang } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob,
+import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
@@ -110,6 +110,20 @@ export default function JobDetailPage() {
     } catch (e: any) {
       toast(e.message || 'Failed to submit', 'error');
     } finally { setSubmitting(false); }
+  };
+
+  const [completing, setCompleting] = useState(false);
+  const handleCompleteJob = async () => {
+    const ru = currentLang() === 'ru';
+    if (!window.confirm(ru ? 'Принять работу и завершить задачу?' : 'Accept the work and complete this job?')) return;
+    setCompleting(true);
+    try {
+      await completeJob(Number(id));
+      setJob((prev: any) => prev ? { ...prev, status: 'completed' } : prev);
+      toast(ru ? 'Задача завершена ✅' : 'Job completed ✅', 'success');
+    } catch (e: any) {
+      toast(e.message || 'Failed to complete', 'error');
+    } finally { setCompleting(false); }
   };
 
   // ── Hire flow: Pi payment → hire endpoint (creates escrow) ───────────────
@@ -378,6 +392,17 @@ export default function JobDetailPage() {
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30"
               >
                 {tr.viewApplicants} ({job.applications ?? 0})
+              </button>
+            )}
+
+            {/* Owner: accept work / complete job (backend allows in_progress and submitted) */}
+            {isOwner && ['in_progress', 'submitted'].includes(job.status) && (
+              <button
+                onClick={handleCompleteJob}
+                disabled={completing}
+                className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
+              >
+                {completing ? '⏳' : `✅ ${currentLang() === 'ru' ? 'Принять работу и завершить' : 'Accept work & complete'}`}
               </button>
             )}
 
