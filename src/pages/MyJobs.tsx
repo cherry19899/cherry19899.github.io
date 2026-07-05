@@ -3,7 +3,7 @@ import { t, currentLang } from '../lib/i18n';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   getMyJobs, getMyJobsAsFreelancer, getMyApplications,
-  getOffers, acceptOffer, declineOffer,
+  getOffers, acceptOffer, declineOffer, withdrawApplication,
 } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
@@ -93,6 +93,17 @@ export default function MyJobsPage() {
     finally { setActing(null); }
   };
 
+  const doWithdraw = async (a: AppItem) => {
+    if (!window.confirm(ru ? 'Отозвать отклик? Коннект не возвращается.' : 'Withdraw application? The connect is not refunded.')) return;
+    setActing(a.id);
+    try {
+      await withdrawApplication(a.id);
+      toast(ru ? 'Отклик отозван' : 'Application withdrawn', 'info');
+      load();
+    } catch (e: any) { toast(e.message, 'error'); }
+    finally { setActing(null); }
+  };
+
   const renderJobCard = (job: Job) => {
     const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
     const statusCls = STATUS_STYLE[job.status || 'open'] || STATUS_STYLE.open;
@@ -143,6 +154,16 @@ export default function MyJobsPage() {
             <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2">{a.message}</p>
           )}
         </div>
+
+        {!isOffer && a.status === 'pending' && (
+          <button
+            onClick={() => doWithdraw(a)}
+            disabled={acting === a.id}
+            className="w-full py-2 rounded-xl bg-gray-50 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 text-xs font-semibold disabled:opacity-60"
+          >
+            {ru ? 'Отозвать отклик' : 'Withdraw application'}
+          </button>
+        )}
 
         {isOffer && a.status === 'offer' && (
           <div className="flex gap-2 pt-1">

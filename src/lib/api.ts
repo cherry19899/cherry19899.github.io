@@ -109,6 +109,8 @@ export const acceptApplication = (appId: string | number) =>
   apiFetch(`/api/applications/${appId}/accept`, { method: 'POST' });
 export const rejectApplication = (appId: string | number) =>
   apiFetch(`/api/applications/${appId}/reject`, { method: 'POST' });
+export const withdrawApplication = (appId: string | number) =>
+  apiFetch(`/api/applications/${appId}/withdraw`, { method: 'POST' });
 
 // Direct offers a client sent to me (freelancer): list / accept / decline.
 export const getOffers = () => apiFetch('/api/offers');
