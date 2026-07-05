@@ -38,7 +38,7 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
       onDone();
     } catch (e: any) {
       const msg = e.message || '';
-      if (msg.toLowerCase().includes('already')) toast(tr.alreadyReviewed, 'info');
+      if (msg.toLowerCase().includes('already')) { toast(tr.alreadyReviewed, 'info'); onDone(); }
       else toast(msg || 'Failed', 'error');
     } finally { setSaving(false); }
   };
