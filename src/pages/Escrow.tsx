@@ -27,12 +27,13 @@ const STATUS_STYLE: Record<string, string> = {
   pending:  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   funded:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   released: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  completed: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
   refunded: 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400',
   cancelled: 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-slate-400',
   disputed: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
 };
 const STATUS_ICON: Record<string, string> = {
-  pending: '⏳', funded: '🔒', released: '✅', refunded: '↩️', cancelled: '🚫', disputed: '⚠️',
+  pending: '⏳', funded: '🔒', released: '✅', completed: '✅', refunded: '↩️', cancelled: '🚫', disputed: '⚠️',
 };
 
 // ─── Milestone timeline ───────────────────────────────────────────────────────
@@ -303,7 +304,7 @@ export default function EscrowPage() {
   const filtered = escrows.filter(e =>
     tab === 'active'
       ? ['pending', 'funded', 'disputed'].includes(e.status)
-      : ['released', 'refunded', 'cancelled'].includes(e.status)
+      : ['released', 'completed', 'refunded', 'cancelled'].includes(e.status)
   );
 
   const doRelease = async (e: Escrow) => {
@@ -477,7 +478,7 @@ export default function EscrowPage() {
                       </div>
                     )}
 
-                    {e.status === 'released' && !ratingTarget && (
+                    {['released', 'completed'].includes(e.status) && !ratingTarget && (
                       <button
                         onClick={() => setRatingTarget({ escrow: e })}
                         className="text-xs text-emerald-500 font-semibold w-full text-left"
