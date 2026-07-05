@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getNotifications, markAllNotifsRead } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { t } from '../lib/i18n';
 
 interface Notif {
   id: number; title?: string; body?: string; message?: string;
   type?: string; created_at: string; is_read?: boolean; read?: boolean;
+  job_id?: number | null; room_id?: number | string | null;
 }
 
 // ─── IndexedDB offline queue ──────────────────────────────────────────────────
@@ -55,6 +57,10 @@ const NOTIF_ICONS: Record<string, string> = {
   payment: '💰',
   dispute: '⚠️',
   review: '⭐',
+  rating: '⭐',
+  offer: '📨',
+  submitted: '📦',
+  completed: '✅',
   system: '📣',
 };
 
@@ -86,6 +92,7 @@ function groupByDate(notifs: Notif[]): { label: string; items: Notif[] }[] {
 
 export default function NotificationsPage() {
   const { refreshUnread } = useAppCtx();
+  const nav = useNavigate();
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
@@ -180,7 +187,11 @@ export default function NotificationsPage() {
                   return (
                     <button
                       key={n.id}
-                      onClick={() => !read && markRead(n.id)}
+                      onClick={() => {
+                        if (!read) markRead(n.id);
+                        if (n.room_id) nav(`/chat/${n.room_id}`);
+                        else if (n.job_id) nav(`/job/${n.job_id}`);
+                      }}
                       className={`w-full text-left p-4 rounded-2xl border transition-colors flex items-start gap-3 ${
                         read
                           ? 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
