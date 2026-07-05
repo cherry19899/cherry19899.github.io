@@ -48,7 +48,7 @@ export default function JobDetailPage() {
   const applyCost = applyCostFor(job?.budget);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || id === 'undefined') { setLoading(false); setJob(null); return; }
     getJob(id)
       .then(d => { if (d) setJob(d?.job || d); })
       .catch(() => setJob(null))
