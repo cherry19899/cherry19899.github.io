@@ -13,8 +13,10 @@ import BottomNav from '../components/BottomNav';
 interface Msg {
   id: number | string;
   content: string;
-  sender_uid: string;
+  sender_uid?: string;
+  sender_id?: string;
   sender_username?: string;
+  sender_name?: string;
   created_at: string;
   pending?: boolean;
 }
@@ -198,19 +200,19 @@ export default function ChatRoomPage() {
           </div>
         ) : (
           msgs.map(m => {
-            const mine = m.sender_uid === user?.uid;
+            const mine = (m.sender_uid || m.sender_id) === user?.uid;
             return (
               <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 {!mine && (
                   <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mr-2 self-end text-xs font-bold text-emerald-600 overflow-hidden">
                     {peer?.avatar
                       ? <img src={peer.avatar} className="w-full h-full object-cover" alt="" />
-                      : (m.sender_username || peer?.name || 'U')[0].toUpperCase()}
+                      : (m.sender_username || m.sender_name || peer?.name || 'U')[0].toUpperCase()}
                   </div>
                 )}
                 <div className="max-w-xs space-y-0.5">
-                  {!mine && (m.sender_username || peer?.name) && (
-                    <p className="text-xs text-gray-400 ml-1">@{m.sender_username || peer?.name}</p>
+                  {!mine && (m.sender_username || m.sender_name || peer?.name) && (
+                    <p className="text-xs text-gray-400 ml-1">@{m.sender_username || m.sender_name || peer?.name}</p>
                   )}
                   <div className={`px-4 py-2.5 rounded-2xl text-sm ${
                     mine
