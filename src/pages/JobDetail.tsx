@@ -296,11 +296,12 @@ export default function JobDetailPage() {
             </div>
 
             {/* Skills */}
-            {job.skills && (Array.isArray(job.skills) ? job.skills : job.skills.split(',')).filter(Boolean).length > 0 && (
+            {job.skills && (Array.isArray(job.skills) ? job.skills : job.skills.split(',')).map((x: string) => String(x).replace(/[{}"]/g, '').trim()).filter(Boolean).length > 0 && (
               <div className="mb-5">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{tr.skillsRequired}</p>
                 <div className="flex flex-wrap gap-2">
                   {(Array.isArray(job.skills) ? job.skills : job.skills.split(','))
+                    .map((x: string) => String(x).replace(/[{}"]/g, '').trim())
                     .filter(Boolean)
                     .map((s: string) => (
                       <span key={s} className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 font-medium">{s.trim()}</span>
