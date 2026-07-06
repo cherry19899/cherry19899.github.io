@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!-- v483 404.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found</title>
+<script>
+(function(){
+  var path = window.location.pathname;
+  // Don't redirect static files that should be 404
+  if(path.match(/\.(txt|xml|json|svg|png|jpg|jpeg|gif|css|js|html)$/)) {
+    document.title = '404 Not Found';
+    document.body.innerHTML = '<h1>404 Not Found</h1>';
+    return;
+  }
+  var ts = Date.now();
+  var url = '/?nocache=' + ts + '&v=' + ts + '&redirect=' + encodeURIComponent(path) + '&_=' + ts;
+  window.location.replace(url);
+})();
+</script>
+</head>
+<body><h1>404 — Page Not Found</h1></body>
+</html>
