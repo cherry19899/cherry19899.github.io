@@ -265,7 +265,7 @@ export default function JobDetailPage() {
                       job.status === 'in_progress' ? 'bg-blue-100 text-blue-600' :
                       job.status === 'completed' ? 'bg-gray-100 text-gray-500' :
                       'bg-red-100 text-red-500'
-                    }`}>{job.status.replace('_', ' ')}</span>
+                    }`}>{statusLabel(job.status)}</span>
                   )}
                 </div>
               </div>

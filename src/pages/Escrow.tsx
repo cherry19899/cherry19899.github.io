@@ -247,7 +247,7 @@ function MilestoneTimeline({
                 )}
                 {m.status === 'requested' && (
                   <span className="px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-xs font-medium">
-                    Pending approval
+                    {tr.pendingApproval}
                   </span>
                 )}
               </div>
@@ -259,7 +259,7 @@ function MilestoneTimeline({
       {/* Edit button for client */}
       {isClient && escrow.status === 'funded' && (
         <button onClick={startEdit} className="text-xs text-gray-400 dark:text-slate-500 hover:text-emerald-500 font-semibold">
-          ✏️ Edit milestones
+          ✏️ {tr.editMilestones}
         </button>
       )}
     </div>
