@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { t, currentLang } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJob, getJobApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
+import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
@@ -43,6 +43,8 @@ export default function JobDetailPage() {
   const [acting, setActing] = useState<string | null>(null);
   const [hiringId, setHiringId] = useState<number | null>(null);
 
+  const [myApp, setMyApp] = useState<any>(null);
+
   const isOwner = job && user && job.posted_by === user.uid;
   const myConnects = user?.balance_connects ?? 0;
   const applyCost = applyCostFor(job?.budget);
@@ -54,6 +56,17 @@ export default function JobDetailPage() {
       .catch(() => setJob(null))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Did I already apply to this job? (non-owner, logged in)
+  useEffect(() => {
+    if (!id || !user || (job && job.posted_by === user.uid)) { setMyApp(null); return; }
+    getMyApplications()
+      .then((d: any) => {
+        const list = d?.applications || [];
+        setMyApp(list.find((a: any) => String(a.job_id) === String(id) && !['withdrawn', 'rejected'].includes(a.status)) || null);
+      })
+      .catch(() => {});
+  }, [id, user?.uid, job?.posted_by]);
 
   const loadApps = async () => {
     if (!id) return;
@@ -346,7 +359,14 @@ export default function JobDetailPage() {
             </div>
 
             {/* Actions */}
-            {!isOwner && job.status === 'open' && (
+            {/* Already applied: show status instead of the apply button */}
+            {!isOwner && job.status === 'open' && myApp && (
+              <div className="w-full py-4 rounded-2xl bg-amber-50 text-amber-700 text-sm font-semibold text-center">
+                ✅ {currentLang() === 'ru' ? 'Вы уже откликнулись' : 'You already applied'} · {myApp.status}
+              </div>
+            )}
+
+            {!isOwner && job.status === 'open' && !myApp && (
               applyMode ? (
                 <div className="space-y-3">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{tr.yourProposal}</p>
