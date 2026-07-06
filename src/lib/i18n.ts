@@ -1313,13 +1313,13 @@ const STATUS_RU: Record<string, string> = {
   open: 'открыта', in_progress: 'в работе', submitted: 'на проверке', completed: 'завершена',
   cancelled: 'отменена', pending: 'в ожидании', funded: 'оплачен', disputed: 'спор',
   released: 'выплачен', refunded: 'возврат', accepted: 'принят', rejected: 'отклонён',
-  withdrawn: 'отозван', hired: 'нанят', active: 'активен', declined: 'отклонено',
+  withdrawn: 'отозван', hired: 'нанят', active: 'активен', declined: 'отклонено', freelancer: 'фрилансер', client: 'заказчик', admin: 'админ',
 };
 const STATUS_UK: Record<string, string> = {
   open: 'відкрита', in_progress: 'в роботі', submitted: 'на перевірці', completed: 'завершена',
   cancelled: 'скасована', pending: 'в очікуванні', funded: 'оплачений', disputed: 'спір',
   released: 'виплачений', refunded: 'повернення', accepted: 'прийнятий', rejected: 'відхилений',
-  withdrawn: 'відкликаний', hired: 'найнятий', active: 'активний', declined: 'відхилено',
+  withdrawn: 'відкликаний', hired: 'найнятий', active: 'активний', declined: 'відхилено', freelancer: 'фрилансер', client: 'замовник', admin: 'адмін',
 };
 export function statusLabel(s: string): string {
   const l = getLang();

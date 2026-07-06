@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { t, statusLabel } from '../lib/i18n';
+import { t, statusLabel, connectsLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
@@ -206,11 +206,11 @@ export default function AdminPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-900 dark:text-white font-semibold text-sm">@{u.username}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500">{u.role} · {u.balance_connects ?? 0}⚡ connects · {u.balance_pi ?? 0} π</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">{statusLabel(u.role)} · {u.balance_connects ?? 0}⚡ · {u.balance_pi ?? 0} π</p>
                       {u.rating && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(u.rating))} {parseFloat(u.rating).toFixed(1)}</p>}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${u.is_blocked ? 'bg-red-100 text-red-500' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {u.is_blocked ? tr.blocked.toUpperCase() : tr.active}
+                      {u.is_blocked ? tr.blocked.toUpperCase() : statusLabel('active')}
                     </span>
                   </div>
 
