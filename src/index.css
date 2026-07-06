@@ -9,9 +9,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html.dark {
+  /* Emerald Forest palette — overrides Tailwind's slate/emerald CSS variables
+     so every existing dark:bg-slate-*/dark:text-slate-* utility repaints
+     without touching any component's layout or markup. */
+  --color-slate-900: #022c22;
+  --color-slate-800: #064e3b;
+  --color-slate-700: #065f46;
+  --color-slate-600: #0d5c45;
+  --color-slate-500: #6b7280;
+  --color-slate-400: #a7f3d0;
+  --color-slate-300: #a7f3d0;
+  --color-slate-200: #d1fae5;
+  --color-slate-100: #064e3b;
+  --color-emerald-900: #0a3d2e;
+  --color-emerald-800: #0a3d2e;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #059669;
+  --color-emerald-600: #10b981;
+}
+
 html.dark body {
-  background: #0f172a;
-  color: #f8fafc;
+  background: #022c22;
+  color: #a7f3d0;
 }
 
 @keyframes fade-in {
@@ -30,7 +50,7 @@ html.dark body {
   animation: shimmer 1.4s infinite;
 }
 html.dark .skeleton {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background: linear-gradient(90deg, #064e3b 25%, #065f46 50%, #064e3b 75%);
   background-size: 200% 100%;
 }
 

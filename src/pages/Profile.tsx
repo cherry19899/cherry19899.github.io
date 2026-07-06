@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const [langModal, setLangModal] = useState(false);
   const [piModal, setPiModal] = useState(false);
   const [connectsModal, setConnectsModal] = useState(false);
+  const [dark, setDark] = useState(isDark());
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
@@ -66,8 +67,8 @@ export default function ProfilePage() {
     {
       icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
       label: tr.lightMode,
-      sub: isDark() ? tr.darkMode : tr.lightTheme,
-      right: <Toggle on={!isDark()} onChange={() => toggleTheme()} />,
+      sub: dark ? tr.darkMode : tr.lightTheme,
+      right: <Toggle on={!dark} onChange={() => setDark(toggleTheme())} />,
     },
     {
       icon: GlobeIcon, bg: 'bg-cyan-100', ic: 'text-cyan-600',
