@@ -10,9 +10,9 @@ body {
 }
 
 html.dark {
-  /* Emerald Forest palette — overrides Tailwind's slate/emerald CSS variables
-     so every existing dark:bg-slate-*/dark:text-slate-* utility repaints
-     without touching any component's layout or markup. */
+  /* Emerald Forest palette: overrides the slate/emerald CSS variables
+     so every existing dark:bg-slate and dark:text-slate utility repaints
+     without touching any layout or markup. */
   --color-slate-900: #022c22;
   --color-slate-800: #064e3b;
   --color-slate-700: #065f46;
