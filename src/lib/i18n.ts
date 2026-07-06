@@ -53,6 +53,7 @@ const KEYS = {
   youPay: '', youReceive: '',
   appTagline: '', wakingServer: '', writeProposalFirst: '', applicationSent: '', applicationSentChat: '', paymentCancelled: '', applicationDeclined: '', proposalPlaceholder: '', shareToVisibility: '', details: '', applicantsTab: '', viewApplicants: '', backToJobs: '', decline: '', hire: '', hiring: '', jobStarted: '', escrowCreated: '', paymentFailedMsg: '', skipForNow: '', percentagesSum100: '', allMilestonesTitle: '', fundsReleased: '', escrowCancelledRefunded: '', disputeRaisedMsg: '', completeJobToSeeEscrow: '', adminWillReview: '', releaseAll: '', dispute: '', submitDispute: '', active: '', history: '', edit: '', applyToStartChatting: '', fileMax5mb: '', sayHello: '', messagePlaceholder: '', failedOpenAttachment: '', live: '', connecting: '', imageFilesOnly: '', imageMax5mb: '', titlePlaceholder: '', addToHomeScreen: '', cacheCleared: '', sending: '', alreadyApplied: '', failedToApply: '', collapse: '', waitingFunding: '', noActiveEscrows: '', noHistoryYet: '', escrowFundedFreelancerHint: '',
   description: '', noJobs: '', noEscrows: '', jobDeleted: '', refunded: '', releasedToFreelancer: '', signUps: '', jobsByCategory: '', userRoles: '', noAnalyticsData: '', recentTransactions: '', noEarningsData: '', grantConnects: '', customAmount: '', ratingPoor: '', ratingFair: '', ratingGood: '', ratingGreat: '', ratingExcellent: '',
+  buyConnects: '', bestValue: '', popular: '', lightTheme: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -111,10 +112,11 @@ const en: Translations = {
   youPay: 'You pay', youReceive: 'You receive',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…', alreadyApplied: 'You already applied to this job', failedToApply: 'Failed to apply', collapse: 'Collapse', waitingFunding: 'Waiting for payment to fund escrow', noActiveEscrows: 'No active escrows', noHistoryYet: 'No history yet', escrowFundedFreelancerHint: 'Funds are locked in escrow. The client releases payment after accepting your work — submit it on the job page.',
   description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  buyConnects: 'Buy Connects', bestValue: 'Best value', popular: 'Popular', lightTheme: 'Light theme',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
-const ru: Translations = {
+const ru: Partial<Translations> = {
   jobs: 'Работы', chat: 'Чат', myJobs: 'Мои работы', escrow: 'Эскроу', profile: 'Профиль',
   availability: 'Доступность', availableForWork: 'Доступен для работы', notAvailable: 'Недоступен',
   customOffers: 'Прямые предложения', lightMode: 'Тёмная тема', language: 'Язык',
@@ -166,10 +168,11 @@ const ru: Translations = {
   youPay: 'Вы платите', youReceive: 'Вы получите',
   appTagline: 'Фриланс-маркетплейс в сети Pi', wakingServer: 'Пробуждаем сервер…', writeProposalFirst: 'Сначала напишите отклик', applicationSent: 'Отклик отправлен! ✅', applicationSentChat: 'Отклик отправлен! Открываю чат…', paymentCancelled: 'Платёж отменён', applicationDeclined: 'Отклик отклонён', proposalPlaceholder: 'Опишите ваш подход, сроки и почему вы подходите…', shareToVisibility: 'Поделитесь вакансией для большего охвата', details: 'Детали', applicantsTab: 'Отклики', viewApplicants: 'Смотреть отклики', backToJobs: 'К работам', decline: 'Отклонить', hire: 'Нанять', hiring: 'Найм…', jobStarted: 'Работа началась! 🚀', escrowCreated: 'Эскроу создан — работа началась 🚀', paymentFailedMsg: 'Ошибка платежа', skipForNow: 'Пропустить', percentagesSum100: 'Проценты должны в сумме давать 100%', allMilestonesTitle: 'У всех этапов должно быть название', fundsReleased: 'Средства выплачены! 🎉', escrowCancelledRefunded: 'Эскроу отменён, средства возвращены.', disputeRaisedMsg: 'Спор открыт — админ рассмотрит.', completeJobToSeeEscrow: 'Завершите работу, чтобы увидеть эскроу', adminWillReview: 'Админ рассмотрит и разрешит эскроу.', releaseAll: 'Выплатить всё', dispute: 'Спор', submitDispute: 'Открыть спор', active: 'Активные', history: 'История', edit: 'Изменить', applyToStartChatting: 'Откликнитесь на работу, чтобы начать чат', fileMax5mb: 'Файл должен быть меньше 5 МБ', sayHello: 'Поздоровайтесь, чтобы начать разговор!', messagePlaceholder: 'Сообщение…', failedOpenAttachment: 'Не удалось открыть вложение', live: 'В сети', connecting: 'Подключение…', imageFilesOnly: 'Только изображения', imageMax5mb: 'Изображение должно быть меньше 5 МБ', titlePlaceholder: 'напр. Разработать dApp на Pi', addToHomeScreen: 'Откройте в Pi Browser и «Добавить на главный экран»', cacheCleared: 'Кэш очищен', sending: 'отправка…', alreadyApplied: 'Вы уже откликнулись на эту вакансию', failedToApply: 'Не удалось откликнуться', collapse: 'Свернуть', waitingFunding: 'Ожидание оплаты для пополнения эскроу', noActiveEscrows: 'Нет активных эскроу', noHistoryYet: 'История пуста', escrowFundedFreelancerHint: 'Средства заморожены в эскроу. Заказчик выплатит их после приёмки работы — сдайте её на странице задачи.',
   description: 'Описание', noJobs: 'Нет работ', noEscrows: 'Нет эскроу', jobDeleted: 'Работа удалена', refunded: 'Возвращено', releasedToFreelancer: 'Выплачено фрилансеру', signUps: 'Регистрации', jobsByCategory: 'Работы по категориям', userRoles: 'Роли пользователей', noAnalyticsData: 'Нет данных аналитики', recentTransactions: 'Последние транзакции', noEarningsData: 'Нет данных о доходах', grantConnects: 'Выдать коннекты', customAmount: 'Своя сумма', ratingPoor: 'Плохо', ratingFair: 'Нормально', ratingGood: 'Хорошо', ratingGreat: 'Отлично', ratingExcellent: 'Превосходно',
+  buyConnects: 'Купить коннекты', bestValue: 'Выгоднее всего', popular: 'Популярный', lightTheme: 'Светлая тема',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
-const uk: Translations = {
+const uk: Partial<Translations> = {
   jobs: 'Роботи', chat: 'Чат', myJobs: 'Мої роботи', escrow: 'Ескроу', profile: 'Профіль',
   availability: 'Доступність', availableForWork: 'Доступний для роботи', notAvailable: 'Недоступний',
   customOffers: 'Пропозиції', lightMode: 'Темна тема', language: 'Мова',
@@ -181,7 +184,7 @@ const uk: Translations = {
   searchJobs: 'Пошук робіт...', findWork: 'Знайдіть роботу', all: 'Всі', newest: 'Нові',
   budgetHigh: 'Бюджет ↑', budgetLow: 'Бюджет ↓',
   noJobsFound: 'Роботи не знайдено', tryDifferentFilters: 'Спробуйте інші фільтри',
-  applicants: 'відгуків', urgent: 'Терміново', loadMore: 'Завантажити ще', dueSoon: 'Due soon',
+  applicants: 'відгуків', urgent: 'Терміново', loadMore: 'Завантажити ще', dueSoon: 'Термінові',
   open: 'Відкрито', applyNow: 'Відгукнутись',
   posted: 'Розміщено', hired: 'Найнято', applied: 'Відгуки', completed: 'Завершено',
   connects: 'Коннекти', buy: 'Купити', balance: 'Баланс', reviews: 'Відгуки',
@@ -219,12 +222,13 @@ const uk: Translations = {
   jobTitle: 'Назва роботи', category: 'Категорія', deadline: 'Дедлайн', skills: 'Навички (через кому)', jobDescPlaceholder: 'Опишіть, що потрібно зробити…', budgetPlaceholder: 'напр. 50', skillsPlaceholder: 'напр. React, Node.js', attachPhoto: 'Додати фото', costOneConnect: 'Вартість: 1 конект', applyCostLabel: 'Вартість відгуку', notEnoughConnects: 'Недостатньо конектів', titleRequired: 'Введіть назву', descRequired: 'Введіть опис', budgetMin: 'Бюджет ≥ 1 Pi', jobPosted: 'Роботу опубліковано!', saved: 'Збережено', savedJobs: 'Збережені',
   submitWork: 'Здати роботу', workSubmitted: 'Роботу здано — очікує перевірки',
   youPay: 'Ви платите', youReceive: 'Ви отримаєте',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Фриланс-маркетплейс у мережі Pi', wakingServer: 'Пробуджуємо сервер…', writeProposalFirst: 'Спершу напишіть відгук', applicationSent: 'Відгук надіслано! ✅', applicationSentChat: 'Відгук надіслано! Відкриваю чат…', paymentCancelled: 'Платіж скасовано', applicationDeclined: 'Відгук відхилено', proposalPlaceholder: 'Опишіть ваш підхід, терміни та чому саме ви…', shareToVisibility: 'Поділіться вакансією для більшого охоплення', details: 'Деталі', applicantsTab: 'Відгуки', viewApplicants: 'Переглянути відгуки', backToJobs: 'До робіт', decline: 'Відхилити', hire: 'Найняти', hiring: 'Наймаємо…', jobStarted: 'Робота почалася! 🚀', escrowCreated: 'Ескроу створено — робота почалася 🚀', paymentFailedMsg: 'Помилка платежу', skipForNow: 'Пропустити', percentagesSum100: 'Відсотки мають у сумі давати 100%', allMilestonesTitle: 'Усі етапи повинні мати назву', fundsReleased: 'Кошти виплачено! 🎉', escrowCancelledRefunded: 'Ескроу скасовано, кошти повернено.', disputeRaisedMsg: 'Спір відкрито — адмін розгляне.', completeJobToSeeEscrow: 'Завершіть роботу, щоб побачити ескроу', adminWillReview: 'Адмін розгляне та вирішить ескроу.', releaseAll: 'Виплатити все', dispute: 'Спір', submitDispute: 'Відкрити спір', active: 'Активні', history: 'Історія', edit: 'Змінити', applyToStartChatting: 'Відгукніться на роботу, щоб почати чат', fileMax5mb: 'Файл має бути менший за 5 МБ', sayHello: 'Привітайтеся, щоб почати розмову!', messagePlaceholder: 'Повідомлення…', failedOpenAttachment: 'Не вдалося відкрити вкладення', live: 'У мережі', connecting: 'Підключення…', imageFilesOnly: 'Лише зображення', imageMax5mb: 'Зображення має бути менше 5 МБ', titlePlaceholder: 'напр. Розробити dApp на Pi', addToHomeScreen: 'Відкрийте в Pi Browser і «Додати на головний екран»', cacheCleared: 'Кеш очищено', sending: 'надсилання…', alreadyApplied: 'Ви вже відгукнулися на цю вакансію', failedToApply: 'Не вдалося відгукнутися', collapse: 'Згорнути', waitingFunding: 'Очікування оплати для поповнення ескроу', noActiveEscrows: 'Немає активних ескроу', noHistoryYet: 'Історія порожня', escrowFundedFreelancerHint: 'Кошти заморожені в ескроу. Замовник виплатить їх після приймання роботи — здайте її на сторінці завдання.',
+  description: 'Опис', noJobs: 'Немає робіт', noEscrows: 'Немає ескроу', jobDeleted: 'Роботу видалено', refunded: 'Повернено', releasedToFreelancer: 'Виплачено фрилансеру', signUps: 'Реєстрації', userRoles: 'Ролі користувачів', noAnalyticsData: 'Немає даних аналітики', recentTransactions: 'Останні транзакції', noEarningsData: 'Немає даних про доходи', grantConnects: 'Видати конекти', customAmount: 'Своя сума', ratingPoor: 'Погано', ratingFair: 'Нормально', ratingGood: 'Добре', ratingGreat: 'Чудово', ratingExcellent: 'Відмінно',
+  buyConnects: 'Купити конекти', bestValue: 'Найвигідніше', popular: 'Популярний', lightTheme: 'Світла тема',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
-const de: Translations = {
+const de: Partial<Translations> = {
   jobs: 'Jobs', chat: 'Chat', myJobs: 'Meine Jobs', escrow: 'Treuhand', profile: 'Profil',
   availability: 'Verfügbarkeit', availableForWork: 'Verfügbar', notAvailable: 'Nicht verfügbar',
   customOffers: 'Direkte Angebote', lightMode: 'Dunkelmodus', language: 'Sprache',
@@ -236,7 +240,7 @@ const de: Translations = {
   searchJobs: 'Jobs suchen...', findWork: 'Arbeit finden', all: 'Alle', newest: 'Neueste',
   budgetHigh: 'Budget ↑', budgetLow: 'Budget ↓',
   noJobsFound: 'Keine Jobs gefunden', tryDifferentFilters: 'Andere Filter ausprobieren',
-  applicants: 'Bewerber', urgent: 'Dringend', loadMore: 'Mehr laden', dueSoon: 'Due soon',
+  applicants: 'Bewerber', urgent: 'Dringend', loadMore: 'Mehr laden', dueSoon: 'Bald fällig',
   open: 'Offen', applyNow: 'Jetzt bewerben',
   posted: 'Gepostet', hired: 'Eingestellt', applied: 'Beworben', completed: 'Abgeschlossen',
   connects: 'Connects', buy: 'Kaufen', balance: 'Guthaben', reviews: 'Bewertungen',
@@ -274,12 +278,13 @@ const de: Translations = {
   jobTitle: 'Job-Titel', category: 'Kategorie', deadline: 'Frist', skills: 'Fähigkeiten (kommagetrennt)', jobDescPlaceholder: 'Beschreibe, was zu tun ist…', budgetPlaceholder: 'z. B. 50', skillsPlaceholder: 'z. B. React, Node.js', attachPhoto: 'Foto anhängen', costOneConnect: 'Kosten: 1 Connect', applyCostLabel: 'Bewerbungskosten', notEnoughConnects: 'Nicht genug Connects', titleRequired: 'Titel erforderlich', descRequired: 'Beschreibung erforderlich', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job veröffentlicht!', saved: 'Gespeichert', savedJobs: 'Gespeicherte Jobs',
   submitWork: 'Arbeit einreichen', workSubmitted: 'Eingereicht — wird geprüft',
   youPay: 'Du zahlst', youReceive: 'Du erhältst',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Freelance-Marktplatz im Pi Network', wakingServer: 'Server wird aufgeweckt…', writeProposalFirst: 'Schreibe zuerst ein Angebot', applicationSent: 'Bewerbung gesendet! ✅', applicationSentChat: 'Bewerbung gesendet! Chat wird geöffnet…', paymentCancelled: 'Zahlung abgebrochen', applicationDeclined: 'Bewerbung abgelehnt', proposalPlaceholder: 'Beschreibe dein Vorgehen, den Zeitplan und warum du am besten passt…', shareToVisibility: 'Teile deinen Job für mehr Sichtbarkeit', details: 'Details', applicantsTab: 'Bewerber', viewApplicants: 'Bewerber ansehen', backToJobs: 'Zurück zu den Jobs', decline: 'Ablehnen', hire: 'Einstellen', hiring: 'Wird eingestellt…', jobStarted: 'Job gestartet! 🚀', escrowCreated: 'Treuhand erstellt — Job gestartet 🚀', paymentFailedMsg: 'Zahlung fehlgeschlagen', skipForNow: 'Vorerst überspringen', percentagesSum100: 'Prozente müssen zusammen 100% ergeben', allMilestonesTitle: 'Alle Meilensteine brauchen einen Titel', fundsReleased: 'Gelder freigegeben! 🎉', escrowCancelledRefunded: 'Treuhand storniert, Gelder erstattet.', disputeRaisedMsg: 'Streitfall eröffnet — Admin prüft.', completeJobToSeeEscrow: 'Schließe einen Job ab, um Treuhand-Aktivität zu sehen', adminWillReview: 'Der Admin prüft und entscheidet über die Treuhand.', releaseAll: 'Alles freigeben', dispute: 'Streitfall', submitDispute: 'Streitfall einreichen', active: 'Aktiv', history: 'Verlauf', edit: 'Bearbeiten', applyToStartChatting: 'Bewirb dich auf einen Job, um zu chatten', fileMax5mb: 'Datei muss kleiner als 5 MB sein', sayHello: 'Sag Hallo, um das Gespräch zu beginnen!', messagePlaceholder: 'Nachricht…', failedOpenAttachment: 'Anhang konnte nicht geöffnet werden', live: 'Online', connecting: 'Verbinden…', imageFilesOnly: 'Nur Bilddateien', imageMax5mb: 'Bild muss kleiner als 5 MB sein', titlePlaceholder: 'z. B. Eine Pi-Network-dApp entwickeln', addToHomeScreen: 'Im Pi Browser öffnen und „Zum Startbildschirm hinzufügen“', cacheCleared: 'Cache geleert', sending: 'senden…', alreadyApplied: 'Du hast dich bereits beworben', failedToApply: 'Bewerbung fehlgeschlagen', collapse: 'Einklappen', waitingFunding: 'Warten auf Zahlung zur Treuhand-Deckung', noActiveEscrows: 'Keine aktiven Treuhänder', noHistoryYet: 'Noch kein Verlauf', escrowFundedFreelancerHint: 'Die Gelder sind in der Treuhand gesperrt. Der Kunde zahlt nach Abnahme der Arbeit — reiche sie auf der Job-Seite ein.',
+  description: 'Beschreibung', noJobs: 'Keine Jobs', noEscrows: 'Keine Treuhand', jobDeleted: 'Job gelöscht', refunded: 'Erstattet', releasedToFreelancer: 'An Freelancer ausgezahlt', signUps: 'Registrierungen', userRoles: 'Benutzerrollen', noAnalyticsData: 'Keine Analysedaten', recentTransactions: 'Letzte Transaktionen', noEarningsData: 'Keine Einnahmendaten', grantConnects: 'Connects gewähren', customAmount: 'Eigener Betrag', ratingPoor: 'Schlecht', ratingFair: 'Okay', ratingGood: 'Gut', ratingGreat: 'Sehr gut', ratingExcellent: 'Ausgezeichnet',
+  buyConnects: 'Connects kaufen', bestValue: 'Bester Preis', popular: 'Beliebt', lightTheme: 'Helles Design',
 };
 
 // ─── French ───────────────────────────────────────────────────────────────────
-const fr: Translations = {
+const fr: Partial<Translations> = {
   jobs: 'Emplois', chat: 'Chat', myJobs: 'Mes emplois', escrow: 'Séquestre', profile: 'Profil',
   availability: 'Disponibilité', availableForWork: 'Disponible', notAvailable: 'Indisponible',
   customOffers: 'Offres directes', lightMode: 'Mode sombre', language: 'Langue',
@@ -291,7 +296,7 @@ const fr: Translations = {
   searchJobs: 'Rechercher des emplois...', findWork: 'Trouver du travail', all: 'Tous', newest: 'Récents',
   budgetHigh: 'Budget ↑', budgetLow: 'Budget ↓',
   noJobsFound: 'Aucun emploi trouvé', tryDifferentFilters: 'Essayez d\'autres filtres',
-  applicants: 'candidats', urgent: 'Urgent', loadMore: 'Charger plus', dueSoon: 'Due soon',
+  applicants: 'candidats', urgent: 'Urgent', loadMore: 'Charger plus', dueSoon: 'Échéance proche',
   open: 'Ouvert', applyNow: 'Postuler',
   posted: 'Publié', hired: 'Embauché', applied: 'Candidatures', completed: 'Terminé',
   connects: 'Connects', buy: 'Acheter', balance: 'Solde', reviews: 'Avis',
@@ -329,12 +334,13 @@ const fr: Translations = {
   jobTitle: 'Titre du poste', category: 'Catégorie', deadline: 'Échéance', skills: 'Compétences (séparées par des virgules)', jobDescPlaceholder: 'Décrivez ce qui doit être fait…', budgetPlaceholder: 'ex. 50', skillsPlaceholder: 'ex. React, Node.js', attachPhoto: 'Ajouter une photo', costOneConnect: 'Coût : 1 connect', applyCostLabel: 'Coût de candidature', notEnoughConnects: 'Pas assez de connects', titleRequired: 'Le titre est requis', descRequired: 'La description est requise', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Offre publiée !', saved: 'Enregistré', savedJobs: 'Offres enregistrées',
   submitWork: 'Soumettre le travail', workSubmitted: 'Travail soumis — en attente',
   youPay: 'Vous payez', youReceive: 'Vous recevez',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Place de marché freelance sur Pi Network', wakingServer: 'Réveil du serveur…', writeProposalFirst: 'Écrivez d\'abord une proposition', applicationSent: 'Candidature envoyée ! ✅', applicationSentChat: 'Candidature envoyée ! Ouverture du chat…', paymentCancelled: 'Paiement annulé', applicationDeclined: 'Candidature refusée', proposalPlaceholder: 'Décrivez votre approche, vos délais et pourquoi vous êtes le bon choix…', shareToVisibility: 'Partagez votre offre pour plus de visibilité', details: 'Détails', applicantsTab: 'Candidats', viewApplicants: 'Voir les candidats', backToJobs: 'Retour aux emplois', decline: 'Refuser', hire: 'Embaucher', hiring: 'Embauche…', jobStarted: 'Travail commencé ! 🚀', escrowCreated: 'Séquestre créé — travail commencé 🚀', paymentFailedMsg: 'Échec du paiement', skipForNow: 'Passer pour l\'instant', percentagesSum100: 'Les pourcentages doivent totaliser 100%', allMilestonesTitle: 'Tous les jalons doivent avoir un titre', fundsReleased: 'Fonds libérés ! 🎉', escrowCancelledRefunded: 'Séquestre annulé, fonds remboursés.', disputeRaisedMsg: 'Litige ouvert — l\'admin va examiner.', completeJobToSeeEscrow: 'Terminez un travail pour voir l\'activité du séquestre', adminWillReview: 'L\'admin examinera et résoudra le séquestre.', releaseAll: 'Tout libérer', dispute: 'Litige', submitDispute: 'Soumettre le litige', active: 'Actifs', history: 'Historique', edit: 'Modifier', applyToStartChatting: 'Postulez à une offre pour commencer à discuter', fileMax5mb: 'Le fichier doit faire moins de 5 Mo', sayHello: 'Dites bonjour pour lancer la conversation !', messagePlaceholder: 'Message…', failedOpenAttachment: 'Impossible d\'ouvrir la pièce jointe', live: 'En ligne', connecting: 'Connexion…', imageFilesOnly: 'Images uniquement', imageMax5mb: 'L\'image doit faire moins de 5 Mo', titlePlaceholder: 'ex. Créer une dApp Pi Network', addToHomeScreen: 'Ouvrez dans Pi Browser puis « Ajouter à l\'écran d\'accueil »', cacheCleared: 'Cache vidé', sending: 'envoi…', alreadyApplied: 'Vous avez déjà postulé à cette offre', failedToApply: 'Échec de la candidature', collapse: 'Réduire', waitingFunding: 'En attente du paiement pour approvisionner le séquestre', noActiveEscrows: 'Aucun séquestre actif', noHistoryYet: 'Aucun historique', escrowFundedFreelancerHint: 'Les fonds sont bloqués sous séquestre. Le client les libère après validation du travail — soumettez-le sur la page de l\'offre.',
+  description: 'Description', noJobs: 'Aucun emploi', noEscrows: 'Aucun séquestre', jobDeleted: 'Offre supprimée', refunded: 'Remboursé', releasedToFreelancer: 'Versé au freelance', signUps: 'Inscriptions', userRoles: 'Rôles utilisateurs', noAnalyticsData: 'Aucune donnée analytique', recentTransactions: 'Transactions récentes', noEarningsData: 'Aucune donnée de revenus', grantConnects: 'Attribuer des connects', customAmount: 'Montant personnalisé', ratingPoor: 'Mauvais', ratingFair: 'Passable', ratingGood: 'Bien', ratingGreat: 'Très bien', ratingExcellent: 'Excellent',
+  buyConnects: 'Acheter des connects', bestValue: 'Meilleur prix', popular: 'Populaire', lightTheme: 'Thème clair',
 };
 
 // ─── Spanish ──────────────────────────────────────────────────────────────────
-const es: Translations = {
+const es: Partial<Translations> = {
   jobs: 'Trabajos', chat: 'Chat', myJobs: 'Mis trabajos', escrow: 'Custodia', profile: 'Perfil',
   availability: 'Disponibilidad', availableForWork: 'Disponible', notAvailable: 'No disponible',
   customOffers: 'Ofertas directas', lightMode: 'Modo oscuro', language: 'Idioma',
@@ -346,7 +352,7 @@ const es: Translations = {
   searchJobs: 'Buscar trabajos...', findWork: 'Encontrar trabajo', all: 'Todos', newest: 'Recientes',
   budgetHigh: 'Presupuesto ↑', budgetLow: 'Presupuesto ↓',
   noJobsFound: 'No se encontraron trabajos', tryDifferentFilters: 'Intenta otros filtros',
-  applicants: 'candidatos', urgent: 'Urgente', loadMore: 'Cargar más', dueSoon: 'Due soon',
+  applicants: 'candidatos', urgent: 'Urgente', loadMore: 'Cargar más', dueSoon: 'Vence pronto',
   open: 'Abierto', applyNow: 'Aplicar ahora',
   posted: 'Publicado', hired: 'Contratado', applied: 'Candidaturas', completed: 'Completado',
   connects: 'Connects', buy: 'Comprar', balance: 'Saldo', reviews: 'Reseñas',
@@ -384,12 +390,13 @@ const es: Translations = {
   jobTitle: 'Título del trabajo', category: 'Categoría', deadline: 'Fecha límite', skills: 'Habilidades (separadas por comas)', jobDescPlaceholder: 'Describe lo que hay que hacer…', budgetPlaceholder: 'p. ej. 50', skillsPlaceholder: 'p. ej. React, Node.js', attachPhoto: 'Adjuntar foto', costOneConnect: 'Costo: 1 connect', applyCostLabel: 'Costo de postulación', notEnoughConnects: 'No hay suficientes connects', titleRequired: 'El título es obligatorio', descRequired: 'La descripción es obligatoria', budgetMin: 'Presupuesto ≥ 1 Pi', jobPosted: '¡Trabajo publicado!', saved: 'Guardado', savedJobs: 'Trabajos guardados',
   submitWork: 'Enviar trabajo', workSubmitted: 'Trabajo enviado — en revisión',
   youPay: 'Pagas', youReceive: 'Recibes',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Mercado freelance en Pi Network', wakingServer: 'Despertando el servidor…', writeProposalFirst: 'Escribe primero una propuesta', applicationSent: '¡Candidatura enviada! ✅', applicationSentChat: '¡Candidatura enviada! Abriendo chat…', paymentCancelled: 'Pago cancelado', applicationDeclined: 'Candidatura rechazada', proposalPlaceholder: 'Describe tu enfoque, plazos y por qué eres la mejor opción…', shareToVisibility: 'Comparte tu trabajo para más visibilidad', details: 'Detalles', applicantsTab: 'Candidatos', viewApplicants: 'Ver candidatos', backToJobs: 'Volver a trabajos', decline: 'Rechazar', hire: 'Contratar', hiring: 'Contratando…', jobStarted: '¡Trabajo iniciado! 🚀', escrowCreated: 'Custodia creada — trabajo iniciado 🚀', paymentFailedMsg: 'Pago fallido', skipForNow: 'Omitir por ahora', percentagesSum100: 'Los porcentajes deben sumar 100%', allMilestonesTitle: 'Todos los hitos necesitan un título', fundsReleased: '¡Fondos liberados! 🎉', escrowCancelledRefunded: 'Custodia cancelada, fondos reembolsados.', disputeRaisedMsg: 'Disputa abierta — el admin la revisará.', completeJobToSeeEscrow: 'Completa un trabajo para ver la actividad de custodia', adminWillReview: 'El admin revisará y resolverá la custodia.', releaseAll: 'Liberar todo', dispute: 'Disputa', submitDispute: 'Enviar disputa', active: 'Activos', history: 'Historial', edit: 'Editar', applyToStartChatting: 'Postúlate a un trabajo para empezar a chatear', fileMax5mb: 'El archivo debe pesar menos de 5 MB', sayHello: '¡Saluda para iniciar la conversación!', messagePlaceholder: 'Mensaje…', failedOpenAttachment: 'No se pudo abrir el adjunto', live: 'En línea', connecting: 'Conectando…', imageFilesOnly: 'Solo imágenes', imageMax5mb: 'La imagen debe pesar menos de 5 MB', titlePlaceholder: 'ej. Crear una dApp de Pi Network', addToHomeScreen: 'Abre en Pi Browser y usa «Añadir a pantalla de inicio»', cacheCleared: 'Caché borrada', sending: 'enviando…', alreadyApplied: 'Ya te postulaste a este trabajo', failedToApply: 'No se pudo postular', collapse: 'Contraer', waitingFunding: 'Esperando el pago para financiar la custodia', noActiveEscrows: 'Sin custodias activas', noHistoryYet: 'Sin historial aún', escrowFundedFreelancerHint: 'Los fondos están bloqueados en custodia. El cliente los libera tras aceptar tu trabajo — entrégalo en la página del trabajo.',
+  description: 'Descripción', noJobs: 'Sin trabajos', noEscrows: 'Sin custodias', jobDeleted: 'Trabajo eliminado', refunded: 'Reembolsado', releasedToFreelancer: 'Pagado al freelancer', signUps: 'Registros', userRoles: 'Roles de usuario', noAnalyticsData: 'Sin datos analíticos', recentTransactions: 'Transacciones recientes', noEarningsData: 'Sin datos de ingresos', grantConnects: 'Otorgar connects', customAmount: 'Cantidad personalizada', ratingPoor: 'Malo', ratingFair: 'Regular', ratingGood: 'Bueno', ratingGreat: 'Muy bueno', ratingExcellent: 'Excelente',
+  buyConnects: 'Comprar connects', bestValue: 'Mejor precio', popular: 'Popular', lightTheme: 'Tema claro',
 };
 
 // ─── Portuguese ───────────────────────────────────────────────────────────────
-const pt: Translations = {
+const pt: Partial<Translations> = {
   jobs: 'Empregos', chat: 'Chat', myJobs: 'Meus empregos', escrow: 'Custódia', profile: 'Perfil',
   availability: 'Disponibilidade', availableForWork: 'Disponível', notAvailable: 'Indisponível',
   customOffers: 'Ofertas diretas', lightMode: 'Modo escuro', language: 'Idioma',
@@ -401,7 +408,7 @@ const pt: Translations = {
   searchJobs: 'Buscar empregos...', findWork: 'Encontrar trabalho', all: 'Todos', newest: 'Recentes',
   budgetHigh: 'Orçamento ↑', budgetLow: 'Orçamento ↓',
   noJobsFound: 'Nenhum emprego encontrado', tryDifferentFilters: 'Tente outros filtros',
-  applicants: 'candidatos', urgent: 'Urgente', loadMore: 'Carregar mais', dueSoon: 'Due soon',
+  applicants: 'candidatos', urgent: 'Urgente', loadMore: 'Carregar mais', dueSoon: 'Vence em breve',
   open: 'Aberto', applyNow: 'Candidatar-se',
   posted: 'Publicado', hired: 'Contratado', applied: 'Candidaturas', completed: 'Concluído',
   connects: 'Connects', buy: 'Comprar', balance: 'Saldo', reviews: 'Avaliações',
@@ -439,12 +446,13 @@ const pt: Translations = {
   jobTitle: 'Título do trabalho', category: 'Categoria', deadline: 'Prazo', skills: 'Habilidades (separadas por vírgula)', jobDescPlaceholder: 'Descreva o que precisa ser feito…', budgetPlaceholder: 'ex. 50', skillsPlaceholder: 'ex. React, Node.js', attachPhoto: 'Anexar foto', costOneConnect: 'Custo: 1 connect', applyCostLabel: 'Custo da candidatura', notEnoughConnects: 'Connects insuficientes', titleRequired: 'O título é obrigatório', descRequired: 'A descrição é obrigatória', budgetMin: 'Orçamento ≥ 1 Pi', jobPosted: 'Trabalho publicado!', saved: 'Salvo', savedJobs: 'Trabalhos salvos',
   submitWork: 'Enviar trabalho', workSubmitted: 'Trabalho enviado — em análise',
   youPay: 'Você paga', youReceive: 'Você recebe',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Marketplace freelance na Pi Network', wakingServer: 'Acordando o servidor…', writeProposalFirst: 'Escreva uma proposta primeiro', applicationSent: 'Candidatura enviada! ✅', applicationSentChat: 'Candidatura enviada! Abrindo chat…', paymentCancelled: 'Pagamento cancelado', applicationDeclined: 'Candidatura recusada', proposalPlaceholder: 'Descreva sua abordagem, prazos e por que você é a melhor escolha…', shareToVisibility: 'Compartilhe seu trabalho para mais visibilidade', details: 'Detalhes', applicantsTab: 'Candidatos', viewApplicants: 'Ver candidatos', backToJobs: 'Voltar aos trabalhos', decline: 'Recusar', hire: 'Contratar', hiring: 'Contratando…', jobStarted: 'Trabalho iniciado! 🚀', escrowCreated: 'Custódia criada — trabalho iniciado 🚀', paymentFailedMsg: 'Falha no pagamento', skipForNow: 'Pular por enquanto', percentagesSum100: 'As porcentagens devem somar 100%', allMilestonesTitle: 'Todos os marcos precisam de título', fundsReleased: 'Fundos liberados! 🎉', escrowCancelledRefunded: 'Custódia cancelada, fundos reembolsados.', disputeRaisedMsg: 'Disputa aberta — o admin vai analisar.', completeJobToSeeEscrow: 'Conclua um trabalho para ver a atividade de custódia', adminWillReview: 'O admin vai analisar e resolver a custódia.', releaseAll: 'Liberar tudo', dispute: 'Disputa', submitDispute: 'Enviar disputa', active: 'Ativos', history: 'Histórico', edit: 'Editar', applyToStartChatting: 'Candidate-se a um trabalho para começar a conversar', fileMax5mb: 'O arquivo deve ter menos de 5 MB', sayHello: 'Diga olá para começar a conversa!', messagePlaceholder: 'Mensagem…', failedOpenAttachment: 'Não foi possível abrir o anexo', live: 'Online', connecting: 'Conectando…', imageFilesOnly: 'Apenas imagens', imageMax5mb: 'A imagem deve ter menos de 5 MB', titlePlaceholder: 'ex. Criar um dApp na Pi Network', addToHomeScreen: 'Abra no Pi Browser e use "Adicionar à tela inicial"', cacheCleared: 'Cache limpo', sending: 'enviando…', alreadyApplied: 'Você já se candidatou a este trabalho', failedToApply: 'Falha ao se candidatar', collapse: 'Recolher', waitingFunding: 'Aguardando pagamento para financiar a custódia', noActiveEscrows: 'Sem custódias ativas', noHistoryYet: 'Sem histórico ainda', escrowFundedFreelancerHint: 'Os fundos estão bloqueados em custódia. O cliente libera após aceitar o trabalho — envie-o na página do trabalho.',
+  description: 'Descrição', noJobs: 'Sem trabalhos', noEscrows: 'Sem custódias', jobDeleted: 'Trabalho excluído', refunded: 'Reembolsado', releasedToFreelancer: 'Pago ao freelancer', signUps: 'Cadastros', userRoles: 'Papéis de usuário', noAnalyticsData: 'Sem dados analíticos', recentTransactions: 'Transações recentes', noEarningsData: 'Sem dados de ganhos', grantConnects: 'Conceder connects', customAmount: 'Valor personalizado', ratingPoor: 'Ruim', ratingFair: 'Razoável', ratingGood: 'Bom', ratingGreat: 'Ótimo', ratingExcellent: 'Excelente',
+  buyConnects: 'Comprar connects', bestValue: 'Melhor custo-benefício', popular: 'Popular', lightTheme: 'Tema claro',
 };
 
 // ─── Turkish ──────────────────────────────────────────────────────────────────
-const tr: Translations = {
+const tr: Partial<Translations> = {
   jobs: 'İşler', chat: 'Sohbet', myJobs: 'İşlerim', escrow: 'Emanet', profile: 'Profil',
   availability: 'Müsaitlik', availableForWork: 'Müsait', notAvailable: 'Müsait değil',
   customOffers: 'Özel teklifler', lightMode: 'Koyu mod', language: 'Dil',
@@ -456,7 +464,7 @@ const tr: Translations = {
   searchJobs: 'İş ara...', findWork: 'İş bul', all: 'Tümü', newest: 'En yeni',
   budgetHigh: 'Bütçe ↑', budgetLow: 'Bütçe ↓',
   noJobsFound: 'İş bulunamadı', tryDifferentFilters: 'Farklı filtreler deneyin',
-  applicants: 'başvuran', urgent: 'Acil', loadMore: 'Daha fazla yükle', dueSoon: 'Due soon',
+  applicants: 'başvuran', urgent: 'Acil', loadMore: 'Daha fazla yükle', dueSoon: 'Süresi yaklaşıyor',
   open: 'Açık', applyNow: 'Şimdi başvur',
   posted: 'Yayınlandı', hired: 'İşe alındı', applied: 'Başvurular', completed: 'Tamamlandı',
   connects: 'Bağlantılar', buy: 'Satın al', balance: 'Bakiye', reviews: 'Yorumlar',
@@ -494,12 +502,13 @@ const tr: Translations = {
   jobTitle: 'İş Başlığı', category: 'Kategori', deadline: 'Son tarih', skills: 'Beceriler (virgülle ayrılmış)', jobDescPlaceholder: 'Yapılması gerekeni açıklayın…', budgetPlaceholder: 'örn. 50', skillsPlaceholder: 'örn. React, Node.js', attachPhoto: 'Fotoğraf ekle', costOneConnect: 'Maliyet: 1 bağlantı', applyCostLabel: 'Başvuru maliyeti', notEnoughConnects: 'Yeterli bağlantı yok', titleRequired: 'Başlık gerekli', descRequired: 'Açıklama gerekli', budgetMin: 'Bütçe ≥ 1 Pi', jobPosted: 'İş yayınlandı!', saved: 'Kaydedildi', savedJobs: 'Kaydedilen işler',
   submitWork: 'İşi gönder', workSubmitted: 'Gönderildi — inceleniyor',
   youPay: 'Ödersiniz', youReceive: 'Alırsınız',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Pi Network üzerinde freelance pazaryeri', wakingServer: 'Sunucu uyandırılıyor…', writeProposalFirst: 'Önce bir teklif yazın', applicationSent: 'Başvuru gönderildi! ✅', applicationSentChat: 'Başvuru gönderildi! Sohbet açılıyor…', paymentCancelled: 'Ödeme iptal edildi', applicationDeclined: 'Başvuru reddedildi', proposalPlaceholder: 'Yaklaşımınızı, zaman planınızı ve neden en uygun kişi olduğunuzu anlatın…', shareToVisibility: 'Daha fazla görünürlük için işinizi paylaşın', details: 'Detaylar', applicantsTab: 'Başvuranlar', viewApplicants: 'Başvuranları gör', backToJobs: 'İşlere dön', decline: 'Reddet', hire: 'İşe al', hiring: 'İşe alınıyor…', jobStarted: 'İş başladı! 🚀', escrowCreated: 'Emanet oluşturuldu — iş başladı 🚀', paymentFailedMsg: 'Ödeme başarısız', skipForNow: 'Şimdilik atla', percentagesSum100: 'Yüzdelerin toplamı 100% olmalı', allMilestonesTitle: 'Tüm aşamaların başlığı olmalı', fundsReleased: 'Fonlar serbest bırakıldı! 🎉', escrowCancelledRefunded: 'Emanet iptal edildi, fonlar iade edildi.', disputeRaisedMsg: 'Anlaşmazlık açıldı — yönetici inceleyecek.', completeJobToSeeEscrow: 'Emanet etkinliğini görmek için bir işi tamamlayın', adminWillReview: 'Yönetici emaneti inceleyip çözecek.', releaseAll: 'Hepsini serbest bırak', dispute: 'Anlaşmazlık', submitDispute: 'Anlaşmazlık gönder', active: 'Aktif', history: 'Geçmiş', edit: 'Düzenle', applyToStartChatting: 'Sohbete başlamak için bir işe başvurun', fileMax5mb: 'Dosya 5 MB\'tan küçük olmalı', sayHello: 'Sohbeti başlatmak için merhaba deyin!', messagePlaceholder: 'Mesaj…', failedOpenAttachment: 'Ek açılamadı', live: 'Çevrimiçi', connecting: 'Bağlanıyor…', imageFilesOnly: 'Yalnızca resim dosyaları', imageMax5mb: 'Resim 5 MB\'tan küçük olmalı', titlePlaceholder: 'örn. Pi Network dApp geliştir', addToHomeScreen: 'Pi Browser\'da açın ve "Ana ekrana ekle"yi kullanın', cacheCleared: 'Önbellek temizlendi', sending: 'gönderiliyor…', alreadyApplied: 'Bu işe zaten başvurdunuz', failedToApply: 'Başvuru başarısız', collapse: 'Daralt', waitingFunding: 'Emaneti fonlamak için ödeme bekleniyor', noActiveEscrows: 'Aktif emanet yok', noHistoryYet: 'Henüz geçmiş yok', escrowFundedFreelancerHint: 'Fonlar emanette kilitli. Müşteri işi kabul ettikten sonra ödemeyi serbest bırakır — işi iş sayfasından teslim edin.',
+  description: 'Açıklama', noJobs: 'İş yok', noEscrows: 'Emanet yok', jobDeleted: 'İş silindi', refunded: 'İade edildi', releasedToFreelancer: 'Freelancera ödendi', signUps: 'Kayıtlar', userRoles: 'Kullanıcı rolleri', noAnalyticsData: 'Analitik veri yok', recentTransactions: 'Son işlemler', noEarningsData: 'Kazanç verisi yok', grantConnects: 'Bağlantı ver', customAmount: 'Özel tutar', ratingPoor: 'Kötü', ratingFair: 'İdare eder', ratingGood: 'İyi', ratingGreat: 'Çok iyi', ratingExcellent: 'Mükemmel',
+  buyConnects: 'Bağlantı satın al', bestValue: 'En avantajlı', popular: 'Popüler', lightTheme: 'Açık tema',
 };
 
 // ─── Arabic (RTL) ─────────────────────────────────────────────────────────────
-const ar: Translations = {
+const ar: Partial<Translations> = {
   jobs: 'وظائف', chat: 'محادثة', myJobs: 'وظائفي', escrow: 'الضمان', profile: 'الملف الشخصي',
   availability: 'التوفر', availableForWork: 'متاح للعمل', notAvailable: 'غير متاح',
   customOffers: 'عروض مباشرة', lightMode: 'الوضع المظلم', language: 'اللغة',
@@ -511,7 +520,7 @@ const ar: Translations = {
   searchJobs: 'البحث عن وظائف...', findWork: 'ابحث عن عمل', all: 'الكل', newest: 'الأحدث',
   budgetHigh: 'الميزانية ↑', budgetLow: 'الميزانية ↓',
   noJobsFound: 'لا توجد وظائف', tryDifferentFilters: 'جرب فلاتر أخرى',
-  applicants: 'متقدمون', urgent: 'عاجل', loadMore: 'تحميل المزيد', dueSoon: 'Due soon',
+  applicants: 'متقدمون', urgent: 'عاجل', loadMore: 'تحميل المزيد', dueSoon: 'يستحق قريبًا',
   open: 'مفتوح', applyNow: 'تقدم الآن',
   posted: 'منشور', hired: 'تم التوظيف', applied: 'الطلبات', completed: 'مكتمل',
   connects: 'اتصالات', buy: 'شراء', balance: 'الرصيد', reviews: 'التقييمات',
@@ -546,7 +555,7 @@ const ar: Translations = {
   applying: 'جارٍ الإرسال...', jobNotFound: 'الوظيفة غير موجودة', loginRequired: 'تسجيل الدخول مطلوب',
   faqComingSoon: 'الأسئلة الشائعة قريبًا', piBrowser: 'متصفح Pi', onlyUrgent: 'العاجلة فقط', skillsRequired: 'المهارات المطلوبة', yourProposal: 'عرضك', noApplicants: 'لا يوجد متقدمون بعد', markAsUrgent: 'وضع علامة عاجل', messages: 'الرسائل', noMessages: 'لا توجد رسائل بعد', adminOnly: 'للمشرف فقط', noData: 'لا توجد بيانات', noUsersFound: 'لم يتم العثور على مستخدمين', exportCSV: 'تصدير CSV', raiseDispute: 'فتح نزاع', noJobsYet: 'لا توجد أعمال بعد',
   openInPiBrowser: 'افتح هذا التطبيق في متصفح Pi للمتابعة.',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: 'عنوان الوظيفة', category: 'الفئة', deadline: 'الموعد النهائي', skills: 'المهارات (مفصولة بفواصل)', jobDescPlaceholder: 'صف ما يجب إنجازه…', budgetPlaceholder: 'مثال: 50', skillsPlaceholder: 'مثال: React, Node.js', attachPhoto: 'إرفاق صورة', costOneConnect: 'التكلفة: اتصال واحد', applyCostLabel: 'تكلفة التقديم', notEnoughConnects: 'لا توجد اتصالات كافية', titleRequired: 'العنوان مطلوب', descRequired: 'الوصف مطلوب', budgetMin: 'الميزانية ≥ 1 Pi', jobPosted: 'تم نشر الوظيفة!', saved: 'محفوظ', savedJobs: 'الوظائف المحفوظة',
   submitWork: 'إرسال العمل', workSubmitted: 'تم الإرسال — قيد المراجعة',
   youPay: 'تدفع', youReceive: 'تستلم',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -554,7 +563,7 @@ const ar: Translations = {
 };
 
 // ─── Hindi ────────────────────────────────────────────────────────────────────
-const hi: Translations = {
+const hi: Partial<Translations> = {
   jobs: 'नौकरियाँ', chat: 'चैट', myJobs: 'मेरी नौकरियाँ', escrow: 'एस्क्रो', profile: 'प्रोफ़ाइल',
   availability: 'उपलब्धता', availableForWork: 'काम के लिए उपलब्ध', notAvailable: 'अनुपलब्ध',
   customOffers: 'सीधे प्रस्ताव', lightMode: 'डार्क मोड', language: 'भाषा',
@@ -566,7 +575,7 @@ const hi: Translations = {
   searchJobs: 'नौकरी खोजें...', findWork: 'काम खोजें', all: 'सभी', newest: 'नवीनतम',
   budgetHigh: 'बजट ↑', budgetLow: 'बजट ↓',
   noJobsFound: 'कोई नौकरी नहीं मिली', tryDifferentFilters: 'अन्य फ़िल्टर आज़माएं',
-  applicants: 'आवेदक', urgent: 'अत्यावश्यक', loadMore: 'और लोड करें', dueSoon: 'Due soon',
+  applicants: 'आवेदक', urgent: 'अत्यावश्यक', loadMore: 'और लोड करें', dueSoon: 'जल्द समयसीमा',
   open: 'खुला', applyNow: 'अभी आवेदन करें',
   posted: 'पोस्ट किया', hired: 'नियुक्त किया', applied: 'आवेदन', completed: 'पूर्ण',
   connects: 'कनेक्ट', buy: 'खरीदें', balance: 'बैलेंस', reviews: 'समीक्षाएँ',
@@ -601,7 +610,7 @@ const hi: Translations = {
   applying: 'भेजा जा रहा है...', jobNotFound: 'नौकरी नहीं मिली', loginRequired: 'लॉगिन आवश्यक',
   faqComingSoon: 'FAQ जल्द आ रहा है', piBrowser: 'Pi ब्राउज़र', onlyUrgent: 'केवल अत्यावश्यक काम', skillsRequired: 'आवश्यक कौशल', yourProposal: 'आपका प्रस्ताव', noApplicants: 'अभी तक कोई आवेदक नहीं', markAsUrgent: 'अत्यावश्यक चिह्नित करें', messages: 'संदेश', noMessages: 'अभी तक कोई संदेश नहीं', adminOnly: 'केवल एडमिन', noData: 'कोई डेटा नहीं', noUsersFound: 'कोई उपयोगकर्ता नहीं मिला', exportCSV: 'CSV निर्यात करें', raiseDispute: 'विवाद उठाएं', noJobsYet: 'अभी तक कोई काम नहीं',
   openInPiBrowser: 'जारी रखने के लिए इस ऐप को Pi ब्राउज़र में खोलें।',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: 'नौकरी का शीर्षक', category: 'श्रेणी', deadline: 'समय सीमा', skills: 'कौशल (कॉमा से अलग)', jobDescPlaceholder: 'बताएं कि क्या करना है…', budgetPlaceholder: 'जैसे 50', skillsPlaceholder: 'जैसे React, Node.js', attachPhoto: 'फोटो संलग्न करें', costOneConnect: 'लागत: 1 कनेक्ट', applyCostLabel: 'आवेदन लागत', notEnoughConnects: 'पर्याप्त कनेक्ट नहीं', titleRequired: 'शीर्षक आवश्यक है', descRequired: 'विवरण आवश्यक है', budgetMin: 'बजट ≥ 1 Pi', jobPosted: 'नौकरी पोस्ट की गई!', saved: 'सहेजा गया', savedJobs: 'सहेजी गई नौकरियाँ',
   submitWork: 'काम सबमिट करें', workSubmitted: 'सबमिट किया — समीक्षा प्रतीक्षित',
   youPay: 'आप भुगतान करते हैं', youReceive: 'आपको मिलेगा',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -609,7 +618,7 @@ const hi: Translations = {
 };
 
 // ─── Chinese Simplified ───────────────────────────────────────────────────────
-const zh: Translations = {
+const zh: Partial<Translations> = {
   jobs: '工作', chat: '聊天', myJobs: '我的工作', escrow: '托管', profile: '个人资料',
   availability: '可用性', availableForWork: '可接工作', notAvailable: '不可用',
   customOffers: '直接邀约', lightMode: '暗色模式', language: '语言',
@@ -621,7 +630,7 @@ const zh: Translations = {
   searchJobs: '搜索工作...', findWork: '找工作', all: '全部', newest: '最新',
   budgetHigh: '预算 ↑', budgetLow: '预算 ↓',
   noJobsFound: '未找到工作', tryDifferentFilters: '尝试其他过滤条件',
-  applicants: '申请者', urgent: '紧急', loadMore: '加载更多', dueSoon: 'Due soon',
+  applicants: '申请者', urgent: '紧急', loadMore: '加载更多', dueSoon: '即将截止',
   open: '开放', applyNow: '立即申请',
   posted: '已发布', hired: '已录用', applied: '申请', completed: '已完成',
   connects: '积分', buy: '购买', balance: '余额', reviews: '评价',
@@ -656,7 +665,7 @@ const zh: Translations = {
   applying: '提交中...', jobNotFound: '未找到工作', loginRequired: '需要登录',
   faqComingSoon: '常见问题即将推出', piBrowser: 'Pi 浏览器', onlyUrgent: '仅显示紧急工作', skillsRequired: '所需技能', yourProposal: '你的提案', noApplicants: '暂无申请者', markAsUrgent: '标记为紧急', messages: '消息', noMessages: '暂无消息', adminOnly: '仅限管理员', noData: '暂无数据', noUsersFound: '未找到用户', exportCSV: '导出 CSV', raiseDispute: '发起争议', noJobsYet: '暂无工作',
   openInPiBrowser: '请在 Pi 浏览器中打开此应用以继续。',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: '工作标题', category: '类别', deadline: '截止日期', skills: '技能（逗号分隔）', jobDescPlaceholder: '描述需要完成的工作…', budgetPlaceholder: '例如 50', skillsPlaceholder: '例如 React, Node.js', attachPhoto: '附加照片', costOneConnect: '费用：1 积分', applyCostLabel: '申请费用', notEnoughConnects: '积分不足', titleRequired: '标题为必填项', descRequired: '描述为必填项', budgetMin: '预算 ≥ 1 Pi', jobPosted: '工作已发布！', saved: '已保存', savedJobs: '已保存的工作',
   submitWork: '提交工作', workSubmitted: '已提交 — 等待审核',
   youPay: '你支付', youReceive: '你将收到',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -664,7 +673,7 @@ const zh: Translations = {
 };
 
 // ─── Japanese ─────────────────────────────────────────────────────────────────
-const ja: Translations = {
+const ja: Partial<Translations> = {
   jobs: '仕事', chat: 'チャット', myJobs: '私の仕事', escrow: 'エスクロー', profile: 'プロフィール',
   availability: '対応可否', availableForWork: '対応可能', notAvailable: '対応不可',
   customOffers: 'ダイレクトオファー', lightMode: 'ダークモード', language: '言語',
@@ -676,7 +685,7 @@ const ja: Translations = {
   searchJobs: '仕事を検索...', findWork: '仕事を探す', all: 'すべて', newest: '最新',
   budgetHigh: '予算 ↑', budgetLow: '予算 ↓',
   noJobsFound: '仕事が見つかりません', tryDifferentFilters: '別のフィルターをお試しください',
-  applicants: '応募者', urgent: '緊急', loadMore: 'もっと読む', dueSoon: 'Due soon',
+  applicants: '応募者', urgent: '緊急', loadMore: 'もっと読む', dueSoon: '締切間近',
   open: 'オープン', applyNow: '今すぐ応募',
   posted: '投稿済み', hired: '採用済み', applied: '応募', completed: '完了',
   connects: 'コネクト', buy: '購入', balance: '残高', reviews: 'レビュー',
@@ -711,7 +720,7 @@ const ja: Translations = {
   applying: '送信中...', jobNotFound: '仕事が見つかりません', loginRequired: 'ログインが必要',
   faqComingSoon: 'FAQ は近日公開', piBrowser: 'Pi ブラウザ', onlyUrgent: '緊急の仕事のみ', skillsRequired: '必要なスキル', yourProposal: 'あなたの提案', noApplicants: '応募者はまだいません', markAsUrgent: '緊急として登録', messages: 'メッセージ', noMessages: 'メッセージはまだありません', adminOnly: '管理者専用', noData: 'データなし', noUsersFound: 'ユーザーが見つかりません', exportCSV: 'CSV をエクスポート', raiseDispute: '異議を申し立てる', noJobsYet: '仕事はまだありません',
   openInPiBrowser: '続行するには、このアプリを Pi ブラウザで開いてください。',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: '仕事のタイトル', category: 'カテゴリ', deadline: '締め切り', skills: 'スキル（カンマ区切り）', jobDescPlaceholder: '必要な作業内容を記述…', budgetPlaceholder: '例：50', skillsPlaceholder: '例：React, Node.js', attachPhoto: '写真を添付', costOneConnect: '費用：1 コネクト', applyCostLabel: '応募費用', notEnoughConnects: 'コネクトが不足しています', titleRequired: 'タイトルは必須です', descRequired: '説明は必須です', budgetMin: '予算 ≥ 1 Pi', jobPosted: '仕事を投稿しました！', saved: '保存済み', savedJobs: '保存した仕事',
   submitWork: '作業を提出', workSubmitted: '提出済み — 確認待ち',
   youPay: '支払い額', youReceive: '受取額',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -719,7 +728,7 @@ const ja: Translations = {
 };
 
 // ─── Korean ───────────────────────────────────────────────────────────────────
-const ko: Translations = {
+const ko: Partial<Translations> = {
   jobs: '일자리', chat: '채팅', myJobs: '내 일자리', escrow: '에스크로', profile: '프로필',
   availability: '가용성', availableForWork: '작업 가능', notAvailable: '불가',
   customOffers: '직접 제안', lightMode: '다크 모드', language: '언어',
@@ -731,7 +740,7 @@ const ko: Translations = {
   searchJobs: '일자리 검색...', findWork: '일 찾기', all: '전체', newest: '최신',
   budgetHigh: '예산 ↑', budgetLow: '예산 ↓',
   noJobsFound: '일자리 없음', tryDifferentFilters: '다른 필터 시도',
-  applicants: '지원자', urgent: '긴급', loadMore: '더 보기', dueSoon: 'Due soon',
+  applicants: '지원자', urgent: '긴급', loadMore: '더 보기', dueSoon: '마감 임박',
   open: '열린', applyNow: '지금 지원',
   posted: '게시됨', hired: '고용됨', applied: '지원', completed: '완료',
   connects: '연결', buy: '구매', balance: '잔액', reviews: '리뷰',
@@ -766,7 +775,7 @@ const ko: Translations = {
   applying: '제출 중...', jobNotFound: '일자리를 찾을 수 없음', loginRequired: '로그인 필요',
   faqComingSoon: 'FAQ 준비 중', piBrowser: 'Pi 브라우저', onlyUrgent: '긴급 작업만 표시', skillsRequired: '필요한 기술', yourProposal: '내 제안', noApplicants: '아직 지원자가 없습니다', markAsUrgent: '긴급으로 표시', messages: '메시지', noMessages: '아직 메시지가 없습니다', adminOnly: '관리자 전용', noData: '데이터 없음', noUsersFound: '사용자를 찾을 수 없습니다', exportCSV: 'CSV 내보내기', raiseDispute: '분쟁 제기', noJobsYet: '아직 작업이 없습니다',
   openInPiBrowser: '계속하려면 Pi 브라우저에서 이 앱을 여세요.',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: '작업 제목', category: '카테고리', deadline: '마감일', skills: '기술 (쉼표로 구분)', jobDescPlaceholder: '해야 할 일을 설명하세요…', budgetPlaceholder: '예: 50', skillsPlaceholder: '예: React, Node.js', attachPhoto: '사진 첨부', costOneConnect: '비용: 연결 1개', applyCostLabel: '지원 비용', notEnoughConnects: '연결이 부족합니다', titleRequired: '제목이 필요합니다', descRequired: '설명이 필요합니다', budgetMin: '예산 ≥ 1 Pi', jobPosted: '작업이 게시되었습니다!', saved: '저장됨', savedJobs: '저장된 작업',
   submitWork: '작업 제출', workSubmitted: '제출됨 — 검토 대기',
   youPay: '결제 금액', youReceive: '받는 금액',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -774,7 +783,7 @@ const ko: Translations = {
 };
 
 // ─── Vietnamese ───────────────────────────────────────────────────────────────
-const vi: Translations = {
+const vi: Partial<Translations> = {
   jobs: 'Việc làm', chat: 'Trò chuyện', myJobs: 'Việc của tôi', escrow: 'Ký quỹ', profile: 'Hồ sơ',
   availability: 'Sẵn sàng', availableForWork: 'Sẵn sàng làm việc', notAvailable: 'Không khả dụng',
   customOffers: 'Đề xuất trực tiếp', lightMode: 'Chế độ tối', language: 'Ngôn ngữ',
@@ -786,7 +795,7 @@ const vi: Translations = {
   searchJobs: 'Tìm kiếm việc làm...', findWork: 'Tìm việc', all: 'Tất cả', newest: 'Mới nhất',
   budgetHigh: 'Ngân sách ↑', budgetLow: 'Ngân sách ↓',
   noJobsFound: 'Không tìm thấy việc làm', tryDifferentFilters: 'Thử bộ lọc khác',
-  applicants: 'ứng viên', urgent: 'Khẩn cấp', loadMore: 'Tải thêm', dueSoon: 'Due soon',
+  applicants: 'ứng viên', urgent: 'Khẩn cấp', loadMore: 'Tải thêm', dueSoon: 'Sắp đến hạn',
   open: 'Mở', applyNow: 'Ứng tuyển ngay',
   posted: 'Đã đăng', hired: 'Đã tuyển', applied: 'Đơn ứng tuyển', completed: 'Hoàn thành',
   connects: 'Kết nối', buy: 'Mua', balance: 'Số dư', reviews: 'Đánh giá',
@@ -821,7 +830,7 @@ const vi: Translations = {
   applying: 'Đang gửi...', jobNotFound: 'Không tìm thấy việc làm', loginRequired: 'Yêu cầu đăng nhập',
   faqComingSoon: 'FAQ sắp ra mắt', piBrowser: 'Trình duyệt Pi', onlyUrgent: 'Chỉ việc khẩn cấp', skillsRequired: 'Kỹ năng yêu cầu', yourProposal: 'Đề xuất của bạn', noApplicants: 'Chưa có ứng viên', markAsUrgent: 'Đánh dấu khẩn cấp', messages: 'Tin nhắn', noMessages: 'Chưa có tin nhắn', adminOnly: 'Chỉ quản trị viên', noData: 'Không có dữ liệu', noUsersFound: 'Không tìm thấy người dùng', exportCSV: 'Xuất CSV', raiseDispute: 'Mở tranh chấp', noJobsYet: 'Chưa có công việc',
   openInPiBrowser: 'Mở ứng dụng này trong trình duyệt Pi để tiếp tục.',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: 'Tiêu đề công việc', category: 'Danh mục', deadline: 'Hạn chót', skills: 'Kỹ năng (phân cách bằng dấu phẩy)', jobDescPlaceholder: 'Mô tả việc cần làm…', budgetPlaceholder: 'ví dụ: 50', skillsPlaceholder: 'ví dụ: React, Node.js', attachPhoto: 'Đính kèm ảnh', costOneConnect: 'Chi phí: 1 kết nối', applyCostLabel: 'Chi phí ứng tuyển', notEnoughConnects: 'Không đủ kết nối', titleRequired: 'Cần có tiêu đề', descRequired: 'Cần có mô tả', budgetMin: 'Ngân sách ≥ 1 Pi', jobPosted: 'Đã đăng việc!', saved: 'Đã lưu', savedJobs: 'Việc đã lưu',
   submitWork: 'Nộp công việc', workSubmitted: 'Đã nộp — chờ duyệt',
   youPay: 'Bạn trả', youReceive: 'Bạn nhận',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -829,7 +838,7 @@ const vi: Translations = {
 };
 
 // ─── Indonesian ───────────────────────────────────────────────────────────────
-const id: Translations = {
+const id: Partial<Translations> = {
   jobs: 'Pekerjaan', chat: 'Obrolan', myJobs: 'Pekerjaan Saya', escrow: 'Escrow', profile: 'Profil',
   availability: 'Ketersediaan', availableForWork: 'Tersedia', notAvailable: 'Tidak tersedia',
   customOffers: 'Penawaran langsung', lightMode: 'Mode gelap', language: 'Bahasa',
@@ -841,7 +850,7 @@ const id: Translations = {
   searchJobs: 'Cari pekerjaan...', findWork: 'Cari kerja', all: 'Semua', newest: 'Terbaru',
   budgetHigh: 'Anggaran ↑', budgetLow: 'Anggaran ↓',
   noJobsFound: 'Tidak ada pekerjaan', tryDifferentFilters: 'Coba filter lain',
-  applicants: 'pelamar', urgent: 'Mendesak', loadMore: 'Muat lebih', dueSoon: 'Due soon',
+  applicants: 'pelamar', urgent: 'Mendesak', loadMore: 'Muat lebih', dueSoon: 'Segera berakhir',
   open: 'Buka', applyNow: 'Lamar sekarang',
   posted: 'Diposting', hired: 'Dipekerjakan', applied: 'Lamaran', completed: 'Selesai',
   connects: 'Koneksi', buy: 'Beli', balance: 'Saldo', reviews: 'Ulasan',
@@ -876,7 +885,7 @@ const id: Translations = {
   applying: 'Mengirim...', jobNotFound: 'Pekerjaan tidak ditemukan', loginRequired: 'Login diperlukan',
   faqComingSoon: 'FAQ segera hadir', piBrowser: 'Peramban Pi', onlyUrgent: 'Hanya pekerjaan mendesak', skillsRequired: 'Keterampilan yang dibutuhkan', yourProposal: 'Proposal Anda', noApplicants: 'Belum ada pelamar', markAsUrgent: 'Tandai sebagai mendesak', messages: 'Pesan', noMessages: 'Belum ada pesan', adminOnly: 'Hanya admin', noData: 'Tidak ada data', noUsersFound: 'Tidak ada pengguna ditemukan', exportCSV: 'Ekspor CSV', raiseDispute: 'Ajukan sengketa', noJobsYet: 'Belum ada pekerjaan',
   openInPiBrowser: 'Buka aplikasi ini di Peramban Pi untuk melanjutkan.',
-  jobTitle: 'Job Title', category: 'Category', deadline: 'Deadline', skills: 'Skills (comma-separated)', jobDescPlaceholder: 'Describe what needs to be done…', budgetPlaceholder: 'e.g. 50', skillsPlaceholder: 'e.g. React, Node.js', attachPhoto: 'Attach Photo · Add', costOneConnect: 'Cost: 1 connect', applyCostLabel: 'Apply cost', notEnoughConnects: 'Not enough connects', titleRequired: 'Title is required', descRequired: 'Description is required', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Job posted!', saved: 'Saved', savedJobs: 'Saved jobs',
+  jobTitle: 'Judul pekerjaan', category: 'Kategori', deadline: 'Tenggat', skills: 'Keahlian (dipisah koma)', jobDescPlaceholder: 'Jelaskan apa yang perlu dikerjakan…', budgetPlaceholder: 'mis. 50', skillsPlaceholder: 'mis. React, Node.js', attachPhoto: 'Lampirkan foto', costOneConnect: 'Biaya: 1 koneksi', applyCostLabel: 'Biaya lamaran', notEnoughConnects: 'Koneksi tidak cukup', titleRequired: 'Judul wajib diisi', descRequired: 'Deskripsi wajib diisi', budgetMin: 'Anggaran ≥ 1 Pi', jobPosted: 'Pekerjaan diposting!', saved: 'Disimpan', savedJobs: 'Pekerjaan tersimpan',
   submitWork: 'Kirim pekerjaan', workSubmitted: 'Terkirim — menunggu tinjauan',
   youPay: 'Anda bayar', youReceive: 'Anda terima',
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
@@ -884,7 +893,7 @@ const id: Translations = {
 };
 
 // ─── Italian ──────────────────────────────────────────────────────────────────
-const it: Translations = {
+const it: Partial<Translations> = {
   jobs: 'Lavori', chat: 'Chat', myJobs: 'I miei lavori', escrow: 'Garanzia', profile: 'Profilo',
   availability: 'Disponibilità', availableForWork: 'Disponibile', notAvailable: 'Non disponibile',
   customOffers: 'Offerte dirette', lightMode: 'Modalità scura', language: 'Lingua',
@@ -896,7 +905,7 @@ const it: Translations = {
   searchJobs: 'Cerca lavori...', findWork: 'Trova lavoro', all: 'Tutti', newest: 'Più recenti',
   budgetHigh: 'Budget ↑', budgetLow: 'Budget ↓',
   noJobsFound: 'Nessun lavoro trovato', tryDifferentFilters: 'Prova altri filtri',
-  applicants: 'candidati', urgent: 'Urgente', loadMore: 'Carica altro', dueSoon: 'Due soon',
+  applicants: 'candidati', urgent: 'Urgente', loadMore: 'Carica altro', dueSoon: 'Scade presto',
   open: 'Aperto', applyNow: 'Candidati ora',
   posted: 'Pubblicato', hired: 'Assunto', applied: 'Candidature', completed: 'Completato',
   connects: 'Connessioni', buy: 'Acquista', balance: 'Saldo', reviews: 'Recensioni',
@@ -934,12 +943,13 @@ const it: Translations = {
   jobTitle: 'Titolo del lavoro', category: 'Categoria', deadline: 'Scadenza', skills: 'Competenze (separate da virgole)', jobDescPlaceholder: 'Descrivi cosa va fatto…', budgetPlaceholder: 'es. 50', skillsPlaceholder: 'es. React, Node.js', attachPhoto: 'Allega foto', costOneConnect: 'Costo: 1 connect', applyCostLabel: 'Costo candidatura', notEnoughConnects: 'Connect insufficienti', titleRequired: 'Il titolo è obbligatorio', descRequired: 'La descrizione è obbligatoria', budgetMin: 'Budget ≥ 1 Pi', jobPosted: 'Lavoro pubblicato!', saved: 'Salvato', savedJobs: 'Lavori salvati',
   submitWork: 'Invia lavoro', workSubmitted: 'Lavoro inviato — in revisione',
   youPay: 'Paghi', youReceive: 'Ricevi',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Marketplace freelance su Pi Network', wakingServer: 'Risveglio del server…', writeProposalFirst: 'Scrivi prima una proposta', applicationSent: 'Candidatura inviata! ✅', applicationSentChat: 'Candidatura inviata! Apro la chat…', paymentCancelled: 'Pagamento annullato', applicationDeclined: 'Candidatura rifiutata', proposalPlaceholder: 'Descrivi il tuo approccio, i tempi e perché sei la scelta giusta…', shareToVisibility: 'Condividi il tuo lavoro per più visibilità', details: 'Dettagli', applicantsTab: 'Candidati', viewApplicants: 'Vedi candidati', backToJobs: 'Torna ai lavori', decline: 'Rifiuta', hire: 'Assumi', hiring: 'Assunzione…', jobStarted: 'Lavoro iniziato! 🚀', escrowCreated: 'Garanzia creata — lavoro iniziato 🚀', paymentFailedMsg: 'Pagamento non riuscito', skipForNow: 'Salta per ora', percentagesSum100: 'Le percentuali devono sommare a 100%', allMilestonesTitle: 'Tutte le milestone richiedono un titolo', fundsReleased: 'Fondi rilasciati! 🎉', escrowCancelledRefunded: 'Garanzia annullata, fondi rimborsati.', disputeRaisedMsg: 'Controversia aperta — l\'admin esaminerà.', completeJobToSeeEscrow: 'Completa un lavoro per vedere l\'attività della garanzia', adminWillReview: 'L\'admin esaminerà e risolverà la garanzia.', releaseAll: 'Rilascia tutto', dispute: 'Controversia', submitDispute: 'Invia controversia', active: 'Attivi', history: 'Cronologia', edit: 'Modifica', applyToStartChatting: 'Candidati a un lavoro per iniziare a chattare', fileMax5mb: 'Il file deve essere sotto i 5 MB', sayHello: 'Saluta per iniziare la conversazione!', messagePlaceholder: 'Messaggio…', failedOpenAttachment: 'Impossibile aprire l\'allegato', live: 'Online', connecting: 'Connessione…', imageFilesOnly: 'Solo immagini', imageMax5mb: 'L\'immagine deve essere sotto i 5 MB', titlePlaceholder: 'es. Crea una dApp Pi Network', addToHomeScreen: 'Apri in Pi Browser e usa "Aggiungi alla schermata Home"', cacheCleared: 'Cache svuotata', sending: 'invio…', alreadyApplied: 'Ti sei già candidato a questo lavoro', failedToApply: 'Candidatura non riuscita', collapse: 'Comprimi', waitingFunding: 'In attesa del pagamento per finanziare la garanzia', noActiveEscrows: 'Nessuna garanzia attiva', noHistoryYet: 'Ancora nessuna cronologia', escrowFundedFreelancerHint: 'I fondi sono bloccati in garanzia. Il cliente li rilascia dopo aver accettato il lavoro — consegnalo dalla pagina del lavoro.',
+  description: 'Descrizione', noJobs: 'Nessun lavoro', noEscrows: 'Nessuna garanzia', jobDeleted: 'Lavoro eliminato', refunded: 'Rimborsato', releasedToFreelancer: 'Pagato al freelancer', signUps: 'Iscrizioni', userRoles: 'Ruoli utente', noAnalyticsData: 'Nessun dato analitico', recentTransactions: 'Transazioni recenti', noEarningsData: 'Nessun dato sui guadagni', grantConnects: 'Assegna connect', customAmount: 'Importo personalizzato', ratingPoor: 'Scarso', ratingFair: 'Discreto', ratingGood: 'Buono', ratingGreat: 'Ottimo', ratingExcellent: 'Eccellente',
+  buyConnects: 'Acquista connect', bestValue: 'Più conveniente', popular: 'Popolare', lightTheme: 'Tema chiaro',
 };
 
 // ─── Polish ───────────────────────────────────────────────────────────────────
-const pl: Translations = {
+const pl: Partial<Translations> = {
   jobs: 'Praca', chat: 'Czat', myJobs: 'Moja praca', escrow: 'Escrow', profile: 'Profil',
   availability: 'Dostępność', availableForWork: 'Dostępny', notAvailable: 'Niedostępny',
   customOffers: 'Oferty bezpośrednie', lightMode: 'Tryb ciemny', language: 'Język',
@@ -951,7 +961,7 @@ const pl: Translations = {
   searchJobs: 'Szukaj pracy...', findWork: 'Znajdź pracę', all: 'Wszystkie', newest: 'Najnowsze',
   budgetHigh: 'Budżet ↑', budgetLow: 'Budżet ↓',
   noJobsFound: 'Nie znaleziono pracy', tryDifferentFilters: 'Spróbuj innych filtrów',
-  applicants: 'kandydatów', urgent: 'Pilne', loadMore: 'Załaduj więcej', dueSoon: 'Due soon',
+  applicants: 'kandydatów', urgent: 'Pilne', loadMore: 'Załaduj więcej', dueSoon: 'Wkrótce termin',
   open: 'Otwarte', applyNow: 'Aplikuj teraz',
   posted: 'Opublikowano', hired: 'Zatrudniono', applied: 'Aplikacje', completed: 'Zakończono',
   connects: 'Połączenia', buy: 'Kup', balance: 'Saldo', reviews: 'Opinie',
@@ -989,70 +999,71 @@ const pl: Translations = {
   jobTitle: 'Tytuł pracy', category: 'Kategoria', deadline: 'Termin', skills: 'Umiejętności (oddzielone przecinkami)', jobDescPlaceholder: 'Opisz, co trzeba zrobić…', budgetPlaceholder: 'np. 50', skillsPlaceholder: 'np. React, Node.js', attachPhoto: 'Dodaj zdjęcie', costOneConnect: 'Koszt: 1 connect', applyCostLabel: 'Koszt aplikacji', notEnoughConnects: 'Za mało connectów', titleRequired: 'Tytuł jest wymagany', descRequired: 'Opis jest wymagany', budgetMin: 'Budżet ≥ 1 Pi', jobPosted: 'Praca opublikowana!', saved: 'Zapisano', savedJobs: 'Zapisane prace',
   submitWork: 'Wyślij pracę', workSubmitted: 'Wysłano — oczekuje na sprawdzenie',
   youPay: 'Płacisz', youReceive: 'Otrzymasz',
-  appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…',
-  description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
+  appTagline: 'Freelancerski marketplace w sieci Pi', wakingServer: 'Budzenie serwera…', writeProposalFirst: 'Najpierw napisz propozycję', applicationSent: 'Aplikacja wysłana! ✅', applicationSentChat: 'Aplikacja wysłana! Otwieram czat…', paymentCancelled: 'Płatność anulowana', applicationDeclined: 'Aplikacja odrzucona', proposalPlaceholder: 'Opisz swoje podejście, terminy i dlaczego to Ty jesteś najlepszym wyborem…', shareToVisibility: 'Udostępnij ogłoszenie, aby zwiększyć zasięg', details: 'Szczegóły', applicantsTab: 'Kandydaci', viewApplicants: 'Zobacz kandydatów', backToJobs: 'Wróć do ofert', decline: 'Odrzuć', hire: 'Zatrudnij', hiring: 'Zatrudnianie…', jobStarted: 'Praca rozpoczęta! 🚀', escrowCreated: 'Escrow utworzony — praca rozpoczęta 🚀', paymentFailedMsg: 'Płatność nieudana', skipForNow: 'Pomiń na razie', percentagesSum100: 'Procenty muszą sumować się do 100%', allMilestonesTitle: 'Wszystkie kamienie milowe wymagają tytułu', fundsReleased: 'Środki wypłacone! 🎉', escrowCancelledRefunded: 'Escrow anulowany, środki zwrócone.', disputeRaisedMsg: 'Spór zgłoszony — admin rozpatrzy.', completeJobToSeeEscrow: 'Ukończ pracę, aby zobaczyć aktywność escrow', adminWillReview: 'Admin rozpatrzy i rozstrzygnie escrow.', releaseAll: 'Wypłać wszystko', dispute: 'Spór', submitDispute: 'Zgłoś spór', active: 'Aktywne', history: 'Historia', edit: 'Edytuj', applyToStartChatting: 'Aplikuj na ofertę, aby rozpocząć czat', fileMax5mb: 'Plik musi być mniejszy niż 5 MB', sayHello: 'Przywitaj się, aby rozpocząć rozmowę!', messagePlaceholder: 'Wiadomość…', failedOpenAttachment: 'Nie udało się otworzyć załącznika', live: 'Online', connecting: 'Łączenie…', imageFilesOnly: 'Tylko obrazy', imageMax5mb: 'Obraz musi być mniejszy niż 5 MB', titlePlaceholder: 'np. Zbuduj dApp na Pi Network', addToHomeScreen: 'Otwórz w Pi Browser i użyj „Dodaj do ekranu głównego”', cacheCleared: 'Pamięć podręczna wyczyszczona', sending: 'wysyłanie…', alreadyApplied: 'Już aplikowałeś na tę ofertę', failedToApply: 'Nie udało się aplikować', collapse: 'Zwiń', waitingFunding: 'Oczekiwanie na płatność zasilającą escrow', noActiveEscrows: 'Brak aktywnych escrow', noHistoryYet: 'Brak historii', escrowFundedFreelancerHint: 'Środki są zablokowane w escrow. Klient wypłaci je po akceptacji pracy — prześlij ją na stronie oferty.',
+  description: 'Opis', noJobs: 'Brak prac', noEscrows: 'Brak escrow', jobDeleted: 'Praca usunięta', refunded: 'Zwrócono', releasedToFreelancer: 'Wypłacono freelancerowi', signUps: 'Rejestracje', userRoles: 'Role użytkowników', noAnalyticsData: 'Brak danych analitycznych', recentTransactions: 'Ostatnie transakcje', noEarningsData: 'Brak danych o zarobkach', grantConnects: 'Przyznaj connecty', customAmount: 'Własna kwota', ratingPoor: 'Słabo', ratingFair: 'W porządku', ratingGood: 'Dobrze', ratingGreat: 'Świetnie', ratingExcellent: 'Znakomicie',
+  buyConnects: 'Kup connecty', bestValue: 'Najlepsza oferta', popular: 'Popularny', lightTheme: 'Jasny motyw',
 };
 
 // ─── Thai, Filipino, Dutch, Swedish, Romanian — compact versions ──────────────
-const th: Translations = { ...en,
+const th: Partial<Translations> = { ...en,
   jobs: 'งาน', chat: 'แชท', myJobs: 'งานของฉัน', escrow: 'เอสโครว์', profile: 'โปรไฟล์',
   searchJobs: 'ค้นหางาน...', findWork: 'หางาน', all: 'ทั้งหมด', newest: 'ล่าสุด',
-  noJobsFound: 'ไม่พบงาน', applicants: 'ผู้สมัคร', urgent: 'เร่งด่วน', loadMore: 'โหลดเพิ่ม', dueSoon: 'Due soon',
+  noJobsFound: 'ไม่พบงาน', applicants: 'ผู้สมัคร', urgent: 'เร่งด่วน', loadMore: 'โหลดเพิ่ม', dueSoon: 'ใกล้ถึงกำหนด',
   open: 'เปิด', applyNow: 'สมัครเลย', logout: 'ออกจากระบบ', language: 'ภาษา',
   goodMorning: 'อรุณสวัสดิ์', goodAfternoon: 'สวัสดีตอนบ่าย', goodEvening: 'สวัสดีตอนเย็น',
   darkMode: 'โหมดมืด', cancel: 'ยกเลิก', confirm: 'ยืนยัน', back: 'กลับ', done: 'เสร็จ',
   notifications: 'การแจ้งเตือน', save: 'บันทึก', milestones: 'ขั้นตอน', filters: 'ตัวกรอง',
 };
 
-const tl: Translations = { ...en,
+const tl: Partial<Translations> = { ...en,
   jobs: 'Trabaho', chat: 'Chat', myJobs: 'Aking Trabaho', escrow: 'Escrow', profile: 'Profile',
   searchJobs: 'Maghanap ng trabaho...', findWork: 'Maghanap ng trabaho', all: 'Lahat',
   newest: 'Pinakabago', noJobsFound: 'Walang nahanap na trabaho', applicants: 'mga aplikante',
-  urgent: 'Urgent', loadMore: 'Mag-load ng higit pa', open: 'Bukas', applyNow: 'Mag-apply na', dueSoon: 'Due soon',
+  urgent: 'Urgent', loadMore: 'Mag-load ng higit pa', open: 'Bukas', applyNow: 'Mag-apply na', dueSoon: 'Malapit na ang deadline',
   logout: 'Mag-logout', language: 'Wika', goodMorning: 'Magandang umaga',
   goodAfternoon: 'Magandang hapon', goodEvening: 'Magandang gabi',
   darkMode: 'Dark Mode', cancel: 'Kanselahin', confirm: 'Kumpirmahin', back: 'Bumalik', done: 'Tapos',
   notifications: 'Mga abiso', save: 'I-save', milestones: 'Mga milestone', filters: 'Mga filter',
 };
 
-const nl: Translations = { ...en,
+const nl: Partial<Translations> = { ...en,
   jobs: 'Werk', chat: 'Chat', myJobs: 'Mijn werk', escrow: 'Escrow', profile: 'Profiel',
   searchJobs: 'Werk zoeken...', findWork: 'Werk vinden', all: 'Alle', newest: 'Nieuwste',
   noJobsFound: 'Geen werk gevonden', applicants: 'sollicitanten', urgent: 'Dringend',
-  loadMore: 'Meer laden', open: 'Open', applyNow: 'Nu solliciteren', logout: 'Uitloggen', dueSoon: 'Due soon',
+  loadMore: 'Meer laden', open: 'Open', applyNow: 'Nu solliciteren', logout: 'Uitloggen', dueSoon: 'Bijna deadline',
   language: 'Taal', goodMorning: 'Goedemorgen', goodAfternoon: 'Goedemiddag',
   goodEvening: 'Goedenavond', darkMode: 'Donkere modus',
   cancel: 'Annuleren', confirm: 'Bevestigen', back: 'Terug', done: 'Klaar',
   notifications: 'Meldingen', save: 'Opslaan', milestones: 'Mijlpalen', filters: 'Filters',
 };
 
-const sv: Translations = { ...en,
+const sv: Partial<Translations> = { ...en,
   jobs: 'Jobb', chat: 'Chatt', myJobs: 'Mina jobb', escrow: 'Escrow', profile: 'Profil',
   searchJobs: 'Sök jobb...', findWork: 'Hitta arbete', all: 'Alla', newest: 'Senaste',
   noJobsFound: 'Inga jobb hittades', applicants: 'sökande', urgent: 'Brådskande',
-  loadMore: 'Ladda mer', open: 'Öppen', applyNow: 'Ansök nu', logout: 'Logga ut', dueSoon: 'Due soon',
+  loadMore: 'Ladda mer', open: 'Öppen', applyNow: 'Ansök nu', logout: 'Logga ut', dueSoon: 'Snart deadline',
   language: 'Språk', goodMorning: 'God morgon', goodAfternoon: 'God eftermiddag',
   goodEvening: 'God kväll', darkMode: 'Mörkt läge',
   cancel: 'Avbryt', confirm: 'Bekräfta', back: 'Tillbaka', done: 'Klar',
   notifications: 'Aviseringar', save: 'Spara', milestones: 'Milstolpar', filters: 'Filter',
 };
 
-const ro: Translations = { ...en,
+const ro: Partial<Translations> = { ...en,
   jobs: 'Locuri de muncă', chat: 'Chat', myJobs: 'Locurile mele de muncă', escrow: 'Escrow', profile: 'Profil',
   searchJobs: 'Căutare locuri de muncă...', findWork: 'Găsește muncă', all: 'Toate', newest: 'Cele mai noi',
   noJobsFound: 'Nu s-au găsit locuri de muncă', applicants: 'candidați', urgent: 'Urgent',
-  loadMore: 'Încarcă mai mult', open: 'Deschis', applyNow: 'Aplică acum', logout: 'Deconectare', dueSoon: 'Due soon',
+  loadMore: 'Încarcă mai mult', open: 'Deschis', applyNow: 'Aplică acum', logout: 'Deconectare', dueSoon: 'Scade curând',
   language: 'Limbă', goodMorning: 'Bună dimineața', goodAfternoon: 'Bună ziua',
   goodEvening: 'Bună seara', darkMode: 'Mod întunecat',
   cancel: 'Anulați', confirm: 'Confirmați', back: 'Înapoi', done: 'Gata',
   notifications: 'Notificări', save: 'Salvați', milestones: 'Etape', filters: 'Filtre',
 };
 
-const bn: Translations = { ...en,
+const bn: Partial<Translations> = { ...en,
   jobs: 'চাকরি', chat: 'চ্যাট', myJobs: 'আমার চাকরি', escrow: 'এস্ক্রো', profile: 'প্রোফাইল',
   searchJobs: 'চাকরি খুঁজুন...', findWork: 'কাজ খুঁজুন', all: 'সব', newest: 'সর্বশেষ',
   noJobsFound: 'কোনো চাকরি পাওয়া যায়নি', applicants: 'আবেদনকারী', urgent: 'জরুরি',
-  loadMore: 'আরো লোড করুন', open: 'খোলা', applyNow: 'এখনই আবেদন করুন', logout: 'লগআউট', dueSoon: 'Due soon',
+  loadMore: 'আরো লোড করুন', open: 'খোলা', applyNow: 'এখনই আবেদন করুন', logout: 'লগআউট', dueSoon: 'শীঘ্রই শেষ',
   language: 'ভাষা', goodMorning: 'শুভ সকাল', goodAfternoon: 'শুভ অপরাহ্ন',
   goodEvening: 'শুভ সন্ধ্যা', darkMode: 'ডার্ক মোড',
   cancel: 'বাতিল', confirm: 'নিশ্চিত', back: 'পিছনে', done: 'সম্পন্ন',
@@ -1089,9 +1100,14 @@ export const LANGUAGES: { code: LangCode; label: string; flag: string; rtl?: boo
   { code: 'ro', label: 'Română',             flag: '🇷🇴' },
 ];
 
-const TRANSLATIONS: Record<LangCode, Translations> = {
+// Every dictionary falls back to English for keys it doesn't define, so a
+// partially-translated locale can never render undefined for a newer key.
+const PARTIAL_TRANSLATIONS: Record<LangCode, Partial<Translations>> = {
   en, ru, uk, de, fr, es, pt, it, tr, ar, hi, zh, ja, ko, vi, id, pl, th, tl, nl, sv, ro, bn,
 };
+const TRANSLATIONS = Object.fromEntries(
+  (Object.keys(PARTIAL_TRANSLATIONS) as LangCode[]).map(code => [code, { ...en, ...PARTIAL_TRANSLATIONS[code] }])
+) as Record<LangCode, Translations>;
 
 const RTL_LANGS = new Set<LangCode>(['ar']);
 
@@ -1251,6 +1267,32 @@ export function translateError(msg: any): string {
 
 export function isRTL(): boolean {
   return RTL_LANGS.has(getLang());
+}
+
+// ── Pluralization ────────────────────────────────────────────────────────────
+// Slavic three-form plural: 1 работа / 2 работы / 5 работ.
+function slavicPlural(n: number, one: string, few: string, many: string): string {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+export function jobsLabel(n: number): string {
+  const l = getLang();
+  if (l === 'ru') return slavicPlural(n, 'работа', 'работы', 'работ');
+  if (l === 'uk') return slavicPlural(n, 'робота', 'роботи', 'робіт');
+  if (l === 'pl') return slavicPlural(n, 'praca', 'prace', 'prac');
+  if (l === 'en') return n === 1 ? 'job' : 'jobs';
+  return t().jobs.toLowerCase();
+}
+
+export function connectsLabel(n: number): string {
+  const l = getLang();
+  if (l === 'ru') return slavicPlural(n, 'коннект', 'коннекта', 'коннектов');
+  if (l === 'uk') return slavicPlural(n, 'конект', 'конекти', 'конектів');
+  if (l === 'en') return n === 1 ? 'connect' : 'connects';
+  return t().connects.toLowerCase();
 }
 
 // Apply direction on load

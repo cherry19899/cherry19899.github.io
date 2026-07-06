@@ -5,7 +5,7 @@ import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
 import { CONNECT_PACKAGES } from '../lib/constants';
-import { t, currentLang, setLang, LANGUAGES } from '../lib/i18n';
+import { t, currentLang, setLang, LANGUAGES, connectsLabel } from '../lib/i18n';
 import { isDark, toggleTheme } from '../lib/theme';
 import BadgeChip from '../components/BadgeChip';
 
@@ -60,13 +60,13 @@ export default function ProfilePage() {
     {
       icon: SendIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
       label: tr.customOffers,
-      right: <span className="text-emerald-500 text-sm font-semibold">View →</span>,
+      right: <span className="text-emerald-500 text-sm font-semibold">{tr.view} →</span>,
       onClick: () => nav('/my-jobs?tab=offers'),
     },
     {
       icon: SunIcon, bg: 'bg-amber-100', ic: 'text-amber-600',
       label: tr.lightMode,
-      sub: isDark() ? 'Тёмная тема' : 'Светлая тема',
+      sub: isDark() ? tr.darkMode : tr.lightTheme,
       right: <Toggle on={!isDark()} onChange={() => toggleTheme()} />,
     },
     {
@@ -271,7 +271,7 @@ export default function ProfilePage() {
           >
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mt-4 mb-4" />
             <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center mb-4 px-4">
-              {tr.buyConnects || 'Buy Connects'}
+              {tr.buyConnects}
             </h3>
             <div className="px-4 space-y-3">
               {CONNECT_PACKAGES.map((pkg, idx) => (
@@ -282,13 +282,15 @@ export default function ProfilePage() {
                   className="w-full flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors border border-gray-100 dark:border-slate-600 disabled:opacity-50"
                 >
                   <div className="text-left">
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{pkg.connects} Connects</p>
-                    <p className="text-sm text-gray-500 dark:text-slate-400">{tr.bestValue || 'Best value'}</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">{pkg.connects} {connectsLabel(pkg.connects)}</p>
+                    {pkg.connects === 100 && (
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{tr.bestValue}</p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-emerald-600">{pkg.price}π</p>
                     {pkg.connects === 100 && (
-                      <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{tr.popular || 'Popular'}</span>
+                      <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{tr.popular}</span>
                     )}
                   </div>
                 </button>
@@ -298,7 +300,7 @@ export default function ProfilePage() {
               onClick={() => setConnectsModal(false)}
               className="w-full mt-4 mx-4 px-4 py-3 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-white"
             >
-              {tr.cancel || 'Cancel'}
+              {tr.cancel}
             </button>
           </div>
         </div>,

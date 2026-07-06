@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { t } from '../lib/i18n';
+import { t, connectsLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { createJob } from '../lib/api';
 import { toast } from '../components/Toast';
@@ -122,7 +122,7 @@ export default function PostJobPage() {
         {/* Connects cost */}
         <div className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm ${canAfford ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
           <span className="font-semibold">⚡ {tr.costOneConnect}</span>
-          <span className="text-xs">{myConnects} {tr.connects.toLowerCase()}</span>
+          <span className="text-xs">{myConnects} {connectsLabel(myConnects)}</span>
         </div>
 
         {/* Summary — employer pays the budget when hiring; the 2% platform fee is

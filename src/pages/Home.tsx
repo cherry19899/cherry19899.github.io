@@ -9,7 +9,7 @@ import { useAppCtx } from '../App';
 import { CATEGORIES, CAT_COLORS } from '../lib/constants';
 import { applyCostFor } from '../lib/connects';
 import { getFavorites, isFavorite, toggleFavorite } from '../lib/favorites';
-import { t } from '../lib/i18n';
+import { t, jobsLabel, connectsLabel } from '../lib/i18n';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -618,7 +618,7 @@ export default function HomePage() {
 
         <div className="flex items-center justify-between pb-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-slate-400">{visibleJobs.length} {tr.jobs.toLowerCase()}</span>
+            <span className="text-xs text-gray-500 dark:text-slate-400">{visibleJobs.length} {jobsLabel(visibleJobs.length)}</span>
             <button
               onClick={() => setDueSoon(v => !v)}
               className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-colors ${
@@ -747,7 +747,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
       <div className="flex items-center gap-2 flex-wrap">
         <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
         {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">{tr.urgent}</span>}
-        <span className="text-xs text-gray-400 dark:text-slate-500">⚡ {cost} {tr.connects.toLowerCase()}</span>
+        <span className="text-xs text-gray-400 dark:text-slate-500">⚡ {cost} {connectsLabel(cost)}</span>
       </div>
 
       <div className="flex items-center justify-between text-xs">

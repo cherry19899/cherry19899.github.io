@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { t, currentLang } from '../lib/i18n';
+import { t, currentLang, connectsLabel } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
 } from '../lib/api';
@@ -380,7 +380,7 @@ export default function JobDetailPage() {
                   />
                   {(
                     <p className={`text-xs font-medium flex items-center gap-1 ${myConnects >= applyCost ? 'text-amber-600' : 'text-red-500'}`}>
-                      ⚡ {tr.applyCostLabel}: {applyCost} {tr.connects.toLowerCase()} · {myConnects} {tr.connects.toLowerCase()}
+                      ⚡ {tr.applyCostLabel}: {applyCost} {connectsLabel(applyCost)} · {myConnects} {connectsLabel(myConnects)}
                     </p>
                   )}
                   <div className="flex gap-2">
@@ -401,7 +401,7 @@ export default function JobDetailPage() {
                   onClick={() => setApplyMode(true)}
                   className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 transition-colors"
                 >
-                  {tr.applyNow} · {applyCost} {tr.connects.toLowerCase()}
+                  {tr.applyNow} · {applyCost} {connectsLabel(applyCost)}
                 </button>
               )
             )}
