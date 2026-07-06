@@ -8,7 +8,7 @@ import {
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import RatingModal from '../components/RatingModal';
-import { t } from '../lib/i18n';
+import { t, statusLabel } from '../lib/i18n';
 
 interface Escrow {
   id: number; job_title?: string; amount: number; status: string;
@@ -407,7 +407,7 @@ export default function EscrowPage() {
                     <div className="text-right shrink-0">
                       <p className="text-emerald-500 font-bold">{e.amount} π</p>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusCls}`}>
-                        {STATUS_ICON[e.status]} {e.status}
+                        {STATUS_ICON[e.status]} {statusLabel(e.status)}
                       </span>
                     </div>
                   </div>

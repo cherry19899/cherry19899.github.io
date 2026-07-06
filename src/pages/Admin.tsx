@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { t } from '../lib/i18n';
+import { t, statusLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
@@ -86,12 +86,12 @@ export default function AdminPage() {
   const rev = (stats?.total_revenue || earnings?.summary?.total_earnings || 0).toFixed(2);
 
   const TABS: { key: Tab; label: string }[] = [
-    { key: 'stats',     label: 'Stats' },
-    { key: 'users',     label: `Users${users.length ? ` (${users.length})` : ''}` },
-    { key: 'jobs',      label: `Jobs${jobs.length ? ` (${jobs.length})` : ''}` },
-    { key: 'escrows',   label: `Escrows${escrows.length ? ` (${escrows.length})` : ''}` },
-    { key: 'earnings',  label: 'Earnings' },
-    { key: 'analytics', label: '📊 Analytics' },
+    { key: 'stats',     label: tr.stats },
+    { key: 'users',     label: `${tr.users}${users.length ? ` (${users.length})` : ''}` },
+    { key: 'jobs',      label: `${tr.jobs}${jobs.length ? ` (${jobs.length})` : ''}` },
+    { key: 'escrows',   label: `${tr.escrow}${escrows.length ? ` (${escrows.length})` : ''}` },
+    { key: 'earnings',  label: tr.earnings },
+    { key: 'analytics', label: `📊 ${tr.analytics}` },
   ];
 
   const PIE_COLORS = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
@@ -129,7 +129,7 @@ export default function AdminPage() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder={tab === 'users' ? 'Search users…' : 'Search jobs…'}
+              placeholder={tab === 'users' ? tr.searchUsers : tr.searchJobs}
               className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-slate-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
           </div>
@@ -147,12 +147,12 @@ export default function AdminPage() {
           ) : stats ? (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${rev} π`} label="Revenue" />
-                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(stats.total_escrows ?? 0)} label="Escrows" />
-                <StatCard bg="bg-violet-50" color="text-violet-500" value={String(stats.total_users ?? 0)} label="Users" />
-                <StatCard bg="bg-amber-50" color="text-amber-500" value={String(stats.total_jobs ?? 0)} label="Jobs" />
-                <StatCard bg="bg-orange-50" color="text-orange-500" value={String(stats.active_escrows ?? 0)} label="Active Escrows" />
-                <StatCard bg="bg-cyan-50" color="text-cyan-500" value={String(stats.chats ?? 0)} label="Chats" />
+                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${rev} π`} label={tr.revenue} />
+                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(stats.total_escrows ?? 0)} label={tr.escrow} />
+                <StatCard bg="bg-violet-50" color="text-violet-500" value={String(stats.total_users ?? 0)} label={tr.users} />
+                <StatCard bg="bg-amber-50" color="text-amber-500" value={String(stats.total_jobs ?? 0)} label={tr.jobs} />
+                <StatCard bg="bg-orange-50" color="text-orange-500" value={String(stats.active_escrows ?? 0)} label={tr.activeEscrows} />
+                <StatCard bg="bg-cyan-50" color="text-cyan-500" value={String(stats.chats ?? 0)} label={tr.chat} />
               </div>
               <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3 text-sm">
                 <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">{tr.platformFee}</p>
@@ -173,18 +173,18 @@ export default function AdminPage() {
                       setSavingFee(true);
                       try {
                         await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ key: 'platform_fee_percent', value: Number(feeValue) }) });
-                        toast(`Fee set to ${feeValue}%`, 'success');
+                        toast(`${tr.feeSaved}: ${feeValue}%`, 'success');
                       } catch (e: any) { toast(e.message, 'error'); }
                       finally { setSavingFee(false); }
                     }}
                     disabled={savingFee}
                     className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold disabled:opacity-60"
                   >
-                    {savingFee ? '…' : 'Save'}
+                    {savingFee ? '…' : tr.save}
                   </button>
                 </div>
                 {stats?.platformFeePercent !== undefined && (
-                  <p className="text-xs text-gray-400">Current: {stats.platformFeePercent}%</p>
+                  <p className="text-xs text-gray-400">{tr.current}: {stats.platformFeePercent}%</p>
                 )}
               </div>
             </>
@@ -210,7 +210,7 @@ export default function AdminPage() {
                       {u.rating && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(u.rating))} {parseFloat(u.rating).toFixed(1)}</p>}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${u.is_blocked ? 'bg-red-100 text-red-500' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {u.is_blocked ? 'BLOCKED' : 'Active'}
+                      {u.is_blocked ? tr.blocked.toUpperCase() : tr.active}
                     </span>
                   </div>
 
@@ -223,21 +223,21 @@ export default function AdminPage() {
                             try {
                               const r: any = await apiFetch(`/api/admin/users/${u.id || u.uid}/payout-owed`, { method: 'POST' });
                               setUsers(prev => prev.map(x => (x.id || x.uid) === (u.id || u.uid) ? { ...x, balance_pi: 0 } : x));
-                              toast(`Выплачено ${r.paid}π → @${u.username} (tx ${String(r.txid).slice(0, 8)}…)`, 'success');
+                              toast(`${tr.paidOut} ${r.paid}π → @${u.username} (tx ${String(r.txid).slice(0, 8)}…)`, 'success');
                             } catch (e: any) { toast(e.message, 'error'); }
                             finally { setActing(null); }
                           }}
                           disabled={acting === (u.id || u.uid)}
                           className="flex-1 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold disabled:opacity-60"
                         >
-                          π Выплатить {parseFloat(u.balance_pi).toFixed(2)}
+                          π {tr.payOut} {parseFloat(u.balance_pi).toFixed(2)}
                         </button>
                       )}
                       <button
                         onClick={() => setGrantModal(u)}
                         className="flex-1 py-1.5 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold"
                       >
-                        ⚡ Grant Connects
+                        ⚡ {tr.grantConnects}
                       </button>
                       <button
                         onClick={async () => {
@@ -249,7 +249,7 @@ export default function AdminPage() {
                         }}
                         className="flex-1 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold"
                       >
-                        💬 Написать
+                        💬 {tr.writeMsg}
                       </button>
                       <button
                         onClick={async () => {
@@ -257,14 +257,14 @@ export default function AdminPage() {
                           try {
                             await adminBlockUser(u.id || u.uid, !u.is_blocked);
                             setUsers(prev => prev.map(x => (x.id || x.uid) === (u.id || u.uid) ? { ...x, is_blocked: !u.is_blocked } : x));
-                            toast(u.is_blocked ? 'Unblocked' : 'Blocked', 'success');
+                            toast(u.is_blocked ? tr.unblocked : tr.blocked, 'success');
                           } catch (e: any) { toast(e.message, 'error'); }
                           finally { setActing(null); }
                         }}
                         disabled={acting === (u.id || u.uid)}
                         className={`flex-1 py-1.5 rounded-xl text-xs font-semibold disabled:opacity-60 ${u.is_blocked ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}
                       >
-                        {u.is_blocked ? 'Unblock' : 'Block'}
+                        {u.is_blocked ? tr.unblock : tr.block}
                       </button>
                     </div>
                   )}
@@ -285,11 +285,11 @@ export default function AdminPage() {
                 <div key={j.id} className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{j.title}</p>
-                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">@{j.posted_by_name || j.posted_by || j.client_username} · {j.budget} π · {j.status}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">@{j.posted_by_name || j.posted_by || j.client_username} · {j.budget} π · {statusLabel(j.status)}</p>
                   </div>
                   <button
                     onClick={async () => {
-                      if (!confirm(`Delete "${j.title}"?`)) return;
+                      if (!confirm(`${tr.deleteJobQ} "${j.title}"?`)) return;
                       try { await adminDeleteJob(j.id); setJobs(prev => prev.filter(x => x.id !== j.id)); toast(tr.jobDeleted, 'success'); }
                       catch (e: any) { toast(e.message, 'error'); }
                     }}
@@ -325,12 +325,12 @@ export default function AdminPage() {
                         e.status === 'funded' ? 'bg-emerald-100 text-emerald-600' :
                         e.status === 'disputed' ? 'bg-red-100 text-red-500' :
                         'bg-gray-100 text-gray-500'
-                      }`}>{e.status}</span>
+                      }`}>{statusLabel(e.status)}</span>
                     </div>
                   </div>
                   {e.status === 'disputed' && e.dispute_reason && (
                     <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2">
-                      <p className="text-xs text-amber-700 dark:text-amber-400">⚠️ Причина спора: {e.dispute_reason}</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400">⚠️ {tr.disputeReason}: {e.dispute_reason}</p>
                     </div>
                   )}
                   {(e.status === 'funded' || e.status === 'disputed') && (
@@ -342,7 +342,7 @@ export default function AdminPage() {
                         }}
                         className="flex-1 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-semibold"
                       >
-                        Refund Client
+                        {tr.refundClient}
                       </button>
                       <button
                         onClick={async () => {
@@ -351,7 +351,7 @@ export default function AdminPage() {
                         }}
                         className="flex-1 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold"
                       >
-                        Release Funds
+                        {tr.releaseFunds}
                       </button>
                     </div>
                   )}
@@ -367,9 +367,9 @@ export default function AdminPage() {
             {/* Realtime strip */}
             {realtimeData && (
               <div className="grid grid-cols-3 gap-2 mb-4">
-                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={String(realtimeData.online_now ?? 0)} label="Online now" />
-                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(realtimeData.signups_24h ?? 0)} label="Signups 24h" />
-                <StatCard bg="bg-amber-50" color="text-amber-500" value={String(realtimeData.active_escrows ?? 0)} label="Active escrows" />
+                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={String(realtimeData.online_now ?? 0)} label={tr.onlineNow} />
+                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(realtimeData.signups_24h ?? 0)} label={tr.signups24h} />
+                <StatCard bg="bg-amber-50" color="text-amber-500" value={String(realtimeData.active_escrows ?? 0)} label={tr.activeEscrows} />
               </div>
             )}
 
@@ -409,7 +409,7 @@ export default function AdminPage() {
                 {/* Revenue area chart */}
                 {analytics.revenue?.data?.length > 0 && (
                   <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4">
-                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">Revenue (π)</p>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-3">{tr.revenue} (π)</p>
                     <ResponsiveContainer width="100%" height={160}>
                       <AreaChart data={analytics.revenue.data}>
                         <defs>
@@ -508,10 +508,10 @@ export default function AdminPage() {
           ) : earnings ? (
             <>
               <div className="grid grid-cols-2 gap-3">
-                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${(earnings.summary?.total_earnings || 0).toFixed(2)} π`} label="Total Earnings" />
-                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(earnings.summary?.total_transactions || 0)} label="Transactions" />
-                <StatCard bg="bg-orange-50" color="text-orange-500" value={`${(earnings.summary?.collected || 0).toFixed(2)} π`} label="Collected" />
-                <StatCard bg="bg-purple-50" color="text-purple-500" value={`${(earnings.summary?.pending_volume || 0).toFixed(2)} π`} label="Pending" />
+                <StatCard bg="bg-emerald-50" color="text-emerald-500" value={`${(earnings.summary?.total_earnings || 0).toFixed(2)} π`} label={tr.earnings} />
+                <StatCard bg="bg-blue-50" color="text-blue-500" value={String(earnings.summary?.total_transactions || 0)} label={tr.transactions} />
+                <StatCard bg="bg-orange-50" color="text-orange-500" value={`${(earnings.summary?.collected || 0).toFixed(2)} π`} label={tr.collected} />
+                <StatCard bg="bg-purple-50" color="text-purple-500" value={`${(earnings.summary?.pending_volume || 0).toFixed(2)} π`} label={tr.pendingLabel} />
               </div>
               {earnings.payments?.length > 0 && (
                 <div className="space-y-2">
@@ -535,7 +535,7 @@ export default function AdminPage() {
           <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{tr.grantConnects}</h2>
-            <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">To @{grantModal.username}</p>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mb-4">→ @{grantModal.username}</p>
             <div className="flex gap-2 mb-4">
               {[5, 10, 25, 50].map(n => (
                 <button
@@ -558,13 +558,13 @@ export default function AdminPage() {
               onClick={async () => {
                 try {
                   await adminGrantConnects(grantModal.id || grantModal.uid, Number(grantAmt));
-                  toast(`Granted ${grantAmt} connects to @${grantModal.username}`, 'success');
+                  toast(`${tr.granted}: ${grantAmt} ⚡ → @${grantModal.username}`, 'success');
                   setGrantModal(null);
                 } catch (e: any) { toast(e.message, 'error'); }
               }}
               className="w-full h-12 rounded-full bg-emerald-500 text-white font-semibold"
             >
-              Grant {grantAmt} Connects ⚡
+              {tr.grantConnects} · {grantAmt} ⚡
             </button>
           </div>
         </div>,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { t, currentLang } from '../lib/i18n';
+import { t, currentLang, statusLabel } from '../lib/i18n';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   getMyJobs, getMyJobsAsFreelancer, getMyApplications,
@@ -120,7 +120,7 @@ export default function MyJobsPage() {
         <div className="flex items-center gap-2">
           <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusCls}`}>
-            {(job.status || 'open').replace('_', ' ')}
+            {statusLabel(job.status || 'open')}
           </span>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function MyJobsPage() {
             {a.client_username && (
               <span className="text-xs text-gray-400 dark:text-slate-500">👤 @{a.client_username}</span>
             )}
-            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{a.status}</span>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{statusLabel(a.status)}</span>
           </div>
           {a.message && (
             <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2">{a.message}</p>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { t, currentLang, connectsLabel } from '../lib/i18n';
+import { t, currentLang, connectsLabel, statusLabel } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
 } from '../lib/api';
@@ -362,7 +362,7 @@ export default function JobDetailPage() {
             {/* Already applied: show status instead of the apply button */}
             {!isOwner && job.status === 'open' && myApp && (
               <div className="w-full py-4 rounded-2xl bg-amber-50 text-amber-700 text-sm font-semibold text-center">
-                ✅ {currentLang() === 'ru' ? 'Вы уже откликнулись' : 'You already applied'} · {myApp.status}
+                ✅ {currentLang() === 'ru' ? 'Вы уже откликнулись' : 'You already applied'} · {statusLabel(myApp.status)}
               </div>
             )}
 

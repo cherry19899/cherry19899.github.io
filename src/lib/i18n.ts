@@ -54,6 +54,10 @@ const KEYS = {
   appTagline: '', wakingServer: '', writeProposalFirst: '', applicationSent: '', applicationSentChat: '', paymentCancelled: '', applicationDeclined: '', proposalPlaceholder: '', shareToVisibility: '', details: '', applicantsTab: '', viewApplicants: '', backToJobs: '', decline: '', hire: '', hiring: '', jobStarted: '', escrowCreated: '', paymentFailedMsg: '', skipForNow: '', percentagesSum100: '', allMilestonesTitle: '', fundsReleased: '', escrowCancelledRefunded: '', disputeRaisedMsg: '', completeJobToSeeEscrow: '', adminWillReview: '', releaseAll: '', dispute: '', submitDispute: '', active: '', history: '', edit: '', applyToStartChatting: '', fileMax5mb: '', sayHello: '', messagePlaceholder: '', failedOpenAttachment: '', live: '', connecting: '', imageFilesOnly: '', imageMax5mb: '', titlePlaceholder: '', addToHomeScreen: '', cacheCleared: '', sending: '', alreadyApplied: '', failedToApply: '', collapse: '', waitingFunding: '', noActiveEscrows: '', noHistoryYet: '', escrowFundedFreelancerHint: '',
   description: '', noJobs: '', noEscrows: '', jobDeleted: '', refunded: '', releasedToFreelancer: '', signUps: '', jobsByCategory: '', userRoles: '', noAnalyticsData: '', recentTransactions: '', noEarningsData: '', grantConnects: '', customAmount: '', ratingPoor: '', ratingFair: '', ratingGood: '', ratingGreat: '', ratingExcellent: '',
   buyConnects: '', bestValue: '', popular: '', lightTheme: '',
+  // Admin
+  searchUsers: '', blocked: '', unblocked: '', block: '', unblock: '',
+  writeMsg: '', payOut: '', paidOut: '', deleteJobQ: '', transactions: '',
+  collected: '', pendingLabel: '', granted: '', feeSaved: '', signups24h: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -113,6 +117,9 @@ const en: Translations = {
   appTagline: 'Freelance marketplace on Pi Network', wakingServer: 'Waking up server…', writeProposalFirst: 'Write a proposal first', applicationSent: 'Application sent! ✅', applicationSentChat: 'Application sent! Opening chat…', paymentCancelled: 'Payment cancelled', applicationDeclined: 'Application declined', proposalPlaceholder: 'Describe your approach, timeline, and why you\'re the best fit…', shareToVisibility: 'Share your job to get more visibility', details: 'Details', applicantsTab: 'Applicants', viewApplicants: 'View Applicants', backToJobs: 'Back to Jobs', decline: 'Decline', hire: 'Hire', hiring: 'Hiring', jobStarted: 'Job started! 🚀', escrowCreated: 'Escrow created — job started 🚀', paymentFailedMsg: 'Payment failed', skipForNow: 'Skip for now', percentagesSum100: 'Percentages must sum to 100%', allMilestonesTitle: 'All milestones need a title', fundsReleased: 'Funds released! 🎉', escrowCancelledRefunded: 'Escrow cancelled, funds refunded.', disputeRaisedMsg: 'Dispute raised — admin will review.', completeJobToSeeEscrow: 'Complete a job to see escrow activity', adminWillReview: 'Admin will review and resolve the escrow.', releaseAll: 'Release All', dispute: 'Dispute', submitDispute: 'Submit Dispute', active: 'Active', history: 'History', edit: 'Edit', applyToStartChatting: 'Apply to a job to start chatting', fileMax5mb: 'File must be under 5 MB', sayHello: 'Say hello to start the conversation!', messagePlaceholder: 'Message…', failedOpenAttachment: 'Failed to open attachment', live: 'Live', connecting: 'Connecting…', imageFilesOnly: 'Image files only', imageMax5mb: 'Image must be under 5 MB', titlePlaceholder: 'e.g. Build a Pi Network dApp', addToHomeScreen: 'Open in Pi Browser and use "Add to Home Screen"', cacheCleared: 'Cache cleared', sending: 'sending…', alreadyApplied: 'You already applied to this job', failedToApply: 'Failed to apply', collapse: 'Collapse', waitingFunding: 'Waiting for payment to fund escrow', noActiveEscrows: 'No active escrows', noHistoryYet: 'No history yet', escrowFundedFreelancerHint: 'Funds are locked in escrow. The client releases payment after accepting your work — submit it on the job page.',
   description: 'Description', noJobs: 'No jobs', noEscrows: 'No escrows', jobDeleted: 'Job deleted', refunded: 'Refunded', releasedToFreelancer: 'Released to freelancer', signUps: 'Sign-ups', jobsByCategory: 'Jobs by Category', userRoles: 'User Roles', noAnalyticsData: 'No analytics data', recentTransactions: 'Recent Transactions', noEarningsData: 'No earnings data', grantConnects: 'Grant Connects', customAmount: 'Custom amount', ratingPoor: 'Poor', ratingFair: 'Fair', ratingGood: 'Good', ratingGreat: 'Great', ratingExcellent: 'Excellent',
   buyConnects: 'Buy Connects', bestValue: 'Best value', popular: 'Popular', lightTheme: 'Light theme',
+  searchUsers: 'Search users…', blocked: 'Blocked', unblocked: 'Unblocked', block: 'Block', unblock: 'Unblock',
+  writeMsg: 'Message', payOut: 'Pay out', paidOut: 'Paid out', deleteJobQ: 'Delete', transactions: 'Transactions',
+  collected: 'Collected', pendingLabel: 'Pending', granted: 'Granted', feeSaved: 'Fee saved', signups24h: 'Sign-ups 24h',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
@@ -169,6 +176,9 @@ const ru: Partial<Translations> = {
   appTagline: 'Фриланс-маркетплейс в сети Pi', wakingServer: 'Пробуждаем сервер…', writeProposalFirst: 'Сначала напишите отклик', applicationSent: 'Отклик отправлен! ✅', applicationSentChat: 'Отклик отправлен! Открываю чат…', paymentCancelled: 'Платёж отменён', applicationDeclined: 'Отклик отклонён', proposalPlaceholder: 'Опишите ваш подход, сроки и почему вы подходите…', shareToVisibility: 'Поделитесь вакансией для большего охвата', details: 'Детали', applicantsTab: 'Отклики', viewApplicants: 'Смотреть отклики', backToJobs: 'К работам', decline: 'Отклонить', hire: 'Нанять', hiring: 'Найм…', jobStarted: 'Работа началась! 🚀', escrowCreated: 'Эскроу создан — работа началась 🚀', paymentFailedMsg: 'Ошибка платежа', skipForNow: 'Пропустить', percentagesSum100: 'Проценты должны в сумме давать 100%', allMilestonesTitle: 'У всех этапов должно быть название', fundsReleased: 'Средства выплачены! 🎉', escrowCancelledRefunded: 'Эскроу отменён, средства возвращены.', disputeRaisedMsg: 'Спор открыт — админ рассмотрит.', completeJobToSeeEscrow: 'Завершите работу, чтобы увидеть эскроу', adminWillReview: 'Админ рассмотрит и разрешит эскроу.', releaseAll: 'Выплатить всё', dispute: 'Спор', submitDispute: 'Открыть спор', active: 'Активные', history: 'История', edit: 'Изменить', applyToStartChatting: 'Откликнитесь на работу, чтобы начать чат', fileMax5mb: 'Файл должен быть меньше 5 МБ', sayHello: 'Поздоровайтесь, чтобы начать разговор!', messagePlaceholder: 'Сообщение…', failedOpenAttachment: 'Не удалось открыть вложение', live: 'В сети', connecting: 'Подключение…', imageFilesOnly: 'Только изображения', imageMax5mb: 'Изображение должно быть меньше 5 МБ', titlePlaceholder: 'напр. Разработать dApp на Pi', addToHomeScreen: 'Откройте в Pi Browser и «Добавить на главный экран»', cacheCleared: 'Кэш очищен', sending: 'отправка…', alreadyApplied: 'Вы уже откликнулись на эту вакансию', failedToApply: 'Не удалось откликнуться', collapse: 'Свернуть', waitingFunding: 'Ожидание оплаты для пополнения эскроу', noActiveEscrows: 'Нет активных эскроу', noHistoryYet: 'История пуста', escrowFundedFreelancerHint: 'Средства заморожены в эскроу. Заказчик выплатит их после приёмки работы — сдайте её на странице задачи.',
   description: 'Описание', noJobs: 'Нет работ', noEscrows: 'Нет эскроу', jobDeleted: 'Работа удалена', refunded: 'Возвращено', releasedToFreelancer: 'Выплачено фрилансеру', signUps: 'Регистрации', jobsByCategory: 'Работы по категориям', userRoles: 'Роли пользователей', noAnalyticsData: 'Нет данных аналитики', recentTransactions: 'Последние транзакции', noEarningsData: 'Нет данных о доходах', grantConnects: 'Выдать коннекты', customAmount: 'Своя сумма', ratingPoor: 'Плохо', ratingFair: 'Нормально', ratingGood: 'Хорошо', ratingGreat: 'Отлично', ratingExcellent: 'Превосходно',
   buyConnects: 'Купить коннекты', bestValue: 'Выгоднее всего', popular: 'Популярный', lightTheme: 'Светлая тема',
+  searchUsers: 'Поиск пользователей…', blocked: 'Заблокирован', unblocked: 'Разблокирован', block: 'Заблокировать', unblock: 'Разблокировать',
+  writeMsg: 'Написать', payOut: 'Выплатить', paidOut: 'Выплачено', deleteJobQ: 'Удалить', transactions: 'Транзакции',
+  collected: 'Собрано', pendingLabel: 'В ожидании', granted: 'Выдано', feeSaved: 'Комиссия сохранена', signups24h: 'Регистрации за 24ч',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
@@ -225,6 +235,9 @@ const uk: Partial<Translations> = {
   appTagline: 'Фриланс-маркетплейс у мережі Pi', wakingServer: 'Пробуджуємо сервер…', writeProposalFirst: 'Спершу напишіть відгук', applicationSent: 'Відгук надіслано! ✅', applicationSentChat: 'Відгук надіслано! Відкриваю чат…', paymentCancelled: 'Платіж скасовано', applicationDeclined: 'Відгук відхилено', proposalPlaceholder: 'Опишіть ваш підхід, терміни та чому саме ви…', shareToVisibility: 'Поділіться вакансією для більшого охоплення', details: 'Деталі', applicantsTab: 'Відгуки', viewApplicants: 'Переглянути відгуки', backToJobs: 'До робіт', decline: 'Відхилити', hire: 'Найняти', hiring: 'Наймаємо…', jobStarted: 'Робота почалася! 🚀', escrowCreated: 'Ескроу створено — робота почалася 🚀', paymentFailedMsg: 'Помилка платежу', skipForNow: 'Пропустити', percentagesSum100: 'Відсотки мають у сумі давати 100%', allMilestonesTitle: 'Усі етапи повинні мати назву', fundsReleased: 'Кошти виплачено! 🎉', escrowCancelledRefunded: 'Ескроу скасовано, кошти повернено.', disputeRaisedMsg: 'Спір відкрито — адмін розгляне.', completeJobToSeeEscrow: 'Завершіть роботу, щоб побачити ескроу', adminWillReview: 'Адмін розгляне та вирішить ескроу.', releaseAll: 'Виплатити все', dispute: 'Спір', submitDispute: 'Відкрити спір', active: 'Активні', history: 'Історія', edit: 'Змінити', applyToStartChatting: 'Відгукніться на роботу, щоб почати чат', fileMax5mb: 'Файл має бути менший за 5 МБ', sayHello: 'Привітайтеся, щоб почати розмову!', messagePlaceholder: 'Повідомлення…', failedOpenAttachment: 'Не вдалося відкрити вкладення', live: 'У мережі', connecting: 'Підключення…', imageFilesOnly: 'Лише зображення', imageMax5mb: 'Зображення має бути менше 5 МБ', titlePlaceholder: 'напр. Розробити dApp на Pi', addToHomeScreen: 'Відкрийте в Pi Browser і «Додати на головний екран»', cacheCleared: 'Кеш очищено', sending: 'надсилання…', alreadyApplied: 'Ви вже відгукнулися на цю вакансію', failedToApply: 'Не вдалося відгукнутися', collapse: 'Згорнути', waitingFunding: 'Очікування оплати для поповнення ескроу', noActiveEscrows: 'Немає активних ескроу', noHistoryYet: 'Історія порожня', escrowFundedFreelancerHint: 'Кошти заморожені в ескроу. Замовник виплатить їх після приймання роботи — здайте її на сторінці завдання.',
   description: 'Опис', noJobs: 'Немає робіт', noEscrows: 'Немає ескроу', jobDeleted: 'Роботу видалено', refunded: 'Повернено', releasedToFreelancer: 'Виплачено фрилансеру', signUps: 'Реєстрації', userRoles: 'Ролі користувачів', noAnalyticsData: 'Немає даних аналітики', recentTransactions: 'Останні транзакції', noEarningsData: 'Немає даних про доходи', grantConnects: 'Видати конекти', customAmount: 'Своя сума', ratingPoor: 'Погано', ratingFair: 'Нормально', ratingGood: 'Добре', ratingGreat: 'Чудово', ratingExcellent: 'Відмінно',
   buyConnects: 'Купити конекти', bestValue: 'Найвигідніше', popular: 'Популярний', lightTheme: 'Світла тема',
+  searchUsers: 'Пошук користувачів…', blocked: 'Заблокований', unblocked: 'Розблокований', block: 'Заблокувати', unblock: 'Розблокувати',
+  writeMsg: 'Написати', payOut: 'Виплатити', paidOut: 'Виплачено', deleteJobQ: 'Видалити', transactions: 'Транзакції',
+  collected: 'Зібрано', pendingLabel: 'В очікуванні', granted: 'Видано', feeSaved: 'Комісію збережено', signups24h: 'Реєстрації за 24 год',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
@@ -1293,6 +1306,26 @@ export function connectsLabel(n: number): string {
   if (l === 'uk') return slavicPlural(n, 'конект', 'конекти', 'конектів');
   if (l === 'en') return n === 1 ? 'connect' : 'connects';
   return t().connects.toLowerCase();
+}
+
+// ── Status enum localization ─────────────────────────────────────────────────
+const STATUS_RU: Record<string, string> = {
+  open: 'открыта', in_progress: 'в работе', submitted: 'на проверке', completed: 'завершена',
+  cancelled: 'отменена', pending: 'в ожидании', funded: 'оплачен', disputed: 'спор',
+  released: 'выплачен', refunded: 'возврат', accepted: 'принят', rejected: 'отклонён',
+  withdrawn: 'отозван', hired: 'нанят', active: 'активен', declined: 'отклонено',
+};
+const STATUS_UK: Record<string, string> = {
+  open: 'відкрита', in_progress: 'в роботі', submitted: 'на перевірці', completed: 'завершена',
+  cancelled: 'скасована', pending: 'в очікуванні', funded: 'оплачений', disputed: 'спір',
+  released: 'виплачений', refunded: 'повернення', accepted: 'прийнятий', rejected: 'відхилений',
+  withdrawn: 'відкликаний', hired: 'найнятий', active: 'активний', declined: 'відхилено',
+};
+export function statusLabel(s: string): string {
+  const l = getLang();
+  if (l === 'ru') return STATUS_RU[s] || s;
+  if (l === 'uk') return STATUS_UK[s] || s;
+  return s;
 }
 
 // Apply direction on load
