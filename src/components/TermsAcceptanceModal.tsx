@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { useAppCtx } from '../App';
+import { toast } from './Toast';
 
 export default function TermsAcceptanceModal() {
   const { updateUser } = useAppCtx();
@@ -16,7 +17,8 @@ export default function TermsAcceptanceModal() {
         terms_accepted: true,
         terms_accepted_at: res?.terms_accepted_at || new Date().toISOString(),
       });
-    } catch {
+    } catch (e: any) {
+      toast(e?.message || 'Could not save — check your connection and try again', 'error');
       setSaving(false);
     }
   };
