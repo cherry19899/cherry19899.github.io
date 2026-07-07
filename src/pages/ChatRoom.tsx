@@ -159,7 +159,7 @@ export default function ChatRoomPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col">
       {/* Custom header with back + room info */}
       <div className="sticky top-0 z-40 bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-sm">
         <div className="flex items-center gap-3 px-4 h-14 max-w-lg mx-auto">
@@ -196,7 +196,7 @@ export default function ChatRoomPage() {
         ) : msgs.length === 0 ? (
           <div className="flex flex-col items-center justify-center pt-16 text-center">
             <span className="text-4xl mb-3">👋</span>
-            <p className="text-gray-500 text-sm">{tr.sayHello}</p>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">{tr.sayHello}</p>
           </div>
         ) : (
           msgs.map(m => {
@@ -212,16 +212,16 @@ export default function ChatRoomPage() {
                 )}
                 <div className="max-w-xs space-y-0.5">
                   {!mine && (m.sender_username || m.sender_name || peer?.name) && (
-                    <p className="text-xs text-gray-400 ml-1">@{m.sender_username || m.sender_name || peer?.name}</p>
+                    <p className="text-xs text-gray-400 dark:text-slate-500 ml-1">@{m.sender_username || m.sender_name || peer?.name}</p>
                   )}
                   <div className={`px-4 py-2.5 rounded-2xl text-sm ${
                     mine
                       ? `bg-emerald-500 text-white rounded-br-sm ${m.pending ? 'opacity-60' : ''}`
-                      : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white rounded-bl-sm'
                   }`}>
                     <MessageBody content={m.content} mine={mine} />
                   </div>
-                  <p className={`text-[10px] text-gray-400 ${mine ? 'text-right mr-1' : 'ml-1'}`}>
+                  <p className={`text-[10px] text-gray-400 dark:text-slate-500 ${mine ? 'text-right mr-1' : 'ml-1'}`}>
                     {formatTime(m.created_at)}
                     {mine && m.pending && ' · sending…'}
                   </p>
@@ -234,17 +234,17 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Input bar */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 max-w-lg mx-auto">
+      <div className="fixed bottom-16 left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 px-4 py-3 max-w-lg mx-auto">
         <div className="flex gap-2 items-center">
           <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={handleFileUpload} className="hidden" />
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
             aria-label="Attach file"
-            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 shrink-0 disabled:opacity-40 active:scale-95 transition-transform"
+            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400 shrink-0 disabled:opacity-40 active:scale-95 transition-transform"
           >
             {uploading
-              ? <span className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              ? <span className="w-4 h-4 border-2 border-gray-400 dark:border-slate-500 border-t-transparent rounded-full animate-spin" />
               : <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>}
           </button>
           <input
@@ -253,7 +253,7 @@ export default function ChatRoomPage() {
             onChange={e => setText(e.target.value)}
             onKeyDown={onKey}
             placeholder={tr.messagePlaceholder}
-            className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            className="flex-1 bg-gray-100 dark:bg-slate-700 rounded-full px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300"
           />
           <button
             onClick={send}
@@ -310,7 +310,7 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
     finally { setBusy(false); }
   };
   return (
-    <button onClick={open} disabled={busy} className={`flex items-center gap-1.5 underline break-all text-left ${mine ? 'text-white' : 'text-emerald-600'}`}>
+    <button onClick={open} disabled={busy} className={`flex items-center gap-1.5 underline break-all text-left ${mine ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
       📎 {name}{busy ? ' …' : ''}
     </button>
   );

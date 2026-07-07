@@ -38,7 +38,7 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">{tr.messages}</h2>
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{tr.messages}</h2>
 
       {loading ? (
         <div className="space-y-3">
@@ -49,8 +49,8 @@ export default function ChatPage() {
       ) : rooms.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">💬</span>
-          <p className="font-semibold text-gray-900">{tr.noMessages}</p>
-          <p className="text-sm text-gray-400 mt-1">{tr.applyToStartChatting}</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{tr.noMessages}</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">{tr.applyToStartChatting}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -58,21 +58,21 @@ export default function ChatPage() {
             <button
               key={room.id}
               onClick={() => open(room)}
-              className="w-full bg-white border border-gray-100 rounded-2xl shadow-sm p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
+              className="w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
             >
-              <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-600 overflow-hidden">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-600 dark:text-emerald-400 overflow-hidden">
                 {room.other_user_avatar
                   ? <img src={room.other_user_avatar} className="w-full h-full object-cover" alt="" />
                   : (room.other_user_name || 'U')[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-gray-900 text-sm truncate">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
                     {room.job_title || (room.other_user_name ? `@${room.other_user_name}` : `Chat #${room.id}`)}
                   </p>
-                  <span className="text-xs text-gray-400 shrink-0">{timeAgo(room.last_message_at)}</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{timeAgo(room.last_message_at)}</span>
                 </div>
-                <p className="text-xs text-gray-500 truncate mt-0.5">
+                <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5">
                   {room.other_user_name && `@${room.other_user_name} · `}
                   {room.last_message || tr.noMessages}
                 </p>
