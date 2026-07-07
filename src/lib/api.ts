@@ -81,6 +81,8 @@ export function getToken() {
   return localStorage.getItem('workpro_token') || '';
 }
 
+export const getConfig = () => apiFetch('/api/config');
+
 // ─── Jobs ────────────────────────────────────────────────────────────────────
 
 export const getJobs = (qs = '') => apiFetch(`/api/jobs?${qs}`);

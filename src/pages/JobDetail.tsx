@@ -8,6 +8,7 @@ import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
 import { createPiPayment, shareJob } from '../lib/pi';
 import { applyCostFor } from '../lib/connects';
+import { getConfig } from '../lib/api';
 
 function timeAgo(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
@@ -44,10 +45,17 @@ export default function JobDetailPage() {
   const [hiringId, setHiringId] = useState<number | null>(null);
 
   const [myApp, setMyApp] = useState<any>(null);
+  const [feePercent, setFeePercent] = useState(2);
 
   const isOwner = job && user && job.posted_by === user.uid;
   const myConnects = user?.balance_connects ?? 0;
   const applyCost = applyCostFor(job?.budget);
+
+  useEffect(() => {
+    getConfig().then(c => {
+      if (typeof c?.platform_fee_percent === 'number') setFeePercent(c.platform_fee_percent);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!id || id === 'undefined') { setLoading(false); setJob(null); return; }
@@ -225,7 +233,7 @@ export default function JobDetailPage() {
   );
 
   const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
-  const fee = +(Number(job.budget) * 0.02).toFixed(2);
+  const fee = +(Number(job.budget) * (feePercent / 100)).toFixed(2);
 
   return (
     <div className="flex flex-col min-h-full">
@@ -338,11 +346,11 @@ export default function JobDetailPage() {
               </div>
             )}
 
-            {/* Payment breakdown — employer pays the budget; the 2% platform fee is
+            {/* Payment breakdown — employer pays the budget; the platform fee is
                 deducted from the freelancer's payout (freelancer bears the fee). */}
             <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 mb-5 text-sm space-y-1.5">
               <div className="flex justify-between text-gray-500 dark:text-slate-400"><span>{tr.budget}</span><span className="text-gray-900 dark:text-white font-medium">{Number(job.budget)} π</span></div>
-              <div className="flex justify-between text-gray-400 dark:text-slate-500"><span>{tr.platformFee} (2%)</span><span>−{fee} π</span></div>
+              <div className="flex justify-between text-gray-400 dark:text-slate-500"><span>{tr.platformFee} ({feePercent}%)</span><span>−{fee} π</span></div>
               <div className="border-t border-gray-200 dark:border-slate-700 pt-1.5 flex justify-between font-bold">
                 {isOwner ? (
                   <>

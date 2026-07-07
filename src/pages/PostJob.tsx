@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { t, connectsLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
-import { createJob } from '../lib/api';
+import { createJob, getConfig } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CATEGORIES } from '../lib/constants';
 import { POST_JOB_COST } from '../lib/connects';
@@ -18,6 +18,13 @@ export default function PostJobPage() {
     skills: '', deadline: '', is_urgent: false, image: '',
   });
   const [saving, setSaving] = useState(false);
+  const [feePercent, setFeePercent] = useState(2);
+
+  useEffect(() => {
+    getConfig().then(c => {
+      if (typeof c?.platform_fee_percent === 'number') setFeePercent(c.platform_fee_percent);
+    }).catch(() => {});
+  }, []);
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
 
@@ -32,7 +39,7 @@ export default function PostJobPage() {
   };
 
   const budget = Number(form.budget) || 0;
-  const fee = +(budget * 0.02).toFixed(2);
+  const fee = +(budget * (feePercent / 100)).toFixed(2);
   const total = +(budget + fee).toFixed(2);
 
   const handleSubmit = async () => {
@@ -125,12 +132,12 @@ export default function PostJobPage() {
           <span className="text-xs">{myConnects} {connectsLabel(myConnects)}</span>
         </div>
 
-        {/* Summary — employer pays the budget when hiring; the 2% platform fee is
+        {/* Summary — employer pays the budget when hiring; the platform fee is
             deducted from the freelancer's payout, not added on top. */}
         {budget > 0 && (
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2 text-sm">
             <Row label={tr.budget} value={`${budget} π`} />
-            <Row label={`${tr.platformFee} (2%)`} value={`−${fee} π`} muted />
+            <Row label={`${tr.platformFee} (${feePercent}%)`} value={`−${fee} π`} muted />
             <Row label={`${tr.costOneConnect}`} value={`${POST_JOB_COST}`} muted />
             <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
               <span className="text-gray-900">{tr.youPay}</span>
