@@ -16,6 +16,8 @@ export interface User {
   total_jobs_completed?: number;
   total_jobs_posted?: number;
   is_blocked?: boolean;
+  terms_accepted?: boolean;
+  terms_accepted_at?: string;
 }
 
 export function useAuth() {

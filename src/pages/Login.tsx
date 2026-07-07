@@ -3,6 +3,7 @@ import { t } from '../lib/i18n';
 import { isPiBrowser, piAuthenticate, PI_MODE } from '../lib/pi';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
+import Footer from '../components/Footer';
 
 export default function LoginPage() {
   const tr = t();
@@ -96,6 +97,8 @@ export default function LoginPage() {
             : 'Mainnet · настоящие Pi-платежи'}
         </p>
       </div>
+
+      <Footer />
     </div>
   );
 }

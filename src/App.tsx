@@ -8,6 +8,8 @@ import { useToastFn, ToastContainer } from './components/Toast';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import DebugConsole from './components/DebugConsole';
+import Footer from './components/Footer';
+import TermsAcceptanceModal from './components/TermsAcceptanceModal';
 
 import LoginPage        from './pages/Login';
 import HomePage         from './pages/Home';
@@ -72,6 +74,7 @@ function AppLayout({ back }: { back?: boolean }) {
       <Header back={back} />
       <main className="flex-1 pb-16">
         <Outlet />
+        <Footer />
       </main>
       <BottomNav />
     </div>
@@ -172,6 +175,8 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </div>
+
+      {auth.user && !auth.user.terms_accepted && <TermsAcceptanceModal />}
 
       <ToastContainer toasts={toasts} />
       <DebugConsole />
