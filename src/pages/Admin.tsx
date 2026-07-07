@@ -172,7 +172,8 @@ export default function AdminPage() {
                     onClick={async () => {
                       setSavingFee(true);
                       try {
-                        await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ key: 'platform_fee_percent', value: Number(feeValue) }) });
+                        const res = await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ key: 'platform_fee_percent', value: Number(feeValue) }) });
+                        setStats((prev: any) => ({ ...prev, platformFeePercent: res?.effective?.platform_fee_percent ?? prev?.platformFeePercent }));
                         toast(`${tr.feeSaved}: ${feeValue}%`, 'success');
                       } catch (e: any) { toast(e.message, 'error'); }
                       finally { setSavingFee(false); }
