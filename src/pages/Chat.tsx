@@ -54,11 +54,17 @@ export default function ChatPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {rooms.map(room => (
+          {rooms.map(room => {
+            const unread = (room.unread_count ?? 0) > 0;
+            return (
             <button
               key={room.id}
               onClick={() => open(room)}
-              className="w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
+              className={`w-full border rounded-2xl shadow-sm p-4 flex items-center gap-3 text-left active:scale-[0.99] transition-transform ${
+                unread
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+                  : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700'
+              }`}
             >
               <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 text-lg font-bold text-emerald-600 dark:text-emerald-400 overflow-hidden">
                 {room.other_user_avatar
@@ -72,18 +78,23 @@ export default function ChatPage() {
                   </p>
                   <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{timeAgo(room.last_message_at)}</span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5">
+                <p className={`text-xs truncate mt-0.5 ${
+                  unread
+                    ? 'font-semibold text-gray-800 dark:text-slate-100'
+                    : 'text-gray-500 dark:text-slate-400'
+                }`}>
                   {room.other_user_name && `@${room.other_user_name} · `}
                   {room.last_message || tr.noMessages}
                 </p>
               </div>
-              {(room.unread_count ?? 0) > 0 && (
+              {unread && (
                 <span className="shrink-0 min-w-5 h-5 px-1 bg-emerald-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
                   {room.unread_count}
                 </span>
               )}
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
