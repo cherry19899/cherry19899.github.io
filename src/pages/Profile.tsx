@@ -26,7 +26,7 @@ export default function ProfilePage() {
     if (!isPiBrowser()) { setPiModal(true); return; }
     setBuying(true);
     try {
-      createPiPayment(price, `Buy ${qty} Connects`, { type: 'buy_connects', qty }, {
+      createPiPayment(price, `Buy ${qty} Connects`, { type: 'connects', qty }, {
         onCompleted: () => {
           updateUser({ balance_connects: connects + qty });
           toast(currentLang() === 'ru' ? `Начислено ${qty} коннектов!` : `Added ${qty} connects!`, 'success');

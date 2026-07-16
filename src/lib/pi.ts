@@ -132,7 +132,13 @@ function startPayment(
       onIncompletePaymentFound: (payment: any) => { reportIncompletePayment(payment); },
       onReadyForServerApproval: async (paymentId: string) => {
         try {
-          await apiFetch(`/api/payments/${paymentId}/approve`, { method: 'POST' });
+          // Send metadata so the backend can store payment type at approve time.
+          // Without this, the backend has no metadata and falls back to type='connects'
+          // for ALL payments — hire payments accidentally credit connects to the employer.
+          await apiFetch(`/api/payments/${paymentId}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({ metadata }),
+          });
           if (callbacks.onApproval) await callbacks.onApproval(paymentId);
         } catch {}
       },
