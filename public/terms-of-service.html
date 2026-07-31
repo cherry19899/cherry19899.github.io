@@ -48,7 +48,7 @@ a{color:#10b981}
 </ul>
 
 <h2>5. Payments and Fees</h2>
-<p>All transactions are conducted in Pi cryptocurrency. Work Pro charges a platform fee of <strong><span id="fee-pct">3</span>%</strong> on completed transactions. Additionally, the app developer may charge a developer fee of up to 20% depending on the service type. The exact fees that apply are displayed in the app before you commit to a transaction, and the rate shown at that moment is the rate that applies. Fees may be changed prospectively and are non-refundable once a transaction completes. Payments are processed through the Pi Network payment platform.</p>
+<p>All transactions are conducted in Pi cryptocurrency. Work Pro charges a platform fee of <strong>between 0% and 20%</strong> on completed transactions<span id="fee-now"></span>. Additionally, the app developer may charge a developer fee of up to 20% depending on the service type. The exact fees that apply are displayed in the app before you commit to a transaction, and the rate shown at that moment is the rate that applies. Fees may be changed prospectively within this range and are non-refundable once a transaction completes. Payments are processed through the Pi Network payment platform.</p>
 <p><strong>You are solely responsible for all taxes</strong> arising from your use of Work Pro, including income tax, VAT, and any crypto-asset reporting obligation in your jurisdiction. We do not withhold, remit, or report on your behalf.</p>
 
 <h3>5.1 Connects</h3>
@@ -131,13 +131,15 @@ a{color:#10b981}
 <p style="margin-top:32px;color:#64748b;font-size:14px">© 2026 Work Pro. All rights reserved.</p>
 
 <script>
-// Show the platform fee the app actually charges, so these Terms can never
-// contradict the live admin-configured rate. Falls back to the static text.
+// The contractual commitment is the 0–20% range, which is always true and can
+// never go stale. This only appends the rate in force right now, as a courtesy;
+// if the API is unreachable the sentence still reads correctly without it.
 fetch('https://workpro-api.onrender.com/api/config')
   .then(function (r) { return r.ok ? r.json() : null; })
   .then(function (c) {
     if (c && typeof c.platform_fee_percent === 'number') {
-      document.getElementById('fee-pct').textContent = String(c.platform_fee_percent);
+      document.getElementById('fee-now').textContent =
+        ' (currently ' + c.platform_fee_percent + '%)';
     }
   })
   .catch(function () {});
