@@ -1,4 +1,5 @@
 import { apiFetch, saveAuth } from './api';
+import { APP_URL } from './constants';
 
 declare global {
   interface Window { Pi?: any; }
@@ -23,7 +24,7 @@ export function ensurePiInit() {
 
 // Share a job. Uses the Web Share API (Pi SDK v2.0 has no share method).
 export async function shareJob(jobId: string, title: string) {
-  const url = `https://cherry19899.github.io/#/job/${jobId}`;
+  const url = `${APP_URL}/#/job/${jobId}`;
   try {
     if (navigator.share) {
       await navigator.share({ title, text: title, url });

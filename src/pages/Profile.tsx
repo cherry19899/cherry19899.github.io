@@ -4,7 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
-import { CONNECT_PACKAGES } from '../lib/constants';
+import { adsSupported, showRewardedAd } from '../lib/ads';
+import { CONNECT_PACKAGES, APP_URL } from '../lib/constants';
+import { apiFetch } from '../lib/api';
 import { t, currentLang, setLang, LANGUAGES, connectsLabel } from '../lib/i18n';
 import { isDark, toggleTheme } from '../lib/theme';
 import BadgeChip from '../components/BadgeChip';
@@ -18,9 +20,67 @@ export default function ProfilePage() {
   const [piModal, setPiModal] = useState(false);
   const [connectsModal, setConnectsModal] = useState(false);
   const [dark, setDark] = useState(isDark());
+  const [canWatchAd, setCanWatchAd] = useState(false);
+  const [watchingAd, setWatchingAd] = useState(false);
+
+  // Only offer the ad if this Pi Browser actually has the ad network; older
+  // builds don't, and a dead button is worse than no button.
+  useEffect(() => { adsSupported().then(setCanWatchAd).catch(() => {}); }, []);
+
+  // The adId is redeemed server-side — the client never decides the reward.
+  const watchAdForConnect = async () => {
+    setWatchingAd(true);
+    try {
+      const adId = await showRewardedAd();
+      if (!adId) { toast(tr.adNotAvailable, 'info'); return; }
+      const r = await apiFetch('/api/ads/reward', { method: 'POST', body: JSON.stringify({ adId }) });
+      updateUser({ balance_connects: r?.balance_connects ?? connects + (r?.connects_added ?? 1) });
+      toast(tr.adRewarded.replace('{n}', String(r?.connects_added ?? 1)), 'success');
+      setConnectsModal(false);
+    } catch (e: any) {
+      toast(e?.message || tr.adNotAvailable, 'error');
+    } finally { setWatchingAd(false); }
+  };
 
   const connects = user?.balance_connects ?? 0;
   const initial = (user?.username || '?')[0].toUpperCase();
+
+  // navigator.clipboard needs a user gesture and is refused in some WebViews;
+  // the textarea+execCommand path is what still works there.
+  const copyText = async (text: string) => {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch { return false; }
+  };
+
+  // PWA install is deliberately NOT offered: Work Pro only runs inside Pi
+  // Browser (auth needs window.Pi, which no other browser injects), so an
+  // installed Chrome icon would open a login screen that can never sign in.
+  // This row invites people instead — the share text tells the recipient to
+  // open the link in Pi Browser, which is the only place it works.
+  const shareApp = async () => {
+    const text = `${tr.shareText}\n\n${tr.shareOpenIn} ${APP_URL}`;
+    if (navigator.share) {
+      try {
+        // Deliberately no `url` field: share targets append it to `text`, and
+        // `text` already ends with the link, so passing both sends it twice.
+        await navigator.share({ title: 'Work Pro', text });
+        return;
+      } catch (e: any) {
+        if (e?.name === 'AbortError') return;   // user dismissed the sheet
+      }
+    }
+    const copied = await copyText(text);
+    toast(copied ? tr.shareCopied : tr.shareFailed, copied ? 'success' : 'error');
+  };
 
   const buyConnects = (qty: number, price: number) => {
     if (!isPiBrowser()) { setPiModal(true); return; }
@@ -29,7 +89,7 @@ export default function ProfilePage() {
       createPiPayment(price, `Buy ${qty} Connects`, { type: 'connects', qty }, {
         onCompleted: () => {
           updateUser({ balance_connects: connects + qty });
-          toast(currentLang() === 'ru' ? `Начислено ${qty} коннектов!` : `Added ${qty} connects!`, 'success');
+          toast(t().connectsAdded.replace('{n}', String(qty)), 'success');
           setBuying(false);
         },
         onCancelled: () => setBuying(false),
@@ -88,15 +148,9 @@ export default function ProfilePage() {
       onClick: () => nav('/my-jobs?tab=applied'),
     },
     {
-      icon: DownloadIcon, bg: 'bg-teal-100', ic: 'text-teal-600',
-      label: tr.install, sub: tr.installSub, right: <Chevron />,
-      onClick: () => {
-        if (window.__pwaInstallPrompt) {
-          window.__pwaInstallPrompt.prompt();
-        } else {
-          toast(tr.addToHomeScreen, 'info');
-        }
-      },
+      icon: ShareIcon, bg: 'bg-teal-100', ic: 'text-teal-600',
+      label: tr.shareApp, sub: tr.shareAppSub, right: <Chevron />,
+      onClick: shareApp,
     },
     {
       icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
@@ -141,7 +195,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 bg-emerald-500 rounded-full" />
               <span className="text-sm text-gray-600 dark:text-slate-400">
-                {user.role === 'admin' ? 'Админ' : 'Фрилансер'} · {availability ? tr.available : tr.notAvailableShort}
+                {user.role === 'admin' ? tr.roleAdmin : tr.roleFreelancer} · {availability ? tr.available : tr.notAvailableShort}
               </span>
             </div>
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -296,6 +350,19 @@ export default function ProfilePage() {
                   </div>
                 </button>
               ))}
+              {canWatchAd && (
+                <button
+                  onClick={watchAdForConnect}
+                  disabled={watchingAd}
+                  className="w-full flex items-center justify-between p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors border border-amber-200 dark:border-amber-800 disabled:opacity-50"
+                >
+                  <div className="text-left">
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">🎬 {tr.watchAd}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{tr.watchAdSub}</p>
+                  </div>
+                  <p className="text-xl font-bold text-amber-600">{watchingAd ? '⏳' : tr.free}</p>
+                </button>
+              )}
             </div>
             <button
               onClick={() => setConnectsModal(false)}
@@ -362,8 +429,8 @@ function BriefcaseIcon({ className }: { className?: string }) {
 function ListIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
 }
-function DownloadIcon({ className }: { className?: string }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+function ShareIcon({ className }: { className?: string }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>;
 }
 function HelpIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;

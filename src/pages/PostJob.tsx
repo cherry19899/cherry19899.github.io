@@ -18,7 +18,7 @@ export default function PostJobPage() {
     skills: '', deadline: '', is_urgent: false, image: '',
   });
   const [saving, setSaving] = useState(false);
-  const [feePercent, setFeePercent] = useState(2);
+  const [feePercent, setFeePercent] = useState(3);
 
   useEffect(() => {
     getConfig().then(c => {

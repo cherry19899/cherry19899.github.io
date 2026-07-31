@@ -29,7 +29,7 @@ export default function AdminPage() {
   const [earnings, setEarnings] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
-  const [feeValue, setFeeValue] = useState('2');
+  const [feeValue, setFeeValue] = useState('3');
   const [savingFee, setSavingFee] = useState(false);
   const [grantModal, setGrantModal] = useState<any>(null);
   const [grantAmt, setGrantAmt] = useState('10');
@@ -73,6 +73,12 @@ export default function AdminPage() {
   }, [tab, analyticsDays]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (stats?.platformFeePercent !== undefined && stats.platformFeePercent !== null) {
+      setFeeValue(String(stats.platformFeePercent));
+    }
+  }, [stats?.platformFeePercent]);
 
   if (user?.role !== 'admin') {
     return (
@@ -165,16 +171,25 @@ export default function AdminPage() {
                     value={feeValue}
                     onChange={e => setFeeValue(e.target.value)}
                     className="flex-1 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400"
-                    placeholder="2"
+                    placeholder="3"
                   />
                   <span className="text-gray-500">%</span>
                   <button
                     onClick={async () => {
+                      const pct = Number(feeValue);
+                      if (!Number.isFinite(pct) || pct < 0 || pct > 20) {
+                        toast(tr.feeRange, 'error');
+                        return;
+                      }
                       setSavingFee(true);
                       try {
-                        const res = await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ key: 'platform_fee_percent', value: Number(feeValue) }) });
-                        setStats((prev: any) => ({ ...prev, platformFeePercent: res?.effective?.platform_fee_percent ?? prev?.platformFeePercent }));
-                        toast(`${tr.feeSaved}: ${feeValue}%`, 'success');
+                        const res = await apiFetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify({ key: 'platform_fee_percent', value: pct }) });
+                        // Trust the server's effective value over what was typed —
+                        // it is the number the app will actually charge.
+                        const saved = res?.effective?.platform_fee_percent ?? pct;
+                        setStats((prev: any) => ({ ...prev, platformFeePercent: saved }));
+                        setFeeValue(String(saved));
+                        toast(`${tr.feeSaved}: ${saved}%`, 'success');
                       } catch (e: any) { toast(e.message, 'error'); }
                       finally { setSavingFee(false); }
                     }}
@@ -184,9 +199,10 @@ export default function AdminPage() {
                     {savingFee ? '…' : tr.save}
                   </button>
                 </div>
-                {stats?.platformFeePercent !== undefined && (
-                  <p className="text-xs text-gray-400">{tr.current}: {stats.platformFeePercent}%</p>
-                )}
+                <p className="text-xs text-gray-400">
+                  {stats?.platformFeePercent !== undefined && `${tr.current}: ${stats.platformFeePercent}% · `}
+                  {tr.feeRange}
+                </p>
               </div>
             </>
           ) : <p className="text-center text-gray-400 py-10">{tr.noData}</p>

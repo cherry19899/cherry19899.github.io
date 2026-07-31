@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { currentLang } from '../lib/i18n';
+import { t } from '../lib/i18n';
 import { getStoredUser } from '../lib/api';
 import {
   getPortfolio, savePortfolio, addPortfolioItem, deletePortfolioItem,
@@ -17,7 +17,7 @@ interface PortfolioItem {
 }
 
 export default function PortfolioPage() {
-  const ru = currentLang() === 'ru';
+  const tr = t();
   const { id } = useParams();
   const me = getStoredUser();
   const userId = id || me?.uid || '';
@@ -53,7 +53,7 @@ export default function PortfolioPage() {
     setSaving(true);
     try {
       await savePortfolio(hForm);
-      toast(ru ? 'Портфолио сохранено ✅' : 'Portfolio saved ✅', 'success');
+      toast(tr.portfolioSaved, 'success');
       setEditHeader(false);
       load();
     } catch (e: any) { toast(e.message, 'error'); }
@@ -61,11 +61,11 @@ export default function PortfolioPage() {
   };
 
   const addItem = async () => {
-    if (!iForm.title.trim()) { toast(ru ? 'Укажите название' : 'Title required', 'error'); return; }
+    if (!iForm.title.trim()) { toast(tr.titleRequiredShort, 'error'); return; }
     setSaving(true);
     try {
       await addPortfolioItem(iForm);
-      toast(ru ? 'Работа добавлена ✅' : 'Item added ✅', 'success');
+      toast(tr.itemAdded, 'success');
       setIForm({ title: '', description: '', image_url: '', tags: '' });
       setShowAdd(false);
       load();
@@ -77,7 +77,7 @@ export default function PortfolioPage() {
     try {
       await deletePortfolioItem(itemId);
       setItems(prev => prev.filter(i => i.id !== itemId));
-      toast(ru ? 'Удалено' : 'Deleted', 'info');
+      toast(tr.deleted, 'info');
     } catch (e: any) { toast(e.message, 'error'); }
   };
 
@@ -98,18 +98,18 @@ export default function PortfolioPage() {
         <div className="flex items-start justify-between gap-2">
           <div>
             <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-              🖼 {ru ? 'Портфолио' : 'Portfolio'}{owner ? ` — @${owner.username}` : ''}
+              🖼 {tr.portfolio}{owner ? ` — @${owner.username}` : ''}
             </h1>
             {header.headline
               ? <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1">{header.headline}</p>
-              : isOwner && <p className="text-xs text-gray-400 mt-1">{ru ? 'Добавьте заголовок — его видят заказчики' : 'Add a headline — clients see it'}</p>}
+              : isOwner && <p className="text-xs text-gray-400 mt-1">{tr.addHeadlineHint}</p>}
           </div>
           {isOwner && (
             <button
               onClick={() => { setHForm(header); setEditHeader(!editHeader); }}
               className="text-xs font-semibold text-emerald-500 shrink-0 py-1 px-2"
             >
-              {editHeader ? (ru ? 'Отмена' : 'Cancel') : '✏️ ' + (ru ? 'Изменить' : 'Edit')}
+              {editHeader ? tr.cancel : '✏️ ' + tr.edit}
             </button>
           )}
         </div>
@@ -120,29 +120,29 @@ export default function PortfolioPage() {
           <div className="flex flex-wrap gap-2 pt-1">
             {!!header.experience_years && (
               <span className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2.5 py-1 rounded-full">
-                💼 {header.experience_years} {ru ? 'лет опыта' : 'yrs exp'}
+                💼 {header.experience_years} {tr.yrsExp}
               </span>
             )}
-            {header.website && <a href={header.website} target="_blank" rel="noreferrer" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-500 px-2.5 py-1 rounded-full">🌐 {ru ? 'Сайт' : 'Website'}</a>}
+            {header.website && <a href={header.website} target="_blank" rel="noreferrer" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-500 px-2.5 py-1 rounded-full">🌐 {tr.website}</a>}
             {header.github && <a href={header.github} target="_blank" rel="noreferrer" className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2.5 py-1 rounded-full">GitHub</a>}
           </div>
         ) : null}
 
         {editHeader && (
           <div className="space-y-2 pt-2">
-            <input className={inputCls} placeholder={ru ? 'Заголовок (например: Веб-разработчик)' : 'Headline (e.g. Web developer)'}
+            <input className={inputCls} placeholder={tr.phHeadline}
               value={hForm.headline || ''} onChange={e => setHForm({ ...hForm, headline: e.target.value })} maxLength={200} />
-            <textarea className={inputCls} rows={3} placeholder={ru ? 'О себе и своих навыках' : 'About you and your skills'}
+            <textarea className={inputCls} rows={3} placeholder={tr.phAboutYou}
               value={hForm.summary || ''} onChange={e => setHForm({ ...hForm, summary: e.target.value })} maxLength={2000} />
-            <input className={inputCls} type="number" min={0} max={80} placeholder={ru ? 'Лет опыта' : 'Years of experience'}
+            <input className={inputCls} type="number" min={0} max={80} placeholder={tr.phYearsExp}
               value={hForm.experience_years || ''} onChange={e => setHForm({ ...hForm, experience_years: parseInt(e.target.value) || 0 })} />
-            <input className={inputCls} placeholder={ru ? 'Сайт (https://…)' : 'Website (https://…)'}
+            <input className={inputCls} placeholder={tr.phWebsite}
               value={hForm.website || ''} onChange={e => setHForm({ ...hForm, website: e.target.value })} />
             <input className={inputCls} placeholder="GitHub (https://github.com/…)"
               value={hForm.github || ''} onChange={e => setHForm({ ...hForm, github: e.target.value })} />
             <button onClick={saveHeader} disabled={saving}
               className="w-full py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-60">
-              {saving ? '⏳' : (ru ? 'Сохранить' : 'Save')}
+              {saving ? '⏳' : tr.save}
             </button>
           </div>
         )}
@@ -151,28 +151,28 @@ export default function PortfolioPage() {
       {/* Items */}
       <div className="flex items-center justify-between">
         <h2 className="font-bold text-gray-900 dark:text-white text-sm">
-          {ru ? 'Работы' : 'Work'} ({items.length})
+          {tr.workSection} ({items.length})
         </h2>
         {isOwner && (
           <button onClick={() => setShowAdd(!showAdd)} className="text-xs font-bold text-emerald-500 py-1 px-2">
-            {showAdd ? (ru ? 'Отмена' : 'Cancel') : '+ ' + (ru ? 'Добавить работу' : 'Add work')}
+            {showAdd ? tr.cancel : '+ ' + tr.addWork}
           </button>
         )}
       </div>
 
       {showAdd && (
         <div className="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 rounded-2xl shadow-sm p-4 space-y-2">
-          <input className={inputCls} placeholder={ru ? 'Название работы *' : 'Work title *'}
+          <input className={inputCls} placeholder={tr.phWorkTitle}
             value={iForm.title} onChange={e => setIForm({ ...iForm, title: e.target.value })} maxLength={500} />
-          <textarea className={inputCls} rows={3} placeholder={ru ? 'Описание: что сделали, какой результат' : 'Description: what you did, the result'}
+          <textarea className={inputCls} rows={3} placeholder={tr.phWorkDesc}
             value={iForm.description} onChange={e => setIForm({ ...iForm, description: e.target.value })} maxLength={3000} />
-          <input className={inputCls} placeholder={ru ? 'Ссылка на картинку или проект (https://…)' : 'Image or project link (https://…)'}
+          <input className={inputCls} placeholder={tr.phWorkLink}
             value={iForm.image_url} onChange={e => setIForm({ ...iForm, image_url: e.target.value })} />
-          <input className={inputCls} placeholder={ru ? 'Теги через запятую (дизайн, лого)' : 'Tags, comma-separated'}
+          <input className={inputCls} placeholder={tr.phTags}
             value={iForm.tags} onChange={e => setIForm({ ...iForm, tags: e.target.value })} />
           <button onClick={addItem} disabled={saving}
             className="w-full py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-60">
-            {saving ? '⏳' : (ru ? 'Добавить' : 'Add')}
+            {saving ? '⏳' : tr.addWork}
           </button>
         </div>
       )}
@@ -181,11 +181,11 @@ export default function PortfolioPage() {
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <span className="text-5xl mb-3">🖼</span>
           <p className="font-semibold text-gray-900 dark:text-white">
-            {ru ? 'Пока нет работ' : 'No work items yet'}
+            {tr.noWorkItems}
           </p>
           {isOwner && (
             <p className="text-xs text-gray-400 mt-1 max-w-[240px]">
-              {ru ? 'Добавьте лучшие проекты — заказчики видят портфолио при выборе исполнителя' : 'Add your best projects — clients see your portfolio when hiring'}
+              {tr.noWorkHint}
             </p>
           )}
         </div>

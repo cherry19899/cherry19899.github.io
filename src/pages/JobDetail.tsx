@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { t, currentLang, connectsLabel, statusLabel } from '../lib/i18n';
+import { t, connectsLabel, statusLabel } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
 } from '../lib/api';
@@ -45,7 +45,7 @@ export default function JobDetailPage() {
   const [hiringId, setHiringId] = useState<number | null>(null);
 
   const [myApp, setMyApp] = useState<any>(null);
-  const [feePercent, setFeePercent] = useState(2);
+  const [feePercent, setFeePercent] = useState(3);
 
   const isOwner = job && user && job.posted_by === user.uid;
   const myConnects = user?.balance_connects ?? 0;
@@ -113,10 +113,10 @@ export default function JobDetailPage() {
       // Already applied → not a hard error; the connect was NOT re-charged. Inform
       // and send the user to their jobs where the existing application lives.
       if (e?.data?.alreadyApplied || e?.status === 409 || /already applied/i.test(e?.message || '')) {
-        toast((tr as any).alreadyApplied || 'Вы уже откликнулись на эту вакансию', 'info');
+        toast(tr.alreadyApplied, 'info');
         nav('/my-jobs');
       } else {
-        toast(e.message || (tr as any).failedToApply || 'Не удалось откликнуться', 'error');
+        toast(e.message || tr.failedToApply, 'error');
       }
     } finally { setApplying(false); }
   };
@@ -135,13 +135,12 @@ export default function JobDetailPage() {
 
   const [completing, setCompleting] = useState(false);
   const handleCompleteJob = async () => {
-    const ru = currentLang() === 'ru';
-    if (!window.confirm(ru ? 'Принять работу и завершить задачу?' : 'Accept the work and complete this job?')) return;
+    if (!window.confirm(tr.acceptWorkConfirm)) return;
     setCompleting(true);
     try {
       await completeJob(Number(id));
       setJob((prev: any) => prev ? { ...prev, status: 'completed' } : prev);
-      toast(ru ? 'Задача завершена ✅' : 'Job completed ✅', 'success');
+      toast(tr.jobCompleted, 'success');
     } catch (e: any) {
       toast(e.message || 'Failed to complete', 'error');
     } finally { setCompleting(false); }
@@ -154,7 +153,7 @@ export default function JobDetailPage() {
     setHiringId(app.id);
     hireResultRef.current = null;
     { const who = app.freelancer_username || app.freelancer_name || app.applicant_username || 'user';
-      toast((currentLang() === 'ru' ? 'Найм @' : 'Hiring @') + who + '…', 'info'); }
+      toast(tr.hiringAt + who + '…', 'info'); }
 
     createPiPayment(
       Number(job.budget),
@@ -370,7 +369,7 @@ export default function JobDetailPage() {
             {/* Already applied: show status instead of the apply button */}
             {!isOwner && job.status === 'open' && myApp && (
               <div className="w-full py-4 rounded-2xl bg-amber-50 text-amber-700 text-sm font-semibold text-center">
-                ✅ {currentLang() === 'ru' ? 'Вы уже откликнулись' : 'You already applied'} · {statusLabel(myApp.status)}
+                ✅ {tr.youAlreadyApplied} · {statusLabel(myApp.status)}
               </div>
             )}
 
@@ -430,24 +429,23 @@ export default function JobDetailPage() {
                 disabled={completing}
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
               >
-                {completing ? '⏳' : `✅ ${currentLang() === 'ru' ? 'Принять работу и завершить' : 'Accept work & complete'}`}
+                {completing ? '⏳' : `✅ ${tr.acceptWorkComplete}`}
               </button>
             )}
 
             {isOwner && job.status === 'open' && (
               <button
                 onClick={async () => {
-                  const ru = currentLang() === 'ru';
-                  if (!window.confirm(ru ? 'Удалить задачу? Откликнувшимся вернутся коннекты.' : 'Delete this job? Applicants get their connects back.')) return;
+                  if (!window.confirm(tr.deleteJobConfirm)) return;
                   try {
                     await deleteJob(Number(id));
-                    toast(ru ? 'Задача удалена' : 'Job deleted', 'success');
+                    toast(tr.jobDeleted, 'success');
                     nav('/my-jobs');
                   } catch (e: any) { toast(e.message, 'error'); }
                 }}
                 className="w-full py-3 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 font-semibold text-sm"
               >
-                🗑 {currentLang() === 'ru' ? 'Удалить задачу' : 'Delete job'}
+                🗑 {tr.deleteJob}
               </button>
             )}
 

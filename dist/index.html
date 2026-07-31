@@ -8,6 +8,12 @@
   <title>WorkPro</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icon-192.png" />
+  <!-- iOS ignores the manifest: without these it puts a page screenshot on the
+       home screen instead of the app icon, and opens in a Safari tab. -->
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Work Pro" />
   <!-- GitHub Pages deep-link → HashRouter redirect -->
   <script>
     if (location.pathname.length > 1 && !location.hash.includes('#/')) {
@@ -17,11 +23,11 @@
   <!-- Pi SDK — loads synchronously (no crossorigin: real Pi Browser fails the load
        otherwise) so window.Pi is available before the app bundle. -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script type="module" crossorigin src="/assets/index-Dpw8nhip.js"></script>
+  <script type="module" crossorigin src="/assets/index-nkExglMz.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-QTnfLwEv.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-CzXxFHfi.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-CjWJG815.js">
   <link rel="modulepreload" crossorigin href="/assets/socket-DWbYxwoO.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-6A_D4bXZ.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-DfeaSRUE.css">
 </head>
 <body>
   <div id="root"></div>

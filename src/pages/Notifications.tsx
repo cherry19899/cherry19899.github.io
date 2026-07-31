@@ -4,8 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { t } from '../lib/i18n';
 
+// Notifications are stored with a `notif_key` + `params`; rendering them here
+// rather than server-side means the text follows whatever language the reader
+// has selected right now. Rows written before this (or with an unknown key)
+// fall back to the title/body the backend stored.
+function renderNotif(n: { notif_key?: string | null; params?: Record<string, any> | null; title?: string; body?: string; message?: string }) {
+  const tr: any = t();
+  const tpl = n.notif_key ? tr[n.notif_key] : undefined;
+  if (typeof tpl !== 'string' || !tpl) {
+    return { title: n.title || '', body: n.body || n.message || '' };
+  }
+  const fill = (str: string) =>
+    str.replace(/\{(\w+)\}/g, (_m, k) => {
+      const v = n.params?.[k];
+      return v === undefined || v === null ? '' : String(v);
+    });
+  const [title, body = ''] = tpl.split('||');
+  return { title: fill(title).trim(), body: fill(body).trim() };
+}
+
 interface Notif {
   id: number; title?: string; body?: string; message?: string;
+  notif_key?: string | null; params?: Record<string, any> | null;
   type?: string; created_at: string; is_read?: boolean; read?: boolean;
   job_id?: number | null; room_id?: number | string | null;
 }
@@ -200,8 +220,10 @@ export default function NotificationsPage() {
                     >
                       <span className="text-xl shrink-0">{icon}</span>
                       <div className="flex-1 min-w-0">
-                        {n.title && <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{n.title}</p>}
-                        <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5 line-clamp-2">{n.body || n.message}</p>
+                        {(() => { const r = renderNotif(n); return (<>
+                        {r.title && <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight">{r.title}</p>}
+                        <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5 line-clamp-2">{r.body}</p>
+                        </>); })()}
                         <p className="text-xs text-gray-300 dark:text-slate-600 mt-1">{timeAgo(n.created_at)}</p>
                       </div>
                       {!read && <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5" />}

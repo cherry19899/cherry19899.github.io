@@ -93,8 +93,8 @@ export default function LoginPage() {
         <p className="mt-5 text-gray-400 dark:text-slate-600 text-xs text-center">
           {/* Single source of truth — same PI_MODE the SDK is initialized with. */}
           {PI_MODE === 'sandbox'
-            ? 'Testnet · sandbox-платежи (Test-π)'
-            : 'Mainnet · настоящие Pi-платежи'}
+            ? tr.netTestnet
+            : tr.netMainnet}
         </p>
       </div>
 

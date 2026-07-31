@@ -11,6 +11,9 @@ export async function apiFetch(path: string, opts: RequestInit = {}): Promise<an
   const { token, uid } = getAuth();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    // Lets the backend remember the UI language for Web Push, which it renders
+    // server-side and so can't translate at read time like the in-app list.
+    'x-lang': (localStorage.getItem('workpro_lang') || 'en').slice(0, 8),
     ...(opts.headers as Record<string, string> || {}),
   };
   if (token) {

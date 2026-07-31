@@ -1,5 +1,9 @@
 export const API_BASE = 'https://workpro-api.onrender.com';
 
+// Canonical public address of the app — used for invite links and job deep
+// links, so it must stay the production URL even when running locally.
+export const APP_URL = 'https://cherry19899.github.io';
+
 export const CATEGORIES = [
   { key: 'all',         label: 'All' },
   { key: 'development', label: 'Development' },

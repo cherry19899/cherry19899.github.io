@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { t, currentLang, statusLabel } from '../lib/i18n';
+import { t, statusLabel } from '../lib/i18n';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   getMyJobs, getMyJobsAsFreelancer, getMyApplications,
@@ -34,7 +34,6 @@ const TABS: Tab[] = ['posted', 'hired', 'applied', 'offers'];
 
 export default function MyJobsPage() {
   const tr = t();
-  const ru = currentLang() === 'ru';
   const nav = useNavigate();
   const [params] = useSearchParams();
   const initial = (params.get('tab') as Tab) || 'posted';
@@ -66,10 +65,10 @@ export default function MyJobsPage() {
 
   const tabLabel = (tb: Tab) => {
     switch (tb) {
-      case 'posted':  return `${ru ? 'Размещено' : 'Posted'} (${posted.length})`;
-      case 'hired':   return `${ru ? 'Нанято' : 'Hired'} (${hired.length})`;
-      case 'applied': return `${ru ? 'Отклики' : 'Applied'} (${applied.length})`;
-      case 'offers':  return `${ru ? 'Предложения' : 'Offers'} (${offers.length})`;
+      case 'posted':  return `${tr.posted} (${posted.length})`;
+      case 'hired':   return `${tr.hired} (${hired.length})`;
+      case 'applied': return `${tr.applied} (${applied.length})`;
+      case 'offers':  return `${tr.tabOffers} (${offers.length})`;
     }
   };
 
@@ -77,7 +76,7 @@ export default function MyJobsPage() {
     setActing(o.id);
     try {
       await acceptOffer(o.id);
-      toast(ru ? 'Предложение принято! 🚀' : 'Offer accepted! 🚀', 'success');
+      toast(tr.offerAccepted, 'success');
       load();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setActing(null); }
@@ -87,18 +86,18 @@ export default function MyJobsPage() {
     setActing(o.id);
     try {
       await declineOffer(o.id);
-      toast(ru ? 'Предложение отклонено' : 'Offer declined', 'info');
+      toast(tr.offerDeclined, 'info');
       load();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setActing(null); }
   };
 
   const doWithdraw = async (a: AppItem) => {
-    if (!window.confirm(ru ? 'Отозвать отклик? Коннект не возвращается.' : 'Withdraw application? The connect is not refunded.')) return;
+    if (!window.confirm(tr.withdrawConfirm)) return;
     setActing(a.id);
     try {
       await withdrawApplication(a.id);
-      toast(ru ? 'Отклик отозван' : 'Application withdrawn', 'info');
+      toast(tr.applicationWithdrawn, 'info');
       load();
     } catch (e: any) { toast(e.message, 'error'); }
     finally { setActing(null); }
@@ -161,7 +160,7 @@ export default function MyJobsPage() {
             disabled={acting === a.id}
             className="w-full py-2 rounded-xl bg-gray-50 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 text-xs font-semibold disabled:opacity-60"
           >
-            {ru ? 'Отозвать отклик' : 'Withdraw application'}
+            {tr.withdrawApplication}
           </button>
         )}
 
@@ -179,7 +178,7 @@ export default function MyJobsPage() {
               disabled={acting === a.id}
               className="flex-[1.5] py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-60"
             >
-              {acting === a.id ? '⏳' : `✅ ${ru ? 'Принять' : 'Accept'}`}
+              {acting === a.id ? '⏳' : `✅ ${tr.accept}`}
             </button>
           </div>
         )}
