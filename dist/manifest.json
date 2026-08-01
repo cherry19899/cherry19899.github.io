@@ -4,7 +4,7 @@
   "description": "Freelance marketplace — hire talent and get paid in Pi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
+  "background_color": "#022c22",
   "theme_color": "#10b981",
   "orientation": "portrait",
   "scope": "/",
@@ -34,7 +34,10 @@
       "purpose": "any"
     }
   ],
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "lang": "en",
   "dir": "ltr"
 }
