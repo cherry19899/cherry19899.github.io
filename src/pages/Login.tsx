@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { t } from '../lib/i18n';
 import { isPiBrowser, piAuthenticate, PI_MODE } from '../lib/pi';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
@@ -20,7 +19,6 @@ const FEATURES: [string, string][] = [
 ];
 
 export default function LoginPage() {
-  const tr = t();
   const { setUser } = useAppCtx();
   const [loading, setLoading] = useState(false);
   const [piReady, setPiReady] = useState(false);
@@ -86,7 +84,7 @@ export default function LoginPage() {
           {loading ? (
             <>
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              {wakingUp && <span className="text-sm font-medium">{tr.wakingServer}</span>}
+              {wakingUp && <span className="text-sm font-medium">Waking up server…</span>}
             </>
           ) : 'Login with Pi'}
         </button>
@@ -105,9 +103,11 @@ export default function LoginPage() {
 
         <p className="mt-5 text-xs text-center" style={{ color: FOOT }}>
           {/* Single source of truth — same PI_MODE the SDK is initialized with. */}
+          {/* English like the rest of this screen — it is shown before the user
+              picks a language, so it must not follow the dictionary. */}
           {PI_MODE === 'sandbox'
-            ? tr.netTestnet
-            : tr.netMainnet}
+            ? 'Testnet · sandbox payments (Test-π)'
+            : 'Mainnet · real Pi payments'}
         </p>
       </div>
 
