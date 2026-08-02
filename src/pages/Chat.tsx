@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { t } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { getChatRooms, markChatRead } from '../lib/api';

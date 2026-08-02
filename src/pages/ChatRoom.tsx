@@ -7,7 +7,6 @@ import { toast } from '../components/Toast';
 import { API_BASE } from '../lib/constants';
 import { useAppCtx } from '../App';
 import { getToken } from '../lib/api';
-import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
 
 interface Msg {

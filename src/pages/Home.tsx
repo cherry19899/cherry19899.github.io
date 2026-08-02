@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -65,17 +65,6 @@ function BudgetSlider({
 
   const pct = (v: number) => ((v - min) / (max - min)) * 100;
 
-  const handleTrackClick = (e: React.MouseEvent, isRight: boolean) => {
-    if (!rangeRef.current) return;
-    const rect = rangeRef.current.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    const newVal = Math.round(min + ratio * (max - min));
-    if (isRight) {
-      onChange([value[0], Math.max(value[0], newVal)]);
-    } else {
-      onChange([Math.min(value[1], newVal), value[1]]);
-    }
-  };
 
   return (
     <div className="px-2">
@@ -343,8 +332,8 @@ export default function HomePage() {
   const [showSaved, setShowSaved] = useState(false);
   const [pullDist, setPullDist] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
-  const sugTimer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const sugTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const tr = t();
 
   const filtersActive = !!(filters.minBudget || filters.maxBudget || filters.urgentOnly);

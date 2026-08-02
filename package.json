@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "vite build && node build-dist.cjs",
+    "build": "tsc --noEmit && vite build && node build-dist.cjs",
     "deploy": "vite build && node build-dist.cjs",
-    "dev": "vite"
+    "dev": "vite",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",

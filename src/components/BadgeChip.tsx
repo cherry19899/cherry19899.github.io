@@ -1,4 +1,3 @@
-import React from 'react';
 
 const BADGE_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
   rising_talent:    { label: 'Rising Talent',   icon: '🚀', color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },

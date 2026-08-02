@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { t, statusLabel } from '../lib/i18n';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from './Toast';

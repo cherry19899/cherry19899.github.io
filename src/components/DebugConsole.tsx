@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // TEMPORARY on-screen console for Pi Browser debugging (no chrome://inspect there).
 // Remove after verifying.

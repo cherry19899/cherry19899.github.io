@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { t } from '../lib/i18n';

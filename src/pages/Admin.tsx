@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { t, statusLabel, connectsLabel } from '../lib/i18n';
+import { useState, useEffect, useCallback } from 'react';
+import { t, statusLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
@@ -12,8 +12,7 @@ import { toast } from '../components/Toast';
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area,
   PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-} from 'recharts';
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from 'recharts';
 
 type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings' | 'analytics';
 

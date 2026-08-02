@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { currentLang, t } from '../lib/i18n';
 import { getConfig } from '../lib/api';
 import { faqFor } from '../lib/faq';

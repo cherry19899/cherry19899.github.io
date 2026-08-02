@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { isPiBrowser, piAuthenticate, PI_MODE } from '../lib/pi';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';

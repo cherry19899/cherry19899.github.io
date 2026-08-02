@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { translateError } from '../lib/i18n';
 
 interface Toast { id: number; msg: string; type: 'success' | 'error' | 'info'; }

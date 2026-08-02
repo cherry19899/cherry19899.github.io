@@ -40,7 +40,6 @@ export default function PostJobPage() {
 
   const budget = Number(form.budget) || 0;
   const fee = +(budget * (feePercent / 100)).toFixed(2);
-  const total = +(budget + fee).toFixed(2);
 
   const handleSubmit = async () => {
     if (!form.title.trim()) { toast(tr.titleRequired, 'error'); return; }

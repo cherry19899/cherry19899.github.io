@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getNotifications, markAllNotifsRead } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
