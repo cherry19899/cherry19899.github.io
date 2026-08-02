@@ -55,6 +55,10 @@ html.dark .skeleton {
 }
 
 .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Space the fixed BottomNav occupies: its own 4rem plus whatever the device
+   reserves for the system navigation bar. Without the env() term the nav grows
+   taller than the reserved space on gesture-nav devices and covers content. */
+.pb-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
 
 input, textarea, select { font-family: inherit; }
 
