@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Spinner from '../components/Spinner';
 import { t, connectsLabel, statusLabel } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
@@ -399,7 +400,7 @@ export default function JobDetailPage() {
                       disabled={applying || myConnects < applyCost}
                       className="flex-[2] h-12 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-60"
                     >
-                      {applying ? '⏳' : myConnects < applyCost ? tr.notEnoughConnects : tr.submitProposal}
+                      {applying ? <Spinner /> : myConnects < applyCost ? tr.notEnoughConnects : tr.submitProposal}
                     </button>
                   </div>
                 </div>
@@ -429,7 +430,7 @@ export default function JobDetailPage() {
                 disabled={completing}
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
               >
-                {completing ? '⏳' : `✅ ${tr.acceptWorkComplete}`}
+                {completing ? <Spinner /> : `✅ ${tr.acceptWorkComplete}`}
               </button>
             )}
 
@@ -456,7 +457,7 @@ export default function JobDetailPage() {
                 disabled={submitting}
                 className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
               >
-                {submitting ? '⏳' : `📤 ${tr.submitWork}`}
+                {submitting ? <Spinner /> : `📤 ${tr.submitWork}`}
               </button>
             )}
             {!isOwner && user && job.hired_freelancer_id === user.uid && job.status === 'submitted' && (
@@ -525,7 +526,7 @@ export default function JobDetailPage() {
                     disabled={hiringId === app.id || job.status !== 'open'}
                     className="flex-[1.5] py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold disabled:opacity-60 shadow-sm"
                   >
-                    {hiringId === app.id ? `⏳ ${tr.hiring}` : `✅ ${tr.hire}`}
+                    {hiringId === app.id ? <><Spinner /> {tr.hiring}</> : `✅ ${tr.hire}`}
                   </button>
                 </div>
               </div>

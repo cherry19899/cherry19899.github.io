@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Spinner from '../components/Spinner';
 import { useParams } from 'react-router-dom';
 import { t } from '../lib/i18n';
 import { getStoredUser } from '../lib/api';
@@ -142,7 +143,7 @@ export default function PortfolioPage() {
               value={hForm.github || ''} onChange={e => setHForm({ ...hForm, github: e.target.value })} />
             <button onClick={saveHeader} disabled={saving}
               className="w-full py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-60">
-              {saving ? '⏳' : tr.save}
+              {saving ? <Spinner /> : tr.save}
             </button>
           </div>
         )}
@@ -172,7 +173,7 @@ export default function PortfolioPage() {
             value={iForm.tags} onChange={e => setIForm({ ...iForm, tags: e.target.value })} />
           <button onClick={addItem} disabled={saving}
             className="w-full py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold disabled:opacity-60">
-            {saving ? '⏳' : tr.addWork}
+            {saving ? <Spinner /> : tr.addWork}
           </button>
         </div>
       )}

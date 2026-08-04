@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { showInterstitial } from '../lib/ads';
+import Spinner from '../components/Spinner';
 import { t, connectsLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { createJob, getConfig } from '../lib/api';
@@ -59,6 +61,11 @@ export default function PostJobPage() {
       updateUser({ balance_connects: Math.max(0, myConnects - POST_JOB_COST) });
       toast(tr.jobPosted, 'success');
       const newId = data?.job?.id || data?.id;
+      // A natural break: the job is already created and the user is between
+      // tasks. Deliberately awaited but never allowed to block — if there is no
+      // inventory or the ad network is missing, showInterstitial resolves
+      // immediately and navigation proceeds either way.
+      await showInterstitial();
       nav(newId ? `/job/${newId}` : '/');
     } catch (e: any) {
       toast(e.message || 'Failed to post job', 'error');
@@ -162,7 +169,7 @@ export default function PostJobPage() {
           disabled={saving || !canAfford}
           className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60 transition-colors"
         >
-          {saving ? '⏳' : !canAfford ? tr.notEnoughConnects : tr.postJob}
+          {saving ? <Spinner /> : !canAfford ? tr.notEnoughConnects : tr.postJob}
         </button>
       <style>{`
         .field-input { width:100%; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:0.75rem; padding:0.625rem 0.875rem; font-size:0.875rem; color:#1f2937; outline:none; }

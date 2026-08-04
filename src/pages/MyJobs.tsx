@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Spinner from '../components/Spinner';
 import { t, statusLabel } from '../lib/i18n';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -178,7 +179,7 @@ export default function MyJobsPage() {
               disabled={acting === a.id}
               className="flex-[1.5] py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-60"
             >
-              {acting === a.id ? '⏳' : `✅ ${tr.accept}`}
+              {acting === a.id ? <Spinner /> : `✅ ${tr.accept}`}
             </button>
           </div>
         )}

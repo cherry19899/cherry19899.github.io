@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Spinner from './Spinner';
 import { createPortal } from 'react-dom';
 import { submitReviewV2 } from '../lib/api';
 import { toast } from './Toast';
@@ -93,7 +94,7 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
           disabled={saving || !canSubmit}
           className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-50 transition-colors mb-2"
         >
-          {saving ? '⏳' : tr.submitReview}
+          {saving ? <Spinner /> : tr.submitReview}
         </button>
 
         <button onClick={onSkip} className="w-full py-3 text-sm text-gray-400 dark:text-slate-500 font-medium">

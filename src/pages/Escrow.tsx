@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import Spinner from '../components/Spinner';
 import { createPortal } from 'react-dom';
 import {
   getEscrows, releaseEscrow, cancelEscrow, disputeEscrow,
@@ -233,7 +234,7 @@ function MilestoneTimeline({
                     disabled={acting === m.id}
                     className="px-2.5 py-1 rounded-lg bg-amber-400 text-white text-xs font-semibold disabled:opacity-60"
                   >
-                    {acting === m.id ? '⏳' : tr.requestRelease}
+                    {acting === m.id ? <Spinner /> : tr.requestRelease}
                   </button>
                 )}
                 {isClient && m.status === 'requested' && (
@@ -242,7 +243,7 @@ function MilestoneTimeline({
                     disabled={acting === m.id}
                     className="px-2.5 py-1 rounded-lg bg-emerald-500 text-white text-xs font-bold disabled:opacity-60"
                   >
-                    {acting === m.id ? '⏳' : tr.approveRelease}
+                    {acting === m.id ? <Spinner /> : tr.approveRelease}
                   </button>
                 )}
                 {m.status === 'requested' && (
@@ -458,7 +459,7 @@ export default function EscrowPage() {
                           disabled={acting === e.id}
                           className="flex-[1.5] py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-60 shadow-sm"
                         >
-                          {acting === e.id ? '⏳' : `✅ ${tr.releaseAll}`}
+                          {acting === e.id ? <Spinner /> : `✅ ${tr.releaseAll}`}
                         </button>
                       </div>
                     )}

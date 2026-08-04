@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Spinner from '../components/Spinner';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
@@ -360,7 +361,7 @@ export default function ProfilePage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">🎬 {tr.watchAd}</p>
                     <p className="text-sm text-gray-500 dark:text-slate-400">{tr.watchAdSub}</p>
                   </div>
-                  <p className="text-xl font-bold text-amber-600">{watchingAd ? '⏳' : tr.free}</p>
+                  <p className="text-xl font-bold text-amber-600">{watchingAd ? <Spinner /> : tr.free}</p>
                 </button>
               )}
             </div>

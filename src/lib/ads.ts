@@ -47,9 +47,29 @@ export async function showRewardedAd(): Promise<string | null> {
   }
 }
 
-/** Show an interstitial at a natural break. Never blocks the caller's flow. */
+/**
+ * Show an interstitial at a natural break.
+ *
+ * Callers await this before navigating, so it must never be able to strand
+ * them: every step is raced against a timeout. Without that, an ad SDK that
+ * stops responding would leave the user stuck on the screen they just
+ * finished with.
+ */
+const AD_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    p.catch(() => fallback),
+    new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export async function showInterstitial(): Promise<void> {
-  if (!(await adsSupported())) return;
-  if (!(await ensureAdLoaded('interstitial'))) return;
-  try { await (window as any).Pi.Ads.showAd('interstitial'); } catch {}
+  if (!(await withTimeout(adsSupported(), 2000, false))) return;
+  if (!(await withTimeout(ensureAdLoaded('interstitial'), 5000, false))) return;
+  await withTimeout(
+    (window as any).Pi.Ads.showAd('interstitial'),
+    AD_TIMEOUT_MS,
+    null,
+  );
 }
