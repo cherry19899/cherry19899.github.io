@@ -214,6 +214,7 @@ export const updateAvailability = (userId: string, available: boolean) =>
 // ─── Notifications ───────────────────────────────────────────────────────────
 
 export const getNotifications = () => apiFetch('/api/notifications');
+export const getPayoutStatus = () => apiFetch('/api/payouts/status');
 export const markNotifRead = (id: number) =>
   apiFetch(`/api/notifications/${id}/read`, { method: 'POST' });
 export const markAllNotifsRead = () =>

@@ -63,6 +63,7 @@ const KEYS = {
   nPaidToWallet: '', nPaidToBalance: '', nJobDonePaid: '', nJobDoneAccepted: '', nRefund: '', nJobCancelled: '', nPayoutSent: '', nConnectsCredited: '', nRating: '', nDisputeOpened: '',
   nOfferReceived: '', nOfferAccepted: '', nOfferDeclined: '', nMilestoneRequested: '', nMilestonePaidWallet: '', nMilestonePaidBalance: '', nAutoReleasedWallet: '', nAutoReleasedBalance: '', nAutoReleasedClient: '', nMilestoneAutoWallet: '', nMilestoneAutoBalance: '', nMilestoneAutoClient: '', nDisputeResolved: '', nEscrowReleasedAdmin: '', nEscrowRefundedAdmin: '', nJobDeletedAdminClient: '', nJobDeletedAdminFreelancer: '', nSavedSearchHits: '',
   watchAd: '', watchAdSub: '', free: '', adNotAvailable: '', adRewarded: '',
+  payoutPending: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -207,6 +208,7 @@ const en: Translations = {
   free: 'Free',
   adNotAvailable: 'No ad available right now — try again later',
   adRewarded: '{n} connect added — thanks for watching!',
+  payoutPending: 'Held until Pi Network enables wallet payouts',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
@@ -348,6 +350,7 @@ const ru: Partial<Translations> = {
   free: 'Бесплатно',
   adNotAvailable: 'Сейчас нет доступной рекламы — попробуйте позже',
   adRewarded: 'Начислен {n} коннект — спасибо за просмотр!',
+  payoutPending: 'Удерживается, пока Pi Network не включит выплаты на кошелёк',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
@@ -489,6 +492,7 @@ const uk: Partial<Translations> = {
   free: 'Безкоштовно',
   adNotAvailable: 'Зараз немає доступної реклами — спробуйте пізніше',
   adRewarded: 'Нараховано {n} конект — дякуємо за перегляд!',
+  payoutPending: 'Утримується, доки Pi Network не увімкне виплати на гаманець',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
@@ -645,6 +649,7 @@ const de: Partial<Translations> = {
   free: 'Gratis',
   adNotAvailable: 'Gerade keine Werbung verfügbar — versuch es später',
   adRewarded: '{n} Connect gutgeschrieben — danke fürs Ansehen!',
+  payoutPending: 'Zurückgehalten, bis Pi Network Wallet-Auszahlungen aktiviert',
 };
 
 // ─── French ───────────────────────────────────────────────────────────────────
@@ -801,6 +806,7 @@ const fr: Partial<Translations> = {
   free: 'Gratuit',
   adNotAvailable: 'Aucune pub disponible pour le moment — réessayez plus tard',
   adRewarded: '{n} connect ajouté — merci d’avoir regardé !',
+  payoutPending: 'Retenu jusqu’à ce que Pi Network active les versements sur portefeuille',
 };
 
 // ─── Spanish ──────────────────────────────────────────────────────────────────
@@ -957,6 +963,7 @@ const es: Partial<Translations> = {
   free: 'Gratis',
   adNotAvailable: 'No hay anuncios ahora mismo: inténtalo más tarde',
   adRewarded: '{n} connect añadido: ¡gracias por ver!',
+  payoutPending: 'Retenido hasta que Pi Network active los pagos al monedero',
 };
 
 // ─── Portuguese ───────────────────────────────────────────────────────────────
@@ -1113,6 +1120,7 @@ const pt: Partial<Translations> = {
   free: 'Grátis',
   adNotAvailable: 'Nenhum anúncio disponível agora — tente mais tarde',
   adRewarded: '{n} connect adicionado — obrigado por assistir!',
+  payoutPending: 'Retido até a Pi Network ativar os pagamentos para a carteira',
 };
 
 // ─── Turkish ──────────────────────────────────────────────────────────────────
@@ -1269,6 +1277,7 @@ const tr: Partial<Translations> = {
   free: 'Ücretsiz',
   adNotAvailable: 'Şu anda reklam yok — daha sonra deneyin',
   adRewarded: '{n} connect eklendi — izlediğiniz için teşekkürler!',
+  payoutPending: 'Pi Network cüzdan ödemelerini açana kadar bekletiliyor',
 };
 
 // ─── Arabic (RTL) ─────────────────────────────────────────────────────────────
@@ -1435,6 +1444,7 @@ const ar: Partial<Translations> = {
   free: 'مجانًا',
   adNotAvailable: 'لا يوجد إعلان متاح الآن — حاول لاحقًا',
   adRewarded: 'أُضيفت {n} نقطة تواصل — شكرًا للمشاهدة!',
+  payoutPending: 'محتجز حتى تُفعّل شبكة Pi التحويل إلى المحفظة',
 };
 
 // ─── Hindi ────────────────────────────────────────────────────────────────────
@@ -1601,6 +1611,7 @@ const hi: Partial<Translations> = {
   free: 'मुफ़्त',
   adNotAvailable: 'अभी कोई विज्ञापन उपलब्ध नहीं — बाद में कोशिश करें',
   adRewarded: '{n} कनेक्ट जोड़ा गया — देखने के लिए धन्यवाद!',
+  payoutPending: 'Pi Network द्वारा वॉलेट भुगतान चालू करने तक रोका गया',
 };
 
 // ─── Chinese Simplified ───────────────────────────────────────────────────────
@@ -1767,6 +1778,7 @@ const zh: Partial<Translations> = {
   free: '免费',
   adNotAvailable: '当前没有可用广告，请稍后再试',
   adRewarded: '已添加 {n} 个连接点 — 感谢观看！',
+  payoutPending: '暂存中，待 Pi Network 开放钱包提现',
 };
 
 // ─── Japanese ─────────────────────────────────────────────────────────────────
@@ -1933,6 +1945,7 @@ const ja: Partial<Translations> = {
   free: '無料',
   adNotAvailable: '現在利用できる広告がありません — 後でお試しください',
   adRewarded: 'コネクトを {n} 追加しました — ご視聴ありがとうございます！',
+  payoutPending: 'Pi Network がウォレット送金を有効にするまで保留中',
 };
 
 // ─── Korean ───────────────────────────────────────────────────────────────────
@@ -2099,6 +2112,7 @@ const ko: Partial<Translations> = {
   free: '무료',
   adNotAvailable: '지금은 이용 가능한 광고가 없습니다 — 나중에 다시 시도하세요',
   adRewarded: '커넥트 {n}개가 추가되었습니다 — 시청해 주셔서 감사합니다!',
+  payoutPending: 'Pi Network가 지갑 지급을 활성화할 때까지 보관 중',
 };
 
 // ─── Vietnamese ───────────────────────────────────────────────────────────────
@@ -2265,6 +2279,7 @@ const vi: Partial<Translations> = {
   free: 'Miễn phí',
   adNotAvailable: 'Hiện không có quảng cáo — hãy thử lại sau',
   adRewarded: 'Đã cộng {n} connect — cảm ơn bạn đã xem!',
+  payoutPending: 'Đang giữ cho đến khi Pi Network bật thanh toán về ví',
 };
 
 // ─── Indonesian ───────────────────────────────────────────────────────────────
@@ -2431,6 +2446,7 @@ const id: Partial<Translations> = {
   free: 'Gratis',
   adNotAvailable: 'Tidak ada iklan saat ini — coba lagi nanti',
   adRewarded: '{n} connect ditambahkan — terima kasih sudah menonton!',
+  payoutPending: 'Ditahan hingga Pi Network mengaktifkan pembayaran ke dompet',
 };
 
 // ─── Italian ──────────────────────────────────────────────────────────────────
@@ -2587,6 +2603,7 @@ const it: Partial<Translations> = {
   free: 'Gratis',
   adNotAvailable: 'Nessun annuncio disponibile ora — riprova più tardi',
   adRewarded: '{n} connect aggiunto — grazie per aver guardato!',
+  payoutPending: 'Trattenuto finché Pi Network non abilita i pagamenti sul wallet',
 };
 
 // ─── Polish ───────────────────────────────────────────────────────────────────
@@ -2743,6 +2760,7 @@ const pl: Partial<Translations> = {
   free: 'Za darmo',
   adNotAvailable: 'Brak dostępnej reklamy — spróbuj później',
   adRewarded: 'Dodano {n} connect — dzięki za obejrzenie!',
+  payoutPending: 'Wstrzymane, dopóki Pi Network nie włączy wypłat na portfel',
 };
 
 // ─── Thai, Filipino, Dutch, Swedish, Romanian — compact versions ──────────────
@@ -3060,6 +3078,7 @@ const th: Partial<Translations> = { ...en,
   free: 'ฟรี',
   adNotAvailable: 'ตอนนี้ไม่มีโฆษณา — ลองใหม่ภายหลัง',
   adRewarded: 'เพิ่ม {n} connect แล้ว — ขอบคุณที่รับชม!',
+  payoutPending: 'ถือไว้จนกว่า Pi Network จะเปิดการจ่ายเงินเข้ากระเป๋า',
 };
 
 const tl: Partial<Translations> = { ...en,
@@ -3377,6 +3396,7 @@ const tl: Partial<Translations> = { ...en,
   free: 'Libre',
   adNotAvailable: 'Walang available na ad ngayon — subukan mamaya',
   adRewarded: 'Nadagdag ang {n} connect — salamat sa panonood!',
+  payoutPending: 'Hawak muna hanggang buksan ng Pi Network ang bayad sa wallet',
 };
 
 const nl: Partial<Translations> = { ...en,
@@ -3694,6 +3714,7 @@ const nl: Partial<Translations> = { ...en,
   free: 'Gratis',
   adNotAvailable: 'Nu geen advertentie beschikbaar — probeer het later',
   adRewarded: '{n} connect toegevoegd — bedankt voor het kijken!',
+  payoutPending: 'Vastgehouden tot Pi Network wallet-uitbetalingen inschakelt',
 };
 
 const sv: Partial<Translations> = { ...en,
@@ -4011,6 +4032,7 @@ const sv: Partial<Translations> = { ...en,
   free: 'Gratis',
   adNotAvailable: 'Ingen annons tillgänglig just nu — försök senare',
   adRewarded: '{n} connect tillagd — tack för att du tittade!',
+  payoutPending: 'Hålls kvar tills Pi Network aktiverar utbetalning till plånbok',
 };
 
 const ro: Partial<Translations> = { ...en,
@@ -4328,6 +4350,7 @@ const ro: Partial<Translations> = { ...en,
   free: 'Gratuit',
   adNotAvailable: 'Nicio reclamă disponibilă acum — încearcă mai târziu',
   adRewarded: '{n} connect adăugat — mulțumim că ai urmărit!',
+  payoutPending: 'Reținut până când Pi Network activează plățile în portofel',
 };
 
 const bn: Partial<Translations> = { ...en,
@@ -4645,6 +4668,7 @@ const bn: Partial<Translations> = { ...en,
   free: 'বিনামূল্যে',
   adNotAvailable: 'এখন কোনো বিজ্ঞাপন নেই — পরে চেষ্টা করুন',
   adRewarded: '{n}টি কানেক্ট যোগ হয়েছে — দেখার জন্য ধন্যবাদ!',
+  payoutPending: 'Pi Network ওয়ালেট পেমেন্ট চালু না করা পর্যন্ত আটকে আছে',
 };
 
 // ─── Language map ─────────────────────────────────────────────────────────────

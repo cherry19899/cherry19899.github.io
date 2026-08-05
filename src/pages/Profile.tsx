@@ -7,7 +7,7 @@ import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
 import { adsSupported, showRewardedAd } from '../lib/ads';
 import { CONNECT_PACKAGES, APP_URL } from '../lib/constants';
-import { apiFetch } from '../lib/api';
+import { apiFetch, getPayoutStatus } from '../lib/api';
 import { t, currentLang, setLang, LANGUAGES, connectsLabel } from '../lib/i18n';
 import { isDark, toggleTheme } from '../lib/theme';
 import BadgeChip from '../components/BadgeChip';
@@ -23,10 +23,21 @@ export default function ProfilePage() {
   const [dark, setDark] = useState(isDark());
   const [canWatchAd, setCanWatchAd] = useState(false);
   const [watchingAd, setWatchingAd] = useState(false);
+  // balance_pi is money already earned, but it only reaches the user's Pi
+  // wallet once Pi Network enables App-to-User payments for this app. Showing
+  // the number with no explanation is how a working app looks like a scam to
+  // whoever tries to withdraw first.
+  const [payoutPending, setPayoutPending] = useState(false);
 
   // Only offer the ad if this Pi Browser actually has the ad network; older
   // builds don't, and a dead button is worse than no button.
   useEffect(() => { adsSupported().then(setCanWatchAd).catch(() => {}); }, []);
+
+  useEffect(() => {
+    getPayoutStatus()
+      .then(r => setPayoutPending(r?.available === false && r?.reason === 'pending_pi_approval'))
+      .catch(() => {});   // never let this break the profile
+  }, []);
 
   // The adId is redeemed server-side — the client never decides the reward.
   const watchAdForConnect = async () => {
@@ -231,6 +242,7 @@ export default function ProfilePage() {
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.balance}</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">{balancePi}<span className="text-sm text-gray-400 dark:text-slate-500"> π</span></p>
             {!isPiBrowser() && <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{tr.piBrowser}</p>}
+            {payoutPending && <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1 leading-tight">{tr.payoutPending}</p>}
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.reviews}</p>
