@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, Component, ErrorInfo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, Component, ErrorInfo, ReactNode, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, isAuthenticated } from './hooks/useAuth';
 import type { User } from './hooks/useAuth';
@@ -17,13 +17,18 @@ import PostJobPage      from './pages/PostJob';
 import ChatPage         from './pages/Chat';
 import ChatRoomPage     from './pages/ChatRoom';
 import ProfilePage      from './pages/Profile';
-import AdminPage        from './pages/Admin';
 import NotificationsPage from './pages/Notifications';
 import MyJobsPage       from './pages/MyJobs';
 import FAQPage          from './pages/FAQ';
 import PortfolioPage    from './pages/Portfolio';
 import EscrowPage       from './pages/Escrow';
 import JobDetailPage    from './pages/JobDetail';
+
+// Admin is the only page that pulls in recharts, and only the owner ever opens
+// it — but it was in the main bundle, so every user downloaded a charting
+// library they will never see. Loading it on demand keeps it out of the path to
+// first render.
+const AdminPage = lazy(() => import('./pages/Admin'));
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
 
@@ -65,6 +70,14 @@ const Ctx = createContext<AppCtx>({
 });
 
 export const useAppCtx = () => useContext(Ctx);
+
+function PageSpinner() {
+  return (
+    <div className="flex justify-center pt-20">
+      <span className="inline-block w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 // ─── Layout wrapper for authenticated pages ───────────────────────────────────
 
@@ -169,7 +182,7 @@ export default function App() {
           <Route path="/faq"          element={<FAQPage />} />
           <Route path="/portfolio"     element={<PortfolioPage />} />
           <Route path="/portfolio/:id" element={<PortfolioPage />} />
-          <Route path="/admin"        element={<Protected adminOnly><AdminPage /></Protected>} />
+          <Route path="/admin"        element={<Protected adminOnly><Suspense fallback={<PageSpinner />}><AdminPage /></Suspense></Protected>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
