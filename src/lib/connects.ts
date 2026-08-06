@@ -32,3 +32,19 @@ export function applyCostFor(budget: number | string | undefined): number {
   const b = Number(budget) || 0;
   return Math.max(1, Math.ceil(b / economy.applyCostDivisor));
 }
+
+// ─── Support link ─────────────────────────────────────────────────────────
+// Empty until an admin sets one. The screens that offer it hide the row rather
+// than show a dead link.
+let supportUrl = '';
+
+export function setSupportUrl(url: unknown) {
+  const v = String(url || '').trim();
+  // Re-validated here as well as on the server: this string goes straight into
+  // a link the user taps, and http(s) is the only scheme that belongs there.
+  supportUrl = /^https?:\/\/[^\s]+$/i.test(v) ? v : '';
+}
+
+export function getSupportUrl(): string {
+  return supportUrl;
+}

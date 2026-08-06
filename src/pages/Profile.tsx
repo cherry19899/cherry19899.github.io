@@ -7,6 +7,7 @@ import { toast } from '../components/Toast';
 import { isPiBrowser, createPiPayment } from '../lib/pi';
 import { adsSupported, showRewardedAd } from '../lib/ads';
 import { CONNECT_PACKAGES, APP_URL } from '../lib/constants';
+import { getSupportUrl } from '../lib/connects';
 import { apiFetch, getPayoutStatus } from '../lib/api';
 import { t, currentLang, setLang, LANGUAGES, connectsLabel } from '../lib/i18n';
 import { isDark, toggleTheme } from '../lib/theme';
@@ -169,6 +170,13 @@ export default function ProfilePage() {
       label: tr.faq, right: <Chevron />,
       onClick: () => nav('/faq'),
     },
+    // Only when an admin has configured one — a dead support link is worse than
+    // none, since it is the row people reach for when something has gone wrong.
+    ...(getSupportUrl() ? [{
+      icon: HelpIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
+      label: tr.support, right: <Chevron />,
+      onClick: () => window.open(getSupportUrl(), '_blank', 'noopener,noreferrer'),
+    }] : []),
     {
       icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
       label: tr.terms, right: <Chevron />,

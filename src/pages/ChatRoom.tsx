@@ -35,6 +35,7 @@ export default function ChatRoomPage() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [room, setRoom] = useState<any>(null);
   const [peer, setPeer] = useState<{ name: string; avatar?: string } | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -77,7 +78,10 @@ export default function ChatRoomPage() {
       .then((d: any) => {
         const r = d?.room || d;
         if (!r) return;
-        const iAmClient = String(r.client_id) === String(user.uid);
+        setRoom(r);
+        // viewer_is_client comes from the server, which normalises the id — the
+        // raw comparison here would mislabel a user whose id spelling differs.
+        const iAmClient = r.viewer_is_client ?? (String(r.client_id) === String(user.uid));
         setPeer({
           name: (iAmClient ? r.freelancer_username : r.client_username) || 'user',
           avatar: iAmClient ? r.freelancer_avatar : r.client_avatar,
@@ -185,6 +189,28 @@ export default function ChatRoomPage() {
           </div>
         </div>
       </div>
+
+      {/* Job context — the client asked for a way to hire without leaving the
+          conversation to hunt for the job page. The hire itself is a Pi payment
+          orchestrated on the job screen; duplicating that flow here would mean
+          two copies of the most delicate code in the app, so this takes the
+          client straight to it instead. */}
+      {room?.viewer_is_client && room?.pending_application_id && room?.job_status === 'open' && (
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border-b border-emerald-100 dark:border-emerald-800 px-4 py-3">
+          <div className="max-w-lg mx-auto flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-gray-900 dark:text-white font-semibold truncate">{room.job_title}</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400">{room.job_budget} π</p>
+            </div>
+            <button
+              onClick={() => nav(`/job/${room.job_id}?applicant=${room.pending_application_id}`)}
+              className="shrink-0 px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold"
+            >
+              {tr.hire}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-36">

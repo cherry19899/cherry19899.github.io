@@ -65,6 +65,7 @@ const KEYS = {
   watchAd: '', watchAdSub: '', free: '', adNotAvailable: '', adRewarded: '',
   payoutPending: '',
   disputeMinLength: '', withdrawDispute: '', disputeWithdrawn: '', nDisputeWithdrawn: '',
+  support: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -214,6 +215,7 @@ const en: Translations = {
   withdrawDispute: 'Withdraw dispute',
   disputeWithdrawn: 'Dispute withdrawn — you can carry on',
   nDisputeWithdrawn: 'Dispute withdrawn||The dispute was called off — you can carry on with the job.',
+  support: 'Support',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
@@ -360,6 +362,7 @@ const ru: Partial<Translations> = {
   withdrawDispute: 'Отозвать спор',
   disputeWithdrawn: 'Спор отозван — можно продолжать',
   nDisputeWithdrawn: 'Спор отозван||Спор по задаче отозван — можно продолжать работу.',
+  support: 'Поддержка',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
@@ -506,6 +509,7 @@ const uk: Partial<Translations> = {
   withdrawDispute: 'Відкликати спір',
   disputeWithdrawn: 'Спір відкликано — можна продовжувати',
   nDisputeWithdrawn: 'Спір відкликано||Спір за задачею відкликано — можна продовжувати роботу.',
+  support: 'Підтримка',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
@@ -667,6 +671,7 @@ const de: Partial<Translations> = {
   withdrawDispute: 'Streitfall zurückziehen',
   disputeWithdrawn: 'Streitfall zurückgezogen — ihr könnt weitermachen',
   nDisputeWithdrawn: 'Streitfall zurückgezogen||Der Streitfall wurde beigelegt — ihr könnt weiterarbeiten.',
+  support: 'Support',
 };
 
 // ─── French ───────────────────────────────────────────────────────────────────
@@ -828,6 +833,7 @@ const fr: Partial<Translations> = {
   withdrawDispute: 'Retirer le litige',
   disputeWithdrawn: 'Litige retiré — vous pouvez continuer',
   nDisputeWithdrawn: 'Litige retiré||Le litige a été annulé — vous pouvez reprendre le travail.',
+  support: 'Assistance',
 };
 
 // ─── Spanish ──────────────────────────────────────────────────────────────────
@@ -989,6 +995,7 @@ const es: Partial<Translations> = {
   withdrawDispute: 'Retirar la disputa',
   disputeWithdrawn: 'Disputa retirada: podéis continuar',
   nDisputeWithdrawn: 'Disputa retirada||La disputa se canceló: podéis continuar con el trabajo.',
+  support: 'Soporte',
 };
 
 // ─── Portuguese ───────────────────────────────────────────────────────────────
@@ -1150,6 +1157,7 @@ const pt: Partial<Translations> = {
   withdrawDispute: 'Retirar a disputa',
   disputeWithdrawn: 'Disputa retirada — podem continuar',
   nDisputeWithdrawn: 'Disputa retirada||A disputa foi cancelada — podem continuar o trabalho.',
+  support: 'Suporte',
 };
 
 // ─── Turkish ──────────────────────────────────────────────────────────────────
@@ -1311,6 +1319,7 @@ const tr: Partial<Translations> = {
   withdrawDispute: 'Anlaşmazlığı geri çek',
   disputeWithdrawn: 'Anlaşmazlık geri çekildi — devam edebilirsiniz',
   nDisputeWithdrawn: 'Anlaşmazlık geri çekildi||Anlaşmazlık kaldırıldı — işe devam edebilirsiniz.',
+  support: 'Destek',
 };
 
 // ─── Arabic (RTL) ─────────────────────────────────────────────────────────────
@@ -1482,6 +1491,7 @@ const ar: Partial<Translations> = {
   withdrawDispute: 'سحب النزاع',
   disputeWithdrawn: 'تم سحب النزاع — يمكنكما المتابعة',
   nDisputeWithdrawn: 'تم سحب النزاع||أُلغي النزاع — يمكنكما متابعة العمل.',
+  support: 'الدعم',
 };
 
 // ─── Hindi ────────────────────────────────────────────────────────────────────
@@ -1653,6 +1663,7 @@ const hi: Partial<Translations> = {
   withdrawDispute: 'विवाद वापस लें',
   disputeWithdrawn: 'विवाद वापस लिया गया — आगे बढ़ सकते हैं',
   nDisputeWithdrawn: 'विवाद वापस लिया गया||विवाद रद्द कर दिया गया — काम जारी रख सकते हैं।',
+  support: 'सहायता',
 };
 
 // ─── Chinese Simplified ───────────────────────────────────────────────────────
@@ -1824,6 +1835,7 @@ const zh: Partial<Translations> = {
   withdrawDispute: '撤回争议',
   disputeWithdrawn: '争议已撤回，可以继续',
   nDisputeWithdrawn: '争议已撤回||争议已取消，可以继续工作。',
+  support: '客服支持',
 };
 
 // ─── Japanese ─────────────────────────────────────────────────────────────────
@@ -1995,6 +2007,7 @@ const ja: Partial<Translations> = {
   withdrawDispute: '異議を取り下げる',
   disputeWithdrawn: '異議を取り下げました — 作業を続けられます',
   nDisputeWithdrawn: '異議が取り下げられました||異議は取り消されました — 作業を続けられます。',
+  support: 'サポート',
 };
 
 // ─── Korean ───────────────────────────────────────────────────────────────────
@@ -2166,6 +2179,7 @@ const ko: Partial<Translations> = {
   withdrawDispute: '분쟁 철회',
   disputeWithdrawn: '분쟁을 철회했습니다 — 계속 진행하세요',
   nDisputeWithdrawn: '분쟁이 철회되었습니다||분쟁이 취소되었습니다 — 작업을 계속하세요.',
+  support: '고객지원',
 };
 
 // ─── Vietnamese ───────────────────────────────────────────────────────────────
@@ -2337,6 +2351,7 @@ const vi: Partial<Translations> = {
   withdrawDispute: 'Rút tranh chấp',
   disputeWithdrawn: 'Đã rút tranh chấp — có thể tiếp tục',
   nDisputeWithdrawn: 'Đã rút tranh chấp||Tranh chấp đã được hủy — có thể tiếp tục công việc.',
+  support: 'Hỗ trợ',
 };
 
 // ─── Indonesian ───────────────────────────────────────────────────────────────
@@ -2508,6 +2523,7 @@ const id: Partial<Translations> = {
   withdrawDispute: 'Tarik sengketa',
   disputeWithdrawn: 'Sengketa ditarik — silakan lanjutkan',
   nDisputeWithdrawn: 'Sengketa ditarik||Sengketa dibatalkan — pekerjaan bisa dilanjutkan.',
+  support: 'Dukungan',
 };
 
 // ─── Italian ──────────────────────────────────────────────────────────────────
@@ -2669,6 +2685,7 @@ const it: Partial<Translations> = {
   withdrawDispute: 'Ritira la controversia',
   disputeWithdrawn: 'Controversia ritirata — potete proseguire',
   nDisputeWithdrawn: 'Controversia ritirata||La controversia è stata annullata — potete proseguire il lavoro.',
+  support: 'Assistenza',
 };
 
 // ─── Polish ───────────────────────────────────────────────────────────────────
@@ -2830,6 +2847,7 @@ const pl: Partial<Translations> = {
   withdrawDispute: 'Wycofaj spór',
   disputeWithdrawn: 'Spór wycofany — możecie kontynuować',
   nDisputeWithdrawn: 'Spór wycofany||Spór został odwołany — możecie kontynuować pracę.',
+  support: 'Wsparcie',
 };
 
 // ─── Thai, Filipino, Dutch, Swedish, Romanian — compact versions ──────────────
@@ -3152,6 +3170,7 @@ const th: Partial<Translations> = { ...en,
   withdrawDispute: 'ถอนข้อพิพาท',
   disputeWithdrawn: 'ถอนข้อพิพาทแล้ว — ดำเนินการต่อได้',
   nDisputeWithdrawn: 'ถอนข้อพิพาทแล้ว||ยกเลิกข้อพิพาทแล้ว — ทำงานต่อได้',
+  support: 'ฝ่ายสนับสนุน',
 };
 
 const tl: Partial<Translations> = { ...en,
@@ -3474,6 +3493,7 @@ const tl: Partial<Translations> = { ...en,
   withdrawDispute: 'Bawiin ang sigalot',
   disputeWithdrawn: 'Nabawi ang sigalot — puwede nang magpatuloy',
   nDisputeWithdrawn: 'Nabawi ang sigalot||Kinansela ang sigalot — puwede nang ipagpatuloy ang trabaho.',
+  support: 'Suporta',
 };
 
 const nl: Partial<Translations> = { ...en,
@@ -3796,6 +3816,7 @@ const nl: Partial<Translations> = { ...en,
   withdrawDispute: 'Geschil intrekken',
   disputeWithdrawn: 'Geschil ingetrokken — jullie kunnen verder',
   nDisputeWithdrawn: 'Geschil ingetrokken||Het geschil is ingetrokken — jullie kunnen verder met de opdracht.',
+  support: 'Ondersteuning',
 };
 
 const sv: Partial<Translations> = { ...en,
@@ -4118,6 +4139,7 @@ const sv: Partial<Translations> = { ...en,
   withdrawDispute: 'Dra tillbaka tvisten',
   disputeWithdrawn: 'Tvisten tillbakadragen — ni kan fortsätta',
   nDisputeWithdrawn: 'Tvisten tillbakadragen||Tvisten avbröts — ni kan fortsätta med uppdraget.',
+  support: 'Support',
 };
 
 const ro: Partial<Translations> = { ...en,
@@ -4440,6 +4462,7 @@ const ro: Partial<Translations> = { ...en,
   withdrawDispute: 'Retrage litigiul',
   disputeWithdrawn: 'Litigiu retras — puteți continua',
   nDisputeWithdrawn: 'Litigiu retras||Litigiul a fost anulat — puteți continua lucrarea.',
+  support: 'Asistență',
 };
 
 const bn: Partial<Translations> = { ...en,
@@ -4762,6 +4785,7 @@ const bn: Partial<Translations> = { ...en,
   withdrawDispute: 'বিরোধ প্রত্যাহার',
   disputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে — চালিয়ে যেতে পারেন',
   nDisputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে||বিরোধ বাতিল হয়েছে — কাজ চালিয়ে যেতে পারেন।',
+  support: 'সহায়তা',
 };
 
 // ─── Language map ─────────────────────────────────────────────────────────────

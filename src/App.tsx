@@ -4,7 +4,7 @@ import { useAuth, isAuthenticated } from './hooks/useAuth';
 import type { User } from './hooks/useAuth';
 import { apiFetch, getConfig } from './lib/api';
 import { ensurePiInit } from './lib/pi';
-import { setConnectsEconomy } from './lib/connects';
+import { setConnectsEconomy, setSupportUrl } from './lib/connects';
 import { useToastFn, ToastContainer } from './components/Toast';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
@@ -132,7 +132,7 @@ export default function App() {
   // here so every screen agrees — otherwise a screen that never fetches config
   // silently shows the fallback numbers.
   useEffect(() => {
-    getConfig().then(setConnectsEconomy).catch(() => {});
+    getConfig().then(c => { setConnectsEconomy(c); setSupportUrl(c?.support_url); }).catch(() => {});
   }, []);
 
   const refreshUnread = useCallback(() => {
