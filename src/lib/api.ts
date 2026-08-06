@@ -147,6 +147,8 @@ export const cancelEscrow = (id: number) =>
   apiFetch(`/api/escrows/${id}/cancel`, { method: 'POST' });
 export const disputeEscrow = (id: number, reason: string) =>
   apiFetch(`/api/escrows/${id}/dispute`, { method: 'POST', body: JSON.stringify({ reason }) });
+export const withdrawDispute = (id: number) =>
+  apiFetch(`/api/escrows/${id}/dispute/withdraw`, { method: 'POST' });
 
 // Milestones
 export const getMilestones = (id: number) => apiFetch(`/api/escrows/${id}/milestones`);

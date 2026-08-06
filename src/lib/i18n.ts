@@ -64,6 +64,7 @@ const KEYS = {
   nOfferReceived: '', nOfferAccepted: '', nOfferDeclined: '', nMilestoneRequested: '', nMilestonePaidWallet: '', nMilestonePaidBalance: '', nAutoReleasedWallet: '', nAutoReleasedBalance: '', nAutoReleasedClient: '', nMilestoneAutoWallet: '', nMilestoneAutoBalance: '', nMilestoneAutoClient: '', nDisputeResolved: '', nEscrowReleasedAdmin: '', nEscrowRefundedAdmin: '', nJobDeletedAdminClient: '', nJobDeletedAdminFreelancer: '', nSavedSearchHits: '',
   watchAd: '', watchAdSub: '', free: '', adNotAvailable: '', adRewarded: '',
   payoutPending: '',
+  disputeMinLength: '', withdrawDispute: '', disputeWithdrawn: '', nDisputeWithdrawn: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -209,6 +210,10 @@ const en: Translations = {
   adNotAvailable: 'No ad available right now — try again later',
   adRewarded: '{n} connect added — thanks for watching!',
   payoutPending: 'Held until Pi Network enables wallet payouts',
+  disputeMinLength: '{n} more characters needed — the administrator cannot see your chat',
+  withdrawDispute: 'Withdraw dispute',
+  disputeWithdrawn: 'Dispute withdrawn — you can carry on',
+  nDisputeWithdrawn: 'Dispute withdrawn||The dispute was called off — you can carry on with the job.',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
@@ -351,6 +356,10 @@ const ru: Partial<Translations> = {
   adNotAvailable: 'Сейчас нет доступной рекламы — попробуйте позже',
   adRewarded: 'Начислен {n} коннект — спасибо за просмотр!',
   payoutPending: 'Удерживается, пока Pi Network не включит выплаты на кошелёк',
+  disputeMinLength: 'Нужно ещё {n} символов — администратор не видит вашу переписку',
+  withdrawDispute: 'Отозвать спор',
+  disputeWithdrawn: 'Спор отозван — можно продолжать',
+  nDisputeWithdrawn: 'Спор отозван||Спор по задаче отозван — можно продолжать работу.',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
@@ -493,6 +502,10 @@ const uk: Partial<Translations> = {
   adNotAvailable: 'Зараз немає доступної реклами — спробуйте пізніше',
   adRewarded: 'Нараховано {n} конект — дякуємо за перегляд!',
   payoutPending: 'Утримується, доки Pi Network не увімкне виплати на гаманець',
+  disputeMinLength: 'Потрібно ще {n} символів — адміністратор не бачить вашого листування',
+  withdrawDispute: 'Відкликати спір',
+  disputeWithdrawn: 'Спір відкликано — можна продовжувати',
+  nDisputeWithdrawn: 'Спір відкликано||Спір за задачею відкликано — можна продовжувати роботу.',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
@@ -650,6 +663,10 @@ const de: Partial<Translations> = {
   adNotAvailable: 'Gerade keine Werbung verfügbar — versuch es später',
   adRewarded: '{n} Connect gutgeschrieben — danke fürs Ansehen!',
   payoutPending: 'Zurückgehalten, bis Pi Network Wallet-Auszahlungen aktiviert',
+  disputeMinLength: 'Noch {n} Zeichen nötig — der Administrator sieht euren Chat nicht',
+  withdrawDispute: 'Streitfall zurückziehen',
+  disputeWithdrawn: 'Streitfall zurückgezogen — ihr könnt weitermachen',
+  nDisputeWithdrawn: 'Streitfall zurückgezogen||Der Streitfall wurde beigelegt — ihr könnt weiterarbeiten.',
 };
 
 // ─── French ───────────────────────────────────────────────────────────────────
@@ -807,6 +824,10 @@ const fr: Partial<Translations> = {
   adNotAvailable: 'Aucune pub disponible pour le moment — réessayez plus tard',
   adRewarded: '{n} connect ajouté — merci d’avoir regardé !',
   payoutPending: 'Retenu jusqu’à ce que Pi Network active les versements sur portefeuille',
+  disputeMinLength: 'Encore {n} caractères — l’administrateur ne voit pas votre conversation',
+  withdrawDispute: 'Retirer le litige',
+  disputeWithdrawn: 'Litige retiré — vous pouvez continuer',
+  nDisputeWithdrawn: 'Litige retiré||Le litige a été annulé — vous pouvez reprendre le travail.',
 };
 
 // ─── Spanish ──────────────────────────────────────────────────────────────────
@@ -964,6 +985,10 @@ const es: Partial<Translations> = {
   adNotAvailable: 'No hay anuncios ahora mismo: inténtalo más tarde',
   adRewarded: '{n} connect añadido: ¡gracias por ver!',
   payoutPending: 'Retenido hasta que Pi Network active los pagos al monedero',
+  disputeMinLength: 'Faltan {n} caracteres: el administrador no ve vuestro chat',
+  withdrawDispute: 'Retirar la disputa',
+  disputeWithdrawn: 'Disputa retirada: podéis continuar',
+  nDisputeWithdrawn: 'Disputa retirada||La disputa se canceló: podéis continuar con el trabajo.',
 };
 
 // ─── Portuguese ───────────────────────────────────────────────────────────────
@@ -1121,6 +1146,10 @@ const pt: Partial<Translations> = {
   adNotAvailable: 'Nenhum anúncio disponível agora — tente mais tarde',
   adRewarded: '{n} connect adicionado — obrigado por assistir!',
   payoutPending: 'Retido até a Pi Network ativar os pagamentos para a carteira',
+  disputeMinLength: 'Faltam {n} caracteres — o administrador não vê a sua conversa',
+  withdrawDispute: 'Retirar a disputa',
+  disputeWithdrawn: 'Disputa retirada — podem continuar',
+  nDisputeWithdrawn: 'Disputa retirada||A disputa foi cancelada — podem continuar o trabalho.',
 };
 
 // ─── Turkish ──────────────────────────────────────────────────────────────────
@@ -1278,6 +1307,10 @@ const tr: Partial<Translations> = {
   adNotAvailable: 'Şu anda reklam yok — daha sonra deneyin',
   adRewarded: '{n} connect eklendi — izlediğiniz için teşekkürler!',
   payoutPending: 'Pi Network cüzdan ödemelerini açana kadar bekletiliyor',
+  disputeMinLength: '{n} karakter daha gerekli — yönetici sohbetinizi göremez',
+  withdrawDispute: 'Anlaşmazlığı geri çek',
+  disputeWithdrawn: 'Anlaşmazlık geri çekildi — devam edebilirsiniz',
+  nDisputeWithdrawn: 'Anlaşmazlık geri çekildi||Anlaşmazlık kaldırıldı — işe devam edebilirsiniz.',
 };
 
 // ─── Arabic (RTL) ─────────────────────────────────────────────────────────────
@@ -1445,6 +1478,10 @@ const ar: Partial<Translations> = {
   adNotAvailable: 'لا يوجد إعلان متاح الآن — حاول لاحقًا',
   adRewarded: 'أُضيفت {n} نقطة تواصل — شكرًا للمشاهدة!',
   payoutPending: 'محتجز حتى تُفعّل شبكة Pi التحويل إلى المحفظة',
+  disputeMinLength: 'تحتاج {n} حرفًا إضافيًا — لا يرى المشرف محادثتكما',
+  withdrawDispute: 'سحب النزاع',
+  disputeWithdrawn: 'تم سحب النزاع — يمكنكما المتابعة',
+  nDisputeWithdrawn: 'تم سحب النزاع||أُلغي النزاع — يمكنكما متابعة العمل.',
 };
 
 // ─── Hindi ────────────────────────────────────────────────────────────────────
@@ -1612,6 +1649,10 @@ const hi: Partial<Translations> = {
   adNotAvailable: 'अभी कोई विज्ञापन उपलब्ध नहीं — बाद में कोशिश करें',
   adRewarded: '{n} कनेक्ट जोड़ा गया — देखने के लिए धन्यवाद!',
   payoutPending: 'Pi Network द्वारा वॉलेट भुगतान चालू करने तक रोका गया',
+  disputeMinLength: '{n} और अक्षर चाहिए — व्यवस्थापक आपकी चैट नहीं देख सकते',
+  withdrawDispute: 'विवाद वापस लें',
+  disputeWithdrawn: 'विवाद वापस लिया गया — आगे बढ़ सकते हैं',
+  nDisputeWithdrawn: 'विवाद वापस लिया गया||विवाद रद्द कर दिया गया — काम जारी रख सकते हैं।',
 };
 
 // ─── Chinese Simplified ───────────────────────────────────────────────────────
@@ -1779,6 +1820,10 @@ const zh: Partial<Translations> = {
   adNotAvailable: '当前没有可用广告，请稍后再试',
   adRewarded: '已添加 {n} 个连接点 — 感谢观看！',
   payoutPending: '暂存中，待 Pi Network 开放钱包提现',
+  disputeMinLength: '还需 {n} 个字符 — 管理员看不到你们的聊天',
+  withdrawDispute: '撤回争议',
+  disputeWithdrawn: '争议已撤回，可以继续',
+  nDisputeWithdrawn: '争议已撤回||争议已取消，可以继续工作。',
 };
 
 // ─── Japanese ─────────────────────────────────────────────────────────────────
@@ -1946,6 +1991,10 @@ const ja: Partial<Translations> = {
   adNotAvailable: '現在利用できる広告がありません — 後でお試しください',
   adRewarded: 'コネクトを {n} 追加しました — ご視聴ありがとうございます！',
   payoutPending: 'Pi Network がウォレット送金を有効にするまで保留中',
+  disputeMinLength: 'あと {n} 文字必要です — 管理者はチャットを見られません',
+  withdrawDispute: '異議を取り下げる',
+  disputeWithdrawn: '異議を取り下げました — 作業を続けられます',
+  nDisputeWithdrawn: '異議が取り下げられました||異議は取り消されました — 作業を続けられます。',
 };
 
 // ─── Korean ───────────────────────────────────────────────────────────────────
@@ -2113,6 +2162,10 @@ const ko: Partial<Translations> = {
   adNotAvailable: '지금은 이용 가능한 광고가 없습니다 — 나중에 다시 시도하세요',
   adRewarded: '커넥트 {n}개가 추가되었습니다 — 시청해 주셔서 감사합니다!',
   payoutPending: 'Pi Network가 지갑 지급을 활성화할 때까지 보관 중',
+  disputeMinLength: '{n}자 더 필요합니다 — 관리자는 대화를 볼 수 없습니다',
+  withdrawDispute: '분쟁 철회',
+  disputeWithdrawn: '분쟁을 철회했습니다 — 계속 진행하세요',
+  nDisputeWithdrawn: '분쟁이 철회되었습니다||분쟁이 취소되었습니다 — 작업을 계속하세요.',
 };
 
 // ─── Vietnamese ───────────────────────────────────────────────────────────────
@@ -2280,6 +2333,10 @@ const vi: Partial<Translations> = {
   adNotAvailable: 'Hiện không có quảng cáo — hãy thử lại sau',
   adRewarded: 'Đã cộng {n} connect — cảm ơn bạn đã xem!',
   payoutPending: 'Đang giữ cho đến khi Pi Network bật thanh toán về ví',
+  disputeMinLength: 'Cần thêm {n} ký tự — quản trị viên không xem được cuộc trò chuyện',
+  withdrawDispute: 'Rút tranh chấp',
+  disputeWithdrawn: 'Đã rút tranh chấp — có thể tiếp tục',
+  nDisputeWithdrawn: 'Đã rút tranh chấp||Tranh chấp đã được hủy — có thể tiếp tục công việc.',
 };
 
 // ─── Indonesian ───────────────────────────────────────────────────────────────
@@ -2447,6 +2504,10 @@ const id: Partial<Translations> = {
   adNotAvailable: 'Tidak ada iklan saat ini — coba lagi nanti',
   adRewarded: '{n} connect ditambahkan — terima kasih sudah menonton!',
   payoutPending: 'Ditahan hingga Pi Network mengaktifkan pembayaran ke dompet',
+  disputeMinLength: 'Butuh {n} karakter lagi — admin tidak bisa melihat obrolan Anda',
+  withdrawDispute: 'Tarik sengketa',
+  disputeWithdrawn: 'Sengketa ditarik — silakan lanjutkan',
+  nDisputeWithdrawn: 'Sengketa ditarik||Sengketa dibatalkan — pekerjaan bisa dilanjutkan.',
 };
 
 // ─── Italian ──────────────────────────────────────────────────────────────────
@@ -2604,6 +2665,10 @@ const it: Partial<Translations> = {
   adNotAvailable: 'Nessun annuncio disponibile ora — riprova più tardi',
   adRewarded: '{n} connect aggiunto — grazie per aver guardato!',
   payoutPending: 'Trattenuto finché Pi Network non abilita i pagamenti sul wallet',
+  disputeMinLength: 'Servono altri {n} caratteri — l’amministratore non vede la vostra chat',
+  withdrawDispute: 'Ritira la controversia',
+  disputeWithdrawn: 'Controversia ritirata — potete proseguire',
+  nDisputeWithdrawn: 'Controversia ritirata||La controversia è stata annullata — potete proseguire il lavoro.',
 };
 
 // ─── Polish ───────────────────────────────────────────────────────────────────
@@ -2761,6 +2826,10 @@ const pl: Partial<Translations> = {
   adNotAvailable: 'Brak dostępnej reklamy — spróbuj później',
   adRewarded: 'Dodano {n} connect — dzięki za obejrzenie!',
   payoutPending: 'Wstrzymane, dopóki Pi Network nie włączy wypłat na portfel',
+  disputeMinLength: 'Potrzeba jeszcze {n} znaków — administrator nie widzi waszej rozmowy',
+  withdrawDispute: 'Wycofaj spór',
+  disputeWithdrawn: 'Spór wycofany — możecie kontynuować',
+  nDisputeWithdrawn: 'Spór wycofany||Spór został odwołany — możecie kontynuować pracę.',
 };
 
 // ─── Thai, Filipino, Dutch, Swedish, Romanian — compact versions ──────────────
@@ -3079,6 +3148,10 @@ const th: Partial<Translations> = { ...en,
   adNotAvailable: 'ตอนนี้ไม่มีโฆษณา — ลองใหม่ภายหลัง',
   adRewarded: 'เพิ่ม {n} connect แล้ว — ขอบคุณที่รับชม!',
   payoutPending: 'ถือไว้จนกว่า Pi Network จะเปิดการจ่ายเงินเข้ากระเป๋า',
+  disputeMinLength: 'ต้องการอีก {n} ตัวอักษร — ผู้ดูแลไม่เห็นแชทของคุณ',
+  withdrawDispute: 'ถอนข้อพิพาท',
+  disputeWithdrawn: 'ถอนข้อพิพาทแล้ว — ดำเนินการต่อได้',
+  nDisputeWithdrawn: 'ถอนข้อพิพาทแล้ว||ยกเลิกข้อพิพาทแล้ว — ทำงานต่อได้',
 };
 
 const tl: Partial<Translations> = { ...en,
@@ -3397,6 +3470,10 @@ const tl: Partial<Translations> = { ...en,
   adNotAvailable: 'Walang available na ad ngayon — subukan mamaya',
   adRewarded: 'Nadagdag ang {n} connect — salamat sa panonood!',
   payoutPending: 'Hawak muna hanggang buksan ng Pi Network ang bayad sa wallet',
+  disputeMinLength: 'Kailangan pa ng {n} karakter — hindi nakikita ng admin ang chat ninyo',
+  withdrawDispute: 'Bawiin ang sigalot',
+  disputeWithdrawn: 'Nabawi ang sigalot — puwede nang magpatuloy',
+  nDisputeWithdrawn: 'Nabawi ang sigalot||Kinansela ang sigalot — puwede nang ipagpatuloy ang trabaho.',
 };
 
 const nl: Partial<Translations> = { ...en,
@@ -3715,6 +3792,10 @@ const nl: Partial<Translations> = { ...en,
   adNotAvailable: 'Nu geen advertentie beschikbaar — probeer het later',
   adRewarded: '{n} connect toegevoegd — bedankt voor het kijken!',
   payoutPending: 'Vastgehouden tot Pi Network wallet-uitbetalingen inschakelt',
+  disputeMinLength: 'Nog {n} tekens nodig — de beheerder ziet jullie chat niet',
+  withdrawDispute: 'Geschil intrekken',
+  disputeWithdrawn: 'Geschil ingetrokken — jullie kunnen verder',
+  nDisputeWithdrawn: 'Geschil ingetrokken||Het geschil is ingetrokken — jullie kunnen verder met de opdracht.',
 };
 
 const sv: Partial<Translations> = { ...en,
@@ -4033,6 +4114,10 @@ const sv: Partial<Translations> = { ...en,
   adNotAvailable: 'Ingen annons tillgänglig just nu — försök senare',
   adRewarded: '{n} connect tillagd — tack för att du tittade!',
   payoutPending: 'Hålls kvar tills Pi Network aktiverar utbetalning till plånbok',
+  disputeMinLength: '{n} tecken till behövs — administratören ser inte er chatt',
+  withdrawDispute: 'Dra tillbaka tvisten',
+  disputeWithdrawn: 'Tvisten tillbakadragen — ni kan fortsätta',
+  nDisputeWithdrawn: 'Tvisten tillbakadragen||Tvisten avbröts — ni kan fortsätta med uppdraget.',
 };
 
 const ro: Partial<Translations> = { ...en,
@@ -4351,6 +4436,10 @@ const ro: Partial<Translations> = { ...en,
   adNotAvailable: 'Nicio reclamă disponibilă acum — încearcă mai târziu',
   adRewarded: '{n} connect adăugat — mulțumim că ai urmărit!',
   payoutPending: 'Reținut până când Pi Network activează plățile în portofel',
+  disputeMinLength: 'Mai sunt necesare {n} caractere — administratorul nu vă vede conversația',
+  withdrawDispute: 'Retrage litigiul',
+  disputeWithdrawn: 'Litigiu retras — puteți continua',
+  nDisputeWithdrawn: 'Litigiu retras||Litigiul a fost anulat — puteți continua lucrarea.',
 };
 
 const bn: Partial<Translations> = { ...en,
@@ -4669,6 +4758,10 @@ const bn: Partial<Translations> = { ...en,
   adNotAvailable: 'এখন কোনো বিজ্ঞাপন নেই — পরে চেষ্টা করুন',
   adRewarded: '{n}টি কানেক্ট যোগ হয়েছে — দেখার জন্য ধন্যবাদ!',
   payoutPending: 'Pi Network ওয়ালেট পেমেন্ট চালু না করা পর্যন্ত আটকে আছে',
+  disputeMinLength: 'আরও {n}টি অক্ষর দরকার — প্রশাসক আপনার চ্যাট দেখতে পান না',
+  withdrawDispute: 'বিরোধ প্রত্যাহার',
+  disputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে — চালিয়ে যেতে পারেন',
+  nDisputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে||বিরোধ বাতিল হয়েছে — কাজ চালিয়ে যেতে পারেন।',
 };
 
 // ─── Language map ─────────────────────────────────────────────────────────────

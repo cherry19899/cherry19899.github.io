@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Spinner from '../components/Spinner';
 import { createPortal } from 'react-dom';
 import {
-  getEscrows, releaseEscrow, cancelEscrow, disputeEscrow,
+  getEscrows, releaseEscrow, cancelEscrow, disputeEscrow, withdrawDispute,
   getMilestones, saveMilestones as apiSaveMilestones,
   requestMilestone, approveMilestone,
 } from '../lib/api';
@@ -328,6 +328,20 @@ export default function EscrowPage() {
     finally { setActing(null); }
   };
 
+  // Parties usually settle it themselves in chat, which the admin cannot see.
+  // Without this the escrow stays frozen until someone rules on an argument
+  // that already ended.
+  const doWithdrawDispute = async (id: number) => {
+    setActing(id);
+    try {
+      await withdrawDispute(id);
+      toast(tr.disputeWithdrawn, 'success');
+      load();
+    } catch (err: any) {
+      toast(err?.message || 'Failed', 'error');
+    } finally { setActing(null); }
+  };
+
   const doDispute = async () => {
     if (!disputeModal) return;
     try {
@@ -439,6 +453,15 @@ export default function EscrowPage() {
                     )}
 
                     {/* Actions */}
+                    {e.status === 'disputed' && (
+                      <button
+                        onClick={() => doWithdrawDispute(e.id)}
+                        disabled={acting === e.id}
+                        className="w-full py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold disabled:opacity-60"
+                      >
+                        {acting === e.id ? <Spinner /> : tr.withdrawDispute}
+                      </button>
+                    )}
                     {e.status === 'funded' && isClient && (
                       <div className="flex gap-2">
                         <button
@@ -509,9 +532,13 @@ export default function EscrowPage() {
               rows={4}
               className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none mb-4"
             />
+            <p className={`text-xs mb-3 ${disputeText.trim().length >= 20 ? 'text-gray-400 dark:text-slate-500' : 'text-amber-600'}`}>
+              {tr.disputeMinLength.replace('{n}', String(Math.max(0, 20 - disputeText.trim().length)))}
+            </p>
             <button
               onClick={doDispute}
-              className="w-full h-12 rounded-full bg-red-500 text-white font-semibold"
+              disabled={disputeText.trim().length < 20}
+              className="w-full h-12 rounded-full bg-red-500 text-white font-semibold disabled:opacity-50"
             >
               {tr.submitDispute}
             </button>
