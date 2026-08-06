@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDraft } from '../hooks/useDraft';
 import Spinner from '../components/Spinner';
 import { t, connectsLabel, statusLabel } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -40,7 +41,10 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>('detail');
   const [applyMode, setApplyMode] = useState(false);
-  const [proposal, setProposal] = useState('');
+  // Keyed by job id so drafts for different jobs don't overwrite each other.
+  const [draft, setDraft, clearDraft] = useDraft(`proposal_${id}`, { text: '' });
+  const proposal = draft.text;
+  const setProposal = (text: string) => setDraft({ text });
   const [applying, setApplying] = useState(false);
   const [acting, setActing] = useState<string | null>(null);
   const [hiringId, setHiringId] = useState<number | null>(null);
@@ -100,6 +104,7 @@ export default function JobDetailPage() {
       const data: any = await applyToJob(id!, { proposal, job_id: Number(id) });
       console.log('[apply] response', data);
       updateUser({ balance_connects: Math.max(0, myConnects - applyCost) });
+      clearDraft();   // only once the server has actually accepted it
       const roomId = data?.room_id || data?.room?.id;
       console.log('[apply] roomId=', roomId, 'new_balance=', data?.new_balance ?? data?.remaining_connects);
       if (roomId) {

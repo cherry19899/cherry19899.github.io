@@ -185,7 +185,13 @@ export default function ProfilePage() {
       onClick: () => {
         const token = localStorage.getItem('workpro_token');
         const u = localStorage.getItem('workpro_user');
+        // Unsent writing is not cache. Someone clearing cached data does not
+        // expect to lose the job post they are half way through.
+        const drafts = Object.keys(localStorage)
+          .filter(k => k.startsWith('workpro_draft_'))
+          .map(k => [k, localStorage.getItem(k)] as const);
         localStorage.clear();
+        for (const [k, v] of drafts) if (v != null) localStorage.setItem(k, v);
         if (token) localStorage.setItem('workpro_token', token);
         if (u) localStorage.setItem('workpro_user', u);
         toast(tr.cacheCleared, 'success');

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDraft } from '../hooks/useDraft';
 import { showInterstitial } from '../lib/ads';
 import Spinner from '../components/Spinner';
 import { t, connectsLabel } from '../lib/i18n';
@@ -15,7 +16,9 @@ export default function PostJobPage() {
   const { user, updateUser } = useAppCtx();
   const myConnects = user?.balance_connects ?? 0;
   const canAfford = myConnects >= POST_JOB_COST;
-  const [form, setForm] = useState({
+  // Survives a session drop: people spend minutes writing a description and
+  // Pi Browser expires without warning.
+  const [form, setForm, clearDraft] = useDraft('post_job', {
     title: '', description: '', budget: '', category: 'development',
     skills: '', deadline: '', is_urgent: false, image: '',
   });
@@ -59,6 +62,7 @@ export default function PostJobPage() {
       });
       // Optimistically reflect the connect the server deducted.
       updateUser({ balance_connects: Math.max(0, myConnects - POST_JOB_COST) });
+      clearDraft();
       toast(tr.jobPosted, 'success');
       const newId = data?.job?.id || data?.id;
       // A natural break: the job is already created and the user is between
