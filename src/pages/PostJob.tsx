@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { createJob, getConfig } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CATEGORIES } from '../lib/constants';
-import { POST_JOB_COST } from '../lib/connects';
+import { postJobCost, setConnectsEconomy } from '../lib/connects';
 import { useAppCtx } from '../App';
 
 export default function PostJobPage() {
@@ -15,7 +15,7 @@ export default function PostJobPage() {
   const nav = useNavigate();
   const { user, updateUser } = useAppCtx();
   const myConnects = user?.balance_connects ?? 0;
-  const canAfford = myConnects >= POST_JOB_COST;
+  const canAfford = myConnects >= postJobCost();
   // Survives a session drop: people spend minutes writing a description and
   // Pi Browser expires without warning.
   const [form, setForm, clearDraft] = useDraft('post_job', {
@@ -28,6 +28,7 @@ export default function PostJobPage() {
   useEffect(() => {
     getConfig().then(c => {
       if (typeof c?.platform_fee_percent === 'number') setFeePercent(c.platform_fee_percent);
+      setConnectsEconomy(c);   // keep this screen correct even on a direct load
     }).catch(() => {});
   }, []);
 
@@ -61,7 +62,7 @@ export default function PostJobPage() {
         ...(form.image ? { images: [form.image] } : {}),
       });
       // Optimistically reflect the connect the server deducted.
-      updateUser({ balance_connects: Math.max(0, myConnects - POST_JOB_COST) });
+      updateUser({ balance_connects: Math.max(0, myConnects - postJobCost()) });
       clearDraft();
       toast(tr.jobPosted, 'success');
       const newId = data?.job?.id || data?.id;
@@ -148,7 +149,7 @@ export default function PostJobPage() {
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-2 text-sm">
             <Row label={tr.budget} value={`${budget} π`} />
             <Row label={`${tr.platformFee} (${feePercent}%)`} value={`−${fee} π`} muted />
-            <Row label={`${tr.costOneConnect}`} value={`${POST_JOB_COST}`} muted />
+            <Row label={`${tr.costOneConnect}`} value={`${postJobCost()}`} muted />
             <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
               <span className="text-gray-900">{tr.youPay}</span>
               <span className="text-emerald-500">{budget} π</span>

@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Com
 import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth, isAuthenticated } from './hooks/useAuth';
 import type { User } from './hooks/useAuth';
-import { apiFetch } from './lib/api';
+import { apiFetch, getConfig } from './lib/api';
 import { ensurePiInit } from './lib/pi';
+import { setConnectsEconomy } from './lib/connects';
 import { useToastFn, ToastContainer } from './components/Toast';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
@@ -126,6 +127,13 @@ export default function App() {
   }, []);
 
   useEffect(() => { ensurePiInit(); }, []);
+
+  // Connects pricing is admin-configurable and lives on the server. Load it once
+  // here so every screen agrees — otherwise a screen that never fetches config
+  // silently shows the fallback numbers.
+  useEffect(() => {
+    getConfig().then(setConnectsEconomy).catch(() => {});
+  }, []);
 
   const refreshUnread = useCallback(() => {
     if (!auth.user) return;
