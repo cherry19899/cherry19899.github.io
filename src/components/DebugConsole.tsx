@@ -16,10 +16,6 @@ export default function DebugConsole() {
       }).join(' ');
       setLines(l => [...l.slice(-200), { t, msg }]);
     };
-    // Replay anything logged before this component mounted — main.tsx's
-    // inset-detection runs first and has nowhere else to put its result.
-    const early = (window as any).__earlyLogs as [string, any[]][] | undefined;
-    if (early) { early.forEach(([t, a]) => push(t, a)); delete (window as any).__earlyLogs; }
     const orig = { log: console.log, warn: console.warn, error: console.error };
     console.log = (...a: any[]) => { push('log', a); orig.log(...a); };
     console.warn = (...a: any[]) => { push('warn', a); orig.warn(...a); };

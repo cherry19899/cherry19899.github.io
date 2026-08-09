@@ -10,6 +10,7 @@ import { CATEGORIES, CAT_COLORS } from '../lib/constants';
 import { applyCostFor } from '../lib/connects';
 import { getFavorites, isFavorite, toggleFavorite } from '../lib/favorites';
 import { t, jobsLabel, connectsLabel } from '../lib/i18n';
+import { toast } from '../components/Toast';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -443,14 +444,25 @@ export default function HomePage() {
       const params = { search, category: cat, sort, ...filters };
       const s = await createSavedSearch({ name, query_params: params, alert_enabled: alertEnabled });
       setSavedSearches(prev => [...(Array.isArray(prev) ? prev : []), s?.saved_search || s?.search || { id: Date.now(), name }]);
-    } catch {}
-    setShowSaveModal(false);
+      setShowSaveModal(false);
+    } catch {
+      // The modal used to close either way and say nothing, so a failed save
+      // was indistinguishable from a successful one — the search simply was not
+      // there later. Keep it open with the name still typed, and say so.
+      toast(tr.actionFailed, 'error');
+    }
   };
 
   const handleDeleteSaved = async (id: number) => {
-    try { await deleteSavedSearch(id); }
-    catch {}
-    setSavedSearches(prev => prev.filter(s => s.id !== id));
+    try {
+      await deleteSavedSearch(id);
+      // Only drop it from the list once the server has actually accepted the
+      // delete. This used to run regardless, so a failed delete looked like it
+      // worked until the next reload brought the search back.
+      setSavedSearches(prev => prev.filter(s => s.id !== id));
+    } catch {
+      toast(tr.actionFailed, 'error');
+    }
   };
 
   const handleLoadSearch = (s: any) => {

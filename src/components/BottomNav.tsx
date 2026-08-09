@@ -16,7 +16,7 @@ export default function BottomNav() {
   const { chatUnread } = useAppCtx();
 
   return (
-    <nav data-diag="bottomnav" className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 safe-area-bottom">
       <div className="flex h-16 max-w-lg mx-auto">
         {TABS().map(({ path, label, Icon }) => {
           const active = path === '/' ? pathname === '/' : pathname.startsWith(path);

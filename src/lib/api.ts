@@ -208,8 +208,11 @@ export const getUserLevel = (userId: string) =>
 // ─── Users ───────────────────────────────────────────────────────────────────
 
 export const getUser = (id: string) => apiFetch(`/api/users/${id}`);
+// PUT, not PATCH: the server only registers PUT on this path, so PATCH 404s —
+// confirmed against the live API. Nothing calls this today; fixed so the next
+// caller does not inherit a silent 404.
 export const updateMe = (data: any) =>
-  apiFetch('/api/users/me', { method: 'PATCH', body: JSON.stringify(data) });
+  apiFetch('/api/users/me', { method: 'PUT', body: JSON.stringify(data) });
 export const updateAvailability = (userId: string, available: boolean) =>
   apiFetch(`/api/users/${userId}/availability`, { method: 'POST', body: JSON.stringify({ available }) });
 

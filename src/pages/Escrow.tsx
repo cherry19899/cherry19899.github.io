@@ -281,11 +281,17 @@ export default function EscrowPage() {
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const tr = t();
 
+  // A failed load used to leave the list empty and silent, so this screen told
+  // someone whose Pi is sitting in escrow that they had no escrows at all.
+  // Record the failure and say so rather than showing the empty state.
+  const [loadError, setLoadError] = useState(false);
+
   const load = () => {
     setLoading(true);
+    setLoadError(false);
     getEscrows()
       .then((d: any) => setEscrows(d?.escrows || d || []))
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   };
 
@@ -386,6 +392,11 @@ export default function EscrowPage() {
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-28 skeleton rounded-2xl" />)}
         </div>
+      ) : loadError ? (
+        <button onClick={load} className="w-full flex flex-col items-center justify-center py-16 text-center">
+          <span className="text-5xl mb-3">⚠️</span>
+          <p className="font-semibold text-gray-900 dark:text-white">{tr.loadFailed}</p>
+        </button>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">🔒</span>

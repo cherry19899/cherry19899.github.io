@@ -77,10 +77,9 @@ export default function ProfilePage() {
   // Installing to the home screen used to be withheld, because the icon opens
   // the default browser, where Pi.authenticate() never answers — the icon was a
   // dead end. The login screen now catches that and offers a way into Pi
-  // Browser, so the icon is a shortcut rather than a trap and the row is safe to
-  // show. It appears only where the browser actually offers installation: Pi
-  // Browser never fires this event, so nothing is promised that cannot be done.
+  // Browser, so the icon is a shortcut rather than a trap.
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [homeModal, setHomeModal] = useState(false);
 
   useEffect(() => {
     const onPrompt = (e: any) => {
@@ -98,7 +97,10 @@ export default function ProfilePage() {
   }, []);
 
   const addToHome = async () => {
-    if (!installPrompt) return;
+    // Pi Browser never fires beforeinstallprompt, and it is the only browser
+    // most users ever open this in — so "no prompt" is the normal case, not an
+    // error. Explain the manual route instead of doing nothing.
+    if (!installPrompt) { setHomeModal(true); return; }
     try {
       await installPrompt.prompt();
       // The prompt is single-use — a second prompt() on the same event throws.
@@ -195,11 +197,16 @@ export default function ProfilePage() {
       onClick: shareApp,
     },
     // Absent unless the browser has offered installation — see addToHome above.
-    ...(installPrompt ? [{
+    // Always shown. It used to appear only when beforeinstallprompt had fired,
+    // which never happens in Pi Browser — so the one place every user actually
+    // opens the app was the one place the row was invisible. Where the browser
+    // can install, tapping installs; everywhere else it explains how, and warns
+    // that the icon opens the normal browser where signing in will not work.
+    {
       icon: HomeIcon, bg: 'bg-emerald-100', ic: 'text-emerald-600',
       label: tr.addToHome, sub: tr.addToHomeSub, right: <Chevron />,
       onClick: addToHome,
-    }] : []),
+    },
     {
       icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
       label: tr.faq, right: <Chevron />,
@@ -438,6 +445,38 @@ export default function ProfilePage() {
       )}
 
       {/* Open in Pi Browser modal */}
+      {homeModal && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-6" onClick={() => setHomeModal(false)}>
+          <div className="w-full max-w-xs bg-white dark:bg-slate-800 rounded-3xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="text-5xl mb-3 text-center">🏠</div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2 text-center">{tr.addToHome}</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-3">{tr.addToHomeSteps}</p>
+            {/* The honest caveat, not buried: the icon lands in the normal
+                browser, and login there is impossible. */}
+            <p className="text-xs mb-4 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
+              {tr.addToHomeWarn}
+            </p>
+            <p className="text-xs text-center text-gray-400 dark:text-slate-500 mb-4 break-all">{APP_URL}</p>
+            <button
+              onClick={async () => {
+                const ok = await copyText(APP_URL);
+                toast(ok ? tr.shareCopied : tr.shareFailed, ok ? 'success' : 'error');
+              }}
+              className="w-full h-11 rounded-full bg-emerald-500 text-white font-semibold mb-2"
+            >
+              {tr.addToHomeCopy}
+            </button>
+            <button
+              onClick={() => setHomeModal(false)}
+              className="w-full h-11 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 font-semibold"
+            >
+              {tr.close}
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {piModal && createPortal(
         <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-6" onClick={() => setPiModal(false)}>
           <div className="w-full max-w-xs bg-white dark:bg-slate-800 rounded-3xl p-6 text-center" onClick={e => e.stopPropagation()}>
