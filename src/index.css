@@ -54,23 +54,37 @@ html.dark .skeleton {
   background-size: 200% 100%;
 }
 
-.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Single source for how much the system nav bar eats into the viewport bottom.
+   Everything fixed above BottomNav (chat composer, the Home FAB) reads this
+   same variable, so when it changes they move with the nav instead of being
+   covered by it — see the wv-no-inset override below for why that matters. */
+:root { --wp-bottom-inset: env(safe-area-inset-bottom, 0px); }
+
+.safe-area-bottom { padding-bottom: var(--wp-bottom-inset); }
 /* Space the fixed BottomNav occupies: its own 4rem plus whatever the device
-   reserves for the system navigation bar. Without the env() term the nav grows
+   reserves for the system navigation bar. Without the inset term the nav grows
    taller than the reserved space on gesture-nav devices and covers content. */
-.pb-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
+.pb-nav { padding-bottom: calc(4rem + var(--wp-bottom-inset)); }
 
 /* Android WebView — which is what Pi Browser is — lays the page out underneath
    the system navigation bar *and* reports env(safe-area-inset-bottom) as 0, so
-   the two rules above compensate for nothing. Measured inside Pi Browser:
-   inset 0px, screen.height 935 vs innerHeight 862, and the whole 73px
-   difference is the status bar plus the address bar at the top — meaning the
-   viewport really does run to the physical bottom edge. The result was that the
-   Escrow and Profile tabs sat under the system buttons and could not be tapped
-   at all. 48px is the Android navigation bar height (48dp); the class is only
-   set when the inset is genuinely missing, so devices that report one keep it. */
-html.wv-no-inset .safe-area-bottom { padding-bottom: 48px; }
-html.wv-no-inset .pb-nav { padding-bottom: calc(4rem + 48px); }
+   --wp-bottom-inset was 0 and the rules above compensated for nothing.
+   Measured inside Pi Browser: inset 0px, screen.height 935 vs innerHeight 862,
+   and the whole 73px difference is the status bar plus the address bar at the
+   top — meaning the viewport really does run to the physical bottom edge. The
+   result was that the Escrow and Profile tabs sat under the system buttons and
+   could not be tapped at all. 48px is the Android navigation bar height (48dp);
+   the class is only set when the inset is genuinely missing, so devices that
+   report one keep it.
+
+   First attempt at this fix only grew BottomNav's own padding, which pushed
+   its top edge up by 48px without telling the chat composer (fixed at
+   `bottom-16`, i.e. above nav's OLD height) or the Home FAB (`bottom-20`) to
+   move too — so the now-taller, still z-50 nav bar was painted straight over
+   the composer on a real device and the message box vanished. Both are now
+   `bottom-[calc(_+var(--wp-bottom-inset))]` in their JSX so they read the same
+   variable this class sets and stay in lockstep with the nav. */
+html.wv-no-inset { --wp-bottom-inset: 48px; }
 
 input, textarea, select { font-family: inherit; }
 

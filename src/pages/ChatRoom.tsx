@@ -212,8 +212,13 @@ export default function ChatRoomPage() {
         </div>
       )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-36">
+      {/* Messages. This screen renders its own BottomNav rather than going
+          through AppLayout's `pb-nav` wrapper, so pb-36 (9rem — composer plus
+          nav at their OLD static heights) is the only thing keeping the last
+          message from sitting under them. It needs the same +var(--wp-bottom-
+          inset) term as the composer and nav below, or the newest message(s)
+          land underneath on a device where the nav grows taller. */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-[calc(9rem+var(--wp-bottom-inset))]">
         {loading ? (
           <div className="flex justify-center pt-10">
             <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
@@ -258,8 +263,13 @@ export default function ChatRoomPage() {
         <div ref={bottom} />
       </div>
 
-      {/* Input bar */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 px-4 py-3 max-w-lg mx-auto">
+      {/* Input bar. Anchored at 4rem (BottomNav's own height) plus the same
+          --wp-bottom-inset the nav's padding uses, so it stays sat exactly on
+          top of the nav instead of sliding under it when the nav grows taller
+          on a device that has no real safe-area inset. A static `bottom-16`
+          here once left this box painted over by BottomNav on those devices —
+          the composer was still there, just invisible and untappable. */}
+      <div className="fixed bottom-[calc(4rem+var(--wp-bottom-inset))] left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 px-4 py-3 max-w-lg mx-auto">
         <div className="flex gap-2 items-center">
           <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={handleFileUpload} className="hidden" />
           <button

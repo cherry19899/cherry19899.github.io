@@ -666,7 +666,11 @@ export default function HomePage() {
         <button
           onClick={() => nav('/post-job')}
           aria-label={tr.postJob}
-          className="fixed bottom-20 right-4 z-[999] w-14 h-14 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shadow-xl shadow-black/30 flex items-center justify-center text-white active:scale-95 transition-transform"
+          // 5rem = BottomNav's 4rem height plus a 1rem gap above it; the
+          // +var(--wp-bottom-inset) term keeps that gap correct when the nav
+          // grows taller on a device with no real safe-area inset (see
+          // index.css) — a static bottom-20 would sink under the taller nav.
+          className="fixed bottom-[calc(5rem+var(--wp-bottom-inset))] right-4 z-[999] w-14 h-14 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900 shadow-xl shadow-black/30 flex items-center justify-center text-white active:scale-95 transition-transform"
         >
           <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19" />
