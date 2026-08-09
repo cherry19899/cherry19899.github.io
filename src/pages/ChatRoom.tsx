@@ -302,11 +302,13 @@ export default function ChatRoomPage() {
             onChange={e => setText(e.target.value)}
             onKeyDown={onKey}
             placeholder={tr.messagePlaceholder}
+            aria-label={tr.messagePlaceholder}
             className="flex-1 bg-gray-100 dark:bg-slate-700 rounded-full px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-300"
           />
           <button
             onClick={send}
             disabled={!text.trim() || sending}
+            aria-label={tr.send}
             className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 disabled:opacity-40 active:scale-95 transition-transform"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

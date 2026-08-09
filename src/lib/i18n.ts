@@ -5128,6 +5128,10 @@ function getLang(): LangCode {
 export function setLang(l: LangCode) {
   localStorage.setItem(STORAGE_KEY, l);
   document.documentElement.setAttribute('dir', RTL_LANGS.has(l) ? 'rtl' : 'ltr');
+  // dir told the browser which way to lay the page out but never which language
+  // it is reading: <html lang> stayed "en" in all 23, so a screen reader
+  // announced Arabic and Thai with English phonemes.
+  document.documentElement.setAttribute('lang', l);
   window.dispatchEvent(new CustomEvent('workpro:langchange'));
 }
 
@@ -5366,4 +5370,5 @@ export function dateGroupLabel(d: string): string {
 export function applyLangDir() {
   const lang = getLang();
   document.documentElement.setAttribute('dir', RTL_LANGS.has(lang) ? 'rtl' : 'ltr');
+  document.documentElement.setAttribute('lang', lang);
 }
