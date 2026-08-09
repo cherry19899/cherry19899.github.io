@@ -60,6 +60,18 @@ html.dark .skeleton {
    taller than the reserved space on gesture-nav devices and covers content. */
 .pb-nav { padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px)); }
 
+/* Android WebView — which is what Pi Browser is — lays the page out underneath
+   the system navigation bar *and* reports env(safe-area-inset-bottom) as 0, so
+   the two rules above compensate for nothing. Measured inside Pi Browser:
+   inset 0px, screen.height 935 vs innerHeight 862, and the whole 73px
+   difference is the status bar plus the address bar at the top — meaning the
+   viewport really does run to the physical bottom edge. The result was that the
+   Escrow and Profile tabs sat under the system buttons and could not be tapped
+   at all. 48px is the Android navigation bar height (48dp); the class is only
+   set when the inset is genuinely missing, so devices that report one keep it. */
+html.wv-no-inset .safe-area-bottom { padding-bottom: 48px; }
+html.wv-no-inset .pb-nav { padding-bottom: calc(4rem + 48px); }
+
 input, textarea, select { font-family: inherit; }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
