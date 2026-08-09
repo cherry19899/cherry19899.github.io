@@ -161,6 +161,22 @@ export default function ChatRoomPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
+  // TEMPORARY — same reasoning as main.tsx's inset-detect log. Read via the
+  // on-screen "▲ console" widget. Remove once confirmed live.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const nav = document.querySelector('[data-diag="bottomnav"]')?.getBoundingClientRect();
+      const composer = document.querySelector('[data-diag="composer"]')?.getBoundingClientRect();
+      console.log('[chat-layout]', {
+        htmlClass: document.documentElement.className,
+        insetVar: getComputedStyle(document.documentElement).getPropertyValue('--wp-bottom-inset').trim(),
+        nav: nav && { top: nav.top, bottom: nav.bottom, height: nav.height },
+        composer: composer && { top: composer.top, bottom: composer.bottom },
+      });
+    }, 500);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col">
       {/* Custom header with back + room info */}
@@ -269,7 +285,7 @@ export default function ChatRoomPage() {
           on a device that has no real safe-area inset. A static `bottom-16`
           here once left this box painted over by BottomNav on those devices —
           the composer was still there, just invisible and untappable. */}
-      <div className="fixed bottom-[calc(4rem+var(--wp-bottom-inset))] left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 px-4 py-3 max-w-lg mx-auto">
+      <div data-diag="composer" className="fixed bottom-[calc(4rem+var(--wp-bottom-inset))] left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 px-4 py-3 max-w-lg mx-auto">
         <div className="flex gap-2 items-center">
           <input ref={fileRef} type="file" accept="image/*,application/pdf" onChange={handleFileUpload} className="hidden" />
           <button

@@ -23,9 +23,15 @@ applyLangDir();
   probe.remove();
   // `; wv)` marks an Android WebView specifically — unlike Pi Browser itself,
   // which the user agent gives no way to identify.
-  if (inset === 0 && /;\s*wv\)/.test(navigator.userAgent)) {
-    document.documentElement.classList.add('wv-no-inset');
-  }
+  const isWebView = /;\s*wv\)/.test(navigator.userAgent);
+  const applied = inset === 0 && isWebView;
+  if (applied) document.documentElement.classList.add('wv-no-inset');
+  // TEMPORARY — DebugConsole only starts capturing console.* after it mounts,
+  // which is after this IIFE runs, so a plain console.log here would go to a
+  // console Pi Browser has no devtools to show. Stash it where DebugConsole
+  // knows to look on mount instead. Remove once the composer-visibility fix
+  // is confirmed live.
+  (window as any).__earlyLogs = [['log', ['[inset-detect]', { inset, isWebView, applied, ua: navigator.userAgent }]]];
 })();
 
 if ('serviceWorker' in navigator) {
