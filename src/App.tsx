@@ -39,10 +39,13 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: string |
   componentDidCatch(e: Error, info: ErrorInfo) { console.error('App error:', e, info); }
   render() {
     if (this.state.error) return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      // The crash screen had no dark: variants and no background of its own,
+      // so in dark mode it was near-black text on the app's near-black page:
+      // the user saw a blank screen and never learned an error had been caught.
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-white dark:bg-slate-900">
         <span className="text-5xl mb-4">⚠️</span>
-        <p className="font-bold text-gray-900 mb-2">Something went wrong</p>
-        <p className="text-sm text-gray-500 mb-6 break-all">{this.state.error}</p>
+        <p className="font-bold text-gray-900 dark:text-white mb-2">Something went wrong</p>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 break-all">{this.state.error}</p>
         <button onClick={() => this.setState({ error: null })}
           className="px-6 py-3 rounded-full bg-emerald-500 text-white font-semibold">
           Try again

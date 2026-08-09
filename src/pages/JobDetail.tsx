@@ -11,6 +11,7 @@ import { CAT_COLORS } from '../lib/constants';
 import { createPiPayment, shareJob } from '../lib/pi';
 import { applyCostFor } from '../lib/connects';
 import { getConfig } from '../lib/api';
+import { sameUser } from '../lib/ids';
 
 // Days until a deadline (negative = past). null if no/invalid date.
 function daysUntil(d?: string): number | null {
@@ -41,9 +42,14 @@ export default function JobDetailPage() {
   const [hiringId, setHiringId] = useState<number | null>(null);
 
   const [myApp, setMyApp] = useState<any>(null);
+  const [appsError, setAppsError] = useState(false);
   const [feePercent, setFeePercent] = useState(3);
 
-  const isOwner = job && user && job.posted_by === user.uid;
+  // sameUser, not ===: this one flag decides whether the page shows the
+  // applicants list or the Apply button. A client whose id is spelled
+  // differently in the job row than in their token was shown the Apply flow
+  // for their own job — and charged connects by the server for trying.
+  const isOwner = !!job && !!user && sameUser(job.posted_by, user.uid);
   const myConnects = user?.balance_connects ?? 0;
   const applyCost = applyCostFor(job?.budget);
 
@@ -63,7 +69,7 @@ export default function JobDetailPage() {
 
   // Did I already apply to this job? (non-owner, logged in)
   useEffect(() => {
-    if (!id || !user || (job && job.posted_by === user.uid)) { setMyApp(null); return; }
+    if (!id || !user || (job && sameUser(job.posted_by, user.uid))) { setMyApp(null); return; }
     getMyApplications()
       .then((d: any) => {
         const list = d?.applications || [];
@@ -74,10 +80,16 @@ export default function JobDetailPage() {
 
   const loadApps = async () => {
     if (!id) return;
+    setAppsError(false);
     try {
       const d = await getJobApplications(id);
       setApps(d?.applications || d || []);
-    } catch {}
+    } catch {
+      // A swallowed failure fell through to the "📭 no applicants yet, share
+      // the job for visibility" empty state, so a client whose request had
+      // simply failed was told nobody had applied to their job.
+      setAppsError(true);
+    }
   };
 
   useEffect(() => {
@@ -232,7 +244,7 @@ export default function JobDetailPage() {
   if (!job) return (
     <div className="flex flex-col items-center justify-center py-20">
       <span className="text-5xl mb-3">😕</span>
-      <p className="font-semibold text-gray-900">{tr.jobNotFound}</p>
+      <p className="font-semibold text-gray-900 dark:text-white">{tr.jobNotFound}</p>
       <button onClick={() => nav('/')} className="mt-4 text-emerald-500 font-semibold">← {tr.backToJobs}</button>
     </div>
   );
@@ -455,8 +467,9 @@ export default function JobDetailPage() {
               </button>
             )}
 
-            {/* Hired freelancer: submit work */}
-            {!isOwner && user && job.hired_freelancer_id === user.uid && job.status === 'in_progress' && (
+            {/* Hired freelancer: submit work — sameUser, not ===, or the
+                person who was hired never sees the Submit button at all. */}
+            {!isOwner && user && sameUser(job.hired_freelancer_id, user.uid) && job.status === 'in_progress' && (
               <button
                 onClick={handleSubmitWork}
                 disabled={submitting}
@@ -465,7 +478,7 @@ export default function JobDetailPage() {
                 {submitting ? <Spinner /> : `📤 ${tr.submitWork}`}
               </button>
             )}
-            {!isOwner && user && job.hired_freelancer_id === user.uid && job.status === 'submitted' && (
+            {!isOwner && user && sameUser(job.hired_freelancer_id, user.uid) && job.status === 'submitted' && (
               <div className="w-full py-4 rounded-2xl bg-amber-50 text-amber-700 text-sm font-semibold text-center">
                 ✅ {tr.workSubmitted}
               </div>
@@ -476,10 +489,19 @@ export default function JobDetailPage() {
         {/* ── Applicants view ── */}
         {view === 'applicants' && isOwner && (
           <div className="space-y-3">
-            {apps.length === 0 ? (
+            {appsError ? (
+              <button onClick={loadApps} className="w-full flex flex-col items-center justify-center py-16 text-center">
+                <span className="text-4xl mb-3">⚠️</span>
+                <p className="text-gray-500 dark:text-slate-400 text-sm">{tr.loadFailed}</p>
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">{tr.retry}</p>
+              </button>
+            ) : apps.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <span className="text-5xl mb-3">📭</span>
-                <p className="font-semibold text-gray-900">{tr.noApplicants}</p>
+                {/* Both of these empty-state headings were text-gray-900 with
+                    no dark: variant, so in dark mode the page showed an emoji
+                    and nothing else — no "job not found", no "no applicants". */}
+                <p className="font-semibold text-gray-900 dark:text-white">{tr.noApplicants}</p>
                 <p className="text-sm text-gray-400 mt-1">{tr.shareToVisibility}</p>
               </div>
             ) : apps.map(app => {

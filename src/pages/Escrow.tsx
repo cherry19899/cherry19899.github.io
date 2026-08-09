@@ -10,6 +10,7 @@ import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import RatingModal from '../components/RatingModal';
 import { t, statusLabel } from '../lib/i18n';
+import { sameUser } from '../lib/ids';
 
 interface Escrow {
   id: number; job_title?: string; amount: number; status: string;
@@ -320,7 +321,7 @@ export default function EscrowPage() {
       await releaseEscrow(e.id);
       toast(tr.fundsReleased, 'success');
       load();
-      if ((e.freelancer_id || e.freelancer_uid) && (e.freelancer_id || e.freelancer_uid) !== user?.uid) {
+      if ((e.freelancer_id || e.freelancer_uid) && !sameUser(e.freelancer_id || e.freelancer_uid, user?.uid)) {
         setRatingTarget({ escrow: e });
       }
     } catch (err: any) { toast(err.message || 'Failed', 'error'); }
@@ -408,8 +409,12 @@ export default function EscrowPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map(e => {
-            const isClient = (e.client_id || e.client_uid) === user?.uid;
-            const isFreelancer = (e.freelancer_id || e.freelancer_uid) === user?.uid;
+            // These two decide every action button on the card. With `===`, a
+            // participant whose id is stored with different casing matched
+            // neither, so the escrow rendered with no way to release, refund
+            // or dispute it — the Pi sat in the contract with nothing to click.
+            const isClient = sameUser(e.client_id || e.client_uid, user?.uid);
+            const isFreelancer = sameUser(e.freelancer_id || e.freelancer_uid, user?.uid);
             const statusCls = STATUS_STYLE[e.status] || STATUS_STYLE.pending;
             const isExpanded = expanded.has(e.id);
 

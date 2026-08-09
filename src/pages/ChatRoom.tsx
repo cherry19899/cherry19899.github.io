@@ -8,6 +8,7 @@ import { API_BASE } from '../lib/constants';
 import { useAppCtx } from '../App';
 import { getToken } from '../lib/api';
 import BottomNav from '../components/BottomNav';
+import { sameUser } from '../lib/ids';
 
 interface Msg {
   id: number | string;
@@ -89,7 +90,7 @@ export default function ChatRoomPage() {
         setRoom(r);
         // viewer_is_client comes from the server, which normalises the id — the
         // raw comparison here would mislabel a user whose id spelling differs.
-        const iAmClient = r.viewer_is_client ?? (String(r.client_id) === String(user.uid));
+        const iAmClient = r.viewer_is_client ?? sameUser(r.client_id, user.uid);
         setPeer({
           name: (iAmClient ? r.freelancer_username : r.client_username) || 'user',
           avatar: iAmClient ? r.freelancer_avatar : r.client_avatar,
@@ -244,7 +245,10 @@ export default function ChatRoomPage() {
           </div>
         ) : (
           msgs.map(m => {
-            const mine = (m.sender_uid || m.sender_id) === user?.uid;
+            // sameUser, not ===: this decides which side of the chat a bubble
+            // renders on, so a differently-cased sender_id put every message
+            // the user had sent on the other person's side of the thread.
+            const mine = sameUser(m.sender_uid || m.sender_id, user?.uid);
             return (
               <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 {!mine && (
