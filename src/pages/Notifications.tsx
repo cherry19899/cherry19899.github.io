@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getNotifications, markAllNotifsRead, markNotifRead } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
-import { t } from '../lib/i18n';
+import { t, timeAgo, dateGroupLabel } from '../lib/i18n';
 import { toast } from '../components/Toast';
 
 // Notifications are stored with a `notif_key` + `params`; rendering them here
@@ -85,24 +85,10 @@ const NOTIF_ICONS: Record<string, string> = {
   system: '📣',
 };
 
-function timeAgo(d: string) {
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
-  if (m < 2) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
 function groupByDate(notifs: Notif[]): { label: string; items: Notif[] }[] {
-  const now = new Date();
-  const today = now.toDateString();
-  const yesterday = new Date(now.getTime() - 86400000).toDateString();
-
   const groups: Record<string, Notif[]> = {};
   for (const n of notifs) {
-    const d = new Date(n.created_at).toDateString();
-    const label = d === today ? 'Today' : d === yesterday ? 'Yesterday' : new Date(n.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const label = dateGroupLabel(n.created_at);
     if (!groups[label]) groups[label] = [];
     groups[label].push(n);
   }
@@ -116,11 +102,13 @@ export default function NotificationsPage() {
   const nav = useNavigate();
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const tr = t();
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError(false);
     getNotifications()
       .then((d: any) => {
         const list: Notif[] = d?.notifications || d || [];
@@ -137,7 +125,9 @@ export default function NotificationsPage() {
           ]);
         });
       })
-      .catch(() => {})
+      // A failed fetch used to fall through to the empty state, telling the
+      // user they had no notifications when the server had simply not answered.
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, [refreshUnread]);
 
@@ -204,6 +194,15 @@ export default function NotificationsPage() {
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-16 skeleton rounded-2xl" />)}
         </div>
+      ) : loadError ? (
+        <button
+          onClick={load}
+          className="w-full flex flex-col items-center justify-center py-16 text-center"
+        >
+          <span className="text-5xl mb-3">⚠️</span>
+          <p className="font-semibold text-gray-900 dark:text-white">{tr.loadFailed}</p>
+          <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">{tr.retry}</p>
+        </button>
       ) : visible.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">🔔</span>

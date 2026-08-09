@@ -32,6 +32,7 @@ export default function ChatRoomPage() {
   const { user } = useAppCtx();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -63,13 +64,20 @@ export default function ChatRoomPage() {
   };
 
   // Load history
-  useEffect(() => {
+  const loadHistory = useCallback(() => {
     if (!id) return;
+    setLoading(true);
+    setLoadError(false);
     getChatMessages(id)
       .then((d: any) => setMsgs((d?.messages || d || []).map((m: any) => ({ ...m, content: m.content || m.message || '' }))))
-      .catch(() => {})
+      // A swallowed failure showed the "say hello" empty state over a thread
+      // that already had messages — and sending from there looked like the
+      // history had been wiped.
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => { loadHistory(); }, [loadHistory]);
 
   // Load room to show the other participant (avatar + name) in the header
   useEffect(() => {
@@ -223,6 +231,12 @@ export default function ChatRoomPage() {
           <div className="flex justify-center pt-10">
             <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : loadError ? (
+          <button onClick={loadHistory} className="w-full flex flex-col items-center justify-center pt-16 text-center">
+            <span className="text-4xl mb-3">⚠️</span>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">{tr.loadFailed}</p>
+            <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">{tr.retry}</p>
+          </button>
         ) : msgs.length === 0 ? (
           <div className="flex flex-col items-center justify-center pt-16 text-center">
             <span className="text-4xl mb-3">👋</span>

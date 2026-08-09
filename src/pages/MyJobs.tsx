@@ -45,31 +45,43 @@ export default function MyJobsPage() {
   const [offers, setOffers] = useState<AppItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState<number | null>(null);
+  // Each tab loads independently, so a failure is tracked per tab. Before this,
+  // a rejected request fell through to `[]` and the tab rendered "(0)" with its
+  // empty state — a freelancer whose getOffers() call failed was told they had
+  // no offers rather than that the list could not be loaded.
+  const [failed, setFailed] = useState<Record<Tab, boolean>>({
+    posted: false, hired: false, applied: false, offers: false,
+  });
 
   const load = useCallback(() => {
     setLoading(true);
+    const FAILED = Symbol('failed');
     Promise.all([
-      getMyJobs().catch(() => null),
-      getMyJobsAsFreelancer().catch(() => null),
-      getMyApplications().catch(() => null),
-      getOffers().catch(() => null),
+      getMyJobs().catch(() => FAILED),
+      getMyJobsAsFreelancer().catch(() => FAILED),
+      getMyApplications().catch(() => FAILED),
+      getOffers().catch(() => FAILED),
     ]).then(([p, h, a, o]: any[]) => {
-      setPosted(p?.jobs || p || []);
-      setHired(h?.jobs || h || []);
+      setFailed({ posted: p === FAILED, hired: h === FAILED, applied: a === FAILED, offers: o === FAILED });
+      if (p !== FAILED) setPosted(p?.jobs || p || []);
+      if (h !== FAILED) setHired(h?.jobs || h || []);
       // "offer" rows are direct offers — they live on their own tab
-      setApplied(((a?.applications || []) as AppItem[]).filter(x => x.status !== 'offer'));
-      setOffers(o?.offers || []);
+      if (a !== FAILED) setApplied(((a?.applications || []) as AppItem[]).filter(x => x.status !== 'offer'));
+      if (o !== FAILED) setOffers(o?.offers || o || []);
     }).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const tabLabel = (tb: Tab) => {
+    // A tab whose request failed has no count to show — "(0)" would read as
+    // "you have none" rather than "this did not load".
+    const count = (n: number) => (failed[tb] ? '' : ` (${n})`);
     switch (tb) {
-      case 'posted':  return `${tr.posted} (${posted.length})`;
-      case 'hired':   return `${tr.hired} (${hired.length})`;
-      case 'applied': return `${tr.applied} (${applied.length})`;
-      case 'offers':  return `${tr.tabOffers} (${offers.length})`;
+      case 'posted':  return `${tr.posted}${count(posted.length)}`;
+      case 'hired':   return `${tr.hired}${count(hired.length)}`;
+      case 'applied': return `${tr.applied}${count(applied.length)}`;
+      case 'offers':  return `${tr.tabOffers}${count(offers.length)}`;
     }
   };
 
@@ -194,7 +206,16 @@ export default function MyJobsPage() {
     </div>
   );
 
+  const errorState = (
+    <button onClick={load} className="w-full flex flex-col items-center justify-center py-16 text-center">
+      <span className="text-5xl mb-3">⚠️</span>
+      <p className="font-semibold text-gray-900 dark:text-white">{tr.loadFailed}</p>
+      <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">{tr.retry}</p>
+    </button>
+  );
+
   const content = () => {
+    if (failed[tab]) return errorState;
     if (tab === 'posted') return posted.length ? posted.map(renderJobCard) : empty;
     if (tab === 'hired') return hired.length ? hired.map(renderJobCard) : empty;
     if (tab === 'applied') return applied.length ? applied.map(a => renderAppCard(a, false)) : empty;

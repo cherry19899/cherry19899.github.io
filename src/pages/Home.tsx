@@ -9,19 +9,10 @@ import { useAppCtx } from '../App';
 import { CATEGORIES, CAT_COLORS } from '../lib/constants';
 import { applyCostFor } from '../lib/connects';
 import { getFavorites, isFavorite, toggleFavorite } from '../lib/favorites';
-import { t, jobsLabel, connectsLabel } from '../lib/i18n';
+import { t, jobsLabel, connectsLabel, timeAgo } from '../lib/i18n';
 import { toast } from '../components/Toast';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function timeAgo(d: string) {
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
-  if (m < 2) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
 
 function greeting() {
   const h = new Date().getHours();

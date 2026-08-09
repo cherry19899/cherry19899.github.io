@@ -72,6 +72,7 @@ const KEYS = {
   payoutPending: '',
   disputeMinLength: '', withdrawDispute: '', disputeWithdrawn: '', nDisputeWithdrawn: '',
   support: '',
+  justNow: '', minAgo: '', hourAgo: '', dayAgo: '', tNow: '', tMin: '', tHour: '', tDay: '', dateToday: '', dateYesterday: '',
 } as const;
 
 type Keys = keyof typeof KEYS;
@@ -231,6 +232,7 @@ const en: Translations = {
   disputeWithdrawn: 'Dispute withdrawn — you can carry on',
   nDisputeWithdrawn: 'Dispute withdrawn||The dispute was called off — you can carry on with the job.',
   support: 'Support',
+  justNow: 'just now', minAgo: '{n}m ago', hourAgo: '{n}h ago', dayAgo: '{n}d ago', tNow: 'now', tMin: '{n}m', tHour: '{n}h', tDay: '{n}d', dateToday: 'Today', dateYesterday: 'Yesterday',
 };
 
 // ─── Russian ──────────────────────────────────────────────────────────────────
@@ -387,6 +389,7 @@ const ru: Partial<Translations> = {
   disputeWithdrawn: 'Спор отозван — можно продолжать',
   nDisputeWithdrawn: 'Спор отозван||Спор по задаче отозван — можно продолжать работу.',
   support: 'Поддержка',
+  justNow: 'только что', minAgo: '{n} мин назад', hourAgo: '{n} ч назад', dayAgo: '{n} дн назад', tNow: 'сейчас', tMin: '{n}м', tHour: '{n}ч', tDay: '{n}д', dateToday: 'Сегодня', dateYesterday: 'Вчера',
 };
 
 // ─── Ukrainian ────────────────────────────────────────────────────────────────
@@ -543,6 +546,7 @@ const uk: Partial<Translations> = {
   disputeWithdrawn: 'Спір відкликано — можна продовжувати',
   nDisputeWithdrawn: 'Спір відкликано||Спір за задачею відкликано — можна продовжувати роботу.',
   support: 'Підтримка',
+  justNow: 'щойно', minAgo: '{n} хв тому', hourAgo: '{n} год тому', dayAgo: '{n} дн тому', tNow: 'зараз', tMin: '{n}хв', tHour: '{n}год', tDay: '{n}д', dateToday: 'Сьогодні', dateYesterday: 'Вчора',
 };
 
 // ─── German ───────────────────────────────────────────────────────────────────
@@ -714,6 +718,7 @@ const de: Partial<Translations> = {
   disputeWithdrawn: 'Streitfall zurückgezogen — ihr könnt weitermachen',
   nDisputeWithdrawn: 'Streitfall zurückgezogen||Der Streitfall wurde beigelegt — ihr könnt weiterarbeiten.',
   support: 'Support',
+  justNow: 'gerade eben', minAgo: 'vor {n} Min.', hourAgo: 'vor {n} Std.', dayAgo: 'vor {n} T.', tNow: 'jetzt', tMin: '{n}m', tHour: '{n}h', tDay: '{n}T', dateToday: 'Heute', dateYesterday: 'Gestern',
 };
 
 // ─── French ───────────────────────────────────────────────────────────────────
@@ -885,6 +890,7 @@ const fr: Partial<Translations> = {
   disputeWithdrawn: 'Litige retiré — vous pouvez continuer',
   nDisputeWithdrawn: 'Litige retiré||Le litige a été annulé — vous pouvez reprendre le travail.',
   support: 'Assistance',
+  justNow: 'à l\'instant', minAgo: 'il y a {n} min', hourAgo: 'il y a {n} h', dayAgo: 'il y a {n} j', tNow: 'maintenant', tMin: '{n}min', tHour: '{n}h', tDay: '{n}j', dateToday: 'Aujourd\'hui', dateYesterday: 'Hier',
 };
 
 // ─── Spanish ──────────────────────────────────────────────────────────────────
@@ -1056,6 +1062,7 @@ const es: Partial<Translations> = {
   disputeWithdrawn: 'Disputa retirada: podéis continuar',
   nDisputeWithdrawn: 'Disputa retirada||La disputa se canceló: podéis continuar con el trabajo.',
   support: 'Soporte',
+  justNow: 'ahora mismo', minAgo: 'hace {n} min', hourAgo: 'hace {n} h', dayAgo: 'hace {n} d', tNow: 'ahora', tMin: '{n}min', tHour: '{n}h', tDay: '{n}d', dateToday: 'Hoy', dateYesterday: 'Ayer',
 };
 
 // ─── Portuguese ───────────────────────────────────────────────────────────────
@@ -1227,6 +1234,7 @@ const pt: Partial<Translations> = {
   disputeWithdrawn: 'Disputa retirada — podem continuar',
   nDisputeWithdrawn: 'Disputa retirada||A disputa foi cancelada — podem continuar o trabalho.',
   support: 'Suporte',
+  justNow: 'agora mesmo', minAgo: 'há {n} min', hourAgo: 'há {n} h', dayAgo: 'há {n} d', tNow: 'agora', tMin: '{n}min', tHour: '{n}h', tDay: '{n}d', dateToday: 'Hoje', dateYesterday: 'Ontem',
 };
 
 // ─── Turkish ──────────────────────────────────────────────────────────────────
@@ -1398,6 +1406,7 @@ const tr: Partial<Translations> = {
   disputeWithdrawn: 'Anlaşmazlık geri çekildi — devam edebilirsiniz',
   nDisputeWithdrawn: 'Anlaşmazlık geri çekildi||Anlaşmazlık kaldırıldı — işe devam edebilirsiniz.',
   support: 'Destek',
+  justNow: 'az önce', minAgo: '{n} dk önce', hourAgo: '{n} sa önce', dayAgo: '{n} gün önce', tNow: 'şimdi', tMin: '{n}dk', tHour: '{n}sa', tDay: '{n}g', dateToday: 'Bugün', dateYesterday: 'Dün',
 };
 
 // ─── Arabic (RTL) ─────────────────────────────────────────────────────────────
@@ -1579,6 +1588,7 @@ const ar: Partial<Translations> = {
   disputeWithdrawn: 'تم سحب النزاع — يمكنكما المتابعة',
   nDisputeWithdrawn: 'تم سحب النزاع||أُلغي النزاع — يمكنكما متابعة العمل.',
   support: 'الدعم',
+  justNow: 'الآن', minAgo: 'قبل {n} د', hourAgo: 'قبل {n} س', dayAgo: 'قبل {n} ي', tNow: 'الآن', tMin: '{n} د', tHour: '{n} س', tDay: '{n} ي', dateToday: 'اليوم', dateYesterday: 'أمس',
 };
 
 // ─── Hindi ────────────────────────────────────────────────────────────────────
@@ -1760,6 +1770,7 @@ const hi: Partial<Translations> = {
   disputeWithdrawn: 'विवाद वापस लिया गया — आगे बढ़ सकते हैं',
   nDisputeWithdrawn: 'विवाद वापस लिया गया||विवाद रद्द कर दिया गया — काम जारी रख सकते हैं।',
   support: 'सहायता',
+  justNow: 'अभी', minAgo: '{n} मिनट पहले', hourAgo: '{n} घंटे पहले', dayAgo: '{n} दिन पहले', tNow: 'अभी', tMin: '{n}मि', tHour: '{n}घं', tDay: '{n}दि', dateToday: 'आज', dateYesterday: 'कल',
 };
 
 // ─── Chinese Simplified ───────────────────────────────────────────────────────
@@ -1941,6 +1952,7 @@ const zh: Partial<Translations> = {
   disputeWithdrawn: '争议已撤回，可以继续',
   nDisputeWithdrawn: '争议已撤回||争议已取消，可以继续工作。',
   support: '客服支持',
+  justNow: '刚刚', minAgo: '{n} 分钟前', hourAgo: '{n} 小时前', dayAgo: '{n} 天前', tNow: '刚刚', tMin: '{n}分', tHour: '{n}时', tDay: '{n}天', dateToday: '今天', dateYesterday: '昨天',
 };
 
 // ─── Japanese ─────────────────────────────────────────────────────────────────
@@ -2122,6 +2134,7 @@ const ja: Partial<Translations> = {
   disputeWithdrawn: '異議を取り下げました — 作業を続けられます',
   nDisputeWithdrawn: '異議が取り下げられました||異議は取り消されました — 作業を続けられます。',
   support: 'サポート',
+  justNow: 'たった今', minAgo: '{n} 分前', hourAgo: '{n} 時間前', dayAgo: '{n} 日前', tNow: '今', tMin: '{n}分', tHour: '{n}時間', tDay: '{n}日', dateToday: '今日', dateYesterday: '昨日',
 };
 
 // ─── Korean ───────────────────────────────────────────────────────────────────
@@ -2303,6 +2316,7 @@ const ko: Partial<Translations> = {
   disputeWithdrawn: '분쟁을 철회했습니다 — 계속 진행하세요',
   nDisputeWithdrawn: '분쟁이 철회되었습니다||분쟁이 취소되었습니다 — 작업을 계속하세요.',
   support: '고객지원',
+  justNow: '방금', minAgo: '{n}분 전', hourAgo: '{n}시간 전', dayAgo: '{n}일 전', tNow: '방금', tMin: '{n}분', tHour: '{n}시간', tDay: '{n}일', dateToday: '오늘', dateYesterday: '어제',
 };
 
 // ─── Vietnamese ───────────────────────────────────────────────────────────────
@@ -2484,6 +2498,7 @@ const vi: Partial<Translations> = {
   disputeWithdrawn: 'Đã rút tranh chấp — có thể tiếp tục',
   nDisputeWithdrawn: 'Đã rút tranh chấp||Tranh chấp đã được hủy — có thể tiếp tục công việc.',
   support: 'Hỗ trợ',
+  justNow: 'vừa xong', minAgo: '{n} phút trước', hourAgo: '{n} giờ trước', dayAgo: '{n} ngày trước', tNow: 'bây giờ', tMin: '{n}p', tHour: '{n}g', tDay: '{n}n', dateToday: 'Hôm nay', dateYesterday: 'Hôm qua',
 };
 
 // ─── Indonesian ───────────────────────────────────────────────────────────────
@@ -2665,6 +2680,7 @@ const id: Partial<Translations> = {
   disputeWithdrawn: 'Sengketa ditarik — silakan lanjutkan',
   nDisputeWithdrawn: 'Sengketa ditarik||Sengketa dibatalkan — pekerjaan bisa dilanjutkan.',
   support: 'Dukungan',
+  justNow: 'baru saja', minAgo: '{n} mnt lalu', hourAgo: '{n} jam lalu', dayAgo: '{n} hr lalu', tNow: 'sekarang', tMin: '{n}m', tHour: '{n}j', tDay: '{n}h', dateToday: 'Hari ini', dateYesterday: 'Kemarin',
 };
 
 // ─── Italian ──────────────────────────────────────────────────────────────────
@@ -2836,6 +2852,7 @@ const it: Partial<Translations> = {
   disputeWithdrawn: 'Controversia ritirata — potete proseguire',
   nDisputeWithdrawn: 'Controversia ritirata||La controversia è stata annullata — potete proseguire il lavoro.',
   support: 'Assistenza',
+  justNow: 'proprio ora', minAgo: '{n} min fa', hourAgo: '{n} h fa', dayAgo: '{n} g fa', tNow: 'ora', tMin: '{n}min', tHour: '{n}h', tDay: '{n}g', dateToday: 'Oggi', dateYesterday: 'Ieri',
 };
 
 // ─── Polish ───────────────────────────────────────────────────────────────────
@@ -3007,6 +3024,7 @@ const pl: Partial<Translations> = {
   disputeWithdrawn: 'Spór wycofany — możecie kontynuować',
   nDisputeWithdrawn: 'Spór wycofany||Spór został odwołany — możecie kontynuować pracę.',
   support: 'Wsparcie',
+  justNow: 'przed chwilą', minAgo: '{n} min temu', hourAgo: '{n} godz. temu', dayAgo: '{n} dni temu', tNow: 'teraz', tMin: '{n}min', tHour: '{n}godz', tDay: '{n}d', dateToday: 'Dzisiaj', dateYesterday: 'Wczoraj',
 };
 
 // ─── Thai, Filipino, Dutch, Swedish, Romanian — compact versions ──────────────
@@ -3339,6 +3357,7 @@ const th: Partial<Translations> = { ...en,
   disputeWithdrawn: 'ถอนข้อพิพาทแล้ว — ดำเนินการต่อได้',
   nDisputeWithdrawn: 'ถอนข้อพิพาทแล้ว||ยกเลิกข้อพิพาทแล้ว — ทำงานต่อได้',
   support: 'ฝ่ายสนับสนุน',
+  justNow: 'เมื่อสักครู่', minAgo: '{n} นาทีที่แล้ว', hourAgo: '{n} ชม.ที่แล้ว', dayAgo: '{n} วันที่แล้ว', tNow: 'ตอนนี้', tMin: '{n}น.', tHour: '{n}ชม.', tDay: '{n}ว.', dateToday: 'วันนี้', dateYesterday: 'เมื่อวาน',
 };
 
 const tl: Partial<Translations> = { ...en,
@@ -3671,6 +3690,7 @@ const tl: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Nabawi ang sigalot — puwede nang magpatuloy',
   nDisputeWithdrawn: 'Nabawi ang sigalot||Kinansela ang sigalot — puwede nang ipagpatuloy ang trabaho.',
   support: 'Suporta',
+  justNow: 'ngayon lang', minAgo: '{n} min ang nakalipas', hourAgo: '{n} oras ang nakalipas', dayAgo: '{n} araw ang nakalipas', tNow: 'ngayon', tMin: '{n}min', tHour: '{n}or', tDay: '{n}ar', dateToday: 'Ngayon', dateYesterday: 'Kahapon',
 };
 
 const nl: Partial<Translations> = { ...en,
@@ -3908,7 +3928,7 @@ const nl: Partial<Translations> = { ...en,
   shareApp: 'Vrienden uitnodigen',
   shareAppSub: 'Deel Work Pro en laat de community groeien',
   shareText: '💼 Work Pro — freelancen op Pi Network.\nNeem opdrachten aan of huur talent in, betaald in Pi. Het geld staat in escrow — de freelancer wordt pas na oplevering betaald.',
-  shareOpenIn: 'Open in Pi Browser:',
+  shareOpenIn: 'Openen in Pi Browser:',
   shareCopied: 'Uitnodiging gekopieerd — plak hem waar je wilt',
   shareFailed: 'Delen mislukt, probeer opnieuw',
   addToHome: 'Toevoegen aan startscherm', addToHomeSub: 'Open Work Pro met één tik',
@@ -4003,6 +4023,7 @@ const nl: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Geschil ingetrokken — jullie kunnen verder',
   nDisputeWithdrawn: 'Geschil ingetrokken||Het geschil is ingetrokken — jullie kunnen verder met de opdracht.',
   support: 'Ondersteuning',
+  justNow: 'zojuist', minAgo: '{n} min geleden', hourAgo: '{n} u geleden', dayAgo: '{n} d geleden', tNow: 'nu', tMin: '{n}min', tHour: '{n}u', tDay: '{n}d', dateToday: 'Vandaag', dateYesterday: 'Gisteren',
 };
 
 const sv: Partial<Translations> = { ...en,
@@ -4335,6 +4356,7 @@ const sv: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Tvisten tillbakadragen — ni kan fortsätta',
   nDisputeWithdrawn: 'Tvisten tillbakadragen||Tvisten avbröts — ni kan fortsätta med uppdraget.',
   support: 'Support',
+  justNow: 'nyss', minAgo: 'för {n} min sedan', hourAgo: 'för {n} tim sedan', dayAgo: 'för {n} d sedan', tNow: 'nu', tMin: '{n}min', tHour: '{n}tim', tDay: '{n}d', dateToday: 'Idag', dateYesterday: 'Igår',
 };
 
 const ro: Partial<Translations> = { ...en,
@@ -4667,6 +4689,7 @@ const ro: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Litigiu retras — puteți continua',
   nDisputeWithdrawn: 'Litigiu retras||Litigiul a fost anulat — puteți continua lucrarea.',
   support: 'Asistență',
+  justNow: 'chiar acum', minAgo: 'acum {n} min', hourAgo: 'acum {n} h', dayAgo: 'acum {n} z', tNow: 'acum', tMin: '{n}min', tHour: '{n}h', tDay: '{n}z', dateToday: 'Astăzi', dateYesterday: 'Ieri',
 };
 
 const bn: Partial<Translations> = { ...en,
@@ -4999,6 +5022,7 @@ const bn: Partial<Translations> = { ...en,
   disputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে — চালিয়ে যেতে পারেন',
   nDisputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে||বিরোধ বাতিল হয়েছে — কাজ চালিয়ে যেতে পারেন।',
   support: 'সহায়তা',
+  justNow: 'এইমাত্র', minAgo: '{n} মিনিট আগে', hourAgo: '{n} ঘণ্টা আগে', dayAgo: '{n} দিন আগে', tNow: 'এখন', tMin: '{n}মি', tHour: '{n}ঘ', tDay: '{n}দি', dateToday: 'আজ', dateYesterday: 'গতকাল',
 };
 
 // ─── Language map ─────────────────────────────────────────────────────────────
@@ -5239,6 +5263,55 @@ export function connectsLabel(n: number): string {
 export function statusLabel(s: string): string {
   const tr = t() as Record<string, string>;
   return tr[`st_${s}`] || tr[s] || s;
+}
+
+// ── Relative time ────────────────────────────────────────────────────────────
+// Home, Notifications, Chat and JobDetail each carried their own private copy
+// of this, all four hardcoded in English — so a Russian or Japanese reader saw
+// "5m ago" under every job card and every notification. One implementation
+// now, reading the dictionary like everything else.
+
+/** "5m ago" — used under job cards, notifications and applications. */
+export function timeAgo(d?: string | null): string {
+  if (!d) return '';
+  const tr = t() as Record<string, string>;
+  const ms = Date.now() - new Date(d).getTime();
+  if (!Number.isFinite(ms)) return '';
+  const m = Math.floor(ms / 60000);
+  if (m < 2) return tr.justNow;
+  if (m < 60) return tr.minAgo.replace('{n}', String(m));
+  const h = Math.floor(m / 60);
+  if (h < 24) return tr.hourAgo.replace('{n}', String(h));
+  return tr.dayAgo.replace('{n}', String(Math.floor(h / 24)));
+}
+
+/** "5m" — the compact form the chat list uses beside each conversation. */
+export function timeAgoShort(d?: string | null): string {
+  if (!d) return '';
+  const tr = t() as Record<string, string>;
+  const ms = Date.now() - new Date(d).getTime();
+  if (!Number.isFinite(ms)) return '';
+  const m = Math.floor(ms / 60000);
+  if (m < 2) return tr.tNow;
+  if (m < 60) return tr.tMin.replace('{n}', String(m));
+  const h = Math.floor(m / 60);
+  if (h < 24) return tr.tHour.replace('{n}', String(h));
+  return tr.tDay.replace('{n}', String(Math.floor(h / 24)));
+}
+
+/** Heading over a day's worth of notifications: Today / Yesterday / Mar 3. */
+export function dateGroupLabel(d: string): string {
+  const tr = t() as Record<string, string>;
+  const date = new Date(d);
+  // toLocaleDateString on an unparseable date renders the literal string
+  // "Invalid Date" as the group heading — group those under today instead.
+  if (Number.isNaN(date.getTime())) return tr.dateToday;
+  const now = new Date();
+  if (date.toDateString() === now.toDateString()) return tr.dateToday;
+  if (date.toDateString() === new Date(now.getTime() - 86400000).toDateString()) return tr.dateYesterday;
+  // Intl already localises this one — just point it at the chosen language
+  // instead of whatever the device happens to be set to.
+  return date.toLocaleDateString(getLang(), { month: 'short', day: 'numeric' });
 }
 
 // Apply direction on load

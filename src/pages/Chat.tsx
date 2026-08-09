@@ -1,18 +1,8 @@
-import { useState, useEffect } from 'react';
-import { t } from '../lib/i18n';
+import { useState, useEffect, useCallback } from 'react';
+import { t, timeAgoShort } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
 import { getChatRooms, markChatRead } from '../lib/api';
 import { useAppCtx } from '../App';
-
-function timeAgo(d?: string) {
-  if (!d) return '';
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
-  if (m < 2) return 'now';
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
-  return `${Math.floor(h / 24)}d`;
-}
 
 interface Room { id: number; job_title?: string; other_user_name?: string; other_user_avatar?: string; last_message?: string; last_message_at?: string; unread_count?: number; }
 
@@ -22,13 +12,20 @@ export default function ChatPage() {
   const { refreshUnread } = useAppCtx();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     getChatRooms()
       .then((d: any) => setRooms(d?.rooms || d || []))
-      .catch(() => {})
+      // Without this the screen claimed "no messages yet" whenever the request
+      // failed — a user with live conversations was told they had none.
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const open = (room: Room) => {
     markChatRead(room.id).catch(() => {});
@@ -46,6 +43,12 @@ export default function ChatPage() {
             <div key={i} className="h-16 skeleton rounded-2xl" />
           ))}
         </div>
+      ) : loadError ? (
+        <button onClick={load} className="w-full flex flex-col items-center justify-center py-16 text-center">
+          <span className="text-5xl mb-3">⚠️</span>
+          <p className="font-semibold text-gray-900 dark:text-white">{tr.loadFailed}</p>
+          <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">{tr.retry}</p>
+        </button>
       ) : rooms.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <span className="text-5xl mb-3">💬</span>
@@ -76,7 +79,7 @@ export default function ChatPage() {
                   <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
                     {room.job_title || (room.other_user_name ? `@${room.other_user_name}` : `Chat #${room.id}`)}
                   </p>
-                  <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{timeAgo(room.last_message_at)}</span>
+                  <span className="text-xs text-gray-400 dark:text-slate-500 shrink-0">{timeAgoShort(room.last_message_at)}</span>
                 </div>
                 <p className={`text-xs truncate mt-0.5 ${
                   unread

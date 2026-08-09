@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDraft } from '../hooks/useDraft';
 import Spinner from '../components/Spinner';
-import { t, connectsLabel, statusLabel } from '../lib/i18n';
+import { t, connectsLabel, statusLabel, timeAgo } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplication, startChat, submitWork, apiFetch, deleteJob, completeJob,
 } from '../lib/api';
@@ -11,15 +11,6 @@ import { CAT_COLORS } from '../lib/constants';
 import { createPiPayment, shareJob } from '../lib/pi';
 import { applyCostFor } from '../lib/connects';
 import { getConfig } from '../lib/api';
-
-function timeAgo(d: string) {
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
-  if (m < 2) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
 
 // Days until a deadline (negative = past). null if no/invalid date.
 function daysUntil(d?: string): number | null {

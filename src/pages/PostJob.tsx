@@ -86,8 +86,10 @@ export default function PostJobPage() {
         </Field>
 
         <Field label={`${tr.description} *`}>
+          {/* The server rejects anything over 5000 with an untranslated English
+              error, and the draft is long by then — cap it here instead. */}
           <textarea value={form.description} onChange={e => set('description', e.target.value)}
-            placeholder={tr.jobDescPlaceholder} rows={5} className="field-input resize-none" />
+            placeholder={tr.jobDescPlaceholder} rows={5} maxLength={5000} className="field-input resize-none" />
         </Field>
 
         <Field label={tr.category}>
@@ -101,17 +103,19 @@ export default function PostJobPage() {
         <div className="grid grid-cols-2 gap-3">
           <Field label={`${tr.budget} (π) *`}>
             <input value={form.budget} onChange={e => set('budget', e.target.value)}
-              type="number" min="1" placeholder={tr.budgetPlaceholder} className="field-input" />
+              type="number" min="1" max="10000" placeholder={tr.budgetPlaceholder} className="field-input" />
           </Field>
           <Field label={tr.deadline}>
+            {/* Without `min` the picker happily offers last week, and the job
+                only fails on submit with "Deadline must be in the future". */}
             <input value={form.deadline} onChange={e => set('deadline', e.target.value)}
-              type="date" className="field-input" />
+              type="date" min={new Date().toISOString().slice(0, 10)} className="field-input" />
           </Field>
         </div>
 
         <Field label={tr.skills}>
           <input value={form.skills} onChange={e => set('skills', e.target.value)}
-            placeholder={tr.skillsPlaceholder} className="field-input" />
+            placeholder={tr.skillsPlaceholder} maxLength={500} className="field-input" />
         </Field>
 
         {/* Attach Photo */}
