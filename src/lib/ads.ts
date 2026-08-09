@@ -32,30 +32,14 @@ async function ensureAdLoaded(type: AdType): Promise<boolean> {
 }
 
 /**
- * Show a rewarded ad. Resolves with the adId to redeem, or null if the user
- * did not earn a reward (closed early, no inventory, ads unsupported).
- */
-export async function showRewardedAd(): Promise<string | null> {
-  if (!(await adsSupported())) return null;
-  if (!(await ensureAdLoaded('rewarded'))) return null;
-  try {
-    const res = await (window as any).Pi.Ads.showAd('rewarded');
-    if (res?.result === 'AD_REWARDED' && res.adId) return res.adId as string;
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Show an interstitial at a natural break.
- *
- * Callers await this before navigating, so it must never be able to strand
- * them: every step is raced against a timeout. Without that, an ad SDK that
- * stops responding would leave the user stuck on the screen they just
- * finished with.
+ * Every step of an ad is raced against a timeout. Callers await these before
+ * navigating or before re-enabling a button, so an ad SDK that stops
+ * responding must not be able to strand them.
  */
 const AD_TIMEOUT_MS = 8000;
+// A rewarded ad is watched to the end, so the show step gets much longer than
+// the interstitial's — but not forever.
+const REWARDED_SHOW_TIMEOUT_MS = 120000;
 
 function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
   return Promise.race([
@@ -63,6 +47,31 @@ function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
     new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
   ]);
 }
+
+/**
+ * Show a rewarded ad. Resolves with the adId to redeem, or null if the user
+ * did not earn a reward (closed early, no inventory, ads unsupported).
+ *
+ * Timed out at every step, which it was not: showInterstitial() was hardened
+ * against a hung SDK and this path was left bare, so a Pi.Ads call that never
+ * settled left the "watch an ad for a connect" button spinning with no way
+ * back — the caller only clears its loading flag when this resolves.
+ */
+export async function showRewardedAd(): Promise<string | null> {
+  if (!(await withTimeout(adsSupported(), 2000, false))) return null;
+  if (!(await withTimeout(ensureAdLoaded('rewarded'), 5000, false))) return null;
+  const res: any = await withTimeout(
+    (window as any).Pi.Ads.showAd('rewarded'),
+    REWARDED_SHOW_TIMEOUT_MS,
+    null,
+  );
+  if (res?.result === 'AD_REWARDED' && res.adId) return res.adId as string;
+  return null;
+}
+
+/**
+ * Show an interstitial at a natural break.
+ */
 
 export async function showInterstitial(): Promise<void> {
   if (!(await withTimeout(adsSupported(), 2000, false))) return;

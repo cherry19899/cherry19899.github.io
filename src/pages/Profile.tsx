@@ -47,8 +47,14 @@ export default function ProfilePage() {
       const adId = await showRewardedAd();
       if (!adId) { toast(tr.adNotAvailable, 'info'); return; }
       const r = await apiFetch('/api/ads/reward', { method: 'POST', body: JSON.stringify({ adId }) });
-      updateUser({ balance_connects: r?.balance_connects ?? connects + (r?.connects_added ?? 1) });
-      toast(tr.adRewarded.replace('{n}', String(r?.connects_added ?? 1)), 'success');
+      // The server's balance is the only one worth showing. The fallback used
+      // to invent `connects + 1`, so a response that carried no balance left
+      // the profile displaying a connect the server had not granted — until
+      // the next reload silently took it away again.
+      const granted = typeof r?.connects_added === 'number' ? r.connects_added : 0;
+      if (typeof r?.balance_connects === 'number') updateUser({ balance_connects: r.balance_connects });
+      else if (granted) updateUser({ balance_connects: connects + granted });
+      toast(tr.adRewarded.replace('{n}', String(granted || 1)), 'success');
       setConnectsModal(false);
     } catch (e: any) {
       toast(e?.message || tr.adNotAvailable, 'error');
