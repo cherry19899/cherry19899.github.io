@@ -17,6 +17,16 @@ interface PortfolioItem {
   category?: string; tags?: string; created_at: string;
 }
 
+/**
+ * A portfolio's links are typed by its owner and tapped by whoever views it,
+ * so only an allowlist is safe here — a stored `javascript:...` href would run
+ * in the *viewer's* session. Returns null for anything that is not http(s).
+ */
+function httpUrl(u?: string | null): string | null {
+  const s = (u || '').trim();
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+
 export default function PortfolioPage() {
   const tr = t();
   const { id } = useParams();
@@ -84,6 +94,9 @@ export default function PortfolioPage() {
 
   const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-sm text-gray-900 dark:text-white outline-none focus:border-emerald-400';
 
+  const websiteUrl = httpUrl(header.website);
+  const githubUrl = httpUrl(header.github);
+
   if (loading) {
     return (
       <div className="max-w-lg mx-auto p-4 space-y-3">
@@ -117,15 +130,15 @@ export default function PortfolioPage() {
         {header.summary && !editHeader && (
           <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{header.summary}</p>
         )}
-        {!editHeader && (header.experience_years || header.website || header.github) ? (
+        {!editHeader && (header.experience_years || websiteUrl || githubUrl) ? (
           <div className="flex flex-wrap gap-2 pt-1">
             {!!header.experience_years && (
               <span className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2.5 py-1 rounded-full">
                 💼 {header.experience_years} {tr.yrsExp}
               </span>
             )}
-            {header.website && <a href={header.website} target="_blank" rel="noreferrer" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-500 px-2.5 py-1 rounded-full">🌐 {tr.website}</a>}
-            {header.github && <a href={header.github} target="_blank" rel="noreferrer" className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2.5 py-1 rounded-full">GitHub</a>}
+            {websiteUrl && <a href={websiteUrl} target="_blank" rel="noreferrer" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-500 px-2.5 py-1 rounded-full">🌐 {tr.website}</a>}
+            {githubUrl && <a href={githubUrl} target="_blank" rel="noreferrer" className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2.5 py-1 rounded-full">GitHub</a>}
           </div>
         ) : null}
 
