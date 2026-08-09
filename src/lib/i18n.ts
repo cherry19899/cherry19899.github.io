@@ -72,6 +72,8 @@ const KEYS = {
   payoutPending: '',
   disputeMinLength: '', withdrawDispute: '', disputeWithdrawn: '', nDisputeWithdrawn: '',
   support: '',
+  confirmRefund: '', confirmRelease: '',
+  confirmBlockUser: '',
   justNow: '', minAgo: '', hourAgo: '', dayAgo: '', tNow: '', tMin: '', tHour: '', tDay: '', dateToday: '', dateYesterday: '',
 } as const;
 
@@ -232,6 +234,8 @@ const en: Translations = {
   disputeWithdrawn: 'Dispute withdrawn — you can carry on',
   nDisputeWithdrawn: 'Dispute withdrawn||The dispute was called off — you can carry on with the job.',
   support: 'Support',
+  confirmRefund: 'Refund {n} π to @{u}? This cannot be undone.', confirmRelease: 'Release {n} π to @{u}? This cannot be undone.',
+  confirmBlockUser: 'Block @{u}? They lose access to their account.',
   justNow: 'just now', minAgo: '{n}m ago', hourAgo: '{n}h ago', dayAgo: '{n}d ago', tNow: 'now', tMin: '{n}m', tHour: '{n}h', tDay: '{n}d', dateToday: 'Today', dateYesterday: 'Yesterday',
 };
 
@@ -389,6 +393,8 @@ const ru: Partial<Translations> = {
   disputeWithdrawn: 'Спор отозван — можно продолжать',
   nDisputeWithdrawn: 'Спор отозван||Спор по задаче отозван — можно продолжать работу.',
   support: 'Поддержка',
+  confirmRefund: 'Вернуть {n} π клиенту @{u}? Это необратимо.', confirmRelease: 'Выплатить {n} π фрилансеру @{u}? Это необратимо.',
+  confirmBlockUser: 'Заблокировать @{u}? Он потеряет доступ к аккаунту.',
   justNow: 'только что', minAgo: '{n} мин назад', hourAgo: '{n} ч назад', dayAgo: '{n} дн назад', tNow: 'сейчас', tMin: '{n}м', tHour: '{n}ч', tDay: '{n}д', dateToday: 'Сегодня', dateYesterday: 'Вчера',
 };
 
@@ -546,6 +552,8 @@ const uk: Partial<Translations> = {
   disputeWithdrawn: 'Спір відкликано — можна продовжувати',
   nDisputeWithdrawn: 'Спір відкликано||Спір за задачею відкликано — можна продовжувати роботу.',
   support: 'Підтримка',
+  confirmRefund: 'Повернути {n} π клієнту @{u}? Це незворотно.', confirmRelease: 'Виплатити {n} π фрилансеру @{u}? Це незворотно.',
+  confirmBlockUser: 'Заблокувати @{u}? Він втратить доступ до акаунта.',
   justNow: 'щойно', minAgo: '{n} хв тому', hourAgo: '{n} год тому', dayAgo: '{n} дн тому', tNow: 'зараз', tMin: '{n}хв', tHour: '{n}год', tDay: '{n}д', dateToday: 'Сьогодні', dateYesterday: 'Вчора',
 };
 
@@ -718,6 +726,8 @@ const de: Partial<Translations> = {
   disputeWithdrawn: 'Streitfall zurückgezogen — ihr könnt weitermachen',
   nDisputeWithdrawn: 'Streitfall zurückgezogen||Der Streitfall wurde beigelegt — ihr könnt weiterarbeiten.',
   support: 'Support',
+  confirmRefund: '{n} π an @{u} zurückerstatten? Nicht rückgängig zu machen.', confirmRelease: '{n} π an @{u} auszahlen? Nicht rückgängig zu machen.',
+  confirmBlockUser: '@{u} sperren? Der Zugang zum Konto geht verloren.',
   justNow: 'gerade eben', minAgo: 'vor {n} Min.', hourAgo: 'vor {n} Std.', dayAgo: 'vor {n} T.', tNow: 'jetzt', tMin: '{n}m', tHour: '{n}h', tDay: '{n}T', dateToday: 'Heute', dateYesterday: 'Gestern',
 };
 
@@ -890,6 +900,8 @@ const fr: Partial<Translations> = {
   disputeWithdrawn: 'Litige retiré — vous pouvez continuer',
   nDisputeWithdrawn: 'Litige retiré||Le litige a été annulé — vous pouvez reprendre le travail.',
   support: 'Assistance',
+  confirmRefund: 'Rembourser {n} π à @{u} ? Action irréversible.', confirmRelease: 'Verser {n} π à @{u} ? Action irréversible.',
+  confirmBlockUser: 'Bloquer @{u} ? Il perdra l’accès à son compte.',
   justNow: 'à l\'instant', minAgo: 'il y a {n} min', hourAgo: 'il y a {n} h', dayAgo: 'il y a {n} j', tNow: 'maintenant', tMin: '{n}min', tHour: '{n}h', tDay: '{n}j', dateToday: 'Aujourd\'hui', dateYesterday: 'Hier',
 };
 
@@ -1062,6 +1074,8 @@ const es: Partial<Translations> = {
   disputeWithdrawn: 'Disputa retirada: podéis continuar',
   nDisputeWithdrawn: 'Disputa retirada||La disputa se canceló: podéis continuar con el trabajo.',
   support: 'Soporte',
+  confirmRefund: '¿Reembolsar {n} π a @{u}? No se puede deshacer.', confirmRelease: '¿Pagar {n} π a @{u}? No se puede deshacer.',
+  confirmBlockUser: '¿Bloquear a @{u}? Perderá el acceso a su cuenta.',
   justNow: 'ahora mismo', minAgo: 'hace {n} min', hourAgo: 'hace {n} h', dayAgo: 'hace {n} d', tNow: 'ahora', tMin: '{n}min', tHour: '{n}h', tDay: '{n}d', dateToday: 'Hoy', dateYesterday: 'Ayer',
 };
 
@@ -1234,6 +1248,8 @@ const pt: Partial<Translations> = {
   disputeWithdrawn: 'Disputa retirada — podem continuar',
   nDisputeWithdrawn: 'Disputa retirada||A disputa foi cancelada — podem continuar o trabalho.',
   support: 'Suporte',
+  confirmRefund: 'Reembolsar {n} π a @{u}? Isto não pode ser desfeito.', confirmRelease: 'Pagar {n} π a @{u}? Isto não pode ser desfeito.',
+  confirmBlockUser: 'Bloquear @{u}? Perderá o acesso à conta.',
   justNow: 'agora mesmo', minAgo: 'há {n} min', hourAgo: 'há {n} h', dayAgo: 'há {n} d', tNow: 'agora', tMin: '{n}min', tHour: '{n}h', tDay: '{n}d', dateToday: 'Hoje', dateYesterday: 'Ontem',
 };
 
@@ -1406,6 +1422,8 @@ const tr: Partial<Translations> = {
   disputeWithdrawn: 'Anlaşmazlık geri çekildi — devam edebilirsiniz',
   nDisputeWithdrawn: 'Anlaşmazlık geri çekildi||Anlaşmazlık kaldırıldı — işe devam edebilirsiniz.',
   support: 'Destek',
+  confirmRefund: '{n} π tutarı @{u} kullanıcısına iade edilsin mi? Geri alınamaz.', confirmRelease: '{n} π tutarı @{u} kullanıcısına ödensin mi? Geri alınamaz.',
+  confirmBlockUser: '@{u} engellensin mi? Hesabına erişimi kaybeder.',
   justNow: 'az önce', minAgo: '{n} dk önce', hourAgo: '{n} sa önce', dayAgo: '{n} gün önce', tNow: 'şimdi', tMin: '{n}dk', tHour: '{n}sa', tDay: '{n}g', dateToday: 'Bugün', dateYesterday: 'Dün',
 };
 
@@ -1588,6 +1606,8 @@ const ar: Partial<Translations> = {
   disputeWithdrawn: 'تم سحب النزاع — يمكنكما المتابعة',
   nDisputeWithdrawn: 'تم سحب النزاع||أُلغي النزاع — يمكنكما متابعة العمل.',
   support: 'الدعم',
+  confirmRefund: 'إرجاع {n} π إلى ‎@{u}؟ لا يمكن التراجع عن ذلك.', confirmRelease: 'دفع {n} π إلى ‎@{u}؟ لا يمكن التراجع عن ذلك.',
+  confirmBlockUser: 'حظر ‎@{u}؟ سيفقد الوصول إلى حسابه.',
   justNow: 'الآن', minAgo: 'قبل {n} د', hourAgo: 'قبل {n} س', dayAgo: 'قبل {n} ي', tNow: 'الآن', tMin: '{n} د', tHour: '{n} س', tDay: '{n} ي', dateToday: 'اليوم', dateYesterday: 'أمس',
 };
 
@@ -1770,6 +1790,8 @@ const hi: Partial<Translations> = {
   disputeWithdrawn: 'विवाद वापस लिया गया — आगे बढ़ सकते हैं',
   nDisputeWithdrawn: 'विवाद वापस लिया गया||विवाद रद्द कर दिया गया — काम जारी रख सकते हैं।',
   support: 'सहायता',
+  confirmRefund: '@{u} को {n} π वापस करें? यह पूर्ववत नहीं किया जा सकता।', confirmRelease: '@{u} को {n} π जारी करें? यह पूर्ववत नहीं किया जा सकता।',
+  confirmBlockUser: '@{u} को ब्लॉक करें? उनका खाता पहुँच से बाहर हो जाएगा।',
   justNow: 'अभी', minAgo: '{n} मिनट पहले', hourAgo: '{n} घंटे पहले', dayAgo: '{n} दिन पहले', tNow: 'अभी', tMin: '{n}मि', tHour: '{n}घं', tDay: '{n}दि', dateToday: 'आज', dateYesterday: 'कल',
 };
 
@@ -1952,6 +1974,8 @@ const zh: Partial<Translations> = {
   disputeWithdrawn: '争议已撤回，可以继续',
   nDisputeWithdrawn: '争议已撤回||争议已取消，可以继续工作。',
   support: '客服支持',
+  confirmRefund: '将 {n} π 退还给 @{u}？此操作无法撤销。', confirmRelease: '将 {n} π 支付给 @{u}？此操作无法撤销。',
+  confirmBlockUser: '封禁 @{u}？该用户将无法访问自己的账户。',
   justNow: '刚刚', minAgo: '{n} 分钟前', hourAgo: '{n} 小时前', dayAgo: '{n} 天前', tNow: '刚刚', tMin: '{n}分', tHour: '{n}时', tDay: '{n}天', dateToday: '今天', dateYesterday: '昨天',
 };
 
@@ -2134,6 +2158,8 @@ const ja: Partial<Translations> = {
   disputeWithdrawn: '異議を取り下げました — 作業を続けられます',
   nDisputeWithdrawn: '異議が取り下げられました||異議は取り消されました — 作業を続けられます。',
   support: 'サポート',
+  confirmRefund: '{n} π を @{u} に返金しますか？取り消せません。', confirmRelease: '{n} π を @{u} に支払いますか？取り消せません。',
+  confirmBlockUser: '@{u} をブロックしますか？アカウントにアクセスできなくなります。',
   justNow: 'たった今', minAgo: '{n} 分前', hourAgo: '{n} 時間前', dayAgo: '{n} 日前', tNow: '今', tMin: '{n}分', tHour: '{n}時間', tDay: '{n}日', dateToday: '今日', dateYesterday: '昨日',
 };
 
@@ -2316,6 +2342,8 @@ const ko: Partial<Translations> = {
   disputeWithdrawn: '분쟁을 철회했습니다 — 계속 진행하세요',
   nDisputeWithdrawn: '분쟁이 철회되었습니다||분쟁이 취소되었습니다 — 작업을 계속하세요.',
   support: '고객지원',
+  confirmRefund: '{n} π를 @{u}님에게 환불할까요? 되돌릴 수 없습니다.', confirmRelease: '{n} π를 @{u}님에게 지급할까요? 되돌릴 수 없습니다.',
+  confirmBlockUser: '@{u}님을 차단할까요? 계정에 접근할 수 없게 됩니다.',
   justNow: '방금', minAgo: '{n}분 전', hourAgo: '{n}시간 전', dayAgo: '{n}일 전', tNow: '방금', tMin: '{n}분', tHour: '{n}시간', tDay: '{n}일', dateToday: '오늘', dateYesterday: '어제',
 };
 
@@ -2498,6 +2526,8 @@ const vi: Partial<Translations> = {
   disputeWithdrawn: 'Đã rút tranh chấp — có thể tiếp tục',
   nDisputeWithdrawn: 'Đã rút tranh chấp||Tranh chấp đã được hủy — có thể tiếp tục công việc.',
   support: 'Hỗ trợ',
+  confirmRefund: 'Hoàn {n} π cho @{u}? Không thể hoàn tác.', confirmRelease: 'Trả {n} π cho @{u}? Không thể hoàn tác.',
+  confirmBlockUser: 'Chặn @{u}? Họ sẽ mất quyền truy cập tài khoản.',
   justNow: 'vừa xong', minAgo: '{n} phút trước', hourAgo: '{n} giờ trước', dayAgo: '{n} ngày trước', tNow: 'bây giờ', tMin: '{n}p', tHour: '{n}g', tDay: '{n}n', dateToday: 'Hôm nay', dateYesterday: 'Hôm qua',
 };
 
@@ -2680,6 +2710,8 @@ const id: Partial<Translations> = {
   disputeWithdrawn: 'Sengketa ditarik — silakan lanjutkan',
   nDisputeWithdrawn: 'Sengketa ditarik||Sengketa dibatalkan — pekerjaan bisa dilanjutkan.',
   support: 'Dukungan',
+  confirmRefund: 'Kembalikan {n} π ke @{u}? Tindakan ini tidak bisa dibatalkan.', confirmRelease: 'Bayarkan {n} π ke @{u}? Tindakan ini tidak bisa dibatalkan.',
+  confirmBlockUser: 'Blokir @{u}? Dia kehilangan akses ke akunnya.',
   justNow: 'baru saja', minAgo: '{n} mnt lalu', hourAgo: '{n} jam lalu', dayAgo: '{n} hr lalu', tNow: 'sekarang', tMin: '{n}m', tHour: '{n}j', tDay: '{n}h', dateToday: 'Hari ini', dateYesterday: 'Kemarin',
 };
 
@@ -2852,6 +2884,8 @@ const it: Partial<Translations> = {
   disputeWithdrawn: 'Controversia ritirata — potete proseguire',
   nDisputeWithdrawn: 'Controversia ritirata||La controversia è stata annullata — potete proseguire il lavoro.',
   support: 'Assistenza',
+  confirmRefund: 'Rimborsare {n} π a @{u}? Operazione irreversibile.', confirmRelease: 'Pagare {n} π a @{u}? Operazione irreversibile.',
+  confirmBlockUser: 'Bloccare @{u}? Perderà l’accesso al proprio account.',
   justNow: 'proprio ora', minAgo: '{n} min fa', hourAgo: '{n} h fa', dayAgo: '{n} g fa', tNow: 'ora', tMin: '{n}min', tHour: '{n}h', tDay: '{n}g', dateToday: 'Oggi', dateYesterday: 'Ieri',
 };
 
@@ -3024,6 +3058,8 @@ const pl: Partial<Translations> = {
   disputeWithdrawn: 'Spór wycofany — możecie kontynuować',
   nDisputeWithdrawn: 'Spór wycofany||Spór został odwołany — możecie kontynuować pracę.',
   support: 'Wsparcie',
+  confirmRefund: 'Zwrócić {n} π do @{u}? Tej operacji nie można cofnąć.', confirmRelease: 'Wypłacić {n} π do @{u}? Tej operacji nie można cofnąć.',
+  confirmBlockUser: 'Zablokować @{u}? Straci dostęp do swojego konta.',
   justNow: 'przed chwilą', minAgo: '{n} min temu', hourAgo: '{n} godz. temu', dayAgo: '{n} dni temu', tNow: 'teraz', tMin: '{n}min', tHour: '{n}godz', tDay: '{n}d', dateToday: 'Dzisiaj', dateYesterday: 'Wczoraj',
 };
 
@@ -3357,6 +3393,8 @@ const th: Partial<Translations> = { ...en,
   disputeWithdrawn: 'ถอนข้อพิพาทแล้ว — ดำเนินการต่อได้',
   nDisputeWithdrawn: 'ถอนข้อพิพาทแล้ว||ยกเลิกข้อพิพาทแล้ว — ทำงานต่อได้',
   support: 'ฝ่ายสนับสนุน',
+  confirmRefund: 'คืนเงิน {n} π ให้ @{u} ใช่ไหม การกระทำนี้ย้อนกลับไม่ได้', confirmRelease: 'จ่าย {n} π ให้ @{u} ใช่ไหม การกระทำนี้ย้อนกลับไม่ได้',
+  confirmBlockUser: 'บล็อก @{u} ใช่ไหม ผู้ใช้จะเข้าบัญชีไม่ได้',
   justNow: 'เมื่อสักครู่', minAgo: '{n} นาทีที่แล้ว', hourAgo: '{n} ชม.ที่แล้ว', dayAgo: '{n} วันที่แล้ว', tNow: 'ตอนนี้', tMin: '{n}น.', tHour: '{n}ชม.', tDay: '{n}ว.', dateToday: 'วันนี้', dateYesterday: 'เมื่อวาน',
 };
 
@@ -3690,6 +3728,8 @@ const tl: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Nabawi ang sigalot — puwede nang magpatuloy',
   nDisputeWithdrawn: 'Nabawi ang sigalot||Kinansela ang sigalot — puwede nang ipagpatuloy ang trabaho.',
   support: 'Suporta',
+  confirmRefund: 'I-refund ang {n} π kay @{u}? Hindi na ito maibabalik.', confirmRelease: 'Ibayad ang {n} π kay @{u}? Hindi na ito maibabalik.',
+  confirmBlockUser: 'I-block si @{u}? Mawawalan siya ng access sa account.',
   justNow: 'ngayon lang', minAgo: '{n} min ang nakalipas', hourAgo: '{n} oras ang nakalipas', dayAgo: '{n} araw ang nakalipas', tNow: 'ngayon', tMin: '{n}min', tHour: '{n}or', tDay: '{n}ar', dateToday: 'Ngayon', dateYesterday: 'Kahapon',
 };
 
@@ -4023,6 +4063,8 @@ const nl: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Geschil ingetrokken — jullie kunnen verder',
   nDisputeWithdrawn: 'Geschil ingetrokken||Het geschil is ingetrokken — jullie kunnen verder met de opdracht.',
   support: 'Ondersteuning',
+  confirmRefund: '{n} π terugbetalen aan @{u}? Dit kan niet ongedaan worden gemaakt.', confirmRelease: '{n} π uitbetalen aan @{u}? Dit kan niet ongedaan worden gemaakt.',
+  confirmBlockUser: '@{u} blokkeren? Deze verliest toegang tot het account.',
   justNow: 'zojuist', minAgo: '{n} min geleden', hourAgo: '{n} u geleden', dayAgo: '{n} d geleden', tNow: 'nu', tMin: '{n}min', tHour: '{n}u', tDay: '{n}d', dateToday: 'Vandaag', dateYesterday: 'Gisteren',
 };
 
@@ -4356,6 +4398,8 @@ const sv: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Tvisten tillbakadragen — ni kan fortsätta',
   nDisputeWithdrawn: 'Tvisten tillbakadragen||Tvisten avbröts — ni kan fortsätta med uppdraget.',
   support: 'Support',
+  confirmRefund: 'Återbetala {n} π till @{u}? Detta kan inte ångras.', confirmRelease: 'Betala ut {n} π till @{u}? Detta kan inte ångras.',
+  confirmBlockUser: 'Blockera @{u}? Personen förlorar åtkomst till sitt konto.',
   justNow: 'nyss', minAgo: 'för {n} min sedan', hourAgo: 'för {n} tim sedan', dayAgo: 'för {n} d sedan', tNow: 'nu', tMin: '{n}min', tHour: '{n}tim', tDay: '{n}d', dateToday: 'Idag', dateYesterday: 'Igår',
 };
 
@@ -4689,6 +4733,8 @@ const ro: Partial<Translations> = { ...en,
   disputeWithdrawn: 'Litigiu retras — puteți continua',
   nDisputeWithdrawn: 'Litigiu retras||Litigiul a fost anulat — puteți continua lucrarea.',
   support: 'Asistență',
+  confirmRefund: 'Rambursezi {n} π către @{u}? Acțiunea nu poate fi anulată.', confirmRelease: 'Plătești {n} π către @{u}? Acțiunea nu poate fi anulată.',
+  confirmBlockUser: 'Blochezi @{u}? Va pierde accesul la cont.',
   justNow: 'chiar acum', minAgo: 'acum {n} min', hourAgo: 'acum {n} h', dayAgo: 'acum {n} z', tNow: 'acum', tMin: '{n}min', tHour: '{n}h', tDay: '{n}z', dateToday: 'Astăzi', dateYesterday: 'Ieri',
 };
 
@@ -5022,6 +5068,8 @@ const bn: Partial<Translations> = { ...en,
   disputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে — চালিয়ে যেতে পারেন',
   nDisputeWithdrawn: 'বিরোধ প্রত্যাহার হয়েছে||বিরোধ বাতিল হয়েছে — কাজ চালিয়ে যেতে পারেন।',
   support: 'সহায়তা',
+  confirmRefund: '@{u}-কে {n} π ফেরত দেবেন? এটি ফেরানো যাবে না।', confirmRelease: '@{u}-কে {n} π পরিশোধ করবেন? এটি ফেরানো যাবে না।',
+  confirmBlockUser: '@{u}-কে ব্লক করবেন? তিনি অ্যাকাউন্টে ঢুকতে পারবেন না।',
   justNow: 'এইমাত্র', minAgo: '{n} মিনিট আগে', hourAgo: '{n} ঘণ্টা আগে', dayAgo: '{n} দিন আগে', tNow: 'এখন', tMin: '{n}মি', tHour: '{n}ঘ', tDay: '{n}দি', dateToday: 'আজ', dateYesterday: 'গতকাল',
 };
 

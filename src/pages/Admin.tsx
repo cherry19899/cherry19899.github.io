@@ -371,6 +371,8 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={async () => {
+                          // Unblocking is restorative, so it goes straight through.
+                          if (!u.is_blocked && !confirm(tr.confirmBlockUser.replace('{u}', u.username || '?'))) return;
                           setActing(u.id || u.uid);
                           try {
                             await adminBlockUser(u.id || u.uid, !u.is_blocked);
@@ -455,6 +457,10 @@ export default function AdminPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={async () => {
+                          // These two buttons sit side by side at phone width and
+                          // each moves real Pi irreversibly. Deleting a job asks
+                          // first; paying the wrong party did not.
+                          if (!confirm(tr.confirmRefund.replace('{n}', String(e.amount)).replace('{u}', e.client_name || e.client_username || '?'))) return;
                           try { await adminResolveEscrow(e.id, 'refund_to_client'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'refunded' } : x)); toast(tr.refunded, 'success'); }
                           catch (err: any) { toast(err.message, 'error'); }
                         }}
@@ -464,6 +470,7 @@ export default function AdminPage() {
                       </button>
                       <button
                         onClick={async () => {
+                          if (!confirm(tr.confirmRelease.replace('{n}', String(e.amount)).replace('{u}', e.freelancer_name || e.freelancer_username || '?'))) return;
                           try { await adminResolveEscrow(e.id, 'release_to_freelancer'); setEscrows(prev => prev.map(x => x.id === e.id ? { ...x, status: 'released' } : x)); toast(tr.releasedToFreelancer, 'success'); }
                           catch (err: any) { toast(err.message, 'error'); }
                         }}
