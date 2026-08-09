@@ -9,12 +9,89 @@ import {
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
+import { applyCostDivisor, postJobCost, getSupportUrl, setConnectsEconomy, setSupportUrl } from '../lib/connects';
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area,
   PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, } from 'recharts';
 
 type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings' | 'analytics';
+
+/**
+ * One admin-editable platform setting.
+ *
+ * Every one of these is whitelisted and re-validated on the server; the bounds
+ * here only spare the admin a round-trip. The saved value is read back from the
+ * response rather than from the input, so what is displayed is what the server
+ * actually stored.
+ */
+function SettingRow({ settingKey, label, initial, min, max, step, hint, text }: {
+  settingKey: string; label: string; initial: string;
+  min?: number; max?: number; step?: number; hint?: string; text?: boolean;
+}) {
+  const tr = t();
+  const [value, setValue] = useState(initial);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(initial);
+
+  const save = async () => {
+    const v = text ? value.trim() : Number(value);
+    if (!text && (!Number.isFinite(v as number) || (v as number) < min! || (v as number) > max!)) {
+      toast(`${label}: ${hint}`, 'error');
+      return;
+    }
+    // Empty clears the support link — the app then hides the row rather than
+    // offering a link that goes nowhere.
+    if (text && v !== '' && !/^https?:\/\/[^\s]+$/i.test(v as string)) {
+      toast(`${label}: ${hint}`, 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await apiFetch('/api/admin/settings', {
+        method: 'PATCH',
+        body: JSON.stringify({ key: settingKey, value: v }),
+      });
+      const stored = res?.value ?? String(v);
+      setValue(String(stored));
+      setSaved(String(stored));
+      // Push it into the client-side copy too. Without this the rest of the app
+      // keeps quoting the old number until the next /api/config fetch, so the
+      // admin sees the save succeed while job screens still charge the old cost.
+      if (settingKey === 'support_url') setSupportUrl(stored);
+      else setConnectsEconomy({ [settingKey]: stored });
+      toast(`${label}: ${tr.saved}`, 'success');
+    } catch (e: any) { toast(e.message, 'error'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3 text-sm">
+      <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide">{label}</p>
+      <div className="flex items-center gap-3">
+        <input
+          type={text ? 'url' : 'number'}
+          inputMode={text ? 'url' : 'decimal'}
+          min={min} max={max} step={step}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          placeholder={hint}
+          className="flex-1 min-w-0 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400"
+        />
+        <button
+          onClick={save}
+          disabled={saving || value === saved}
+          className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold disabled:opacity-60 shrink-0"
+        >
+          {saving ? '…' : tr.save}
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 break-all">
+        {tr.current}: {saved === '' ? '—' : saved}{hint ? ` · ${hint}` : ''}
+      </p>
+    </div>
+  );
+}
 
 export default function AdminPage() {
   const tr = t();
@@ -203,6 +280,31 @@ export default function AdminPage() {
                   {tr.feeRange}
                 </p>
               </div>
+
+              {/* The rest of the economy. These are served to every client by
+                  /api/config, so changing one here changes what the app charges
+                  — there is no second copy to keep in step. */}
+              <SettingRow
+                settingKey="apply_cost_divisor"
+                label={tr.admApplyDivisor}
+                initial={String(applyCostDivisor())}
+                min={1} max={1000} step={1}
+                hint="1–1000"
+              />
+              <SettingRow
+                settingKey="post_job_cost"
+                label={tr.admPostJobCost}
+                initial={String(postJobCost())}
+                min={0} max={50} step={1}
+                hint="0–50"
+              />
+              <SettingRow
+                settingKey="support_url"
+                label={tr.admSupportUrl}
+                initial={getSupportUrl()}
+                text
+                hint="https://…"
+              />
             </>
           ) : <p className="text-center text-gray-400 py-10">{tr.noData}</p>
         )}

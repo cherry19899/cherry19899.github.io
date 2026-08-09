@@ -27,6 +27,11 @@ export function postJobCost(): number {
   return economy.postJobCost;
 }
 
+/** The divisor itself — the admin screen edits it, everything else uses applyCostFor. */
+export function applyCostDivisor(): number {
+  return economy.applyCostDivisor;
+}
+
 /** Connects required to apply for a job of this budget. Never below 1. */
 export function applyCostFor(budget: number | string | undefined): number {
   const b = Number(budget) || 0;
