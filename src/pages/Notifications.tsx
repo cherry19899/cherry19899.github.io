@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getNotifications, markAllNotifsRead } from '../lib/api';
+import { getNotifications, markAllNotifsRead, markNotifRead } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { useAppCtx } from '../App';
 import { t } from '../lib/i18n';
+import { toast } from '../components/Toast';
 
 // Notifications are stored with a `notif_key` + `params`; rendering them here
 // rather than server-side means the text follows whatever language the reader
@@ -142,13 +143,26 @@ export default function NotificationsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Opening one notification marks that one read. This called
+  // markAllNotifsRead(), so tapping a single item silently marked *every*
+  // notification read on the server while the list only greyed out the one —
+  // the rest came back read after a reload, with no way to find them again.
   const markRead = (id: number) => {
-    markAllNotifsRead().catch(() => {});
+    markNotifRead(id)
+      .then(() => refreshUnread())
+      .catch(() => {
+        // Put it back: the server still has it unread.
+        setNotifs(p => p.map(n => n.id === id ? { ...n, is_read: false, read: false } : n));
+        toast(tr.actionFailed, 'error');
+      });
     setNotifs(p => p.map(n => n.id === id ? { ...n, is_read: true, read: true } : n));
   };
 
   const markAll = () => {
-    markAllNotifsRead().catch(() => {});
+    const before = notifs;
+    markAllNotifsRead()
+      .then(() => refreshUnread())
+      .catch(() => { setNotifs(before); toast(tr.actionFailed, 'error'); });
     setNotifs(p => p.map(n => ({ ...n, is_read: true, read: true })));
   };
 
@@ -181,7 +195,7 @@ export default function NotificationsPage() {
               filter === f ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
             }`}
           >
-            {f === 'all' ? tr.all : `${tr.noNotifications.split(' ')[1] || 'Unread'}${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
+            {f === 'all' ? tr.all : `${tr.unreadTab}${unreadCount > 0 ? ` (${unreadCount})` : ''}`}
           </button>
         ))}
       </div>

@@ -275,7 +275,7 @@ export default function ChatRoomPage() {
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            aria-label="Attach file"
+            aria-label={tr.attach}
             className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400 shrink-0 disabled:opacity-40 active:scale-95 transition-transform"
           >
             {uploading

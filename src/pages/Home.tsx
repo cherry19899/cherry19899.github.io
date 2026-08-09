@@ -259,7 +259,7 @@ function SaveSearchModal({
           autoFocus
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="e.g. Python jobs under 100π"
+          placeholder={tr.phSavedSearchName}
           className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 mb-3"
         />
         <div className="flex items-center justify-between mb-5">
@@ -323,6 +323,7 @@ export default function HomePage() {
   const [sort, setSort] = useState('newest');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -382,7 +383,13 @@ export default function HomePage() {
       setJobs(prev => replace ? list : [...prev, ...list]);
       setHasMore(list.length === 20);
       setPage(p);
-    } catch {}
+      setLoadError(false);
+    } catch {
+      // Without this the list stayed empty and silent, so a failed request was
+      // presented as "no jobs found — try different filters": the user changes
+      // filters that were never the problem.
+      setLoadError(true);
+    }
     finally { setLoading(false); }
   }, [cat, sort, search, filters]);
 
@@ -653,6 +660,13 @@ export default function HomePage() {
       <div className="p-4 space-y-3 pb-32">
         {loading
           ? Array.from({ length: 5 }).map((_, i) => <JobSkeleton key={i} />)
+          : loadError
+          ? (
+            <button onClick={() => load(1, true)} className="w-full flex flex-col items-center justify-center py-16 text-center">
+              <span className="text-5xl mb-3">⚠️</span>
+              <p className="font-semibold text-gray-900 dark:text-white">{tr.loadFailed}</p>
+            </button>
+          )
           : visibleJobs.length === 0
           ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
