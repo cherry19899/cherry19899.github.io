@@ -562,7 +562,14 @@ export default function EscrowPage() {
       {ratingTarget && (() => {
         const e = ratingTarget.escrow;
         const freelancerId = e.freelancer_id || e.freelancer_uid || '';
-        const iAmFreelancer = user?.uid && freelancerId === user.uid;
+        // Ids are compared case- and pi_-insensitively everywhere on the
+        // server. A strict === here meant a freelancer whose id is stored with
+        // different casing was not recognised as the freelancer, so the modal
+        // offered them a review of themselves — which the server refuses,
+        // leaving them unable to review anyone for that job.
+        const sameUser = (a: string, b: string) =>
+          !!a && !!b && a.toLowerCase().replace(/^pi_/, '') === b.toLowerCase().replace(/^pi_/, '');
+        const iAmFreelancer = sameUser(freelancerId, user?.uid || '');
         const toUserId = iAmFreelancer ? (e.client_id || e.client_uid || '') : freelancerId;
         const toUsername = iAmFreelancer ? (e.client_username || '?') : (e.freelancer_username || '?');
         return (

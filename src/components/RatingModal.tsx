@@ -22,18 +22,22 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
   const [saving, setSaving] = useState(false);
   const tr = t();
 
-  const canSubmit = stars > 0 && (comment.length === 0 || comment.length >= 10);
+  // The trimmed length, because the trimmed text is what gets sent: eleven
+  // spaces and "hi" passed this check at 13 characters and were rejected by
+  // the server at 2, after the request had already gone out.
+  const trimmed = comment.trim();
+  const canSubmit = stars > 0 && (trimmed.length === 0 || trimmed.length >= 10);
 
   const handleSubmit = async () => {
     if (!stars) { toast(tr.yourRating, 'error'); return; }
-    if (comment && comment.length < 10) { toast(tr.reviewMinLength, 'error'); return; }
+    if (trimmed && trimmed.length < 10) { toast(tr.reviewMinLength, 'error'); return; }
     setSaving(true);
     try {
       await submitReviewV2({
         reviewee_id: toUserId,
         job_id: jobId,
         rating: stars,
-        text: comment.trim() || null,
+        text: trimmed || null,
       });
       toast(tr.reviewSuccess, 'success');
       onDone();
@@ -47,6 +51,9 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={onSkip}>
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={tr.leaveReview}
         className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10 animate-fade-in"
         onClick={e => e.stopPropagation()}
       >
@@ -60,6 +67,12 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
           {[1, 2, 3, 4, 5].map(n => (
             <button
               key={n}
+              type="button"
+              // All five buttons contain the same glyph and nothing else, so a
+              // screen reader announced "star, button" five times with no way
+              // to tell one from five.
+              aria-label={`${n}: ${LABELS(tr)[n]}`}
+              aria-pressed={stars === n}
               onMouseEnter={() => setHover(n)}
               onMouseLeave={() => setHover(0)}
               onTouchStart={() => setStars(n)}
@@ -82,12 +95,17 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
           onChange={e => setComment(e.target.value)}
           placeholder={tr.reviewText}
           rows={3}
+          // The server refuses anything past 2000; stopping the typing is
+          // kinder than rejecting the submission after it is written.
+          maxLength={2000}
           className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 resize-none mb-1"
         />
-        {comment.length > 0 && comment.length < 10 && (
+        {/* Measured the same way canSubmit measures it, or whitespace padding
+            disabled the button with nothing on screen explaining why. */}
+        {trimmed.length > 0 && trimmed.length < 10 && (
           <p className="text-xs text-red-400 mb-3">{tr.reviewMinLength}</p>
         )}
-        {comment.length === 0 && <div className="mb-3" />}
+        {trimmed.length === 0 && <div className="mb-3" />}
 
         <button
           onClick={handleSubmit}
