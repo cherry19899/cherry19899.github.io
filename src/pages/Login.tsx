@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { isPiBrowser, piAuthenticate, PI_MODE } from '../lib/pi';
+import { APP_URL } from '../lib/constants';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import Footer from '../components/Footer';
@@ -22,7 +23,26 @@ export default function LoginPage() {
   const { setUser } = useAppCtx();
   const [loading, setLoading] = useState(false);
   const [piReady, setPiReady] = useState(false);
+
   const [wakingUp, setWakingUp] = useState(false);
+
+  // Set once login has failed. A toast alone was not enough: the usual cause is
+  // that the app was opened outside Pi Browser — typically from a home-screen
+  // icon, which launches the default browser — and nothing on this screen lets
+  // the user recover from that. The panel below is the way out.
+  const [blocked, setBlocked] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(APP_URL);
+      setCopied(true);
+    } catch {
+      // Clipboard is refused without a secure context or a user gesture the
+      // browser recognises. Selecting the address shown below still works.
+      toast('Copy the address shown below', 'error');
+    }
+  };
 
   useEffect(() => {
     let n = 0;
@@ -42,6 +62,7 @@ export default function LoginPage() {
       setUser(user);
     } catch (e: any) {
       toast(e.message || 'Login failed', 'error');
+      setBlocked(true);
     } finally {
       clearTimeout(wakeTimer);
       setLoading(false);
@@ -89,17 +110,52 @@ export default function LoginPage() {
           ) : 'Login with Pi'}
         </button>
 
-        <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl" style={{ background: PANEL_BG }}>
-          <svg className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="5" y="2" width="14" height="20" rx="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18"/>
-          </svg>
-          <p className="text-sm" style={{ color: '#6ee7b7' }}>
-            {piReady
-              ? 'Pi SDK ready — tap Login to authenticate.'
-              : 'Open this app inside the Pi Browser.'}
-          </p>
-        </div>
+        {blocked ? (
+          /* Pi never answered. Rather than leave the user staring at a screen
+             whose only button has already failed, hand them the two things that
+             actually get them into Pi Browser. Copy comes first because it is
+             the one that always works: pi:// opens Pi Browser at its own home
+             page (it only follows links for *.pinet.com), so the address still
+             has to be pasted. */
+          <div className="mt-5 p-4 rounded-2xl space-y-3" style={{ background: PANEL_BG }}>
+            <p className="text-sm font-semibold text-white">Open Work Pro in Pi Browser</p>
+            <p className="text-xs" style={{ color: FOOT }}>
+              Signing in only works inside Pi Browser. Copy the address, open Pi Browser,
+              and paste it into its address bar.
+            </p>
+            <button
+              onClick={copyLink}
+              className="w-full py-3 rounded-xl bg-emerald-500 active:bg-emerald-600 font-semibold text-sm"
+              style={{ color: '#052e21' }}
+            >
+              {copied ? 'Address copied ✓' : 'Copy address'}
+            </button>
+            <a
+              href="pi://cherry19899.github.io"
+              className="block w-full py-3 rounded-xl text-center font-semibold text-sm border"
+              style={{ borderColor: FEATURE_ICON, color: FOOT }}
+            >
+              Open Pi Browser
+            </a>
+            {/* Shown as text so the address is still recoverable by hand if the
+                clipboard is unavailable and the button above does nothing. */}
+            <p className="text-xs text-center break-all" style={{ color: '#a7f3d0' }}>{APP_URL}</p>
+          </div>
+        ) : (
+          <div className="mt-5 flex items-start gap-3 p-4 rounded-2xl" style={{ background: PANEL_BG }}>
+            <svg className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="5" y="2" width="14" height="20" rx="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            <p className="text-sm" style={{ color: '#6ee7b7' }}>
+              {/* Says what is true without guessing where the user is: the SDK
+                  loading tells us nothing about whether Pi will answer. */}
+              {piReady
+                ? 'Tap Login to authenticate. Work Pro only signs in inside Pi Browser.'
+                : 'Loading Pi SDK…'}
+            </p>
+          </div>
+        )}
 
         <p className="mt-5 text-xs text-center" style={{ color: FOOT }}>
           {/* Single source of truth — same PI_MODE the SDK is initialized with. */}

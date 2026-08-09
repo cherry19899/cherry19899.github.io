@@ -5,13 +5,41 @@ declare global {
   interface Window { Pi?: any; }
 }
 
+/**
+ * Whether the Pi SDK object exists at all.
+ *
+ * NOT the same as "we are inside Pi Browser": the SDK script is served from
+ * sdk.minepi.com and loads in any browser, so window.Pi is defined in Chrome
+ * too. Use this only to decide whether the SDK can be called; use
+ * `probablyPiBrowser()` to decide what to tell the user.
+ */
 export function isPiBrowser(): boolean {
+  return typeof window.Pi !== 'undefined';
+}
+
+/**
+ * There is no reliable way to detect Pi Browser before trying to authenticate.
+ *
+ * Its user agent is an ordinary Android WebView string with no Pi marker in it
+ * (verified on a real Pi Browser build), so a UA check would report "not Pi
+ * Browser" to the very users for whom login works. Whether window.Pi exists
+ * varies by environment too — it is defined in desktop Chrome but was absent in
+ * a bare WebView shell — so its presence proves nothing either.
+ *
+ * The authenticate timeout below is therefore the real protection: try, and say
+ * something useful if nothing comes back.
+ */
+export function piSdkPresent(): boolean {
   return typeof window.Pi !== 'undefined';
 }
 
 // Sandbox (testnet) by default — must match the backend's SANDBOX_MODE.
 // Flip to mainnet later by setting VITE_PI_MODE=production AND SANDBOX_MODE=false together.
 export const PI_MODE = import.meta.env.VITE_PI_MODE || 'sandbox';
+
+// Pi Browser normally answers in a second or two; anything past this is the
+// silent-hang case rather than a slow network.
+const AUTH_TIMEOUT_MS = 20000;
 
 let piInitialized = false;
 export function ensurePiInit() {
@@ -56,6 +84,23 @@ export async function piAuthenticate(onRetry?: (attempt: number) => void): Promi
     throw new Error('Open in Pi Browser to authenticate');
   }
   return new Promise((resolve, reject) => {
+    // Outside Pi Browser this promise never settles — it neither resolves nor
+    // rejects — so without a deadline the user watches a spinner indefinitely
+    // with no way to understand why. This is the actual guard; the user-agent
+    // check above is only a hint.
+    let settled = false;
+    const done = (fn: (v: any) => void) => (v: any) => { if (!settled) { settled = true; clearTimeout(timer); fn(v); } };
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      // Deliberately does not assert where the user is — see piSdkPresent above.
+      // It names the likeliest cause and the action that fixes it.
+      reject(new Error(
+        'No response from Pi. This usually means the app was not opened inside Pi Browser — find Work Pro in the Pi Browser app list and open it there.'
+      ));
+    }, AUTH_TIMEOUT_MS);
+    const ok = done(resolve);
+    const fail = done(reject);
     window.Pi!.authenticate(
       // wallet_address is required for A2U payouts (the backend needs the user's
       // public wallet key to send real Pi to them).
@@ -75,9 +120,9 @@ export async function piAuthenticate(onRetry?: (attempt: number) => void): Promi
         // Response is the user object with token embedded
         const { token, ...user } = data;
         saveAuth(token, user);
-        resolve(user);
-      } catch (e) { reject(e); }
-    }).catch(reject);
+        ok(user);
+      } catch (e) { fail(e); }
+    }).catch(fail);
   });
 }
 

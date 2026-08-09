@@ -74,11 +74,40 @@ export default function ProfilePage() {
     } catch { return false; }
   };
 
-  // PWA install is deliberately NOT offered: Work Pro only runs inside Pi
-  // Browser (auth needs window.Pi, which no other browser injects), so an
-  // installed Chrome icon would open a login screen that can never sign in.
-  // This row invites people instead — the share text tells the recipient to
-  // open the link in Pi Browser, which is the only place it works.
+  // Installing to the home screen used to be withheld, because the icon opens
+  // the default browser, where Pi.authenticate() never answers — the icon was a
+  // dead end. The login screen now catches that and offers a way into Pi
+  // Browser, so the icon is a shortcut rather than a trap and the row is safe to
+  // show. It appears only where the browser actually offers installation: Pi
+  // Browser never fires this event, so nothing is promised that cannot be done.
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const onPrompt = (e: any) => {
+      e.preventDefault();   // keep the browser's own banner from racing this row
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    // Once installed the row has nothing left to do.
+    const onInstalled = () => setInstallPrompt(null);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  const addToHome = async () => {
+    if (!installPrompt) return;
+    try {
+      await installPrompt.prompt();
+      // The prompt is single-use — a second prompt() on the same event throws.
+      setInstallPrompt(null);
+    } catch { setInstallPrompt(null); }
+  };
+
+  // The share text tells the recipient to open the link in Pi Browser, which is
+  // the only place it works.
   const shareApp = async () => {
     const text = `${tr.shareText}\n\n${tr.shareOpenIn} ${APP_URL}`;
     if (navigator.share) {
@@ -165,6 +194,12 @@ export default function ProfilePage() {
       label: tr.shareApp, sub: tr.shareAppSub, right: <Chevron />,
       onClick: shareApp,
     },
+    // Absent unless the browser has offered installation — see addToHome above.
+    ...(installPrompt ? [{
+      icon: HomeIcon, bg: 'bg-emerald-100', ic: 'text-emerald-600',
+      label: tr.addToHome, sub: tr.addToHomeSub, right: <Chevron />,
+      onClick: addToHome,
+    }] : []),
     {
       icon: HelpIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
       label: tr.faq, right: <Chevron />,
@@ -458,6 +493,9 @@ function ListIcon({ className }: { className?: string }) {
 }
 function ShareIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>;
+}
+function HomeIcon({ className }: { className?: string }) {
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/></svg>;
 }
 function HelpIcon({ className }: { className?: string }) {
   return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
