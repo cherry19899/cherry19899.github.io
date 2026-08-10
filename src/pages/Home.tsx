@@ -376,10 +376,19 @@ export default function HomePage() {
       setPage(p);
       setLoadError(false);
     } catch {
-      // Without this the list stayed empty and silent, so a failed request was
-      // presented as "no jobs found — try different filters": the user changes
-      // filters that were never the problem.
-      setLoadError(true);
+      if (replace) {
+        // Without this the list stayed empty and silent, so a failed request
+        // was presented as "no jobs found — try different filters": the user
+        // changes filters that were never the problem.
+        setLoadError(true);
+      } else {
+        // A failed "load more" used to set the same loadError flag, which the
+        // list render gates on — so a network blip on page 2 replaced every
+        // already-loaded job on screen with a full-page retry button. Page 1
+        // is still shown; only the append is retried, via the Load more
+        // button which stays visible because hasMore is untouched here.
+        toast(tr.actionFailed, 'error');
+      }
     }
     finally { setLoading(false); }
   }, [cat, sort, search, filters]);
