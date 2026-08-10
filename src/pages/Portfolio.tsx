@@ -38,6 +38,7 @@ export default function PortfolioPage() {
   const [header, setHeader] = useState<PortfolioHeader>({});
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [editHeader, setEditHeader] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -48,13 +49,20 @@ export default function PortfolioPage() {
   const load = useCallback(() => {
     if (!userId) return;
     setLoading(true);
+    setLoadError(false);
     getPortfolio(userId)
       .then((d: any) => {
         setOwner(d.owner || null);
         setHeader(d.portfolio || {});
         setItems(d.items || []);
       })
-      .catch((e: any) => toast(e.message, 'error'))
+      .catch((e: any) => {
+        // A toast alone faded out in a few seconds while the page underneath
+        // kept rendering "no work yet" — indistinguishable from an owner who
+        // genuinely has nothing in their portfolio, with no way to retry.
+        toast(e.message, 'error');
+        setLoadError(true);
+      })
       .finally(() => setLoading(false));
   }, [userId]);
 
@@ -191,7 +199,13 @@ export default function PortfolioPage() {
         </div>
       )}
 
-      {items.length === 0 && !showAdd ? (
+      {loadError ? (
+        <button onClick={load} className="w-full flex flex-col items-center justify-center py-12 text-center">
+          <span className="text-4xl mb-3">⚠️</span>
+          <p className="text-gray-500 dark:text-slate-400 text-sm">{tr.loadFailed}</p>
+          <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1">{tr.retry}</p>
+        </button>
+      ) : items.length === 0 && !showAdd ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <span className="text-5xl mb-3">🖼</span>
           <p className="font-semibold text-gray-900 dark:text-white">
