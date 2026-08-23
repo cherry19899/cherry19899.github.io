@@ -51,7 +51,12 @@ export default function JobDetailPage() {
   // for their own job — and charged connects by the server for trying.
   const isOwner = !!job && !!user && sameUser(job.posted_by, user.uid);
   const myConnects = user?.balance_connects ?? 0;
-  const applyCost = applyCostFor(job?.budget);
+  // job.apply_cost is what the server actually charges — fixed at job creation
+  // (the poster can even set it to a value unrelated to budget). Recomputing
+  // from budget here showed a number that could differ from the real charge,
+  // both for a custom-cost job and for any job posted before an admin last
+  // changed the divisor. Recompute only as a fallback for malformed data.
+  const applyCost = job?.apply_cost ?? applyCostFor(job?.budget);
 
   useEffect(() => {
     getConfig().then(c => {

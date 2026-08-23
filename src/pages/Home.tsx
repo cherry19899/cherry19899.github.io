@@ -736,7 +736,11 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
   const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
   const author = job.posted_by_name || job.client_username || 'unknown';
   const applicants = job.applications ?? job.applicants_count ?? 0;
-  const cost = applyCostFor(job.budget);
+  // job.apply_cost is the real, server-charged amount, fixed at creation — the
+  // poster can set it independent of budget, and it stays frozen even if the
+  // admin later changes the divisor. Recomputing from budget here showed a
+  // number that could differ from what applying actually charges.
+  const cost = job.apply_cost ?? applyCostFor(job.budget);
   const [saved, setSaved] = useState(() => isFavorite(job.id));
   const tr = t();
 
