@@ -220,23 +220,22 @@ export default function ProfilePage() {
     },
     // Only when an admin has configured one — a dead support link is worse than
     // none, since it is the row people reach for when something has gone wrong.
-    // A mailto: value is shown and copied in-app rather than navigated to —
-    // Pi Browser often has no mail app configured, so window.open('mailto:...')
-    // silently does nothing and the user is left staring at a dead tap.
-    ...(getSupportUrl() ? [{
-      icon: HelpIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
-      label: tr.support, right: <Chevron />,
-      onClick: () => {
-        const url = getSupportUrl();
-        const email = url.startsWith('mailto:') ? url.slice(7).split('?')[0] : null;
-        if (email) {
-          navigator.clipboard?.writeText(email).catch(() => {});
-          toast(`${tr.supportEmailCopied}: ${email}`, 'info');
-        } else {
-          window.open(url, '_blank', 'noopener,noreferrer');
-        }
-      },
-    }] : []),
+    // A mailto: value is shown as plain text and copied on tap, never navigated
+    // to — Pi Browser often has no mail app configured, so window.open
+    // ('mailto:...') silently does nothing and the user is left staring at a
+    // dead tap with no address to actually write to.
+    ...(getSupportUrl() ? (() => {
+      const url = getSupportUrl();
+      const email = url.startsWith('mailto:') ? url.slice(7).split('?')[0] : null;
+      return [{
+        icon: HelpIcon, bg: 'bg-blue-100', ic: 'text-blue-600',
+        label: tr.support, sub: email || undefined,
+        right: email ? undefined : <Chevron />,
+        onClick: email
+          ? () => { navigator.clipboard?.writeText(email).catch(() => {}); toast(tr.supportEmailCopied, 'info'); }
+          : () => window.open(url, '_blank', 'noopener,noreferrer'),
+      }];
+    })() : []),
     {
       icon: ShieldIcon, bg: 'bg-gray-100', ic: 'text-gray-600',
       label: tr.terms, right: <Chevron />,
