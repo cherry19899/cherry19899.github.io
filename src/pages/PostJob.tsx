@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { createJob, getConfig } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CATEGORIES } from '../lib/constants';
+import { categoryLabel } from '../lib/categories';
 import { postJobCost, setConnectsEconomy } from '../lib/connects';
 import { useAppCtx } from '../App';
 
@@ -95,7 +96,7 @@ export default function PostJobPage() {
         <Field label={tr.category}>
           <select value={form.category} onChange={e => set('category', e.target.value)} className="field-input">
             {CATEGORIES.filter(c => c.key !== 'all').map(c => (
-              <option key={c.key} value={c.key}>{c.label}</option>
+              <option key={c.key} value={c.key}>{categoryLabel(c.key)}</option>
             ))}
           </select>
         </Field>

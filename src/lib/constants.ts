@@ -4,6 +4,8 @@ export const API_BASE = 'https://workpro-api.onrender.com';
 // links, so it must stay the production URL even when running locally.
 export const APP_URL = 'https://cherry19899.github.io';
 
+// Labels here are English fallbacks only — the UI renders translated labels
+// via categoryLabel() from ./categories, keyed off these same `key`s.
 export const CATEGORIES = [
   { key: 'all',         label: 'All' },
   { key: 'development', label: 'Development' },
@@ -11,6 +13,9 @@ export const CATEGORIES = [
   { key: 'writing',     label: 'Writing' },
   { key: 'marketing',   label: 'Marketing' },
   { key: 'data',        label: 'Data' },
+  { key: 'support',     label: 'Support' },
+  { key: 'translation', label: 'Translation' },
+  { key: 'va',          label: 'Virtual Assistant' },
   { key: 'other',       label: 'Other' },
 ] as const;
 
@@ -20,6 +25,9 @@ export const CAT_COLORS: Record<string, string> = {
   writing:     'bg-amber-100 text-amber-600',
   marketing:   'bg-rose-100 text-rose-600',
   data:        'bg-cyan-100 text-cyan-600',
+  support:     'bg-emerald-100 text-emerald-600',
+  translation: 'bg-indigo-100 text-indigo-600',
+  va:          'bg-pink-100 text-pink-600',
   other:       'bg-gray-100 text-gray-600',
 };
 

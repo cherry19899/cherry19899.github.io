@@ -8,6 +8,7 @@ import {
 } from '../lib/api';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
+import { categoryLabel, type CategoryKey } from '../lib/categories';
 
 interface Job { id: number; title: string; budget: number; category?: string; status?: string; created_at: string; }
 interface AppItem {
@@ -117,7 +118,8 @@ export default function MyJobsPage() {
   };
 
   const renderJobCard = (job: Job) => {
-    const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
+    const catKey = (job.category?.toLowerCase() || 'other') as CategoryKey;
+    const catColor = CAT_COLORS[catKey] || CAT_COLORS.other;
     const statusCls = STATUS_STYLE[job.status || 'open'] || STATUS_STYLE.open;
     return (
       <div
@@ -130,7 +132,7 @@ export default function MyJobsPage() {
           <span className="text-emerald-500 font-bold text-sm shrink-0">{job.budget} π</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
+          <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{categoryLabel(catKey)}</span>
           <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusCls}`}>
             {statusLabel(job.status || 'open')}
           </span>

@@ -7,6 +7,7 @@ import {
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { CATEGORIES, CAT_COLORS } from '../lib/constants';
+import { categoryLabel, type CategoryKey } from '../lib/categories';
 import { applyCostFor } from '../lib/connects';
 import { getFavorites, isFavorite, toggleFavorite } from '../lib/favorites';
 import { t, jobsLabel, connectsLabel, timeAgo } from '../lib/i18n';
@@ -619,7 +620,7 @@ export default function HomePage() {
                   : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400'
               }`}
             >
-              {c.label}
+              {categoryLabel(c.key)}
             </button>
           ))}
         </div>
@@ -733,7 +734,8 @@ export default function HomePage() {
 // ─── JobCard ──────────────────────────────────────────────────────────────────
 
 function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
-  const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
+  const catKey = (job.category?.toLowerCase() || 'other') as CategoryKey;
+  const catColor = CAT_COLORS[catKey] || CAT_COLORS.other;
   const author = job.posted_by_name || job.client_username || 'unknown';
   const applicants = job.applications ?? job.applicants_count ?? 0;
   // job.apply_cost is the real, server-charged amount, fixed at creation — the
@@ -768,7 +770,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
       )}
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{job.category}</span>
+        <span className={`text-xs font-semibold px-3 py-0.5 rounded-full ${catColor}`}>{categoryLabel(catKey)}</span>
         {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-500">{tr.urgent}</span>}
         <span className="text-xs text-gray-400 dark:text-slate-500">⚡ {cost} {connectsLabel(cost)}</span>
       </div>

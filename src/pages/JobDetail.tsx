@@ -8,6 +8,7 @@ import { getJob, getJobApplications, getMyApplications, applyToJob, rejectApplic
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
 import { CAT_COLORS } from '../lib/constants';
+import { categoryLabel, type CategoryKey } from '../lib/categories';
 import { createPiPayment, shareJob } from '../lib/pi';
 import { applyCostFor } from '../lib/connects';
 import { getConfig } from '../lib/api';
@@ -254,7 +255,8 @@ export default function JobDetailPage() {
     </div>
   );
 
-  const catColor = CAT_COLORS[job.category?.toLowerCase() || 'other'] || CAT_COLORS.other;
+  const catKey = (job.category?.toLowerCase() || 'other') as CategoryKey;
+  const catColor = CAT_COLORS[catKey] || CAT_COLORS.other;
   const fee = +(Number(job.budget) * (feePercent / 100)).toFixed(2);
 
   return (
@@ -301,7 +303,7 @@ export default function JobDetailPage() {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap mb-3">
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${catColor}`}>{job.category}</span>
+                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${catColor}`}>{categoryLabel(catKey)}</span>
                 {job.is_urgent && <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-500">🔥 Urgent</span>}
               </div>
 
