@@ -53,3 +53,23 @@ export function setSupportUrl(url: unknown) {
 export function getSupportUrl(): string {
   return supportUrl;
 }
+
+// ─── Support email ────────────────────────────────────────────────────────
+// Held apart from the URL above because it is not a link: the app prints it as
+// text to copy. A mailto: cannot be stored in support_url anyway — that field
+// is http(s)-only on both write and read — and in Pi Browser a mailto: often
+// has no handler, so tapping one does nothing or opens a Gmail sign-in page.
+let supportEmail = '';
+
+// Mirrors the server's rule, and for the same reason: `:` and `/` are barred
+// from the local part so a whole URL cannot pose as an address.
+const EMAIL_RE = /^[^\s@<>"'\\/:,;]+@[^\s@<>"'.\\/:,;]+(\.[^\s@<>"'.\\/:,;]+)+$/;
+
+export function setSupportEmail(email: unknown) {
+  const v = String(email || '').trim();
+  supportEmail = v.length <= 254 && EMAIL_RE.test(v) ? v : '';
+}
+
+export function getSupportEmail(): string {
+  return supportEmail;
+}

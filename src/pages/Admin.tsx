@@ -9,7 +9,7 @@ import {
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
-import { applyCostDivisor, postJobCost, getSupportUrl, setConnectsEconomy, setSupportUrl } from '../lib/connects';
+import { applyCostDivisor, postJobCost, getSupportUrl, getSupportEmail, setConnectsEconomy, setSupportUrl, setSupportEmail } from '../lib/connects';
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area,
   PieChart, Pie, Cell,
@@ -25,9 +25,12 @@ type Tab = 'stats' | 'users' | 'jobs' | 'escrows' | 'earnings' | 'analytics';
  * response rather than from the input, so what is displayed is what the server
  * actually stored.
  */
-function SettingRow({ settingKey, label, initial, min, max, step, hint, text }: {
+function SettingRow({ settingKey, label, initial, min, max, step, hint, text, pattern }: {
   settingKey: string; label: string; initial: string;
   min?: number; max?: number; step?: number; hint?: string; text?: boolean;
+  // Which shape a text setting must have. The rule used to be hardcoded to
+  // http(s), so any second text setting would have been validated as a URL.
+  pattern?: RegExp;
 }) {
   const tr = t();
   const [value, setValue] = useState(initial);
@@ -40,9 +43,9 @@ function SettingRow({ settingKey, label, initial, min, max, step, hint, text }: 
       toast(`${label}: ${hint}`, 'error');
       return;
     }
-    // Empty clears the support link — the app then hides the row rather than
-    // offering a link that goes nowhere.
-    if (text && v !== '' && !/^https?:\/\/[^\s]+$/i.test(v as string)) {
+    // Empty clears the setting — the app then hides the row rather than
+    // offering a link or an address that goes nowhere.
+    if (text && v !== '' && pattern && !pattern.test(v as string)) {
       toast(`${label}: ${hint}`, 'error');
       return;
     }
@@ -59,6 +62,7 @@ function SettingRow({ settingKey, label, initial, min, max, step, hint, text }: 
       // keeps quoting the old number until the next /api/config fetch, so the
       // admin sees the save succeed while job screens still charge the old cost.
       if (settingKey === 'support_url') setSupportUrl(stored);
+      else if (settingKey === 'support_email') setSupportEmail(stored);
       else setConnectsEconomy({ [settingKey]: stored });
       toast(`${label}: ${tr.saved}`, 'success');
     } catch (e: any) { toast(e.message, 'error'); }
@@ -303,7 +307,16 @@ export default function AdminPage() {
                 label={tr.admSupportUrl}
                 initial={getSupportUrl()}
                 text
+                pattern={/^https?:\/\/[^\s]+$/i}
                 hint="https://…"
+              />
+              <SettingRow
+                settingKey="support_email"
+                label={tr.admSupportEmail}
+                initial={getSupportEmail()}
+                text
+                pattern={/^[^\s@<>"'\\/:,;]+@[^\s@<>"'.\\/:,;]+(\.[^\s@<>"'.\\/:,;]+)+$/}
+                hint="name@example.com"
               />
             </>
           ) : <p className="text-center text-gray-400 py-10">{tr.noData}</p>
