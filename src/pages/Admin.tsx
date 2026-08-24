@@ -9,7 +9,7 @@ import {
 } from '../lib/api';
 import { useAppCtx } from '../App';
 import { toast } from '../components/Toast';
-import { applyCostDivisor, postJobCost, getSupportUrl, getSupportEmail, setConnectsEconomy, setSupportUrl, setSupportEmail } from '../lib/connects';
+import { applyCostDivisor, postJobCost, getSupportUrl, getSupportEmail, setConnectsEconomy, setSupportUrl, setSupportEmail, SUPPORT_URL_RE, EMAIL_RE } from '../lib/connects';
 import {
   LineChart, Line, BarChart, Bar, AreaChart, Area,
   PieChart, Pie, Cell,
@@ -307,7 +307,7 @@ export default function AdminPage() {
                 label={tr.admSupportUrl}
                 initial={getSupportUrl()}
                 text
-                pattern={/^https?:\/\/[^\s/?#@]+(?:[/?#][^\s]*)?$/i}
+                pattern={SUPPORT_URL_RE}
                 hint="https://… (без «@»)"
               />
               <SettingRow
@@ -315,7 +315,7 @@ export default function AdminPage() {
                 label={tr.admSupportEmail}
                 initial={getSupportEmail()}
                 text
-                pattern={/^[^\s@<>"'\\/:,;]+@[^\s@<>"'.\\/:,;]+(\.[^\s@<>"'.\\/:,;]+)+$/}
+                pattern={EMAIL_RE}
                 hint="name@example.com"
               />
             </>

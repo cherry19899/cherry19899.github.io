@@ -49,7 +49,7 @@ let supportUrl = '';
 // That is both how a mistyped address became a link elsewhere and the standard
 // way to disguise a phishing destination — and this link sits on a screen the
 // user trusts.
-const SUPPORT_URL_RE = /^https?:\/\/[^\s/?#@]+(?:[/?#][^\s]*)?$/i;
+export const SUPPORT_URL_RE = /^https?:\/\/[^\s/?#@]+(?:[/?#][^\s]*)?$/i;
 
 export function setSupportUrl(url: unknown) {
   const v = String(url || '').trim();
@@ -71,7 +71,7 @@ let supportEmail = '';
 
 // Mirrors the server's rule, and for the same reason: `:` and `/` are barred
 // from the local part so a whole URL cannot pose as an address.
-const EMAIL_RE = /^[^\s@<>"'\\/:,;]+@[^\s@<>"'.\\/:,;]+(\.[^\s@<>"'.\\/:,;]+)+$/;
+export const EMAIL_RE = /^[^\s@<>"'\\/:,;]+@[^\s@<>"'.\\/:,;]+(\.[^\s@<>"'.\\/:,;]+)+$/;
 
 export function setSupportEmail(email: unknown) {
   const v = String(email || '').trim();
