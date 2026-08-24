@@ -5325,6 +5325,26 @@ export function connectsLabel(n: number): string {
   return t().connects.toLowerCase();
 }
 
+// Polish parts company with Russian on numbers ending in 1: only a bare 1 is
+// singular, so 21 and 101 take the genitive plural ("21 opinii"), where the
+// Russian rule would hand back the singular. slavicPlural gets this wrong for
+// Polish — see jobsLabel and connectsLabel, which still carry that bug.
+function polishPlural(n: number, one: string, few: string, many: string): string {
+  if (n === 1) return one;
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+}
+
+export function reviewsLabel(n: number): string {
+  const l = getLang();
+  if (l === 'ru') return slavicPlural(n, 'отзыв', 'отзыва', 'отзывов');
+  if (l === 'uk') return slavicPlural(n, 'відгук', 'відгуки', 'відгуків');
+  if (l === 'pl') return polishPlural(n, 'opinia', 'opinie', 'opinii');
+  if (l === 'en') return n === 1 ? 'review' : 'reviews';
+  return t().reviews.toLowerCase();
+}
+
 /**
  * Human label for a raw status string from the database.
  *

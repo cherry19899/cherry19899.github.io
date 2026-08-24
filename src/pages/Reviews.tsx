@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Spinner from '../components/Spinner';
 import { useParams } from 'react-router-dom';
-import { t, timeAgo } from '../lib/i18n';
+import { t, timeAgo, reviewsLabel } from '../lib/i18n';
 import { getStoredUser, getReviewsV2 } from '../lib/api';
 
 interface Review {
@@ -91,8 +91,10 @@ export default function ReviewsPage() {
                 {(avg ?? 0).toFixed(1)}
               </p>
               <Stars n={avg ?? 0} className="text-sm block mt-1" />
+              {/* Declined, not lowercased: Russian turns "1 отзывы" into
+                  "1 отзыв" and "3 отзыва". */}
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
-                {total} {tr.reviews.toLowerCase()}
+                {total} {reviewsLabel(total)}
               </p>
             </div>
             <div className="flex-1 space-y-1">
