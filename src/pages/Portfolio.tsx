@@ -146,9 +146,18 @@ export default function PortfolioPage() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
-                {owner.availability === false ? tr.notAvailable : tr.availableForWork}
-              </p>
+              {/* availability is one of 'available' | 'busy' | 'away' |
+                  'unavailable', not a boolean. Comparing it against false
+                  matched none of them, so a freelancer who is busy or away was
+                  advertised to clients as open to work. Unknown stays silent
+                  rather than claiming either way. */}
+              {owner.availability != null && (
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                  {owner.availability === 'available' || owner.availability === true
+                    ? tr.availableForWork
+                    : tr.notAvailable}
+                </p>
+              )}
             </div>
           </div>
 
