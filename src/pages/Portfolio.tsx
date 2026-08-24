@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Spinner from '../components/Spinner';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { t } from '../lib/i18n';
 import { getStoredUser } from '../lib/api';
 import {
@@ -30,6 +30,7 @@ function httpUrl(u?: string | null): string | null {
 export default function PortfolioPage() {
   const tr = t();
   const { id } = useParams();
+  const nav = useNavigate();
   const me = getStoredUser();
   const userId = id || me?.uid || '';
   const isOwner = !id || id === me?.uid;
@@ -113,8 +114,80 @@ export default function PortfolioPage() {
     );
   }
 
+  // Everything a client weighs before hiring. The endpoint has always returned
+  // these fields; the page rendered nothing but the username, so whoever was
+  // about to pay saw no skills, no track record and no verification.
+  const skillList: string[] = Array.isArray(owner?.skills)
+    ? owner.skills
+    : String(owner?.skills || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+  const ownerRating = parseFloat(owner?.rating) || 0;
+  const ownerReviews = parseInt(owner?.total_reviews) || 0;
+  const ownerDone = parseInt(owner?.total_jobs_completed) || 0;
+
   return (
     <div className="max-w-lg mx-auto p-4 animate-fade-in pb-24 bg-white dark:bg-slate-900 min-h-screen space-y-4">
+      {/* Who this is — shown before the work itself. */}
+      {owner && (
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0 overflow-hidden">
+              {owner.avatar
+                ? <img src={owner.avatar} alt="" className="w-full h-full object-cover" />
+                : <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {(owner.username || '?').charAt(0).toUpperCase()}
+                  </span>}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-gray-900 dark:text-white truncate">@{owner.username}</p>
+                {owner.kyc_verified && (
+                  <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                    ✓ {tr.kycVerified}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                {owner.availability === false ? tr.notAvailable : tr.availableForWork}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            {/* The reviews behind the stars, one tap away. */}
+            <button
+              onClick={() => nav(`/reviews/${owner.id}`)}
+              className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-full active:opacity-70"
+            >
+              <span className="text-amber-500">{'★'.repeat(Math.min(5, Math.max(0, Math.round(ownerRating))))}</span>
+              <span className="font-semibold text-gray-700 dark:text-slate-300">{ownerRating.toFixed(1)}</span>
+              <span className="text-gray-400 dark:text-slate-500">({ownerReviews}) ›</span>
+            </button>
+            <span className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2.5 py-1 rounded-full">
+              ✅ {ownerDone} {tr.jobsDone}
+            </span>
+          </div>
+
+          {owner.bio && (
+            <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed break-words">{owner.bio}</p>
+          )}
+
+          {skillList.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-1.5">
+                {tr.profileSkills}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {skillList.map((s, i) => (
+                  <span key={i} className="text-xs bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Header card */}
       <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">

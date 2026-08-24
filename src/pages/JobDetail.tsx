@@ -529,17 +529,49 @@ export default function JobDetailPage() {
                       >@{applicantName} →</p>
                       <span className="text-xs text-gray-400 dark:text-slate-500">{timeAgo(app.created_at)}</span>
                     </div>
-                    {/* The stars are the one thing a client weighs when
-                        choosing who to hire, so they open the reviews behind
-                        them rather than being a dead label. */}
-                    {app.applicant_rating && (
-                      <button
-                        onClick={() => nav(`/reviews/${app.freelancer_id || app.applicant_uid || app.applicant_id}`)}
-                        className="text-xs text-amber-500 active:opacity-70"
-                      >
-                        {'★'.repeat(Math.round(app.applicant_rating))} {app.applicant_rating} ›
-                      </button>
-                    )}
+                    {/* Enough to compare candidates without opening each one.
+                        This card used to carry a name and a star rating and
+                        nothing else, so the client had to guess or tap through
+                        every applicant in turn. */}
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      {app.applicant_rating > 0 && (
+                        <button
+                          onClick={() => nav(`/reviews/${app.freelancer_id || app.applicant_uid || app.applicant_id}`)}
+                          className="text-xs text-amber-500 active:opacity-70"
+                        >
+                          {'★'.repeat(Math.min(5, Math.round(app.applicant_rating)))} {parseFloat(app.applicant_rating).toFixed(1)}
+                          {app.applicant_reviews > 0 && ` (${app.applicant_reviews})`} ›
+                        </button>
+                      )}
+                      {app.applicant_completed > 0 && (
+                        <span className="text-[10px] bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
+                          ✅ {app.applicant_completed} {tr.jobsDone}
+                        </span>
+                      )}
+                      {app.applicant_kyc && (
+                        <span className="text-[10px] font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                          ✓ {tr.kycVerified}
+                        </span>
+                      )}
+                    </div>
+                    {(() => {
+                      const sk: string[] = Array.isArray(app.applicant_skills)
+                        ? app.applicant_skills
+                        : String(app.applicant_skills || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+                      if (!sk.length) return null;
+                      return (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {sk.slice(0, 6).map((s, i) => (
+                            <span key={i} className="text-[10px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                              {s}
+                            </span>
+                          ))}
+                          {sk.length > 6 && (
+                            <span className="text-[10px] text-gray-400 dark:text-slate-500 px-1 py-0.5">+{sk.length - 6}</span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
