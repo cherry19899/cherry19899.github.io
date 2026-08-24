@@ -529,8 +529,16 @@ export default function JobDetailPage() {
                       >@{applicantName} →</p>
                       <span className="text-xs text-gray-400 dark:text-slate-500">{timeAgo(app.created_at)}</span>
                     </div>
+                    {/* The stars are the one thing a client weighs when
+                        choosing who to hire, so they open the reviews behind
+                        them rather than being a dead label. */}
                     {app.applicant_rating && (
-                      <p className="text-xs text-amber-500">{'★'.repeat(Math.round(app.applicant_rating))} {app.applicant_rating}</p>
+                      <button
+                        onClick={() => nav(`/reviews/${app.freelancer_id || app.applicant_uid || app.applicant_id}`)}
+                        className="text-xs text-amber-500 active:opacity-70"
+                      >
+                        {'★'.repeat(Math.round(app.applicant_rating))} {app.applicant_rating} ›
+                      </button>
                     )}
                   </div>
                 </div>

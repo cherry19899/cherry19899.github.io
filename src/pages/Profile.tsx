@@ -317,11 +317,16 @@ export default function ProfilePage() {
             {!isPiBrowser() && <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{tr.piBrowser}</p>}
             {payoutPending && <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1 leading-tight">{tr.payoutPending}</p>}
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center">
+          {/* Tappable: the reviews people leave were written to the database
+              and had nowhere to be read. */}
+          <button
+            onClick={() => nav('/reviews')}
+            className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-3 text-center"
+          >
             <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">{tr.reviews}</p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">{totalReviews}</p>
             <p className="text-[10px] text-amber-500 mt-1">{'★'.repeat(Math.min(5, Math.max(0, Math.round((user as any).rating ?? 0))))}</p>
-          </div>
+          </button>
         </div>
       </div>
 

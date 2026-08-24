@@ -167,7 +167,8 @@ export const exportAdminCSV = (table: string) =>
   apiFetch(`/api/admin/export/${table}`);
 
 // Reviews v2
-export const getReviewsV2 = (userId: string) => apiFetch(`/api/reviews/v2/user/${userId}`);
+export const getReviewsV2 = (userId: string, page = 1, limit = 20) =>
+  apiFetch(`/api/reviews/v2/user/${userId}?page=${page}&limit=${limit}`);
 export const submitReviewV2 = (data: any) =>
   apiFetch('/api/reviews/v2', { method: 'POST', body: JSON.stringify(data) });
 

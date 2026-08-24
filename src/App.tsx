@@ -24,6 +24,7 @@ import FAQPage          from './pages/FAQ';
 import PortfolioPage    from './pages/Portfolio';
 import EscrowPage       from './pages/Escrow';
 import JobDetailPage    from './pages/JobDetail';
+import ReviewsPage      from './pages/Reviews';
 
 // Admin is the only page that pulls in recharts, and only the owner ever opens
 // it — but it was in the main bundle, so every user downloaded a charting
@@ -193,6 +194,8 @@ export default function App() {
           <Route path="/faq"          element={<FAQPage />} />
           <Route path="/portfolio"     element={<PortfolioPage />} />
           <Route path="/portfolio/:id" element={<PortfolioPage />} />
+          <Route path="/reviews"       element={<ReviewsPage />} />
+          <Route path="/reviews/:id"   element={<ReviewsPage />} />
           <Route path="/admin"        element={<Protected adminOnly><Suspense fallback={<PageSpinner />}><AdminPage /></Suspense></Protected>} />
         </Route>
 
