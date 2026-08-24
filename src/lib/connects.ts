@@ -43,11 +43,19 @@ export function applyCostFor(budget: number | string | undefined): number {
 // than show a dead link.
 let supportUrl = '';
 
+// Mirrors SUPPORT_URL_RE on the server. Besides the scheme, the authority may
+// not contain `@`: `https://support.workpro@gmail.com` looks like a support
+// site and resolves to gmail.com, since everything before the `@` is userinfo.
+// That is both how a mistyped address became a link elsewhere and the standard
+// way to disguise a phishing destination — and this link sits on a screen the
+// user trusts.
+const SUPPORT_URL_RE = /^https?:\/\/[^\s/?#@]+(?:[/?#][^\s]*)?$/i;
+
 export function setSupportUrl(url: unknown) {
   const v = String(url || '').trim();
   // Re-validated here as well as on the server: this string goes straight into
   // a link the user taps, and http(s) is the only scheme that belongs there.
-  supportUrl = /^https?:\/\/[^\s]+$/i.test(v) ? v : '';
+  supportUrl = SUPPORT_URL_RE.test(v) ? v : '';
 }
 
 export function getSupportUrl(): string {

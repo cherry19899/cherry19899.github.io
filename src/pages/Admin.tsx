@@ -307,8 +307,8 @@ export default function AdminPage() {
                 label={tr.admSupportUrl}
                 initial={getSupportUrl()}
                 text
-                pattern={/^https?:\/\/[^\s]+$/i}
-                hint="https://…"
+                pattern={/^https?:\/\/[^\s/?#@]+(?:[/?#][^\s]*)?$/i}
+                hint="https://… (без «@»)"
               />
               <SettingRow
                 settingKey="support_email"
