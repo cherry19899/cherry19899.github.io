@@ -5335,7 +5335,7 @@ export function jobsLabel(n: number): string {
   const l = getLang();
   if (l === 'ru') return slavicPlural(n, 'работа', 'работы', 'работ');
   if (l === 'uk') return slavicPlural(n, 'робота', 'роботи', 'робіт');
-  if (l === 'pl') return slavicPlural(n, 'praca', 'prace', 'prac');
+  if (l === 'pl') return polishPlural(n, 'praca', 'prace', 'prac');
   if (l === 'en') return n === 1 ? 'job' : 'jobs';
   return t().jobs.toLowerCase();
 }
@@ -5344,6 +5344,7 @@ export function connectsLabel(n: number): string {
   const l = getLang();
   if (l === 'ru') return slavicPlural(n, 'коннект', 'коннекта', 'коннектов');
   if (l === 'uk') return slavicPlural(n, 'конект', 'конекти', 'конектів');
+  if (l === 'pl') return polishPlural(n, 'połączenie', 'połączenia', 'połączeń');
   if (l === 'en') return n === 1 ? 'connect' : 'connects';
   return t().connects.toLowerCase();
 }
