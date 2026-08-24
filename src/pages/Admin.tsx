@@ -112,6 +112,9 @@ export default function AdminPage() {
   const [feeValue, setFeeValue] = useState('3');
   const [savingFee, setSavingFee] = useState(false);
   const [grantModal, setGrantModal] = useState<any>(null);
+  const [settleModal, setSettleModal] = useState<any>(null);
+  const [settleAmt, setSettleAmt] = useState('');
+  const [settleRef, setSettleRef] = useState('');
   const [grantAmt, setGrantAmt] = useState('10');
   const [acting, setActing] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<any>(null);
@@ -362,6 +365,20 @@ export default function AdminPage() {
                           className="flex-1 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold disabled:opacity-60"
                         >
                           π {tr.payOut} {parseFloat(u.balance_pi).toFixed(2)}
+                        </button>
+                      )}
+                      {/* A2U is unavailable on Pi Mainnet, so payouts get made
+                          by hand from the owner's own wallet. Without this the
+                          balance stays on the books after the Pi has already
+                          changed hands — telling both sides money is still
+                          owed, and inviting a second payment for the same work. */}
+                      {parseFloat(u.balance_pi || 0) > 0 && (
+                        <button
+                          onClick={() => setSettleModal(u)}
+                          disabled={acting === (u.id || u.uid)}
+                          className="flex-1 py-1.5 rounded-xl bg-amber-50 text-amber-600 text-xs font-semibold disabled:opacity-60"
+                        >
+                          ✓ {tr.settledByHand}
                         </button>
                       )}
                       <button
@@ -703,6 +720,59 @@ export default function AdminPage() {
               className="w-full h-12 rounded-full bg-emerald-500 text-white font-semibold"
             >
               {tr.grantConnects} · {grantAmt} ⚡
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Recording a payment made outside the app. It moves no Pi, so the
+          reference is required: a write-off with nothing behind it is
+          indistinguishable from quietly erasing what someone is owed. */}
+      {settleModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40" onClick={() => setSettleModal(null)}>
+          <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-3xl p-6 pb-10" onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-gray-200 dark:bg-slate-600 rounded-full mx-auto mb-5" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{tr.settledByHand}</h2>
+            <p className="text-sm text-gray-400 dark:text-slate-500 mb-1">→ @{settleModal.username}</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mb-4">{tr.settleHint}</p>
+
+            <input
+              type="number"
+              inputMode="decimal"
+              value={settleAmt}
+              onChange={e => setSettleAmt(e.target.value)}
+              className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm mb-3 text-gray-900 dark:text-white focus:outline-none focus:border-amber-400"
+              placeholder={`${tr.amount} (π) — ${parseFloat(settleModal.balance_pi || 0).toFixed(2)}`}
+            />
+            <input
+              value={settleRef}
+              onChange={e => setSettleRef(e.target.value)}
+              maxLength={200}
+              className="w-full bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-sm mb-4 text-gray-900 dark:text-white focus:outline-none focus:border-amber-400"
+              placeholder={tr.settleRefPlaceholder}
+            />
+
+            <button
+              onClick={async () => {
+                const uid = settleModal.id || settleModal.uid;
+                const amt = settleAmt.trim() === '' ? undefined : Number(settleAmt);
+                setActing(uid);
+                try {
+                  const r: any = await apiFetch(`/api/admin/users/${uid}/settle-manually`, {
+                    method: 'POST',
+                    body: JSON.stringify({ amount: amt, reference: settleRef.trim() }),
+                  });
+                  setUsers(prev => prev.map(x => (x.id || x.uid) === uid ? { ...x, balance_pi: r.remaining } : x));
+                  toast(`${tr.settledByHand}: ${r.settled}π → @${settleModal.username}`, 'success');
+                  setSettleModal(null); setSettleAmt(''); setSettleRef('');
+                } catch (e: any) { toast(e.message, 'error'); }
+                finally { setActing(null); }
+              }}
+              disabled={!settleRef.trim() || acting === (settleModal.id || settleModal.uid)}
+              className="w-full h-12 rounded-full bg-amber-500 text-white font-semibold disabled:opacity-50"
+            >
+              {tr.settledByHand}
             </button>
           </div>
         </div>,
