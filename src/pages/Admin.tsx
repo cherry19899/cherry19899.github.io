@@ -737,6 +737,30 @@ export default function AdminPage() {
             <p className="text-sm text-gray-400 dark:text-slate-500 mb-1">→ @{settleModal.username}</p>
             <p className="text-xs text-amber-600 dark:text-amber-400 mb-4">{tr.settleHint}</p>
 
+            {/* Where to actually send it. Pi reports this at sign-in; someone
+                who has not signed in since has none stored, and saying so
+                plainly beats showing an empty box the admin might paste over. */}
+            {settleModal.wallet_address ? (
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(settleModal.wallet_address).catch(() => {});
+                  toast(tr.addressCopied, 'success');
+                }}
+                className="w-full text-left bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 mb-3 active:opacity-70"
+              >
+                <span className="block text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-1">
+                  {tr.walletAddress} · {tr.tapToCopy}
+                </span>
+                <span className="block text-xs font-mono text-gray-900 dark:text-white break-all">
+                  {settleModal.wallet_address}
+                </span>
+              </button>
+            ) : (
+              <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-2xl px-4 py-3 mb-3">
+                {tr.noWalletAddress}
+              </p>
+            )}
+
             <input
               type="number"
               inputMode="decimal"
