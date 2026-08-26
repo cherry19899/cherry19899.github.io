@@ -33,8 +33,20 @@ export function piSdkPresent(): boolean {
   return typeof window.Pi !== 'undefined';
 }
 
-// Sandbox (testnet) by default — must match the backend's SANDBOX_MODE.
-// Flip to mainnet later by setting VITE_PI_MODE=production AND SANDBOX_MODE=false together.
+// Which Pi network the SDK is initialised against. 'sandbox' = Testnet.
+//
+// This does NOT pair with the backend's SANDBOX_MODE, whatever the old comment
+// here claimed. SANDBOX_MODE=true makes routes/auth.js skip Pi accessToken
+// verification entirely (see auth.js:200) — anyone can then claim any username,
+// including the owner's. It is an account-takeover switch, not a network
+// switch, and stays OFF on every deployment including Testnet.
+//
+// What this flag actually has to agree with is the backend's PI_API_KEY: the
+// network is a property of the app registration that key belongs to (see
+// workpro-api/src/pi-a2u.js). Testnet frontend + Mainnet key = users pay on one
+// network while the server looks for the payment on the other, and approval
+// 404s. Testnet verification still works with SANDBOX_MODE off, because Pi's
+// Platform API at api.minepi.com serves both networks.
 export const PI_MODE = import.meta.env.VITE_PI_MODE || 'sandbox';
 
 // Pi Browser normally answers in a second or two; anything past this is the
