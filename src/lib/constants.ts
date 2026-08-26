@@ -1,8 +1,13 @@
-export const API_BASE = 'https://workpro-api.onrender.com';
+// Both default to production, so an ordinary build is byte-for-byte what it
+// always was. They are overridable because the Testnet build has to reach a
+// different backend: `.env.example` had advertised VITE_API_BASE for months
+// while the value was hardcoded here, so a Testnet frontend would have gone on
+// talking to the live API — testnet sign-ins landing in real users' data.
+export const API_BASE = import.meta.env.VITE_API_BASE || 'https://workpro-api.onrender.com';
 
 // Canonical public address of the app — used for invite links and job deep
-// links, so it must stay the production URL even when running locally.
-export const APP_URL = 'https://cherry19899.github.io';
+// links, so it must stay the deployed URL of *this* build.
+export const APP_URL = import.meta.env.VITE_APP_URL || 'https://cherry19899.github.io';
 
 // Labels here are English fallbacks only — the UI renders translated labels
 // via categoryLabel() from ./categories, keyed off these same `key`s.
