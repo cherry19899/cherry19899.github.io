@@ -33,7 +33,9 @@ export function piSdkPresent(): boolean {
   return typeof window.Pi !== 'undefined';
 }
 
-// Which Pi network the SDK is initialised against. 'sandbox' = Testnet.
+// Which network this build talks to, for display only — the login screen's
+// "Testnet"/"Mainnet" line reads this. It no longer touches Pi.init; see
+// PI_SANDBOX below for that.
 //
 // This does NOT pair with the backend's SANDBOX_MODE, whatever the old comment
 // here claimed. SANDBOX_MODE=true makes routes/auth.js skip Pi accessToken
@@ -49,6 +51,31 @@ export function piSdkPresent(): boolean {
 // Platform API at api.minepi.com serves both networks.
 export const PI_MODE = import.meta.env.VITE_PI_MODE || 'sandbox';
 
+// Whether to initialise the SDK in *sandbox* mode. This is a separate question
+// from which network the app is on, and conflating the two is what broke
+// Testnet login: one flag drove both the network label and Pi.init.
+//
+// Pi's own developer checklist is explicit about what sandbox means:
+//   "Run Development App in the Sandbox: set sandbox flag to 'true' ... paste
+//    in your desktop browser ... enter the provided code in the utilities page"
+//   "Deploy App to Production Environment ... the URL the app will be
+//    accessible from within the pi browser"
+// So sandbox=true is for driving the app from a DESKTOP browser against Pi's
+// sandbox environment. Inside Pi Browser it must be false — for a Testnet app
+// exactly as much as for a Mainnet one, because the network comes from the app
+// registration the API key belongs to, never from this flag.
+//
+// With sandbox=true in real Pi Browser, Pi.authenticate never calls back: no
+// resolve, no reject, no error. The 20s timeout below is what turns that
+// silence into a message instead of a spinner forever.
+//
+// Default: on in `npm run dev` (desktop, where sandbox is the point), off in
+// every build unless VITE_PI_SANDBOX=true is set explicitly.
+export const PI_SANDBOX =
+  import.meta.env.VITE_PI_SANDBOX !== undefined
+    ? import.meta.env.VITE_PI_SANDBOX === 'true'
+    : import.meta.env.DEV;
+
 // Pi Browser normally answers in a second or two; anything past this is the
 // silent-hang case rather than a slow network.
 const AUTH_TIMEOUT_MS = 20000;
@@ -57,7 +84,7 @@ let piInitialized = false;
 export function ensurePiInit() {
   if (piInitialized || !isPiBrowser()) return;
   try {
-    window.Pi.init({ version: '2.0', sandbox: PI_MODE === 'sandbox' });
+    window.Pi.init({ version: '2.0', sandbox: PI_SANDBOX });
     piInitialized = true;
   } catch {}
 }
