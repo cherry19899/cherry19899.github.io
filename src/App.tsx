@@ -8,7 +8,6 @@ import { setConnectsEconomy, setSupportUrl, setSupportEmail } from './lib/connec
 import { useToastFn, ToastContainer } from './components/Toast';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
-import DebugConsole from './components/DebugConsole';
 import Footer from './components/Footer';
 import TermsAcceptanceModal from './components/TermsAcceptanceModal';
 
@@ -206,7 +205,6 @@ export default function App() {
       {auth.user && !auth.user.terms_accepted && <TermsAcceptanceModal />}
 
       <ToastContainer toasts={toasts} />
-      <DebugConsole />
     </Ctx.Provider>
     </ErrorBoundary>
   );
