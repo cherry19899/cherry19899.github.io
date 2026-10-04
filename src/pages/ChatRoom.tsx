@@ -388,6 +388,10 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
 // often nothing. The share sheet hands the file to the system instead, where
 // "Save image" lives. The download link is the fallback for engines without
 // file sharing.
+//
+// The Save bar reads --wp-bottom-inset like BottomNav does: on WebViews that
+// draw under the Android nav bar it would otherwise sit behind the system
+// buttons and be untappable.
 function ImageViewer({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
   const tr = t();
 
@@ -421,7 +425,7 @@ function ImageViewer({ url, name, onClose }: { url: string; name: string; onClos
       <div className="flex-1 flex items-center justify-center px-3 min-h-0">
         <img src={url} alt={name} onClick={e => e.stopPropagation()} className="max-w-full max-h-full object-contain" />
       </div>
-      <div className="p-4 flex justify-center" onClick={e => e.stopPropagation()}>
+      <div className="px-4 pt-4 pb-[calc(1rem+var(--wp-bottom-inset))] flex justify-center" onClick={e => e.stopPropagation()}>
         <button onClick={save} className="min-h-12 px-8 py-2 leading-tight rounded-full bg-emerald-500 text-white font-semibold">
           ⬇ {tr.save}
         </button>
