@@ -717,7 +717,7 @@ export default function AdminPage() {
                   setGrantModal(null);
                 } catch (e: any) { toast(e.message, 'error'); }
               }}
-              className="w-full h-12 rounded-full bg-emerald-500 text-white font-semibold"
+              className="w-full min-h-12 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold"
             >
               {tr.grantConnects} · {grantAmt} ⚡
             </button>
@@ -794,7 +794,7 @@ export default function AdminPage() {
                 finally { setActing(null); }
               }}
               disabled={!settleRef.trim() || acting === (settleModal.id || settleModal.uid)}
-              className="w-full h-12 rounded-full bg-amber-500 text-white font-semibold disabled:opacity-50"
+              className="w-full min-h-12 leading-tight py-2 rounded-full bg-amber-500 text-white font-semibold disabled:opacity-50"
             >
               {tr.settledByHand}
             </button>

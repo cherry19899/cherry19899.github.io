@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { t } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
@@ -333,6 +334,7 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
   const tr = t();
   const [busy, setBusy] = useState(false);
   const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [viewing, setViewing] = useState(false);
   const isAtt = content.startsWith('📎 ') && content.includes('|/api/chat/attachments/');
   const sep = isAtt ? content.indexOf('|') : -1;
   const name = isAtt ? content.slice(2, sep).trim() : '';
@@ -350,9 +352,15 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
   if (!isAtt) return <>{content}</>;
 
   if (isImage) {
-    return imgUrl
-      ? <img src={imgUrl} alt={name} className="rounded-lg max-w-[200px] max-h-[240px] object-cover" />
-      : <span className="opacity-70">🖼️ {name}…</span>;
+    if (!imgUrl) return <span className="opacity-70">🖼️ {name}…</span>;
+    return (
+      <>
+        <button onClick={() => setViewing(true)} className="block p-0 border-0 bg-transparent">
+          <img src={imgUrl} alt={name} className="rounded-lg max-w-[200px] max-h-[240px] object-cover" />
+        </button>
+        {viewing && <ImageViewer url={imgUrl} name={name} onClose={() => setViewing(false)} />}
+      </>
+    );
   }
 
   const open = async () => {
@@ -368,5 +376,57 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
     <button onClick={open} disabled={busy} className={`flex items-center gap-1.5 underline break-all text-left ${mine ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
       📎 {name}{busy ? ' …' : ''}
     </button>
+  );
+}
+
+// Full-screen view of a chat image, with a way to keep it. Before this the
+// image was a 200px thumbnail with no handler at all — it could be neither
+// opened nor saved.
+//
+// Saving prefers the share sheet: Pi Browser is a WebView, and a WebView only
+// downloads what its host app chooses to handle, which for a blob: URL is
+// often nothing. The share sheet hands the file to the system instead, where
+// "Save image" lives. The download link is the fallback for engines without
+// file sharing.
+function ImageViewer({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
+  const tr = t();
+
+  const save = async () => {
+    try {
+      const blob = await (await fetch(url)).blob();
+      const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
+      const nav = navigator as any;
+      if (nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file] });
+        return;
+      }
+    } catch (e: any) {
+      if (e?.name === 'AbortError') return;   // the user closed the share sheet
+    }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] bg-black/95 flex flex-col" onClick={onClose}>
+      <div className="flex justify-end p-3">
+        <button onClick={onClose} className="min-h-10 px-4 rounded-full bg-white/15 text-white text-sm font-semibold">
+          ✕ {tr.close}
+        </button>
+      </div>
+      <div className="flex-1 flex items-center justify-center px-3 min-h-0">
+        <img src={url} alt={name} onClick={e => e.stopPropagation()} className="max-w-full max-h-full object-contain" />
+      </div>
+      <div className="p-4 flex justify-center" onClick={e => e.stopPropagation()}>
+        <button onClick={save} className="min-h-12 px-8 py-2 leading-tight rounded-full bg-emerald-500 text-white font-semibold">
+          ⬇ {tr.save}
+        </button>
+      </div>
+    </div>,
+    document.body,
   );
 }

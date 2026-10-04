@@ -554,7 +554,7 @@ export default function EscrowPage() {
             <button
               onClick={doDispute}
               disabled={disputeText.trim().length < 20}
-              className="w-full h-12 rounded-full bg-red-500 text-white font-semibold disabled:opacity-50"
+              className="w-full min-h-12 leading-tight py-2 rounded-full bg-red-500 text-white font-semibold disabled:opacity-50"
             >
               {tr.submitDispute}
             </button>

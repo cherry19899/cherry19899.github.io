@@ -6,11 +6,11 @@ export default function Footer() {
   const tr = t();
   return (
     <footer className="px-4 py-6 text-center text-xs text-gray-400 dark:text-slate-500 space-x-3">
-      <a href="/terms-of-service.html" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">
+      <a href="/terms-of-service.html" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline whitespace-nowrap">
         {tr.terms}
       </a>
       <span>·</span>
-      <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">
+      <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline whitespace-nowrap">
         {tr.privacy}
       </a>
       <div className="mt-2">&copy; 2026 Work Pro</div>

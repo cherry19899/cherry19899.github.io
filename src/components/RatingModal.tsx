@@ -110,7 +110,7 @@ export default function RatingModal({ jobId, toUserId, toUsername, onDone, onSki
         <button
           onClick={handleSubmit}
           disabled={saving || !canSubmit}
-          className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-50 transition-colors mb-2"
+          className="w-full min-h-14 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-50 transition-colors mb-2"
         >
           {saving ? <Spinner /> : tr.submitReview}
         </button>

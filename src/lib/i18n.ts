@@ -5406,6 +5406,15 @@ function polishPlural(n: number, one: string, few: string, many: string): string
   return many;
 }
 
+export function applicantsLabel(n: number): string {
+  const l = getLang();
+  if (l === 'ru') return slavicPlural(n, 'отклик', 'отклика', 'откликов');
+  if (l === 'uk') return slavicPlural(n, 'відгук', 'відгуки', 'відгуків');
+  if (l === 'pl') return polishPlural(n, 'kandydat', 'kandydatów', 'kandydatów');
+  if (l === 'en') return n === 1 ? 'applicant' : 'applicants';
+  return t().applicants;
+}
+
 export function reviewsLabel(n: number): string {
   const l = getLang();
   if (l === 'ru') return slavicPlural(n, 'отзыв', 'отзыва', 'отзывов');

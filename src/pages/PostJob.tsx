@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useDraft } from '../hooks/useDraft';
-import { showInterstitial } from '../lib/ads';
 import Spinner from '../components/Spinner';
 import { t, connectsLabel } from '../lib/i18n';
 import { useNavigate } from 'react-router-dom';
@@ -67,11 +66,6 @@ export default function PostJobPage() {
       clearDraft();
       toast(tr.jobPosted, 'success');
       const newId = data?.job?.id || data?.id;
-      // A natural break: the job is already created and the user is between
-      // tasks. Deliberately awaited but never allowed to block — if there is no
-      // inventory or the ad network is missing, showInterstitial resolves
-      // immediately and navigation proceeds either way.
-      await showInterstitial();
       nav(newId ? `/job/${newId}` : '/');
     } catch (e: any) {
       toast(e.message || 'Failed to post job', 'error');
@@ -177,7 +171,7 @@ export default function PostJobPage() {
         <button
           onClick={handleSubmit}
           disabled={saving || !canAfford}
-          className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60 transition-colors"
+          className="w-full min-h-14 leading-tight py-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60 transition-colors"
         >
           {saving ? <Spinner /> : !canAfford ? tr.notEnoughConnects : tr.postJob}
         </button>

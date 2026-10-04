@@ -10,7 +10,7 @@ import { CATEGORIES, CAT_COLORS } from '../lib/constants';
 import { categoryLabel, type CategoryKey } from '../lib/categories';
 import { applyCostFor } from '../lib/connects';
 import { getFavorites, isFavorite, toggleFavorite } from '../lib/favorites';
-import { t, jobsLabel, connectsLabel, timeAgo } from '../lib/i18n';
+import { t, jobsLabel, connectsLabel, applicantsLabel, timeAgo } from '../lib/i18n';
 import { toast } from '../components/Toast';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -266,7 +266,7 @@ function SaveSearchModal({
         <button
           onClick={() => name.trim() && onSave(name.trim(), alert)}
           disabled={!name.trim()}
-          className="w-full h-12 rounded-full bg-emerald-500 text-white font-semibold disabled:opacity-50"
+          className="w-full min-h-12 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold disabled:opacity-50"
         >
           {tr.save}
         </button>
@@ -783,7 +783,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
           <span className="text-gray-500 dark:text-slate-400">@{author}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-400 dark:text-slate-500">{applicants} {tr.applicants}</span>
+          <span className="text-gray-400 dark:text-slate-500">{applicants} {applicantsLabel(applicants)}</span>
           <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-semibold">{tr.open}</span>
           <span className="text-gray-400 dark:text-slate-500">{timeAgo(job.created_at)}</span>
         </div>
@@ -791,7 +791,7 @@ function JobCard({ job, onClick }: { job: Job; onClick: () => void }) {
 
       <button
         onClick={onClick}
-        className="w-full h-10 rounded-full bg-emerald-500 text-white text-sm font-semibold active:scale-[0.98] transition-transform shadow-sm shadow-emerald-500/30"
+        className="w-full min-h-10 leading-tight py-2 rounded-full bg-emerald-500 text-white text-sm font-semibold active:scale-[0.98] transition-transform shadow-sm shadow-emerald-500/30"
       >
         {tr.applyNow}
       </button>

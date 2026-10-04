@@ -37,7 +37,7 @@ export default function BottomNav() {
                   {badge > 9 ? '9+' : badge}
                 </span>
               )}
-              <span className="text-[10px] font-medium mt-0.5">{label}</span>
+              <span className="text-[10px] font-medium mt-0.5 max-w-full px-0.5 whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>
             </button>
           );
         })}

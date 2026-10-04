@@ -416,13 +416,13 @@ export default function JobDetailPage() {
                     </p>
                   )}
                   <div className="flex gap-2">
-                    <button onClick={() => setApplyMode(false)} className="flex-1 h-12 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
+                    <button onClick={() => setApplyMode(false)} className="flex-1 min-h-12 leading-tight py-2 rounded-full bg-gray-100 text-gray-700 font-semibold text-sm">
                       {tr.cancel}
                     </button>
                     <button
                       onClick={handleApply}
                       disabled={applying || myConnects < applyCost}
-                      className="flex-[2] h-12 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-60"
+                      className="flex-[2] min-h-12 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-500/30 disabled:opacity-60"
                     >
                       {applying ? <Spinner /> : myConnects < applyCost ? tr.notEnoughConnects : tr.submitProposal}
                     </button>
@@ -431,7 +431,7 @@ export default function JobDetailPage() {
               ) : (
                 <button
                   onClick={() => setApplyMode(true)}
-                  className="w-full h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 transition-colors"
+                  className="w-full min-h-14 leading-tight py-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 transition-colors"
                 >
                   {tr.applyNow} · {applyCost} {connectsLabel(applyCost)}
                 </button>
@@ -441,7 +441,7 @@ export default function JobDetailPage() {
             {isOwner && (
               <button
                 onClick={() => { setView('applicants'); loadApps(); }}
-                className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30"
+                className="w-full min-h-14 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30"
               >
                 {tr.viewApplicants} ({job.applications ?? 0})
               </button>
@@ -452,7 +452,7 @@ export default function JobDetailPage() {
               <button
                 onClick={handleCompleteJob}
                 disabled={completing}
-                className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
+                className="w-full min-h-14 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
               >
                 {completing ? <Spinner /> : `✅ ${tr.acceptWorkComplete}`}
               </button>
@@ -480,7 +480,7 @@ export default function JobDetailPage() {
               <button
                 onClick={handleSubmitWork}
                 disabled={submitting}
-                className="w-full h-14 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
+                className="w-full min-h-14 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold text-base shadow-lg shadow-emerald-500/30 disabled:opacity-60"
               >
                 {submitting ? <Spinner /> : `📤 ${tr.submitWork}`}
               </button>

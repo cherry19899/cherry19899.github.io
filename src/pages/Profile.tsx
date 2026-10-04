@@ -488,13 +488,13 @@ export default function ProfilePage() {
                 const ok = await copyText(APP_URL);
                 toast(ok ? tr.shareCopied : tr.shareFailed, ok ? 'success' : 'error');
               }}
-              className="w-full h-11 rounded-full bg-emerald-500 text-white font-semibold mb-2"
+              className="w-full min-h-11 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold mb-2"
             >
               {tr.addToHomeCopy}
             </button>
             <button
               onClick={() => setHomeModal(false)}
-              className="w-full h-11 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 font-semibold"
+              className="w-full min-h-11 leading-tight py-2 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 font-semibold"
             >
               {tr.close}
             </button>
@@ -513,7 +513,7 @@ export default function ProfilePage() {
             </p>
             <button
               onClick={() => setPiModal(false)}
-              className="w-full h-11 rounded-full bg-emerald-500 text-white font-semibold"
+              className="w-full min-h-11 leading-tight py-2 rounded-full bg-emerald-500 text-white font-semibold"
             >
               {tr.close}
             </button>
