@@ -379,40 +379,41 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
   );
 }
 
-// Full-screen view of a chat image, with a way to keep it. Before this the
-// image was a 200px thumbnail with no handler at all — it could be neither
-// opened nor saved.
+// Full-screen view of a chat image. Before this the image was a 200px
+// thumbnail with no handler at all — it could be neither opened nor saved.
 //
-// Saving prefers the share sheet: Pi Browser is a WebView, and a WebView only
-// downloads what its host app chooses to handle, which for a blob: URL is
-// often nothing. The share sheet hands the file to the system instead, where
-// "Save image" lives. The download link is the fallback for engines without
-// file sharing.
+// Saving is offered only where it actually works. Measured in Android Pi
+// Browser on 2026-10-05: navigator.canShare({files}) is false, a blob: download
+// link does nothing, and long-pressing an image opens no menu — the WebView
+// gives a page no way to write a file. A Save button there was a button that
+// silently did nothing, so it is shown only when the share sheet accepts the
+// file, which is where the system's own "Save image" lives.
 //
-// The Save bar reads --wp-bottom-inset like BottomNav does: on WebViews that
+// The bottom bar reads --wp-bottom-inset like BottomNav does: on WebViews that
 // draw under the Android nav bar it would otherwise sit behind the system
 // buttons and be untappable.
 function ImageViewer({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
   const tr = t();
+  const fileRef = useRef<File | null>(null);
+  const [canSave, setCanSave] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const blob = await (await fetch(url)).blob();
+        const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
+        fileRef.current = file;
+        if (alive && (navigator as any).canShare?.({ files: [file] })) setCanSave(true);
+      } catch { /* no file sharing here — the button simply stays hidden */ }
+    })();
+    return () => { alive = false; };
+  }, [url, name]);
 
   const save = async () => {
-    try {
-      const blob = await (await fetch(url)).blob();
-      const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
-      const nav = navigator as any;
-      if (nav.canShare?.({ files: [file] })) {
-        await nav.share({ files: [file] });
-        return;
-      }
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return;   // the user closed the share sheet
-    }
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    if (!fileRef.current) return;
+    try { await (navigator as any).share({ files: [fileRef.current] }); }
+    catch { /* the user closed the share sheet */ }
   };
 
   return createPortal(
@@ -422,14 +423,16 @@ function ImageViewer({ url, name, onClose }: { url: string; name: string; onClos
           ✕ {tr.close}
         </button>
       </div>
-      <div className="flex-1 flex items-center justify-center px-3 min-h-0">
+      <div className={`flex-1 flex items-center justify-center px-3 min-h-0 ${canSave ? '' : 'pb-[var(--wp-bottom-inset)]'}`}>
         <img src={url} alt={name} onClick={e => e.stopPropagation()} className="max-w-full max-h-full object-contain" />
       </div>
-      <div className="px-4 pt-4 pb-[calc(1rem+var(--wp-bottom-inset))] flex justify-center" onClick={e => e.stopPropagation()}>
-        <button onClick={save} className="min-h-12 px-8 py-2 leading-tight rounded-full bg-emerald-500 text-white font-semibold">
-          ⬇ {tr.save}
-        </button>
-      </div>
+      {canSave && (
+        <div className="px-4 pt-4 pb-[calc(1rem+var(--wp-bottom-inset))] flex justify-center" onClick={e => e.stopPropagation()}>
+          <button onClick={save} className="min-h-12 px-8 py-2 leading-tight rounded-full bg-emerald-500 text-white font-semibold">
+            ⬇ {tr.save}
+          </button>
+        </div>
+      )}
     </div>,
     document.body,
   );
