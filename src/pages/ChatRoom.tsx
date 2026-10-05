@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { t } from '../lib/i18n';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { getChatMessages, getChatRoom, sendMessage, uploadChatFile, fetchAttachmentBlobUrl } from '../lib/api';
+import { getChatMessages, getChatRoom, sendMessage, uploadChatFile, fetchAttachmentBlobUrl, getAttachmentDownloadUrl } from '../lib/api';
 import { toast } from '../components/Toast';
 import { API_BASE } from '../lib/constants';
 import { useAppCtx } from '../App';
@@ -358,7 +358,7 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
         <button onClick={() => setViewing(true)} className="block p-0 border-0 bg-transparent">
           <img src={imgUrl} alt={name} className="rounded-lg max-w-[200px] max-h-[240px] object-cover" />
         </button>
-        {viewing && <ImageViewer url={imgUrl} name={name} onClose={() => setViewing(false)} />}
+        {viewing && <ImageViewer url={imgUrl} path={path} name={name} onClose={() => setViewing(false)} />}
       </>
     );
   }
@@ -382,38 +382,42 @@ function MessageBody({ content, mine }: { content: string; mine: boolean }) {
 // Full-screen view of a chat image. Before this the image was a 200px
 // thumbnail with no handler at all — it could be neither opened nor saved.
 //
-// Saving is offered only where it actually works. Measured in Android Pi
-// Browser on 2026-10-05: navigator.canShare({files}) is false, a blob: download
-// link does nothing, and long-pressing an image opens no menu — the WebView
-// gives a page no way to write a file. A Save button there was a button that
-// silently did nothing, so it is shown only when the share sheet accepts the
-// file, which is where the system's own "Save image" lives.
+// Save prefers the share sheet where it accepts files (it is where the
+// system's own "Save image" lives), and otherwise downloads through a real
+// HTTPS link. Measured in Android Pi Browser 2026-10-05: canShare({files}) is
+// false and a blob: download is silently ignored, but an ordinary URL served
+// as an attachment lands in /sdcard/Download. See getAttachmentDownloadUrl.
 //
 // The bottom bar reads --wp-bottom-inset like BottomNav does: on WebViews that
 // draw under the Android nav bar it would otherwise sit behind the system
 // buttons and be untappable.
-function ImageViewer({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
+function ImageViewer({ url, path, name, onClose }: { url: string; path: string; name: string; onClose: () => void }) {
   const tr = t();
-  const fileRef = useRef<File | null>(null);
-  const [canSave, setCanSave] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const blob = await (await fetch(url)).blob();
-        const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
-        fileRef.current = file;
-        if (alive && (navigator as any).canShare?.({ files: [file] })) setCanSave(true);
-      } catch { /* no file sharing here — the button simply stays hidden */ }
-    })();
-    return () => { alive = false; };
-  }, [url, name]);
+  const [busy, setBusy] = useState(false);
 
   const save = async () => {
-    if (!fileRef.current) return;
-    try { await (navigator as any).share({ files: [fileRef.current] }); }
-    catch { /* the user closed the share sheet */ }
+    setBusy(true);
+    try {
+      const blob = await (await fetch(url)).blob();
+      const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
+      const nav = navigator as any;
+      if (nav.canShare?.({ files: [file] })) {
+        try { await nav.share({ files: [file] }); } catch { /* sheet closed */ }
+        return;
+      }
+      // An ordinary navigation to an attachment response: the WebView hands
+      // it to the download manager and the page stays where it is.
+      const a = document.createElement('a');
+      a.href = await getAttachmentDownloadUrl(path);
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch {
+      toast(tr.failedOpenAttachment, 'error');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return createPortal(
@@ -423,16 +427,14 @@ function ImageViewer({ url, name, onClose }: { url: string; name: string; onClos
           ✕ {tr.close}
         </button>
       </div>
-      <div className={`flex-1 flex items-center justify-center px-3 min-h-0 ${canSave ? '' : 'pb-[var(--wp-bottom-inset)]'}`}>
+      <div className="flex-1 flex items-center justify-center px-3 min-h-0">
         <img src={url} alt={name} onClick={e => e.stopPropagation()} className="max-w-full max-h-full object-contain" />
       </div>
-      {canSave && (
-        <div className="px-4 pt-4 pb-[calc(1rem+var(--wp-bottom-inset))] flex justify-center" onClick={e => e.stopPropagation()}>
-          <button onClick={save} className="min-h-12 px-8 py-2 leading-tight rounded-full bg-emerald-500 text-white font-semibold">
-            ⬇ {tr.save}
-          </button>
-        </div>
-      )}
+      <div className="px-4 pt-4 pb-[calc(1rem+var(--wp-bottom-inset))] flex justify-center" onClick={e => e.stopPropagation()}>
+        <button onClick={save} disabled={busy} className="min-h-12 px-8 py-2 leading-tight rounded-full bg-emerald-500 text-white font-semibold disabled:opacity-60">
+          {busy ? '…' : `⬇ ${tr.save}`}
+        </button>
+      </div>
     </div>,
     document.body,
   );

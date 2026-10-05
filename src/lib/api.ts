@@ -66,6 +66,17 @@ export async function fetchAttachmentBlobUrl(path: string): Promise<string> {
   return URL.createObjectURL(blob);
 }
 
+/**
+ * A short-lived URL that downloads an attachment as a file. Pi Browser saves
+ * what an ordinary HTTPS link serves as an attachment, but ignores blob:
+ * downloads, so the file has to come from a real URL — and a real URL cannot
+ * carry the Authorization header, hence a link with its own scoped token.
+ */
+export async function getAttachmentDownloadUrl(path: string): Promise<string> {
+  const data = await apiFetch(`${path}/download-link`, { method: 'POST' });
+  return API_BASE + data.url;
+}
+
 export function saveAuth(token: string, user: any) {
   localStorage.setItem('workpro_token', token);
   localStorage.setItem('workpro_user', JSON.stringify(user));
