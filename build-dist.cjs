@@ -24,4 +24,17 @@ function copyDir(src, dst) {
 
 if (!fs.existsSync(SRC)) { console.error('static/ dir missing'); process.exit(1); }
 copyDir(SRC, DST);
+
+// Pi verifies a domain by fetching /validation-key.txt, and the key belongs to
+// one app registration. The Mainnet and Testnet apps are built from this same
+// repo, so each build has to publish its own app's key — a single shared file
+// once made the Testnet site serve the Mainnet key, and Pi could never verify
+// the Testnet domain. The Testnet site is the build with VITE_PI_MODE=sandbox.
+const TESTNET_KEY = path.join(DST, 'validation-key.testnet.txt');
+if (process.env.VITE_PI_MODE === 'sandbox') {
+  fs.renameSync(TESTNET_KEY, path.join(DST, 'validation-key.txt'));
+  console.log('✓ validation-key.txt ← Testnet app key');
+} else {
+  fs.rmSync(TESTNET_KEY, { force: true });
+}
 console.log('\n✅ static assets copied to dist/');
