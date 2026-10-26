@@ -7,7 +7,7 @@ export const API_BASE = import.meta.env.VITE_API_BASE || 'https://workpro-api.on
 
 // Canonical public address of the app — used for invite links and job deep
 // links, so it must stay the deployed URL of *this* build.
-export const APP_URL = import.meta.env.VITE_APP_URL || 'https://cherry19899.github.io';
+export const APP_URL = import.meta.env.VITE_APP_URL || 'https://workpro-app.onrender.com';
 
 // Labels here are English fallbacks only — the UI renders translated labels
 // via categoryLabel() from ./categories, keyed off these same `key`s.

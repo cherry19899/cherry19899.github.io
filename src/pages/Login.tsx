@@ -131,7 +131,7 @@ export default function LoginPage() {
               {copied ? 'Address copied ✓' : 'Copy address'}
             </button>
             <a
-              href="pi://cherry19899.github.io"
+              href="pi://workpro-app.onrender.com"
               className="block w-full py-3 rounded-xl text-center font-semibold text-sm border"
               style={{ borderColor: FEATURE_ICON, color: FOOT }}
             >
