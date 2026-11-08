@@ -29,6 +29,8 @@ export default function ProfilePage() {
   // the number with no explanation is how a working app looks like a scam to
   // whoever tries to withdraw first.
   const [payoutPending, setPayoutPending] = useState(false);
+  const [walletInput, setWalletInput] = useState('');
+  const [savingWallet, setSavingWallet] = useState(false);
 
   // Only offer the ad if this Pi Browser actually has the ad network; older
   // builds don't, and a dead button is worse than no button.
@@ -333,6 +335,43 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* An admin asked where to send this person's money. Until Pi enables
+          App-to-User payments, payouts are made by hand to this address. */}
+      {(user as any).wallet_requested_at && (
+        <div className="mx-4 mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-1">💰 {tr.walletReqTitle}</p>
+          <p className="text-xs text-gray-600 dark:text-slate-300 mb-3">{tr.walletReqBody.replace('{amount}', String(balancePi))}</p>
+          <input
+            value={walletInput}
+            onChange={e => setWalletInput(e.target.value.replace(/\s+/g, '').toUpperCase())}
+            maxLength={56}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+            className="w-full bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 text-xs font-mono mb-3 text-gray-900 dark:text-white focus:outline-none focus:border-amber-400"
+            placeholder="G…"
+          />
+          <button
+            onClick={async () => {
+              const addr = walletInput.trim();
+              if (!/^G[A-Z2-7]{55}$/.test(addr)) { toast(tr.walletInvalid, 'error'); return; }
+              setSavingWallet(true);
+              try {
+                await apiFetch('/api/users/me/payout-wallet', { method: 'POST', body: JSON.stringify({ wallet_address: addr }) });
+                updateUser({ wallet_requested_at: null, payout_wallet: addr } as any);
+                setWalletInput('');
+                toast(tr.walletSaved, 'success');
+              } catch (e: any) { toast(e?.message || tr.walletInvalid, 'error'); }
+              finally { setSavingWallet(false); }
+            }}
+            disabled={savingWallet || walletInput.length !== 56}
+            className="w-full py-2.5 rounded-full bg-amber-500 text-white text-sm font-semibold disabled:opacity-50"
+          >
+            {tr.walletSend}
+          </button>
+        </div>
+      )}
 
       {/* ── Settings rows ── */}
       <div className="mx-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden mb-4">

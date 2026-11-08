@@ -340,7 +340,13 @@ export default function AdminPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-900 dark:text-white font-semibold text-sm">@{u.username}</p>
-                      <p className="text-xs text-gray-400 dark:text-slate-500">{statusLabel(u.role)} · {u.balance_connects ?? 0}⚡ · {u.balance_pi ?? 0} π</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">
+                        {statusLabel(u.role)} · {u.balance_connects ?? 0}⚡ · {u.balance_pi ?? 0} π
+                        {/* At a glance: can this person be paid by hand yet? */}
+                        {parseFloat(u.balance_pi || 0) > 0 && (u.wallet_address || u.payout_wallet
+                          ? ` · 👛 ${tr.walletAddress}`
+                          : u.wallet_requested_at ? ` · 📨 ${tr.walletRequestedShort}` : '')}
+                      </p>
                       {u.rating && <p className="text-xs text-amber-500">{'★'.repeat(Math.round(u.rating))} {parseFloat(u.rating).toFixed(1)}</p>}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${u.is_blocked ? 'bg-red-100 text-red-500' : 'bg-emerald-100 text-emerald-600'}`}>
@@ -740,26 +746,63 @@ export default function AdminPage() {
             {/* Where to actually send it. Pi reports this at sign-in; someone
                 who has not signed in since has none stored, and saying so
                 plainly beats showing an empty box the admin might paste over. */}
-            {settleModal.wallet_address ? (
-              <button
-                onClick={() => {
-                  navigator.clipboard?.writeText(settleModal.wallet_address).catch(() => {});
-                  toast(tr.addressCopied, 'success');
-                }}
-                className="w-full text-left bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 mb-3 active:opacity-70"
-              >
-                <span className="block text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-1">
-                  {tr.walletAddress} · {tr.tapToCopy}
-                </span>
-                <span className="block text-xs font-mono text-gray-900 dark:text-white break-all">
-                  {settleModal.wallet_address}
-                </span>
-              </button>
-            ) : (
-              <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-2xl px-4 py-3 mb-3">
-                {tr.noWalletAddress}
-              </p>
-            )}
+            {/* Two possible addresses: the one Pi itself reported at sign-in,
+                and the one the user typed in answer to a wallet request. They
+                are labelled so the admin always knows which is only the
+                user's word. */}
+            {(() => {
+              const wallets = [
+                settleModal.wallet_address ? { addr: settleModal.wallet_address as string, label: tr.walletFromPi } : null,
+                settleModal.payout_wallet && settleModal.payout_wallet !== settleModal.wallet_address
+                  ? { addr: settleModal.payout_wallet as string, label: tr.walletFromUser } : null,
+              ].filter(Boolean) as { addr: string; label: string }[];
+              if (!wallets.length) {
+                return (
+                  <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 rounded-2xl px-4 py-3 mb-3">
+                    {tr.noWalletAddress}
+                  </p>
+                );
+              }
+              return wallets.map(w => (
+                <button
+                  key={w.addr}
+                  onClick={() => {
+                    navigator.clipboard?.writeText(w.addr).catch(() => {});
+                    toast(tr.addressCopied, 'success');
+                  }}
+                  className="w-full text-left bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl px-4 py-3 mb-3 active:opacity-70"
+                >
+                  <span className="block text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wide mb-1">
+                    {tr.walletAddress} · {w.label} · {tr.tapToCopy}
+                  </span>
+                  <span className="block text-xs font-mono text-gray-900 dark:text-white break-all">
+                    {w.addr}
+                  </span>
+                </button>
+              ));
+            })()}
+
+            {/* Ask the user where to send it: puts a request card in their
+                profile and a notification in their list. */}
+            <button
+              onClick={async () => {
+                const uid = settleModal.id || settleModal.uid;
+                setActing(uid);
+                try {
+                  const r: any = await apiFetch(`/api/admin/users/${uid}/request-wallet`, { method: 'POST' });
+                  setSettleModal((m: any) => m && { ...m, wallet_requested_at: r.wallet_requested_at });
+                  setUsers(prev => prev.map(x => (x.id || x.uid) === uid ? { ...x, wallet_requested_at: r.wallet_requested_at } : x));
+                  toast(tr.walletRequestSent, 'success');
+                } catch (e: any) { toast(e.message, 'error'); }
+                finally { setActing(null); }
+              }}
+              disabled={acting === (settleModal.id || settleModal.uid)}
+              className="w-full py-2.5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold mb-3 disabled:opacity-60"
+            >
+              📨 {settleModal.wallet_requested_at
+                ? `${tr.walletRequestedOn} ${new Date(settleModal.wallet_requested_at).toLocaleDateString()} · ${tr.requestAgain}`
+                : tr.requestWallet}
+            </button>
 
             <input
               type="number"
@@ -788,7 +831,7 @@ export default function AdminPage() {
                     body: JSON.stringify({ amount: amt, reference: settleRef.trim() }),
                   });
                   setUsers(prev => prev.map(x => (x.id || x.uid) === uid ? { ...x, balance_pi: r.remaining } : x));
-                  toast(`${tr.settledByHand}: ${r.settled}π → @${settleModal.username}`, 'success');
+                  toast(`${tr.settledByHand}: ${r.settled}π → @${settleModal.username}${r.verified ? ` · ✓ ${tr.txVerified}` : ''}`, 'success');
                   setSettleModal(null); setSettleAmt(''); setSettleRef('');
                 } catch (e: any) { toast(e.message, 'error'); }
                 finally { setActing(null); }

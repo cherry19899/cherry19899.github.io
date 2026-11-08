@@ -224,6 +224,10 @@ export default function NotificationsPage() {
                         if (!read) markRead(n.id);
                         if (n.room_id) nav(`/chat/${n.room_id}`);
                         else if (n.job_id) nav(`/job/${n.job_id}`);
+                        // Payout by hand: the request card lives in the
+                        // profile, the answer is acted on in the admin.
+                        else if (n.notif_key === 'nWalletRequested') nav('/profile');
+                        else if (n.notif_key === 'nWalletReceived') nav('/admin');
                       }}
                       className={`w-full text-left p-4 rounded-2xl border transition-colors flex items-start gap-3 ${
                         read
